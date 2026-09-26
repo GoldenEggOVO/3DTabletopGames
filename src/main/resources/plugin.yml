@@ -1,12 +1,14 @@
-name: ServerBoards
-version: 1.2.1
-main: dev.server.boards.ServerBoards
+name: 3dtabletop
+version: 1.3.0
+main: dev.tabletop3d.Tabletop3D
 api-version: '26.2'
 softdepend: [AuthMe]
 commands:
-  boards:
-    description: 棋类房间和实体棋盘
-    permission: serverboards.use
+  3dtabletop:
+    description: 3D tabletop games and rooms
+    permission: 3dtabletop.use
 permissions:
-  serverboards.use:
+  3dtabletop.use:
     default: true
+  3dtabletop.admin:
+    default: op

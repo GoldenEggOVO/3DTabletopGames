@@ -1,4 +1,4 @@
-# 简洁菜单；按钮 ID 绑定服务器动作，外观可在 ServerBoards/menus 中编辑。
+# Dialog layout; button IDs bind server actions. Edit appearance in plugins/3dtabletop/menus.
 Title: '&f@title@'
 Bottom:
   type: multi

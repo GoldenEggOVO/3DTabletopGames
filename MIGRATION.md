@@ -1,16 +1,16 @@
-# ServerBoards 数据迁移
+# 升级至 3dtabletop 1.3.0
 
-## 1. 备份与来源
+## ServerBoards 数据目录
 
-完全停止服务器。备份整个 `plugins/ServerBoards/`，以及如需迁移旧棋局时的 `plugins/ServerGames/rooms.json`。不要在运行中复制文件，也不要把旧 ServerGames 的卡牌或麻将房间放进 Boards。
+1. 完全停服，备份 `plugins/ServerBoards/`，记录原 `rooms.json` 的 SHA-256，移除旧 ServerBoards JAR。
+2. 安装 `3dtabletop-1.3.0.jar` 并启动。若新目录不存在，插件会将旧目录**复制**为 `plugins/3dtabletop/`，添加 `migration-from-serverboards.txt`；旧目录不删除。
+3. 检查 `config.yml`、`menus/*.yml`、`rooms.json` 的副本及 SHA-256。旧配置未写 `language` 时自动使用英文；可手动添加 `language: en`。执行 `/3dtabletop status`，玩家用 `/3dtabletop resume` 查看座位、棋盘和历史，再正常重启检查恢复。
 
-Boards 1.1.0／1.2.0 → 1.2.1：`config.yml`、`menus/*.yml`、`rooms.json` 的格式不变，只换 JAR。重启后用 `/boards status`、`/boards resume` 检查房间和桌面。插件按历史重建实体棋盘。旧版若曾向 ServerGames 注册提供者，升级后不再注册；`/sg menu` 命令转发仍可用。
+房间 JSON schema 1、世界 UUID、实体桌面坐标、规则动作与菜单配置保持可读。两个数据目录都存在但无迁移标记时插件会拒绝启动；先在停服状态核对并备份两边数据，手工决定使用哪一份。恢复失败时插件保留源文件并另存不可读副本，不会清空房间。原有 `/boards`、`serverboards:boards`、`serverboards.use` 不再注册；请更新自己的命令、权限与菜单转发配置。ServerGames 2.0.3 和 ServerMenu 0.7.1 的旧入口也需在各自项目更新。
 
-旧 ServerGames → Boards：旧 `rooms.json` 可能没有 `anchorWorld/anchorX/anchorY/anchorZ`，不能推断玩家希望把桌子放到哪里。为每个需要迁移的棋类房间提供一个明确、已加载且可放置桌面的世界 UUID 和坐标。
+## 从旧 ServerGames 棋类房间导入
 
-## 2. 创建映射并生成新文件
-
-映射文件示例 `anchors.json`：
+旧 `plugins/ServerGames/rooms.json` 可能缺少棋桌世界和坐标，不能自动推断。仅迁移棋类房间，并为每个房间明确指定已加载世界的 UUID 与棋桌坐标。先备份源文件；不要将卡牌、麻将房间混入输入。示例 `anchors.json`：
 
 ```json
 {
@@ -23,15 +23,13 @@ Boards 1.1.0／1.2.0 → 1.2.1：`config.yml`、`menus/*.yml`、`rooms.json` 的
 }
 ```
 
-已有完整锚点的 Boards 文件使用 `{}`。脚本只允许棋类，检查房间、桌号、人数、玩家重复占座和坐标，并调用将要安装的 `server-boards-1.2.1.jar` 逐步重放所有历史动作；不可重放时拒绝生成候选文件，不改源文件，也不覆盖已有输出：
+已有完整锚点的旧 Boards 文件使用 `{}`。脚本检查房间、人数、重复占座、坐标，并使用即将安装的 JAR 逐条重放动作；失败时拒绝产生候选文件，不改源文件或覆盖输出。默认读取同目录或 `target/` 下的 `3dtabletop-1.3.0.jar`，也可传 `--jar`：
 
 ```powershell
 python server-boards/tools/server_boards_migrate.py old-rooms.json anchors.json candidate-rooms.json
 python server-boards/tools/server_boards_migrate.py old-rooms.json anchors.json candidate-rooms.json --check
 ```
 
-两次命令打印源与输出的 SHA-256。若 JAR 与工具不在同一安装包位置，可加 `--jar <拟安装的 ServerBoards JAR>`。`--check` 会验证输出与源数据的差别仅为显式锚点和缺失时补齐的空 `returns`。如旧文件同时含卡牌、麻将或其他不支持的房间，先从**备份副本**筛选棋类房间并保存为独立输入；保留完整原始备份。若某个棋类房间的历史动作无法重放，工具会报告房间 ID 和动作序号；不要改写原始动作或清空历史，先保留该房间原件并检查旧规则版本。
+两次命令打印源与输出的 SHA-256。`--check` 确认差异仅为指定锚点及缺失时补齐的空 `returns`。某房间无法重放时，保留原始备份和该房间记录，检查报告中的房间 ID 与动作序号，不要改写动作历史。
 
-## 3. 隔离服验收后替换
-
-把 `candidate-rooms.json` 复制到**已停止**的隔离测试服 `plugins/ServerBoards/rooms.json`；该测试服世界 UUID 必须与映射一致。启动时查看是否有“恢复棋牌房间 N 个”，用 `/boards status` 对照数量，并由玩家执行 `/boards resume` 检查座位、棋盘和历史。再次正常重启，确认恢复数量与棋盘状态一致。完成后才在目标服按相同备份、停服、复制、启动顺序操作。任一步失败时停服，保留原数据和不可读副本，恢复备份并检查日志。
+将通过校验的 `candidate-rooms.json` 放到**已停止**的隔离测试服 `plugins/3dtabletop/rooms.json`；世界 UUID 必须匹配。启动、执行 `/3dtabletop status` 和 `/3dtabletop resume`，对照房间数、座位、棋盘与历史，再正常重启复验。生产服迁移需另行授权，并遵循同样的停服、备份、校验、替换流程。

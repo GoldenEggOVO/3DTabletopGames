@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>dev.server</groupId>
-    <artifactId>server-boards</artifactId>
-    <version>1.2.1</version>
+    <groupId>dev.tabletop3d</groupId>
+    <artifactId>3dtabletop</artifactId>
+    <version>1.3.0</version>
     <licenses>
         <license>
             <name>GPL-3.0-or-later</name>
@@ -91,7 +91,7 @@
                             <relocations>
                                 <relocation>
                                     <pattern>com.google.gson</pattern>
-                                    <shadedPattern>dev.server.boards.internal.gson</shadedPattern>
+                                    <shadedPattern>dev.tabletop3d.internal.gson</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>

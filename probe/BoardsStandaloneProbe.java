@@ -1,4 +1,4 @@
-package dev.server.boards.probe;
+package dev.tabletop3d.probe;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -40,17 +40,17 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             }
             for (String absent : List.of("ServerGames", "ServerMenu", "ServerCasino", "KaMenu"))
                 require(Bukkit.getPluginManager().getPlugin(absent) == null, "unexpected " + absent);
-            Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerBoards"));
+            Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("3dtabletop"));
             require(boards.isEnabled(), "Boards enabled");
             World world = Bukkit.getWorlds().getFirst();
-            PluginCommand command = Objects.requireNonNull(Bukkit.getPluginCommand("serverboards:boards"));
+            PluginCommand command = Objects.requireNonNull(Bukkit.getPluginCommand("3dtabletop:3dtabletop"));
             AtomicInteger dialogs = new AtomicInteger();
             Player player = player(world, dialogs, true);
             Player denied = player(world, dialogs, false);
             int before = dialogs.get();
-            command.execute(denied, "boards", new String[0]);
+            command.execute(denied, "3dtabletop", new String[0]);
             require(dialogs.get() == before, "permission denied");
-            command.execute(player, "boards", new String[0]);
+            command.execute(player, "3dtabletop", new String[0]);
             require(dialogs.get() == before + 1, "native catalog opened");
             Object menus = field(boards, "menus");
             Map<?, ?> sessions = (Map<?, ?>) field(menus, "sessions");
@@ -61,7 +61,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             List<?> entries = (List<?>) buttons.invoke(session);
             Method token = session.getClass().getDeclaredMethod("token");
             token.setAccessible(true);
-            String action = "boards:" + token.invoke(session) + " 0";
+            String action = "3dtabletop:" + token.invoke(session) + " 0";
             int shown = dialogs.get();
             call(menus, "handle", new Class<?>[]{Player.class, String.class}, player, action);
             require(dialogs.get() == shown + 1, "menu callback opened next native dialog");
@@ -78,14 +78,16 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 require(field(room, "board") != null, "board replay restored");
                 require(Files.readString(boards.getDataFolder().toPath().resolve("rooms.json")).contains("drop:3"), "move history retained");
                 require(!world.getEntitiesByClass(TextDisplay.class).isEmpty(), "board entities rendered");
-                getLogger().info("BOARDS_STANDALONE_RESTORE_PASS rooms=1 dialogs=" + dialogs.get());
+                String markerName = Files.exists(boards.getDataFolder().toPath().resolve("migration-from-serverboards.txt"))
+                    ? "BOARDS_STANDALONE_MIGRATION_PASS" : "BOARDS_STANDALONE_RESTORE_PASS";
+                getLogger().info(markerName + " rooms=1 dialogs=" + dialogs.get());
             } else {
                 require(rooms.isEmpty(), "fresh fixture");
                 call(boards, "create", new Class<?>[]{Player.class, String.class, int.class}, player, "connectfour", 2);
                 require(rooms.size() == 1, "room created");
                 Object room = rooms.values().iterator().next();
                 call(boards, "startWithBots", new Class<?>[]{Player.class, room.getClass()}, player, room);
-                command.execute(player, "boards", new String[]{"move", "drop:3"});
+                command.execute(player, "3dtabletop", new String[]{"move", "drop:3"});
                 Path data = boards.getDataFolder().toPath().resolve("rooms.json");
                 require(Files.readString(data).contains("drop:3"), "core rule action persisted");
                 require(!world.getEntitiesByClass(TextDisplay.class).isEmpty(), "board entities rendered");
@@ -101,7 +103,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void sgMenuProbe() throws Exception {
         Plugin games = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerGames"));
-        Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerBoards"));
+        Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("Tabletop3D"));
         require(games.isEnabled() && boards.isEnabled(), "optional plugins enabled");
         ClassLoader loader = games.getClass().getClassLoader();
         Class<?> api = Class.forName("dev.server.games.api.GameCoordinator", true, loader);
@@ -127,7 +129,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
     @SuppressWarnings("unchecked")
     private void menuProbe() throws Exception {
         Plugin menu = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerMenu"));
-        Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerBoards"));
+        Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("Tabletop3D"));
         require(menu.isEnabled() && boards.isEnabled(), "optional menu enabled");
         AtomicInteger dialogs = new AtomicInteger();
         Player player = player(Bukkit.getWorlds().getFirst(), dialogs, true);
@@ -154,7 +156,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
     private void migrationProbe() throws Exception {
         for (String absent : List.of("ServerGames", "ServerMenu", "ServerCasino", "KaMenu"))
             require(Bukkit.getPluginManager().getPlugin(absent) == null, "unexpected " + absent);
-        Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerBoards"));
+        Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("Tabletop3D"));
         require(boards.isEnabled(), "Boards restored legacy rooms");
         Map<?, ?> rooms = (Map<?, ?>) field(boards, "rooms");
         require(rooms.size() == 4, "four replayable legacy chess rooms restored");

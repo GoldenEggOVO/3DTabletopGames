@@ -83,7 +83,7 @@ def replay(candidate, jar):
         path = Path(directory) / "rooms.json"
         path.write_text(json.dumps(candidate, ensure_ascii=False), encoding="utf-8")
         result = subprocess.run([shutil.which("java") or "java", "-cp", str(jar),
-                                 "dev.server.boards.RoomReplayVerifier", str(path)],
+                                 "dev.tabletop3d.RoomReplayVerifier", str(path)],
                                 capture_output=True, text=True)
         if result.returncode:
             raise ValueError("Rules replay rejected migration candidate:\n" + result.stderr.strip())
@@ -94,9 +94,9 @@ def main():
     parser.add_argument("source", type=Path)
     parser.add_argument("mapping", type=Path, help="JSON object keyed by room ID; use {} for already anchored data")
     parser.add_argument("output", type=Path)
-    default_jar = Path(__file__).resolve().parents[1] / "server-boards-1.2.1.jar"
+    default_jar = Path(__file__).resolve().parents[1] / "3dtabletop-1.3.0.jar"
     if not default_jar.is_file():
-        default_jar = Path(__file__).resolve().parents[1] / "target" / "server-boards-1.2.1.jar"
+        default_jar = Path(__file__).resolve().parents[1] / "target" / "3dtabletop-1.3.0.jar"
     parser.add_argument("--jar", type=Path, default=default_jar, help="the exact ServerBoards JAR intended for installation")
     parser.add_argument("--check", action="store_true", help="compare an existing output without editing it")
     args = parser.parse_args()
