@@ -8,7 +8,7 @@ import zipfile
 from pathlib import Path
 
 project = Path(__file__).resolve().parents[1]
-jar = project / "target/3dtabletop-1.3.0.jar"
+jar = project / "target/3dtabletop-1.3.1.jar"
 receipt = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 if not receipt.get("pass") or len(receipt.get("boots", [])) != 3:
     raise SystemExit("Clean Purpur create, restart and migration receipt is required")
@@ -22,12 +22,12 @@ for report in (project / "target/surefire-reports").glob("TEST-*.xml"):
         continue
     for key in totals:
         totals[key] += int(suite.get(key, 0))
-if totals != {"tests": 126, "failures": 0, "errors": 0, "skipped": 0}:
+if totals != {"tests": 130, "failures": 0, "errors": 0, "skipped": 0}:
     raise SystemExit(f"JUnit results not ready: {totals}")
 
 with zipfile.ZipFile(jar) as artifact:
     plugin = artifact.read("plugin.yml").decode("utf-8")
-    if "name: 3dtabletop" not in plugin or "version: 1.3.0" not in plugin:
+    if "name: 3dtabletop" not in plugin or "version: 1.3.1" not in plugin:
         raise SystemExit("Incorrect plugin identity")
     if "ServerGames" in plugin or "serverboards" in plugin.lower():
         raise SystemExit("Legacy hard dependency or command remains")
@@ -42,14 +42,14 @@ with zipfile.ZipFile(jar) as artifact:
 digest = hashlib.sha256(jar.read_bytes()).hexdigest()
 deliverables = project / "deliverables"
 deliverables.mkdir(exist_ok=True)
-verification = {"version": "1.3.0", "jar_sha256": digest, "junit": totals,
+verification = {"version": "1.3.1", "jar_sha256": digest, "junit": totals,
                 "runtime": {"purpur": "26.2-2622", "clean_create_restart_and_migration": True,
                             "optional_plugins_absent": ["ServerGames", "ServerMenu", "ServerCasino", "KaMenu"],
                             "receipt": receipt["runtime"]},
                 "client_visual_test": False, "production_deployed": False}
 (deliverables / "verification.json").write_text(json.dumps(verification, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (deliverables / "SHA256SUMS.txt").write_text(f"{digest}  {jar.name}\n", encoding="ascii")
-package = deliverables / "3dtabletop-1.3.0.zip"
+package = deliverables / "3dtabletop-1.3.1.zip"
 with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as archive:
     archive.write(jar, jar.name)
     for name in ("README.md", "MIGRATION.md", "FEATURES.md", "LICENSE"):

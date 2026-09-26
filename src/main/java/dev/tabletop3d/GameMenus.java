@@ -47,7 +47,7 @@ final class GameMenus implements AutoCloseable {
         List<Button> b=new ArrayList<>();Room current=plugin.room(p);
         if(current!=null)b.add(new Button("resume","继续当前对局",()->plugin.resume(p,current)));
         for(String kind:Tabletop3D.NAMES.keySet())if(!Set.of("go9","go13").contains(kind))b.add(new Button(kind,Tabletop3D.gameName(kind),()->games(p,kind)));
-        show(p,"棋牌游戏","",b,null,"catalog");
+        show(p,"3D Tabletop Games","",b,null,"catalog");
     }
     void games(Player p,String kind){
         List<Button>b=new ArrayList<>();b.add(new Button("§a创建房间",()->sizes(p,kind)));

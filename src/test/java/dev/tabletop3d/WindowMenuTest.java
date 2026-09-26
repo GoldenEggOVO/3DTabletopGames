@@ -13,7 +13,33 @@ class WindowMenuTest {
     @Test void defaultDialogTextIsEnglish() {
         String title = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
             .serialize(BoardWindow.text("棋盘游戏"));
-        assertEquals("Board Games", title);
+        assertEquals("3D Tabletop Games", title);
+    }
+    @Test void confirmLeaveButtonUsesEnglishAfterLayoutRemovesSourceColor() {
+        var config = new YamlConfiguration();
+        config.set("Bottom.buttons.entry.text", "&f@label@");
+        var rendered = GameMenuLayouts.render(config, "Leave Room", "", List.of(
+            new GameMenus.Button("§c确认离开", () -> {})), UUID.randomUUID());
+        String label = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
+            .serialize(BoardWindow.text(rendered.config().getString("Bottom.buttons.slot0.text")));
+        assertEquals("Confirm Leave", label);
+    }
+    @Test void mainCatalogUsesBrandedTitle() {
+        var plugin = mock(Tabletop3D.class);
+        when(plugin.allowed(any())).thenReturn(true);
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        var world = mock(World.class);
+        when(world.getUID()).thenReturn(UUID.randomUUID());
+        when(player.getWorld()).thenReturn(world);
+        var view = mock(BoardWindow.class);
+        when(view.render(anyString(), anyString(), anyString(), anyList(), any())).thenAnswer(invocation ->
+            GameMenuLayouts.render(new YamlConfiguration(), invocation.getArgument(1), "", invocation.getArgument(3), invocation.getArgument(4)));
+        when(view.open(eq(player), any(), eq("catalog"))).thenReturn(true);
+        var menus = new GameMenus(plugin, view);
+        menus.main(player);
+        verify(view).render(eq("catalog"), eq("3D Tabletop Games"), eq(""), anyList(), any());
+        menus.close();
     }
     @Test void layoutPreservesStyleButReplacesActionsWithOwnedCallbacks() {
         var config = new YamlConfiguration();

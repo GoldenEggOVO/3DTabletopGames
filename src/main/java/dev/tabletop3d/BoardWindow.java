@@ -44,7 +44,7 @@ final class BoardWindow {
             buttons.add(button(player, config, "Bottom.buttons." + key));
         }
         var exit = config.contains("Bottom.exit") ? button(player, config, "Bottom.exit") : null;
-        var base = DialogBase.create(text(config.getString("Title", "棋盘游戏")), null,
+        var base = DialogBase.create(text(config.getString("Title", "3D Tabletop Games")), null,
             true, false, DialogBase.DialogAfterAction.CLOSE, body, List.of());
         player.showDialog(Dialog.create(factory -> factory.empty().base(base).type(
             DialogType.multiAction(buttons, exit, Math.clamp(config.getInt("Bottom.columns", 2), 1, 3)))));

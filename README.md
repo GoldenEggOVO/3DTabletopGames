@@ -1,10 +1,10 @@
-# 3dtabletop 1.3.0
+# 3dtabletop 1.3.1
 
 独立的 3D 实体棋盘与房间插件，适用于 Java 25、Paper／Purpur 26.2。Java 包为 `dev.tabletop3d`。可单独安装；不依赖 ServerGames、ServerMenu、ServerCasino 或 KaMenu。菜单使用 Paper 原生 Dialog，棋盘仍可直接点击。
 
 ## 安装与升级
 
-停服后将 `3dtabletop-1.3.0.jar` 放入 `plugins/`，删除旧的 ServerBoards JAR，同一服务器仅留一个版本。不要安装 `original-*.jar`。首次启动会生成 `plugins/3dtabletop/`。若存在 `plugins/ServerBoards/` 且新目录尚不存在，插件会复制原配置、菜单、`rooms.json` 等文件到新目录，并保留旧目录和 `migration-from-serverboards.txt` 标记。升级前先备份旧目录；两个目录都存在但没有迁移标记时，插件会拒绝启动，避免覆盖数据。详见 [MIGRATION.md](MIGRATION.md)。
+停服后将 `3dtabletop-1.3.1.jar` 放入 `plugins/`，删除旧的 ServerBoards JAR，同一服务器仅留一个版本。不要安装 `original-*.jar`。首次启动会生成 `plugins/3dtabletop/`。若存在 `plugins/ServerBoards/` 且新目录尚不存在，插件会复制原配置、菜单、`rooms.json` 等文件到新目录，并保留旧目录和 `migration-from-serverboards.txt` 标记。升级前先备份旧目录；两个目录都存在但没有迁移标记时，插件会拒绝启动，避免覆盖数据。详见 [MIGRATION.md](MIGRATION.md)。
 
 ## 指令与权限
 
@@ -25,6 +25,8 @@ Tab 会补全子指令、游戏 ID、人数、开放房间和可落子动作。`
 ## 配置与语言
 
 `plugins/3dtabletop/config.yml` 的 `language: en` 选择语言文件；英文为默认值。`plugins/3dtabletop/lang/en.yml` 是可编辑的完整语言表。可复制为 `lang/<code>.yml`，编辑 `translations` 中的显示文字，再将 `language` 设为 `<code>` 并重启。自定义文件缺少的项会回退到英文。菜单、聊天提示、实体棋盘标牌与棋子文字均使用该语言表；玩家姓名、房间 ID 和持久化动作不应翻译。`menus/*.yml` 仍可编辑 Dialog 外观与按钮文字，旧中文模板会在显示时按语言表转换，按钮动作由服务端校验。
+
+从 1.3.0 升级只需停服替换 JAR，房间数据格式不变。旧 `lang/en.yml` 会保留用户编辑；新加入的“确认离开”翻译会从内置英文表补齐。主目录标题默认显示 `3D Tabletop Games`，其他语言可覆盖同名翻译键。
 
 其余配置：`max-rooms`、`reconnect-seconds`、`idle-room-minutes`、`turn-seconds`。房间、座位、世界 UUID、棋桌坐标、随机种子、动作历史保存在 schema 1 `rooms.json`；重启时由历史重放恢复。退出、离线保留、观战、悔棋和再来一局等功能见 [FEATURES.md](FEATURES.md)。
 

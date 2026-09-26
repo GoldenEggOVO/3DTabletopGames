@@ -9,6 +9,9 @@ import java.util.stream.Stream;
 
 /** Completion for public commands; internal dialog callback tokens are never exposed. */
 final class CommandSuggestions {
+    static void hideDuplicateRoot(Collection<String> commands) {
+        commands.remove("3dtabletop:3dtabletop");
+    }
     static List<String> complete(String[] args, Collection<Room> rooms, Room own,
                                  boolean console, boolean authorized) {
         if (args.length == 0) return List.of();

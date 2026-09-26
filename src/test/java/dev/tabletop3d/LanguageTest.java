@@ -54,4 +54,26 @@ class LanguageTest {
             Language.load(plugin);
         }
     }
+    @Test void previousEnglishFileKeepsEditsAndReceivesNewBundledKeys() throws Exception {
+        var plugin = mock(Tabletop3D.class);
+        var config = new YamlConfiguration();
+        config.set("language", "en");
+        when(plugin.getConfig()).thenReturn(config);
+        when(plugin.getDataFolder()).thenReturn(temp.toFile());
+        when(plugin.getResource("lang/en.yml")).thenAnswer(inv ->
+            getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
+        Path english = temp.resolve("lang/en.yml");
+        Files.createDirectories(english.getParent());
+        String previous = "translations:\n  '棋牌游戏': 'Board Games'\n";
+        Files.writeString(english, previous);
+        try {
+            Language.load(plugin);
+            assertEquals("Confirm Leave", Language.text("确认离开"));
+            assertEquals("3D Tabletop Games", Language.text("3D Tabletop Games"));
+            assertEquals(previous, Files.readString(english));
+        } finally {
+            Files.delete(english);
+            Language.load(plugin);
+        }
+    }
 }

@@ -24,7 +24,7 @@ for name in ("libraries", "versions", "cache"):
     "spawn-protection=0\nenable-rcon=false\nenable-query=false\n", encoding="utf-8")
 plugins = runtime / "plugins"
 plugins.mkdir()
-jar = project / "target" / "3dtabletop-1.3.0.jar"
+jar = project / "target" / "3dtabletop-1.3.1.jar"
 shutil.copy2(jar, plugins / jar.name)
 paper_api = workspace / ".tools/m2/io/papermc/paper/paper-api/26.2.build.111-stable/paper-api-26.2.build.111-stable.jar"
 kyori = workspace / ".tools/m2/net/kyori"

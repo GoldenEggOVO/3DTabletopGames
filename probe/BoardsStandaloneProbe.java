@@ -6,6 +6,7 @@ import org.bukkit.World;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
+import org.bukkit.event.player.PlayerCommandSendEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -47,6 +48,9 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             AtomicInteger dialogs = new AtomicInteger();
             Player player = player(world, dialogs, true);
             Player denied = player(world, dialogs, false);
+            Collection<String> suggestions = new LinkedHashSet<>(List.of("3dtabletop", "3dtabletop:3dtabletop"));
+            Bukkit.getPluginManager().callEvent(new PlayerCommandSendEvent(player, suggestions));
+            require(suggestions.equals(Set.of("3dtabletop")), "duplicate root suggestion hidden");
             int before = dialogs.get();
             command.execute(denied, "3dtabletop", new String[0]);
             require(dialogs.get() == before, "permission denied");

@@ -2,14 +2,15 @@
 # set language: <code> in config.yml, then restart. Missing keys use English.
 # Keys match old menu and rule text so existing saved rooms remain compatible.
 translations:
-  '棋盘游戏': 'Board Games'
+  '3D Tabletop Games': '3D Tabletop Games'
+  '棋盘游戏': '3D Tabletop Games'
   '关闭': 'Close'
   '关闭菜单': 'Close Menu'
   '创建房间': 'Create Room'
   '§a创建房间': '§aCreate Room'
   '返回上一页': 'Back'
   '返回主菜单': 'Main Menu'
-  '棋牌游戏': 'Board Games'
+  '棋牌游戏': '3D Tabletop Games'
   '中国象棋': 'Xiangqi'
   '中国跳棋': 'Chinese Checkers'
   '五子棋': 'Gomoku'
@@ -27,6 +28,7 @@ translations:
   '§a确认死子与计分': '§aConfirm dead stones and score'
   '§c拒绝悔棋': '§cReject Undo'
   '§c确认离开': '§cConfirm Leave'
+  '确认离开': 'Confirm Leave'
   '§e对计分有异议 · 继续行棋': '§eDispute score · Resume play'
   '□ 重掷': '□ Reroll'
   '一点': 'Ones'

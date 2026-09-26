@@ -9,6 +9,11 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CommandSuggestionsTest {
+    @Test void rootSuggestionsHideOnlyDuplicateNamespacedCommand() {
+        var commands = new java.util.LinkedHashSet<>(List.of("3dtabletop", "3dtabletop:3dtabletop", "other:command"));
+        CommandSuggestions.hideDuplicateRoot(commands);
+        assertEquals(List.of("3dtabletop", "other:command"), List.copyOf(commands));
+    }
     @Test void suggestsOnlyContextualCommandsAndPrefixes() {
         var room = new Room(UUID.randomUUID(), "connectfour", 2, 1L, 0);
         UUID player = UUID.randomUUID();

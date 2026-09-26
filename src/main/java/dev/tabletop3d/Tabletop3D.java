@@ -84,6 +84,9 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         if(sender instanceof Player player)return CommandSuggestions.complete(args,rooms.values(),room(player),false,allowed(player));
         return CommandSuggestions.complete(args,rooms.values(),null,true,true);
     }
+    @EventHandler public void commandSuggestions(PlayerCommandSendEvent event){
+        CommandSuggestions.hideDuplicateRoot(event.getCommands());
+    }
     Room requireRoom(Player p){Room r=room(p);if(r==null)throw new IllegalArgumentException("你尚未加入房间");return r;}
     Room find(String text){return rooms.values().stream().filter(r->r.id.toString().startsWith(text)).findFirst().orElseThrow(()->new IllegalArgumentException("房间已关闭"));}
     static int defaultCapacity(String kind){return switch(kind){case"checkers"->6;case"aeroplane"->4;default->2;};}
