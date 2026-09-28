@@ -18,6 +18,74 @@ class TableViewTest {
     @org.junit.jupiter.api.io.TempDir(factory=WorkspaceTempFactory.class) java.nio.file.Path temp;
     @BeforeEach void setup(){MockBukkit.mock();}
     @AfterEach void close(){MockBukkit.unmock();}
+    @Test void connectFourPreviewsTheLandingSlotPrivatelyAndThrottlesUnchangedHints() {
+        Fixture f=new Fixture("connectfour");int initial=f.entities.size();
+        f.view.cursor(f.player,null,"2,5");assertEquals(initial+4,f.entities.size());
+        var preview=List.copyOf(f.entities.subList(initial,f.entities.size()));
+        for(Entity entity:preview){verify((Display)entity).setVisibleByDefault(false);verify(f.player).showEntity(f.plugin,entity);
+            assertTrue(f.transforms.get(entity).getScale().z>.12f,"Preview must project beyond both opaque rack faces");}
+        for(int i=0;i<20;i++)f.view.cursor(f.player,null,"2,"+(i%6));
+        assertEquals(initial+4,f.entities.size());verify(f.player,times(3)).sendActionBar(any(net.kyori.adventure.text.Component.class));
+        assertTrue(f.room.history.isEmpty(),"A preview must never play a move");
+        f.move("drop:2");f.move("drop:2");f.view.cursor(f.player,null,"2,0");
+        List<Entity> next=f.entities.subList(f.entities.size()-4,f.entities.size());
+        for(Entity entity:next)assertEquals(f.view.origin.getY()+.05+2*.28+.12,entity.getLocation().getY(),1e-6);
+        f.view.clear(f.player);for(Entity entity:next)verify(entity).remove();
+    }
+    @Test void fullColumnsAndWaitingRoomsNeverShowALegalDropPreview() {
+        Fixture f=new Fixture("connectfour","drop:2","drop:2","drop:2","drop:2","drop:2","drop:2");
+        int initial=f.entities.size();f.view.cursor(f.player,null,"2,4");assertEquals(initial,f.entities.size());
+        var capture=org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
+        verify(f.player).sendActionBar(capture.capture());assertTrue(dev.tabletop3d.ui.MessageText.plain(capture.getValue()).contains("full"));
+        f.room.phase=Room.Phase.LOBBY;f.view.cursor(f.player,null,"3,0");assertEquals(initial,f.entities.size());
+        verify(f.player,atLeastOnce()).sendActionBar(capture.capture());assertTrue(dev.tabletop3d.ui.MessageText.plain(capture.getValue()).contains("ready"));
+    }
+    @Test void hoverDescribesTheCurrentPieceAfterAPlacement() {
+        Fixture f=new Fixture("gomoku");f.move("place:7,7");f.view.cursor(f.player,null,"7,7");
+        var capture=org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
+        verify(f.player).sendActionBar(capture.capture());String text=dev.tabletop3d.ui.MessageText.plain(capture.getValue());
+        assertTrue(text.contains("Black"),text);assertFalse(text.contains("Empty"),text);
+    }
+    @Test void hoveringTheDieStopsSayingRollingWhenTheAnimationFinishes() {
+        Fixture f=new Fixture("aeroplane");f.move("roll");f.view.cursor(f.player,null,"@roll");
+        var capture=org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
+        verify(f.player).sendActionBar(capture.capture());assertTrue(dev.tabletop3d.ui.MessageText.plain(capture.getValue()).contains("rolling"));
+        for(int i=0;i<12;i++)f.view.tick();f.view.cursor(f.player,null,"@roll");
+        verify(f.player,atLeastOnce()).sendActionBar(capture.capture());assertFalse(dev.tabletop3d.ui.MessageText.plain(capture.getValue()).contains("rolling"));
+    }
+    @Test void goDeadGroupMarkersReuseStonesAndRemoveOnlyTheMarkers() throws Exception {
+        Fixture f=new Fixture("go9","place:0,0","place:8,8","place:1,0","pass","pass");
+        Map<?,?> before=new HashMap<>((Map<?,?>)field(f.view,"tokens"));
+        List<Entity> stones=new ArrayList<>();
+        for(Object token:before.values())stones.addAll((List<Entity>)field(token,"parts"));
+        f.move("dead:0,0");
+        Map<?,?> marked=(Map<?,?>)field(f.view,"tokens");
+        for(var entry:before.entrySet())assertSame(entry.getValue(),marked.get(entry.getKey()));
+        for(Entity stone:stones)verify(stone,never()).remove();
+        List<Entity> marks=new ArrayList<>();
+        for(String id:List.of("0,0","1,0")) {
+            List<Entity> parts=(List<Entity>)field(marked.get(id),"parts");
+            assertEquals(5,parts.size());for(Entity part:parts)if(!stones.contains(part))marks.add(part);
+        }
+        assertEquals(4,marks.size());f.move("dead:0,0");
+        for(Entity mark:marks)verify(mark).remove();
+        for(Entity stone:stones)verify(stone,never()).remove();
+        for(Object token:marked.values())assertEquals(3,((List<?>)field(token,"parts")).size());
+        f.move("dead:0,0");f.move("resume");
+        for(Entity stone:stones)verify(stone,never()).remove();
+        assertFalse(((dev.tabletop3d.rules.GoGame)f.room.board).scoring());
+        f.view.close();for(Entity stone:stones)verify(stone).remove();
+    }
+    @Test void chessKnightsFaceTheOpponentAndKeepTheirHeadingAfterMoving() throws Exception {
+        Fixture f=new Fixture("chess");
+        Map<?,?> tokens=(Map<?,?>)field(f.view,"tokens");
+        Object white=tokens.get("b1"),black=tokens.get("b8");
+        for(Entity part:(List<Entity>)field(white,"parts"))assertEquals(180,part.getLocation().getYaw());
+        for(Entity part:(List<Entity>)field(black,"parts"))assertEquals(0,part.getLocation().getYaw());
+        f.move("move:b1:c3");for(int i=0;i<6;i++)f.view.tick();
+        assertSame(white,((Map<?,?>)field(f.view,"tokens")).get("c3"));
+        for(Entity part:(List<Entity>)field(white,"parts"))assertEquals(180,part.getLocation().getYaw());
+    }
     @Test void idleTablesDoNotReadRuleStateOrResendDiceLabels() throws Exception {
         for(String kind:List.of("chess","aeroplane")) {
             Fixture f=new Fixture(kind);
@@ -213,13 +281,14 @@ class TableViewTest {
     static Object field(Object t,String n)throws Exception{var f=t.getClass().getDeclaredField(n);f.setAccessible(true);return f.get(t);}
     static final class Fixture {
         final Tabletop3D plugin=mock(Tabletop3D.class);final Player player=mock(Player.class);final World world=mock(World.class);
-        final List<Entity> entities=new ArrayList<>();final Map<Entity,Location> positions=new HashMap<>();final Map<Entity,org.joml.Matrix4f> poses=new HashMap<>();final Room room;final TableView view;
+        final List<Entity> entities=new ArrayList<>();final Map<Entity,Location> positions=new HashMap<>();final Map<Entity,org.joml.Matrix4f> poses=new HashMap<>();final Map<Entity,org.bukkit.util.Transformation> transforms=new HashMap<>();final Room room;final TableView view;
         Fixture(String kind,String... initial){
             when(world.spawn(any(Location.class),any(Class.class),any(Consumer.class))).thenAnswer(inv->{
                 Entity e=mock((Class<? extends Entity>)inv.getArgument(1));entities.add(e);positions.put(e,((Location)inv.getArgument(0)).clone());
                 when(e.getPersistentDataContainer()).thenReturn(mock(PersistentDataContainer.class));when(e.isValid()).thenReturn(true);when(e.getLocation()).thenAnswer(a->positions.get(e).clone());
                 doAnswer(a->{positions.put(e,((Location)a.getArgument(0)).clone());return true;}).when(e).teleport(any(Location.class));
                 doAnswer(a->{positions.get(e).setYaw(a.getArgument(0));positions.get(e).setPitch(a.getArgument(1));return null;}).when(e).setRotation(anyFloat(),anyFloat());
+                if(e instanceof Display d)doAnswer(a->{transforms.put(e,a.getArgument(0));return null;}).when(d).setTransformation(any());
                 if(e instanceof Display d)doAnswer(a->{poses.put(e,new org.joml.Matrix4f((org.joml.Matrix4f)a.getArgument(0)));return null;}).when(d).setTransformationMatrix(any());
                 ((Consumer<Entity>)inv.getArgument(2)).accept(e);return e;
             });

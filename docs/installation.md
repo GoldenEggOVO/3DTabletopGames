@@ -33,4 +33,4 @@ Old ServerGames 2.0.3 and ServerMenu 0.7.1 forward to `serverboards:boards`, whi
 
 ## Local acceptance build
 
-Install `3dtabletop-1.4.1-SNAPSHOT.jar` on an isolated server first. Check Connect Four drops, Reversi flips, both viewing sides, custom text, direct clicks and restart recovery. Preserve your backup when comparing with a published build.
+Install `3dtabletop-1.5.0-SNAPSHOT.jar` on an isolated server first. Check Connect Four drops, Reversi flips, both viewing sides, custom text, direct clicks and restart recovery. Preserve your backup when comparing with a published build.

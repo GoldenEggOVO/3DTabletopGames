@@ -52,6 +52,16 @@ class TabletopTest {
                 for(var p:parts){double limit=kind.equals("yacht")?1:.5;assertTrue(Math.abs(p.x())+p.w()/2<limit);assertTrue(Math.abs(p.z())+p.d()/2<limit);assertTrue(p.y()>=0&&p.h()>0&&p.w()>0&&p.d()>0);}}
         }
     }
+    @Test void stoneDiscsKeepThreePartsWithoutOverlappingVolumesOrTopFaces() {
+        List<TableModels.Part> parts=new ArrayList<>();TableModels.disc(parts,Material.BLACK_CONCRETE,.76,.13);
+        assertEquals(3,parts.size());
+        for(int i=0;i<parts.size();i++)for(int j=i+1;j<parts.size();j++) {
+            var a=parts.get(i);var b=parts.get(j);
+            double x=Math.min(a.x()+a.w()/2,b.x()+b.w()/2)-Math.max(a.x()-a.w()/2,b.x()-b.w()/2);
+            double z=Math.min(a.z()+a.d()/2,b.z()+b.d()/2)-Math.max(a.z()-a.d()/2,b.z()-b.d()/2);
+            assertTrue(x<=1e-9||z<=1e-9,"Disc strips must meet without overlapping top surfaces");
+        }
+    }
     @Test void staticArtExportsFromExactlyTheGeometryUsedByTheServer() throws Exception {
         String export=System.getProperty("tabletop.export");
         for(String kind:KINDS){BoardGame game=GameFactory.create(kind,kind.equals("checkers")?6:kind.equals("aeroplane")?4:2,0);TableGeometry t=new TableGeometry(kind,game.cells());var image=TableArt.draw(t);

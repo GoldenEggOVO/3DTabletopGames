@@ -30,10 +30,12 @@ Keep parameter names (`{player}`, `{game}`, `{number}`) intact. Named parameters
 
 The shared renderer supports MiniMessage colors, decorations, gradients, rainbow, reset and newline. Legacy `&a`, `§a`, `&#12abef` and expanded hex codes are converted with legacy decoration-reset semantics. Click/hover commands are not interpreted from language templates; menu actions are owned by the server.
 
-Menu layouts in `menus/*.yml` retain `Title`, `Body`, `Bottom`, `@title@`, `@description@` and `@label@`. New layouts use MiniMessage. Existing custom templates keep their exact files, order, widths and captions. A hardcoded template caption overrides the generated label: use `@label@` to follow the language file.
+Menu layouts in `menus/*.yml` retain `Title`, `Body`, `Bottom`, `@title@`, `@description@` and `@label@`. New layouts use MiniMessage. Existing custom templates keep their exact files, order, widths and captions. A custom hardcoded template caption overrides the generated label: use `@label@` to follow the language file. The exact historical stock captions `&f补齐陪练并开始`, `&f回到对局` and `&f房间选项` are recognized in memory and follow named messages; the files are not rewritten.
 
 ```yaml
 text: '<dark_gray>[ <red>@label@ <dark_gray>]'
 ```
 
 Table labels use estimated default-font widths to fit the available space. Long lines may shrink or receive an ellipsis; all status lines are retained. Custom client fonts require in-game acceptance.
+
+The 1.5.0 snapshot adds `menu.rules`, `menu.controls`, `menu.rooms.*`, `menu.positions.*`, `action.drop`, `hint.column.full` and waiting-state `hint.*` keys. Existing language files fall back to bundled English for these new keys. Add overrides to translate them; do not replace a customized file merely to obtain new keys.

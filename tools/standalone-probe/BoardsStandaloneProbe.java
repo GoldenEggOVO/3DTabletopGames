@@ -58,6 +58,8 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             command.execute(player, "3dtabletop", new String[0]);
             require(dialogs.get() == before + 1, "native catalog opened");
             Object menus = field(boards, "menus");
+            menuExperienceProbe(boards,menus,player);
+            command.execute(player, "3dtabletop", new String[0]);
             Map<?, ?> sessions = (Map<?, ?>) field(menus, "sessions");
             Object session = sessions.get(player.getUniqueId());
             require(session != null, "menu session exists");
@@ -92,7 +94,9 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 require(rooms.size() == 1, "room created");
                 Object room = rooms.values().iterator().next();
                 call(boards, "startWithBots", new Class<?>[]{Player.class, room.getClass()}, player, room);
-                command.execute(player, "3dtabletop", new String[]{"move", "drop:3"});
+                call(menus,"room",new Class<?>[]{Player.class,room.getClass()},player,room);
+                require(clickMenu(menus,player,"id","controls"),"room controls entry");
+                require(clickMenu(menus,player,"label","Drop in column 4"),"direct drop menu callback");
                 Path data = boards.getDataFolder().toPath().resolve("rooms.json");
                 require(Files.readString(data).contains("drop:3"), "core rule action persisted");
                 require(!world.getEntitiesByClass(TextDisplay.class).isEmpty(), "board entities rendered");
@@ -103,6 +107,36 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         } catch (Throwable ex) {
             getLogger().log(java.util.logging.Level.SEVERE, "BOARDS_STANDALONE_PROBE_FAIL", ex);
         }
+    }
+
+    /** Build and navigate real Dialog objects while keeping synthetic rooms out of saves. */
+    @SuppressWarnings("unchecked")
+    private void menuExperienceProbe(Plugin plugin,Object menus,Player player) throws Exception {
+        Map<UUID,Object> rooms=(Map<UUID,Object>)field(plugin,"rooms");List<UUID> added=new ArrayList<>();
+        Class<?> roomType=Class.forName("dev.tabletop3d.Room",true,plugin.getClass().getClassLoader());
+        var constructor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class);constructor.setAccessible(true);
+        try {
+            for(int i=0;i<25;i++){UUID id=UUID.randomUUID();rooms.put(id,constructor.newInstance(id,"chess",2,1L,i));added.add(id);}
+            call(menus,"games",new Class<?>[]{Player.class,String.class},player,"chess");Set<String> seen=new HashSet<>();
+            for(int page=0;page<4;page++){
+                Object session=((Map<?,?>)field(menus,"sessions")).get(player.getUniqueId());
+                List<?> buttons=(List<?>)call(session,"buttons",new Class<?>[0]);
+                for(Object button:buttons){String id=(String)call(button,"id",new Class<?>[0]);if(id.startsWith("room-"))seen.add(id);}
+                if(!clickMenu(menus,player,"id","next"))break;
+            }
+            require(seen.size()==25,"every room reachable through native pagination");
+            require(clickMenu(menus,player,"id","rules"),"rules entry on final room page");
+            require(clickMenu(menus,player,"id","back"),"rules return to room browser");
+            getLogger().info("BOARDS_MENU_FLOW_PASS rooms=25 pagination=4 rules=reachable");
+        } finally {added.forEach(rooms::remove);call(menus,"forget",new Class<?>[]{Player.class},player);}
+    }
+    private boolean clickMenu(Object menus,Player player,String property,String value) throws Exception {
+        Object session=((Map<?,?>)field(menus,"sessions")).get(player.getUniqueId());
+        List<?> buttons=(List<?>)call(session,"buttons",new Class<?>[0]);
+        for(int i=0;i<buttons.size();i++)if(value.equals(call(buttons.get(i),property,new Class<?>[0]))){
+            call(menus,"handle",new Class<?>[]{Player.class,String.class},player,"3dtabletop:"+call(session,"token",new Class<?>[0])+" "+i);return true;
+        }
+        return false;
     }
 
     /** Exercise real Display transforms without adding a persisted room or a client. */
@@ -116,26 +150,44 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         Class<?> viewType=Class.forName("dev.tabletop3d.TableView",true,loader);
         var roomConstructor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class);
         roomConstructor.setAccessible(true);
-        for(String kind:List.of("connectfour","reversi")) {
+        for(String kind:List.of("connectfour","reversi","go9","chess")) {
             Object room=roomConstructor.newInstance(UUID.randomUUID(),kind,2,1L,0);
             Object game=factory.getMethod("create",String.class,int.class,long.class).invoke(null,kind,2,1L);
             Field board=roomType.getDeclaredField("board");board.setAccessible(true);board.set(room,game);
+            Player viewer=player(world,new AtomicInteger(),true);
+            call(room,"join",new Class<?>[]{UUID.class,String.class},viewer.getUniqueId(),"ModelProbe");
+            Field phase=roomType.getDeclaredField("phase");phase.setAccessible(true);
+            @SuppressWarnings({"rawtypes","unchecked"}) Object playing=Enum.valueOf((Class)phase.getType(),"PLAYING");phase.set(room,playing);
+            if(kind.equals("go9"))for(String action:List.of("place:0,0","place:8,8","place:1,0","pass","pass"))
+                gameType.getMethod("apply",int.class,String.class).invoke(game,gameType.getMethod("currentPlayer").invoke(game),action);
             var constructor=viewType.getDeclaredConstructors()[0];constructor.setAccessible(true);
             Object view=constructor.newInstance(plugin,room,new Location(world,8,83,0),
                 new org.bukkit.NamespacedKey("3dtabletop","probe-model"),field(field(plugin,"arena"),"maps"));
             try {
+                if(kind.equals("connectfour")){
+                    Class<?> pickType=Class.forName("dev.tabletop3d.GameWorld$Pick",true,loader);
+                    call(view,"cursor",new Class<?>[]{Player.class,pickType,String.class},viewer,null,"3,5");
+                    Object overlay=((Map<?,?>)field(view,"overlays")).get(viewer.getUniqueId());
+                    @SuppressWarnings("unchecked") List<org.bukkit.entity.BlockDisplay> preview=(List<org.bukkit.entity.BlockDisplay>)field(overlay,"hover");
+                    require(preview.size()==4,"four landing markers");
+                    for(var marker:preview)require(marker.isValid()&&!marker.isVisibleByDefault(),"private live landing marker");
+                    call(view,"clear",new Class<?>[]{Player.class},viewer);
+                    for(var marker:preview)require(!marker.isValid(),"landing markers removed");
+                }
                 Map<?,?> previous=new HashMap<>((Map<?,?>)field(view,"tokens"));
                 @SuppressWarnings("unchecked") List<String> legal=(List<String>)gameType.getMethod("legalActions",int.class).invoke(game,0);
-                gameType.getMethod("apply",int.class,String.class).invoke(game,0,kind.equals("connectfour")?"drop:3":legal.getFirst());
-                Field revision=roomType.getDeclaredField("revision");revision.setAccessible(true);revision.setLong(room,1);
+                gameType.getMethod("apply",int.class,String.class).invoke(game,0,kind.equals("connectfour")?"drop:3":kind.equals("go9")?"dead:0,0":legal.getFirst());
+                Field revision=roomType.getDeclaredField("revision");revision.setAccessible(true);revision.setLong(room,revision.getLong(room)+1);
                 call(view,"sync",new Class<?>[0]);
                 Map<?,?> current=(Map<?,?>)field(view,"tokens");
-                if(kind.equals("reversi"))for(var entry:previous.entrySet())
-                    require(current.get(entry.getKey())==entry.getValue(),"Reversi reuses existing tokens");
+                require(!current.isEmpty(),"model pieces rendered after the action");
+                if(kind.equals("connectfour"))require(current.size()==1,"one dropped chip rendered");
+                if(kind.equals("reversi")||kind.equals("go9"))for(var entry:previous.entrySet())
+                    require(current.get(entry.getKey())==entry.getValue(),kind+" reuses existing tokens");
                 for(int i=0;i<16;i++)call(view,"tick",new Class<?>[0]);
                 for(Object token:current.values()) {
                     @SuppressWarnings("unchecked") List<org.bukkit.entity.Entity> parts=(List<org.bukkit.entity.Entity>)field(token,"parts");
-                    require(parts.size()>=4,"multi-part chip");
+                    require(parts.size()>=3,"multi-part piece");
                     Location target=(Location)field(token,"to");
                     for(var part:parts) {
                         require(part.isValid() && !part.isPersistent(),"live non-persistent model part: "+kind+" valid="+part.isValid()+" persistent="+part.isPersistent()+" dead="+part.isDead());
@@ -144,10 +196,24 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                         require(!transform.contains("NaN")&&!transform.contains("Infinity"),"finite server transformation");
                     }
                 }
+                if(kind.equals("go9")){
+                    Object stone=current.get("0,0");
+                    @SuppressWarnings("unchecked") List<org.bukkit.entity.Entity> parts=(List<org.bukkit.entity.Entity>)field(stone,"parts");
+                    require(parts.size()==5,"Go stone plus two dead marks");
+                    List<org.bukkit.entity.Entity> marks=List.copyOf(parts.subList(3,5));
+                    gameType.getMethod("apply",int.class,String.class).invoke(game,0,"dead:0,0");revision.setLong(room,revision.getLong(room)+1);call(view,"sync",new Class<?>[0]);
+                    require(current.get("0,0")==stone&&parts.size()==3,"Go unmark keeps stone");
+                    for(var mark:marks)require(!mark.isValid(),"Go dead mark removed");
+                }
+                if(kind.equals("chess"))for(String id:List.of("b1","b8")){
+                    @SuppressWarnings("unchecked") List<org.bukkit.entity.Entity> parts=(List<org.bukkit.entity.Entity>)field(current.get(id),"parts");
+                    getLogger().info("BOARDS_KNIGHT_HEADING "+id+" yaw="+parts.getFirst().getLocation().getYaw());
+                    for(var part:parts)require(Math.abs(Math.IEEEremainder(part.getLocation().getYaw()-(id.equals("b1")?180:0),360))<.001,"knight faces opponent: "+id+" yaw="+part.getLocation().getYaw());
+                }
             } finally {call(view,"close",new Class<?>[0]);}
         }
         world.removePluginChunkTickets(this);
-        getLogger().info("BOARDS_MODELS_PASS connectfour=drop reversi=reuse-and-flip");
+        getLogger().info("BOARDS_MODELS_PASS connectfour=drop-and-private-preview reversi=reuse-and-flip go=dead-marker-reuse chess=knight-heading");
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

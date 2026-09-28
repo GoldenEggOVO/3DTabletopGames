@@ -89,6 +89,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     @EventHandler public void commandSuggestions(PlayerCommandSendEvent event){
         CommandSuggestions.hideDuplicateRoot(event.getCommands());
     }
+    private void requireLiveRoom(Room room){if(rooms.get(room.id)!=room)throw new IllegalArgumentException("房间已关闭");}
     Room requireRoom(Player p){Room r=room(p);if(r==null)throw new IllegalArgumentException("你尚未加入房间");return r;}
     Room find(String text){return rooms.values().stream().filter(r->r.id.toString().startsWith(text)).findFirst().orElseThrow(()->new IllegalArgumentException("房间已关闭"));}
     static int defaultCapacity(String kind){return switch(kind){case"checkers"->6;case"aeroplane"->4;default->2;};}
@@ -111,24 +112,26 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         if(!enterArena(p,r)){remove(r);returns.remove(p.getUniqueId());throw new IllegalArgumentException("传送被取消，未创建房间。请解除传送限制后再试。");}save();if(comfort!=null)comfort.sync();menus.room(p,r);
     }
     void join(Player p,Room r){
-        if(!allowed(p))return;
+        if(!allowed(p))return;requireLiveRoom(r);
         if(r.seat(p.getUniqueId())>=0){resume(p,r);return;}
         if(!coordinator.reserve(p.getUniqueId(),r.kind))throw new IllegalArgumentException("请先离开当前对局");
         try{joinReserved(p,r);}catch(RuntimeException|Error ex){try{if(r.seats.removeIf(seat->seat.id().equals(p.getUniqueId()))){r.offline.remove(p.getUniqueId());r.ready.remove(p.getUniqueId());r.revision++;save();}}finally{coordinator.release(p.getUniqueId(),r.kind);}throw ex;}
     }
     void joinReserved(Player p,Room r){
-        if(!allowed(p))return;
+        if(!allowed(p))return;requireLiveRoom(r);
         Room old=room(p);if(old!=null&&old!=r)throw new IllegalArgumentException("请先离开当前对局");
         boolean already=r.seat(p.getUniqueId())>=0;r.join(p.getUniqueId(),p.getName());
         if(!enterArena(p,r)){if(!already){r.seats.removeIf(s->s.id().equals(p.getUniqueId()));r.offline.remove(p.getUniqueId());r.revision++;returns.remove(p.getUniqueId());save();}throw new IllegalArgumentException("传送被取消，无法入座。请解除限制后再试。");}
         announce(r,Language.component("chat.joined","player",p.getName()));save();if(comfort!=null)comfort.sync();menus.room(p,r);
     }
     boolean enterArena(Player p,Room r){
+        if(!allowed(p))return false;requireLiveRoom(r);
+        if(r.seat(p.getUniqueId())<0)throw new IllegalArgumentException("你尚未加入房间");
         if(!arena.atTableWorld(p,r))returns.putIfAbsent(p.getUniqueId(),p.getLocation().clone());
         if(!p.teleport(arena.seatLocation(r,r.seat(p.getUniqueId())))){r.offline.putIfAbsent(p.getUniqueId(),System.currentTimeMillis());return false;}
         r.offline.remove(p.getUniqueId());return true;
     }
-    void resume(Player p,Room r){if(!enterArena(p,r)){tell(p,Language.component("chat.resume.cancelled"));menus.room(p,r);return;}menus.room(p,r);}
+    void resume(Player p,Room r){if(!allowed(p))return;requireLiveRoom(r);if(!enterArena(p,r)){tell(p,Language.component("chat.resume.cancelled"));menus.room(p,r);return;}menus.room(p,r);}
     boolean isBedrock(Player p){
         var geyser=Bukkit.getPluginManager().getPlugin("Geyser-Spigot");
         if(geyser!=null&&geyser.isEnabled())try{Class<?> c=Class.forName("org.geysermc.geyser.api.GeyserApi",true,geyser.getClass().getClassLoader());return (boolean)c.getMethod("isBedrockPlayer",UUID.class).invoke(c.getMethod("api").invoke(null),p.getUniqueId());}
@@ -137,12 +140,14 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         catch(ReflectiveOperationException|LinkageError ignored){return false;}
     }
     void ready(Player p,Room r){
+        if(!allowed(p))return;requireLiveRoom(r);
         if(r.phase!=Room.Phase.LOBBY||r.seat(p.getUniqueId())<0)return;
         if(!r.ready.add(p.getUniqueId()))r.ready.remove(p.getUniqueId());r.revision++;
         if(r.seats.size()==r.capacity&&r.seats.stream().allMatch(s->s.bot()||r.ready.contains(s.id())))start(r);
         else{save();menus.room(p,r);}
     }
     void startWithBots(Player p,Room r){
+        if(!allowed(p))return;requireLiveRoom(r);
         if(r.phase!=Room.Phase.LOBBY||r.seat(p.getUniqueId())!=0)throw new IllegalArgumentException("仅房主可以添加陪练");
         if(r.seats.stream().filter(s->!s.bot()&&!s.id().equals(p.getUniqueId())).anyMatch(s->!r.ready.contains(s.id())))throw new IllegalArgumentException("请等待其他玩家准备");
         r.fillBots();start(r);
@@ -156,9 +161,10 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         
     }
     void action(Player p,Room r,long revision,JsonElement action){
-        if(!allowed(p))return;if(!arena.atTableWorld(p,r))throw new IllegalArgumentException("请先用 /3dtabletop resume 回到棋桌所在世界");r.requireAction(p.getUniqueId(),revision);apply(r,r.seat(p.getUniqueId()),action,p);
+        if(!allowed(p))return;requireLiveRoom(r);if(!arena.atTableWorld(p,r))throw new IllegalArgumentException("请先用 /3dtabletop resume 回到棋桌所在世界");r.requireAction(p.getUniqueId(),revision);apply(r,r.seat(p.getUniqueId()),action,p);
     }
     void apply(Room r,int seat,JsonElement action,Player source){
+        requireLiveRoom(r);
         if(r.phase!=Room.Phase.PLAYING||r.busy||r.undo!=null)return;
         if(!ReplayBudget.allows(r.history,action)){finish(r,"本局达到休闲对局长度上限，按和局结束");save();return;}
 
@@ -169,12 +175,12 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     }
     void finish(Room r,String result){r.phase=Room.Phase.FINISHED;r.completed=true;r.result=result;r.ready.clear();r.undo=null;r.changed=System.currentTimeMillis();announce(r,Language.component("chat.finished","result",RoomText.outcome(r,result)));onMain(()->showRoomToHumans(r));}
     void showRoomToHumans(Room r){if(!rooms.containsKey(r.id))return;for(Room.Seat s:r.seats){Player p=Bukkit.getPlayer(s.id());if(!s.bot()&&p!=null&&allowed(p)&&arena.atTableWorld(p,r))menus.room(p,r);}}
-    void requestUndo(Player p,Room r){if(!allowed(p)||!arena.atTableWorld(p,r))return;RoundActions.request(r,p.getUniqueId(),System.currentTimeMillis());if(r.undo.pending.isEmpty())completeUndo(r);else{announce(r,Language.component("chat.undo.requested","player",p.getName()));showRoomToHumans(r);}}
-    void approveUndo(Player p,Room r){if(!allowed(p)||!arena.atTableWorld(p,r))return;if(RoundActions.approve(r,p.getUniqueId(),System.currentTimeMillis()))completeUndo(r);else showRoomToHumans(r);}
-    void rejectUndo(Player p,Room r){if(!allowed(p))return;RoundActions.reject(r,p.getUniqueId());announce(r,Language.component("chat.undo.cancelled"));showRoomToHumans(r);}
+    void requestUndo(Player p,Room r){if(!allowed(p))return;requireLiveRoom(r);if(!arena.atTableWorld(p,r))return;RoundActions.request(r,p.getUniqueId(),System.currentTimeMillis());if(r.undo.pending.isEmpty())completeUndo(r);else{announce(r,Language.component("chat.undo.requested","player",p.getName()));showRoomToHumans(r);}}
+    void approveUndo(Player p,Room r){if(!allowed(p))return;requireLiveRoom(r);if(!arena.atTableWorld(p,r))return;if(RoundActions.approve(r,p.getUniqueId(),System.currentTimeMillis()))completeUndo(r);else showRoomToHumans(r);}
+    void rejectUndo(Player p,Room r){if(!allowed(p))return;requireLiveRoom(r);RoundActions.reject(r,p.getUniqueId());announce(r,Language.component("chat.undo.cancelled"));showRoomToHumans(r);}
     void completeUndo(Room r){RoundActions.apply(r);arena.render(r);save();announce(r,Language.component("chat.undo.complete"));showRoomToHumans(r);}
     void rematch(Player p,Room r){
-        if(!allowed(p)||!arena.atTableWorld(p,r))return;
+        if(!allowed(p))return;requireLiveRoom(r);if(!arena.atTableWorld(p,r))return;
         if(RoundActions.rematchReady(r,p.getUniqueId())){for(Room.Seat s:r.seats){Player other=Bukkit.getPlayer(s.id());if(!s.bot()&&other!=null)suspendView(other);}arena.remove(r);RoundActions.fresh(r,random.nextLong());arena.platform(r.table);start(r);showRoomToHumans(r);}
         else{announce(r,Language.component("chat.rematch.ready","player",p.getName()));save();showRoomToHumans(r);}
     }

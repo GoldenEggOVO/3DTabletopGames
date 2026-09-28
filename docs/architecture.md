@@ -31,3 +31,9 @@ Both renderers keep their own plugin lifecycle. The text utilities are included 
 ## Extension boundaries
 
 AuthMe and ServerMenu command forwarding are optional. Rules, occupancy and saves do not use ServerGames services. Model work in this batch is limited to Connect Four and Reversi; other game geometry remains intact.
+
+## Interaction updates in 1.5.0
+
+Room callbacks recheck live registry identity before backend mutations. Piece-source menus retain their rendered revision; stale selections rebuild from current legal actions. A leave confirmation is tied to the room it displayed. This does not change persisted room identity or schema.
+
+Table geometry remains fixed, while hover labels use the current cells cached at each board revision. Connect Four normalizes hover to a column, reuses four private marker entities within unchanged state and resends unchanged feedback at most every ten pointer updates. Go dead marks are separate removable parts of the existing stone. Disc meshes remain three parts; no model entity budget increase is required for that change.

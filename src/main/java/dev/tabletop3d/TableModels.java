@@ -12,7 +12,7 @@ final class TableModels {
         List<Part> p=new ArrayList<>();int owner=cell.owner();
         Material color=COLORS[Math.floorMod(GameWorld.actualColor(info,owner),6)];
         switch(kind){
-            case "gomoku", "go", "go9", "go13", "reversi" -> {Material stone=owner==0?Material.BLACK_CONCRETE:Material.WHITE_CONCRETE;disc(p,stone,.76,.13);if(cell.piece().contains("×")){box(p,0,.16,0,.65,.035,.10,Material.RED_CONCRETE);box(p,0,.16,0,.10,.035,.65,Material.RED_CONCRETE);}}
+            case "gomoku", "go", "go9", "go13", "reversi" -> {Material stone=owner==0?Material.BLACK_CONCRETE:Material.WHITE_CONCRETE;disc(p,stone,.76,.13);if(cell.piece().contains("×"))p.addAll(deadStoneMarks());}
             case "draughts" -> {Material stone=owner==0?Material.POLISHED_BLACKSTONE:Material.SMOOTH_QUARTZ;disc(p,stone,.76,.19);if(cell.piece().equals("王")){disc(p,Material.GOLD_BLOCK,.54,.30);box(p,0,.31,0,.18,.07,.18,stone);}}
             case "yacht" -> {Material body=cell.piece().endsWith("✓")?Material.LIGHT_BLUE_CONCRETE:Material.SMOOTH_QUARTZ;box(p,0,0,0,1.14,1.14,1.14,body);int face=Character.digit(cell.piece().charAt(0),10);int[][] dots={{0,0},{-1,-1},{1,1},{-1,1},{1,-1},{-1,0},{1,0}};for(int i:TableView.pipIndices(face))box(p,dots[i][0]*.30,1.145,dots[i][1]*.30,.14,.025,.14,Material.BLACK_CONCRETE);}
             case "xiangqi" -> {disc(p,Material.STRIPPED_BIRCH_WOOD,.78,.19);}
@@ -41,9 +41,12 @@ final class TableModels {
         return List.copyOf(p);
     }
     static void disc(List<Part> parts,Material material,double width,double height){
-        // Three intersecting boxes form a rounded stepped octagon at constant low entity cost.
-        box(parts,0,0,0,width*.68,height,width,material);box(parts,0,.001,0,width,height*.99,width*.68,material);
-        box(parts,0,height*.80,0,width*.64,height*.24,width*.64,material);
+        // Adjacent strips preserve the octagonal footprint without overlapping top faces.
+        box(parts,0,0,0,width*.68,height,width,material);
+        for(double side:new double[]{-.42,.42})box(parts,side*width,0,0,width*.16,height,width*.68,material);
+    }
+    static List<Part> deadStoneMarks(){
+        return List.of(new Part(0,.16,0,.65,.035,.10,Material.RED_CONCRETE),new Part(0,.16,0,.10,.035,.65,Material.RED_CONCRETE));
     }
     /** Five horizontal strips approximate a round vertical chip, in world block units. */
     static List<Part> connectFour(int owner) {

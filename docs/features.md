@@ -3,12 +3,12 @@
 | Area | Supported behavior | Verification |
 | --- | --- | --- |
 | Games | Xiangqi, Chess, Gomoku, Aeroplane, Chinese Checkers, Draughts, Reversi, Go 9/13/19, Connect Four | Rule test suites |
-| Rooms | Create, join, seats, readiness, bots, spectate, return, leave | Room, occupancy and menu tests |
+| Rooms | Paginated browsing, create, join, seats, readiness, bots, spectate, return, leave | Room, occupancy and menu tests |
 | Recovery | Seed/history replay, world anchors, offline seats, migration | Recovery tests and isolated three-boot probe |
 | Agreements | Undo negotiation and rematches | RoundActions tests |
-| Menus | Native Dialog, YAML layouts, one-use world/player-bound callbacks | Window/NativeMenu tests and runtime probe |
-| Input | Ray targeting, legal-move pointers, direct board clicks | Geometry and input tests; client acceptance required |
-| Models | Connect Four drops, Reversi entity-preserving flips, other existing pieces | TableView tests and real Display probe |
+| Menus | Native Dialog, rules/help, move controls, YAML layouts, one-use world/player-bound callbacks | Window/NativeMenu tests and runtime probe |
+| Input | Ray targeting, legal-move pointers, private landing previews, direct board/menu moves | Geometry and input tests; client acceptance required |
+| Models | Connect Four drops, Reversi flips, reusable Go dead marks, opposing knight headings | TableView tests and real Display probe |
 | Language | Default English, custom YAML, named UI messages, legacy translations | Language/MessageText/LabelLayout tests |
 | Access | Use/admin permissions, optional AuthMe, contextual Tab | Permissions and completion tests |
 

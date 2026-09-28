@@ -11,6 +11,8 @@ import net.kyori.adventure.text.Component;
 /** Editable window layout with room actions bound only at open time. */
 final class GameMenuLayouts {
     static final List<String> PAGES=List.of("dialog","catalog","room","yacht");
+    private static final Map<String,String> LEGACY_STOCK_LABELS=Map.of(
+        "bots","&f补齐陪练并开始","play","&f回到对局","options","&f房间选项");
     private final Path directory;
     record Rendered(YamlConfiguration config,List<GameMenus.Button> buttons){}
     GameMenuLayouts(Tabletop3D plugin){
@@ -56,6 +58,8 @@ final class GameMenuLayouts {
         for(int i=0;i<entries.size();i++){var b=entries.get(i);var style=styles.getOrDefault(b.id(),styles.getOrDefault("entry",Map.of()));String path=b.id().equals("close")?"Bottom.exit":"Bottom.buttons.slot"+i;
             String label=b.id().equals("close")||b.id().equals("back")?b.label():b.label().replaceAll("(?i)[§&][0-9A-FK-OR]","");
             String template=b.id().equals("resume")&&!styles.containsKey("resume")?"&e@label@":String.valueOf(style.getOrDefault("text","&f@label@"));
+            // Upgrade only exact historical defaults in memory; preserve custom captions and files.
+            if(template.equals(LEGACY_STOCK_LABELS.get(b.id())))template="<white>@label@";
             config.set(path+".text",template.replace("@label@",label));
             config.set(path+".component",MessageText.render(Language.text(template).replace("@label@","{label}"),"label",b.component()!=null?b.component():BoardWindow.text(label)));
             config.set(path+".width",style.getOrDefault("width",174));if(style.containsKey("tooltip"))config.set(path+".tooltip",style.get("tooltip"));config.set(path+".actions",List.of("3dtabletop:"+token+" "+i));}

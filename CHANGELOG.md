@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.5.0-SNAPSHOT — local acceptance build
+
+- Browse every room across pages, with available seats first, persistent create/help controls and clear Join / Resume / View labels.
+- Add rules/help from each game and room options, plus menu-based moves from an active room. Single placement/drop/dead-mark choices execute directly; column labels start at 1.
+- Preview the legal Connect Four landing slot privately on both rack faces; explain full columns and waiting states, and throttle unchanged hints.
+- Read current pieces for hover text and refresh dice feedback when rolling finishes.
+- Reuse Go stones when marking/unmarking dead groups, face chess knights toward their opponent, and remove overlapping disc surfaces without adding model entities.
+- Reject callbacks for removed rooms, refresh outdated piece choices, recheck permissions and prevent an old leave confirmation from leaving a newer room.
+- Let three exact historical stock room captions follow the selected named language without rewriting customized menu files.
+- Preserve schema 1 room data, existing rules and all optional integration boundaries. No new runtime dependency or Release.
+
 ## 1.4.1-SNAPSHOT — local acceptance build
 
 - Skip title construction and rule reads while table display state is unchanged; only tick moving or flipping pieces.

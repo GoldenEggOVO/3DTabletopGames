@@ -14,7 +14,7 @@ Run independently on **Paper / Purpur 26.2 with Java 25**. No resource pack, cli
 2. Stop your server and back up plugin data and worlds. Keep one plugin JAR in `plugins/`; never install `original-*.jar`.
 3. Start the server and run `/3dtabletop`. Create a room, invite players or fill seats with bots, then play on the physical table.
 
-The current source is **1.4.1-SNAPSHOT**, a local acceptance build. It includes Connect Four drops and Reversi flips, reduces idle table work, and uses named display messages with literal player names. It has **not been published as a Release**. Snapshot JARs from Actions are development builds; see [verification](docs/verification.md) for the tested scope.
+The current source is **1.5.0-SNAPSHOT**, a local acceptance build. It adds private Connect Four landing previews, room pagination and rules/help, direct placement controls, lighter Go dead-stone updates and safer stale-menu handling. It has **not been published as a Release**. Snapshot JARs from Actions are development builds; see [verification](docs/verification.md) for the tested scope.
 
 Upgrading from ServerBoards? Read [migration](docs/migration.md) first. Existing `3dtabletop` configurations, menu layouts and schema 1 room files remain usable.
 
@@ -33,7 +33,8 @@ Upgrading from ServerBoards? Read [migration](docs/migration.md) first. Existing
 
 - Rooms, seats, ready checks, bots, spectating, undo agreements and rematches.
 - Saved world anchors, seeds and move history; room recovery after restarting.
-- Direct board interaction, legal-move pointers and private hover feedback.
+- Direct board interaction, legal-move pointers and private hover/Connect Four landing previews.
+- Paginated room browsing, rules/help and an optional menu path for moves.
 - Native Paper Dialog with editable YAML layouts and English by default.
 - MiniMessage styling, legacy color compatibility and editable language files.
 

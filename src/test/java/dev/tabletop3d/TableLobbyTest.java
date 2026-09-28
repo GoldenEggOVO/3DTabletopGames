@@ -47,10 +47,11 @@ class TableLobbyTest {
         assertEquals(Double.POSITIVE_INFINITY,TableLobby.hit(e,new Location(w,0,90,0),new Vector(0,-1,0)));
         assertEquals(Double.POSITIVE_INFINITY,TableLobby.hit(e,new Location(w,0,83,0),new Vector(0,1,0)));
     }
-    @Test void originalReadyPlayerDoesNotNeedToClickAgainToStart(){
+    @Test void originalReadyPlayerDoesNotNeedToClickAgainToStart()throws Exception{
         var plugin=mock(Tabletop3D.class);plugin.menus=mock(GameMenus.class);
         var r=new Room(UUID.randomUUID(),"gomoku",2,1,0);Player a=mock(Player.class),b=mock(Player.class);
         when(a.getUniqueId()).thenReturn(UUID.randomUUID());when(b.getUniqueId()).thenReturn(UUID.randomUUID());
+        TabletopTest.set(plugin,"rooms",new LinkedHashMap<>(Map.of(r.id,r)));when(plugin.allowed(any())).thenReturn(true);
         doCallRealMethod().when(plugin).ready(any(),any());
         r.join(a.getUniqueId(),"A");plugin.ready(a,r);r.join(b.getUniqueId(),"B");plugin.ready(b,r);
         assertEquals(Set.of(a.getUniqueId(),b.getUniqueId()),r.ready);verify(plugin).start(r);
