@@ -14,6 +14,21 @@ import static org.mockito.Mockito.*;
 class LanguageTest {
     @TempDir(factory = WorkspaceTempFactory.class) Path temp;
 
+    @Test void namedMessagesProtectDynamicNamesAndKeepLegacyOverrides() throws Exception {
+        var plugin=mock(Tabletop3D.class);var config=new YamlConfiguration();
+        config.set("language","test");when(plugin.getConfig()).thenReturn(config);
+        when(plugin.getDataFolder()).thenReturn(temp.toFile());
+        when(plugin.getResource("lang/en.yml")).thenAnswer(i->getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
+        Files.createDirectories(temp.resolve("lang"));
+        Files.writeString(temp.resolve("lang/test.yml"),"translations:\n  '确认离开': 'Leave now'\nmessages:\n  'table.turn': '<gold>Next: {player}</gold>'\n");
+        try {
+            Language.load(plugin);
+            assertEquals("Leave now",dev.tabletop3d.ui.MessageText.plain(Language.component("menu.leave.confirm")));
+            assertEquals("Next: <red>玩家&c",dev.tabletop3d.ui.MessageText.plain(Language.component("table.turn","player","<red>玩家&c")));
+            assertEquals("3D Tabletop Games",dev.tabletop3d.ui.MessageText.plain(Language.component("menu.title")));
+        } finally {config.set("language","en");Language.load(plugin);}
+    }
+
     @Test void englishCatalogCoversAllBundledChineseDisplayLiterals() throws Exception {
         Pattern literal = Pattern.compile("\"((?:[^\"\\\\]|\\\\.)*)\"");
         Pattern han = Pattern.compile("[\\p{IsHan}]");

@@ -360,3 +360,21 @@ translations:
   '（含贴目） · 标记死子 ': ' (including komi) · Marked dead stones '
   '，没有可移动的飞机': ', no planes can move'
   '，连续第三个 6，未到终点飞机回营': ', third consecutive six; unfinished planes return home'
+
+# Named UI messages. Values support MiniMessage; parameters are inserted literally.
+# Legacy translations above continue to cover existing rules and custom menus.
+messages:
+  'menu.title': '3D Tabletop Games'
+  'menu.back': 'Back'
+  'menu.main': 'Main Menu'
+  'menu.close': 'Close Menu'
+  'menu.resume': 'Resume Game'
+  'menu.create': 'Create Room'
+  'menu.leave.title': 'Leave Room'
+  'menu.leave.confirm': '<red>Confirm Leave</red>'
+  'menu.leave.description': 'Leaving an active game ends the free game for everyone. Closing the menu keeps your seat.'
+  'table.title': '<gold>{game} · Table {number}</gold>'
+  'table.turn': '<white>Turn: {player}</white>'
+  'table.waiting': 'Waiting for ready players'
+  'table.hint': 'Aim · Click to play'
+  'table.join': 'Sneak + right-click: join / room menu'

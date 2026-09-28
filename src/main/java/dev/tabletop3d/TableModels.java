@@ -45,5 +45,24 @@ final class TableModels {
         box(parts,0,0,0,width*.68,height,width,material);box(parts,0,.001,0,width,height*.99,width*.68,material);
         box(parts,0,height*.80,0,width*.64,height*.24,width*.64,material);
     }
+    /** Five horizontal strips approximate a round vertical chip, in world block units. */
+    static List<Part> connectFour(int owner) {
+        List<Part> parts=new ArrayList<>();
+        Material material=owner==0?Material.RED_CONCRETE:Material.YELLOW_CONCRETE;
+        double[] widths={.13,.21,.24,.21,.13};
+        for(int i=0;i<widths.length;i++)box(parts,0,i*.048,0,widths[i],.048,.085,material);
+        return List.copyOf(parts);
+    }
+    /** Black upper face and white lower face; owner changes rotate this same mesh. */
+    static List<Part> reversi() {
+        List<Part> parts=new ArrayList<>();
+        for(int side=0;side<2;side++) {
+            Material material=side==0?Material.WHITE_CONCRETE:Material.BLACK_CONCRETE;
+            double y=side*.065;
+            box(parts,0,y,0,.52,.065,.76,material);
+            box(parts,0,y,0,.76,.065,.52,material);
+        }
+        return List.copyOf(parts);
+    }
     static void box(List<Part> parts,double x,double y,double z,double w,double h,double d,Material mat){parts.add(new Part(x,y,z,w,h,d,mat));}
 }

@@ -94,10 +94,10 @@ def main():
     parser.add_argument("source", type=Path)
     parser.add_argument("mapping", type=Path, help="JSON object keyed by room ID; use {} for already anchored data")
     parser.add_argument("output", type=Path)
-    default_jar = Path(__file__).resolve().parents[1] / "3dtabletop-1.3.1.jar"
+    default_jar = Path(__file__).resolve().parents[1] / "3dtabletop-1.4.0-SNAPSHOT.jar"
     if not default_jar.is_file():
-        default_jar = Path(__file__).resolve().parents[1] / "target" / "3dtabletop-1.3.1.jar"
-    parser.add_argument("--jar", type=Path, default=default_jar, help="the exact ServerBoards JAR intended for installation")
+        default_jar = Path(__file__).resolve().parents[1] / "target" / "3dtabletop-1.4.0-SNAPSHOT.jar"
+    parser.add_argument("--jar", type=Path, default=default_jar, help="the exact 3dtabletop JAR intended for installation")
     parser.add_argument("--check", action="store_true", help="compare an existing output without editing it")
     args = parser.parse_args()
     if args.source.resolve() == args.output.resolve():

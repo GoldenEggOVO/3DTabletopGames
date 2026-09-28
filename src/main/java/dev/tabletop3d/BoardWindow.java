@@ -8,7 +8,7 @@ import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import dev.tabletop3d.ui.MessageText;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -25,7 +25,7 @@ final class BoardWindow {
         layouts = new GameMenuLayouts(plugin);
     }
 
-    GameMenuLayouts.Rendered render(String page, String title, String description,
+    GameMenuLayouts.Rendered render(String page, Component title, Component description,
                                    List<GameMenus.Button> buttons, UUID token) {
         return layouts.load(page, title, description, buttons, token);
     }
@@ -36,7 +36,7 @@ final class BoardWindow {
         if (sections != null) for (String key : sections.getKeys(false)) {
             String path = "Body." + key;
             if (config.contains(path + ".text")) body.add(DialogBody.plainMessage(
-                text(config.getString(path + ".text", "")), config.getInt(path + ".width", 360)));
+                config.get(path + ".component") instanceof Component supplied ? supplied : text(config.getString(path + ".text", "")), config.getInt(path + ".width", 360)));
         }
         List<ActionButton> buttons = new ArrayList<>();
         var entries = config.getConfigurationSection("Bottom.buttons");
@@ -44,7 +44,8 @@ final class BoardWindow {
             buttons.add(button(player, config, "Bottom.buttons." + key));
         }
         var exit = config.contains("Bottom.exit") ? button(player, config, "Bottom.exit") : null;
-        var base = DialogBase.create(text(config.getString("Title", "3D Tabletop Games")), null,
+        Component title=config.get("Title-component") instanceof Component supplied ? supplied : text(config.getString("Title", "3D Tabletop Games"));
+        var base = DialogBase.create(title, null,
             true, false, DialogBase.DialogAfterAction.CLOSE, body, List.of());
         player.showDialog(Dialog.create(factory -> factory.empty().base(base).type(
             DialogType.multiAction(buttons, exit, Math.clamp(config.getInt("Bottom.columns", 2), 1, 3)))));
@@ -60,11 +61,12 @@ final class BoardWindow {
             });
         }, ClickCallback.Options.builder().uses(1).lifetime(Duration.ofMinutes(2)).build());
         String tooltip = String.join("\n", config.getStringList(path + ".tooltip"));
-        return ActionButton.create(text(config.getString(path + ".text", "关闭")),
+        Component caption=config.get(path + ".component") instanceof Component supplied ? supplied : text(config.getString(path + ".text", "关闭"));
+        return ActionButton.create(caption,
             tooltip.isBlank() ? null : text(tooltip), Math.clamp(config.getInt(path + ".width", 174), 1, 1024), action);
     }
 
     static Component text(String value) {
-        return LegacyComponentSerializer.legacyAmpersand().deserialize(Language.text(value).replace('§', '&'));
+        return MessageText.render(Language.text(value));
     }
 }

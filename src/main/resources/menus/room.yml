@@ -1,16 +1,16 @@
 # Dialog layout; button IDs bind server actions. Edit appearance in plugins/3dtabletop/menus.
-Title: '&f@title@'
+Title: '<white>@title@'
 Body:
   content:
     type: message
-    text: '&f@description@'
+    text: '<white>@description@'
     width: 370
 Bottom:
   type: multi
   columns: 1
   buttons:
     ready:
-      text: '&f@label@'
+      text: '<white>@label@'
       width: 330
       actions: [close]
     bots:
@@ -22,15 +22,15 @@ Bottom:
       width: 330
       actions: [close]
     controls:
-      text: '&f@label@'
+      text: '<white>@label@'
       width: 330
       actions: [close]
     entry:
-      text: '&f@label@'
+      text: '<white>@label@'
       width: 330
       actions: [close]
     rematch:
-      text: '&f@label@'
+      text: '<white>@label@'
       width: 330
       actions: [close]
     options:
@@ -38,14 +38,14 @@ Bottom:
       width: 330
       actions: [close]
     back:
-      text: '&e返回上一页'
+      text: '<yellow>@label@'
       width: 330
       actions: [close]
     main:
-      text: '&e返回主菜单'
+      text: '<yellow>@label@'
       width: 330
       actions: [close]
   exit:
-    text: '&8[ &c关闭菜单 &8]'
+    text: '<dark_gray>[ <red>@label@ <dark_gray>]'
     width: 230
     actions: [close]

@@ -44,6 +44,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("3dtabletop"));
             require(boards.isEnabled(), "Boards enabled");
             World world = Bukkit.getWorlds().getFirst();
+            modelProbe(boards, world);
             PluginCommand command = Objects.requireNonNull(Bukkit.getPluginCommand("3dtabletop:3dtabletop"));
             AtomicInteger dialogs = new AtomicInteger();
             Player player = player(world, dialogs, true);
@@ -102,6 +103,51 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         } catch (Throwable ex) {
             getLogger().log(java.util.logging.Level.SEVERE, "BOARDS_STANDALONE_PROBE_FAIL", ex);
         }
+    }
+
+    /** Exercise real Display transforms without adding a persisted room or a client. */
+    private void modelProbe(Plugin plugin, World world) throws Exception {
+        // Match GameWorld.platform: keep the model's chunks active before spawning Displays.
+        for(int z=-1;z<=0;z++)world.getChunkAt(0,z).addPluginChunkTicket(this);
+        ClassLoader loader=plugin.getClass().getClassLoader();
+        Class<?> roomType=Class.forName("dev.tabletop3d.Room",true,loader);
+        Class<?> factory=Class.forName("dev.tabletop3d.rules.GameFactory",true,loader);
+        Class<?> gameType=Class.forName("dev.tabletop3d.rules.BoardGame",true,loader);
+        Class<?> viewType=Class.forName("dev.tabletop3d.TableView",true,loader);
+        var roomConstructor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class);
+        roomConstructor.setAccessible(true);
+        for(String kind:List.of("connectfour","reversi")) {
+            Object room=roomConstructor.newInstance(UUID.randomUUID(),kind,2,1L,0);
+            Object game=factory.getMethod("create",String.class,int.class,long.class).invoke(null,kind,2,1L);
+            Field board=roomType.getDeclaredField("board");board.setAccessible(true);board.set(room,game);
+            var constructor=viewType.getDeclaredConstructors()[0];constructor.setAccessible(true);
+            Object view=constructor.newInstance(plugin,room,new Location(world,8,83,0),
+                new org.bukkit.NamespacedKey("3dtabletop","probe-model"),field(field(plugin,"arena"),"maps"));
+            try {
+                Map<?,?> previous=new HashMap<>((Map<?,?>)field(view,"tokens"));
+                @SuppressWarnings("unchecked") List<String> legal=(List<String>)gameType.getMethod("legalActions",int.class).invoke(game,0);
+                gameType.getMethod("apply",int.class,String.class).invoke(game,0,kind.equals("connectfour")?"drop:3":legal.getFirst());
+                Field revision=roomType.getDeclaredField("revision");revision.setAccessible(true);revision.setLong(room,1);
+                call(view,"sync",new Class<?>[0]);
+                Map<?,?> current=(Map<?,?>)field(view,"tokens");
+                if(kind.equals("reversi"))for(var entry:previous.entrySet())
+                    require(current.get(entry.getKey())==entry.getValue(),"Reversi reuses existing tokens");
+                for(int i=0;i<16;i++)call(view,"tick",new Class<?>[0]);
+                for(Object token:current.values()) {
+                    @SuppressWarnings("unchecked") List<org.bukkit.entity.Entity> parts=(List<org.bukkit.entity.Entity>)field(token,"parts");
+                    require(parts.size()>=4,"multi-part chip");
+                    Location target=(Location)field(token,"to");
+                    for(var part:parts) {
+                        require(part.isValid() && !part.isPersistent(),"live non-persistent model part: "+kind+" valid="+part.isValid()+" persistent="+part.isPersistent()+" dead="+part.isDead());
+                        require(part.getLocation().distanceSquared(target)<1e-8,"animation settled");
+                        String transform=((org.bukkit.entity.Display)part).getTransformation().toString();
+                        require(!transform.contains("NaN")&&!transform.contains("Infinity"),"finite server transformation");
+                    }
+                }
+            } finally {call(view,"close",new Class<?>[0]);}
+        }
+        world.removePluginChunkTickets(this);
+        getLogger().info("BOARDS_MODELS_PASS connectfour=drop reversi=reuse-and-flip");
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

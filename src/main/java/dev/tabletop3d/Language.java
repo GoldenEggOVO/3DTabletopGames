@@ -1,6 +1,8 @@
 package dev.tabletop3d;
 
 import org.bukkit.configuration.file.YamlConfiguration;
+import dev.tabletop3d.ui.MessageText;
+import net.kyori.adventure.text.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,17 +18,35 @@ import java.util.regex.Pattern;
 
 /** Translates legacy display text without changing persisted rule state or menu actions. */
 final class Language {
+    private static final String MESSAGE = "message:";
+    private static final Map<String,String> ALIASES = Map.ofEntries(
+        Map.entry("menu.title", "3D Tabletop Games"), Map.entry("menu.back", "返回上一页"),
+        Map.entry("menu.main", "返回主菜单"), Map.entry("menu.close", "关闭菜单"),
+        Map.entry("menu.resume", "继续当前对局"), Map.entry("menu.create", "创建房间"),
+        Map.entry("menu.leave.title", "离开房间"), Map.entry("menu.leave.confirm", "确认离开"),
+        Map.entry("menu.leave.description", "对局中离开会结束整桌免费局；只关闭菜单则保留座位。"),
+        Map.entry("table.waiting", "等候准备"), Map.entry("table.hint", "瞄准 · 点击落子"),
+        Map.entry("table.join", "潜行右键：加入 / 房间菜单"));
     private static volatile Language current = bundledEnglish();
     private final Map<String, String> entries;
+    private final Map<String, String> messages;
     private final Pattern pattern;
 
     private Language(Map<String, String> entries) {
         this.entries = Map.copyOf(entries);
+        var named = new LinkedHashMap<String,String>();
+        entries.forEach((key,value)->{if(key.startsWith(MESSAGE))named.put(key.substring(MESSAGE.length()),value);});
+        messages = Map.copyOf(named);
         pattern = Pattern.compile(entries.keySet().stream()
-            .filter(key -> key.length() > 1)
+            .filter(key -> key.length() > 1 && !key.startsWith(MESSAGE))
             .sorted((a, b) -> Integer.compare(b.length(), a.length()))
             .map(key -> key.length() == 2 ? "(?<!\\p{IsHan})" + Pattern.quote(key) : Pattern.quote(key))
             .reduce((a, b) -> a + "|" + b).orElse("(?!)"));
+    }
+
+    /** Named UI templates with literal/component parameters, independent of rule state. */
+    static Component component(String key, Object... pairs) {
+        return MessageText.render(current.messages.getOrDefault(key,key),pairs);
     }
 
     static String text(String input) {
@@ -93,14 +113,22 @@ final class Language {
 
     private static Map<String, String> values(YamlConfiguration config) {
         var section = config.getConfigurationSection("translations");
-        if (section == null) throw new IllegalArgumentException("Language file needs translations section");
+        if (section == null && !config.isConfigurationSection("messages"))
+            throw new IllegalArgumentException("Language file needs translations or messages section");
         Map<String, String> values = new LinkedHashMap<>();
-        for (var entry : section.getValues(false).entrySet()) {
+        for (var entry : section == null ? Map.<String,Object>of().entrySet() : section.getValues(false).entrySet()) {
             if (!(entry.getValue() instanceof String value))
                 throw new IllegalArgumentException("Invalid translation: " + entry.getKey());
             values.put(entry.getKey(), value);
             if (entry.getKey().contains("\\n"))
                 values.put(entry.getKey().replace("\\n", "\n"), value.replace("\\n", "\n"));
+        }
+        ALIASES.forEach((key,source)->{if(values.containsKey(source))values.put(MESSAGE+key,values.get(source));});
+        var named=config.getConfigurationSection("messages");
+        if(named!=null)for(var entry:named.getValues(false).entrySet()) {
+            if(!(entry.getValue() instanceof String value))throw new IllegalArgumentException("Invalid message: "+entry.getKey());
+            MessageText.validate(value);
+            values.put(MESSAGE+entry.getKey(),value);
         }
         return values;
     }

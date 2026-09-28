@@ -10,6 +10,28 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class WindowMenuTest {
+    @Test void namedTitleAndBodyKeepTheirOwnLanguageAndStyles() {
+        var config=new YamlConfiguration();config.set("Title","<white>@title@");
+        config.set("Body.content.text","<gray>@description@");
+        var title=dev.tabletop3d.ui.MessageText.render("<red>棋盘游戏</red>");
+        var body=dev.tabletop3d.ui.MessageText.render("<gold>确认离开</gold>");
+        var rendered=GameMenuLayouts.render(config,title,body,List.of(),UUID.randomUUID());
+        var actualTitle=(net.kyori.adventure.text.Component)rendered.config().get("Title-component");
+        var actualBody=(net.kyori.adventure.text.Component)rendered.config().get("Body.content.component");
+        assertEquals("棋盘游戏",dev.tabletop3d.ui.MessageText.plain(actualTitle));
+        assertEquals("确认离开",dev.tabletop3d.ui.MessageText.plain(actualBody));
+        assertTrue(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(actualTitle).contains("§c棋盘游戏"));
+    }
+    @Test void namedButtonValuesStayLiteralThroughLegacyAndMiniMessageLayouts() {
+        for(String style:List.of("&a@label@","<green>@label@</green>")) {
+            var config=new YamlConfiguration();config.set("Bottom.buttons.entry.text",style);
+            String name="<red>玩家&c";
+            var rendered=GameMenuLayouts.render(config,"Title","",List.of(new GameMenus.Button("entry",
+                dev.tabletop3d.ui.MessageText.render("Next: {name}","name",name),()->{})),UUID.randomUUID());
+            var component=(net.kyori.adventure.text.Component)rendered.config().get("Bottom.buttons.slot0.component");
+            assertEquals("Next: "+name,dev.tabletop3d.ui.MessageText.plain(component));
+        }
+    }
     @Test void defaultDialogTextIsEnglish() {
         String title = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
             .serialize(BoardWindow.text("棋盘游戏"));
@@ -33,12 +55,12 @@ class WindowMenuTest {
         when(world.getUID()).thenReturn(UUID.randomUUID());
         when(player.getWorld()).thenReturn(world);
         var view = mock(BoardWindow.class);
-        when(view.render(anyString(), anyString(), anyString(), anyList(), any())).thenAnswer(invocation ->
-            GameMenuLayouts.render(new YamlConfiguration(), invocation.getArgument(1), "", invocation.getArgument(3), invocation.getArgument(4)));
+        when(view.render(anyString(), any(net.kyori.adventure.text.Component.class), any(net.kyori.adventure.text.Component.class), anyList(), any())).thenAnswer(invocation ->
+            GameMenuLayouts.render(new YamlConfiguration(), (net.kyori.adventure.text.Component)invocation.getArgument(1), net.kyori.adventure.text.Component.empty(), invocation.getArgument(3), invocation.getArgument(4)));
         when(view.open(eq(player), any(), eq("catalog"))).thenReturn(true);
         var menus = new GameMenus(plugin, view);
         menus.main(player);
-        verify(view).render(eq("catalog"), eq("3D Tabletop Games"), eq(""), anyList(), any());
+        verify(view).render(eq("catalog"), eq(net.kyori.adventure.text.Component.text("3D Tabletop Games")), eq(net.kyori.adventure.text.Component.empty()), anyList(), any());
         menus.close();
     }
     @Test void layoutPreservesStyleButReplacesActionsWithOwnedCallbacks() {
@@ -67,7 +89,7 @@ class WindowMenuTest {
         when(player.getWorld()).thenReturn(world);
         var view = mock(BoardWindow.class);
         var clicked = new AtomicInteger();
-        when(view.render(anyString(), anyString(), anyString(), anyList(), any())).thenAnswer(invocation -> {
+        when(view.render(anyString(), any(net.kyori.adventure.text.Component.class), any(net.kyori.adventure.text.Component.class), anyList(), any())).thenAnswer(invocation -> {
             var config = new YamlConfiguration();
             config.set("Bottom.buttons.second.text", "@label@");
             return GameMenuLayouts.render(config, "Test", "", invocation.getArgument(3), invocation.getArgument(4));

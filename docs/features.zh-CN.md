@@ -16,4 +16,4 @@
 | 配置、房间与棋盘持久化 | `config.yml`、`rooms.json`、旧目录复制 | 数据迁移测试、干净服重启恢复 |
 | Tab 补全 | `CommandSuggestions` | `CommandSuggestionsTest` |
 
-本地 Maven 130 项测试通过，失败、错误、跳过均为 0。Purpur 26.2 三次独立启动已验证创建、重启恢复及旧目录迁移，并检查根指令候选无重复；探针使用模拟玩家触发 Dialog，实际客户端画面和手感仍由用户验收。旧 ServerGames／ServerMenu 命令转发需要另行升级，未计为本版本通过项。
+本批验证结果见 [verification.md](verification.md)。模型自动验收覆盖四子棋竖直落子、重启静止恢复、黑白棋实体复用与翻面结束状态；实际客户端画面与手感由用户验收。

@@ -1,46 +1,80 @@
-# 3dtabletop 1.3.1
+# 3DTabletopGames
 
-独立的 3D 实体棋盘与房间插件，适用于 Java 25、Paper／Purpur 26.2。Java 包为 `dev.tabletop3d`。可单独安装；不依赖 ServerGames、ServerMenu、ServerCasino 或 KaMenu。菜单使用 Paper 原生 Dialog，棋盘仍可直接点击。
+[![Build](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml/badge.svg)](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml)
 
-## 安装与升级
+[English](README.md) | [简体中文](README.zh-CN.md)
 
-停服后将 `3dtabletop-1.3.1.jar` 放入 `plugins/`，删除旧的 ServerBoards JAR，同一服务器仅留一个版本。不要安装 `original-*.jar`。首次启动会生成 `plugins/3dtabletop/`。若存在 `plugins/ServerBoards/` 且新目录尚不存在，插件会复制原配置、菜单、`rooms.json` 等文件到新目录，并保留旧目录和 `migration-from-serverboards.txt` 标记。升级前先备份旧目录；两个目录都存在但没有迁移标记时，插件会拒绝启动，避免覆盖数据。详见 [MIGRATION.md](MIGRATION.md)。
+**Playable 3D board games for Minecraft, with physical pieces, multiplayer rooms and native Dialog menus.**
 
-## 指令与权限
+Run independently on **Paper / Purpur 26.2 with Java 25**. No resource pack, client mod, ServerGames, ServerMenu, Casino or KaMenu is required. AuthMe is optional.
 
-| 指令 | 用途 |
+## Install
+
+1. Download a published JAR from [Releases](https://github.com/GoldenEggOVO/3DTabletopGames/releases).
+2. Stop your server and back up plugin data and worlds. Keep one plugin JAR in `plugins/`; never install `original-*.jar`.
+3. Start the server and run `/3dtabletop`. Create a room, invite players or fill seats with bots, then play on the physical table.
+
+The current source is **1.4.0-SNAPSHOT**, a local acceptance build. It adds Connect Four disc models and vertical drops, reusable flipping Reversi pieces, and a common text renderer. It has **not been published as a Release**. Snapshot JARs from Actions are development builds; see [verification](docs/verification.md) for the tested scope.
+
+Upgrading from ServerBoards? Read [migration](docs/migration.md) first. Existing `3dtabletop` configurations, menu layouts and schema 1 room files remain usable.
+
+## Games and features
+
+| Game | Players | Physical presentation |
+| --- | --- | --- |
+| Xiangqi, Chess | 2 | 3D pieces on a mapped board |
+| Gomoku | 2 | Black and white stones |
+| Reversi | 2 | Two-sided pieces with flip animation |
+| Connect Four | 2 | Upright rack, round stepped discs and column drops |
+| Go | 2 | 9×9, 13×13 and 19×19 boards |
+| Chinese Checkers | 2, 3, 4 or 6 | Star board and colored pieces |
+| Draughts | 2 | 8×8 board with crowned kings |
+| Aeroplane Chess | 2–4 | Aircraft, numbered pieces and a physical die |
+
+- Rooms, seats, ready checks, bots, spectating, undo agreements and rematches.
+- Saved world anchors, seeds and move history; room recovery after restarting.
+- Direct board interaction, legal-move pointers and private hover feedback.
+- Native Paper Dialog with editable YAML layouts and English by default.
+- MiniMessage styling, legacy color compatibility and editable language files.
+
+Rules and variant details: [feature inventory](docs/features.md). Historical Yacht sources are not enabled; cards and Mahjong are not included in the game catalog.
+
+## Commands and permissions
+
+| Command | Purpose |
 | --- | --- |
-| `/3dtabletop`、`/3dtabletop menu` | 打开原生 Dialog 列表 |
-| `/3dtabletop create <kind> [人数]` | 建桌 |
-| `/3dtabletop join <房间 UUID 前缀>` | 加入房间 |
-| `/3dtabletop ready`、`bots` | 准备、房主补机器人开局 |
-| `/3dtabletop move <规则动作>` | 直接落子，例如四子棋 `drop:3` |
-| `/3dtabletop resume`、`leave` | 返回棋桌、退出 |
-| `/3dtabletop undo`、`rematch` | 协商悔棋、再来一局 |
-| `/3dtabletop rules [kind]` | 查看规则 |
-| `/3dtabletop status` | 控制台查看房间数量 |
+| `/3dtabletop [menu]` | Open the native menu |
+| `/3dtabletop create <kind> [players]` | Create a room |
+| `/3dtabletop join <room-prefix>` | Join an open room |
+| `/3dtabletop ready` / `bots` | Toggle readiness / fill bot seats as host |
+| `/3dtabletop resume` / `leave` | Return to your table / leave the room |
+| `/3dtabletop undo` / `rematch` | Request an undo / ready for a rematch |
+| `/3dtabletop move <action>` | Play a legal rule action, e.g. `drop:3` |
+| `/3dtabletop rules [kind]` | Show rules |
+| `3dtabletop status` | Inspect room count from the console |
 
-Tab 会补全子指令、游戏 ID、人数、开放房间和可落子动作。`kind` 支持 `xiangqi`、`gomoku`、`chess`、`aeroplane`、`checkers`、`draughts`、`reversi`、`go`、`go9`、`go13`、`connectfour`。`3dtabletop.use` 默认开放给玩家，控制菜单和对局操作；`3dtabletop.admin` 默认仅 OP。安装 AuthMe 时，玩家还须先登录。旧 `/boards`、`serverboards:boards` 和 `serverboards.use` 已移除。
+Tab completion provides subcommands, games, player counts, room prefixes and legal actions. `3dtabletop.use` defaults to everyone. `3dtabletop.admin` defaults to operators and controls protected-world administration; it is not a bypass for game rules. With AuthMe installed, players must also be logged in.
 
-## 配置与语言
+Game IDs, configuration and integration details: [installation](docs/installation.md).
 
-`plugins/3dtabletop/config.yml` 的 `language: en` 选择语言文件；英文为默认值。`plugins/3dtabletop/lang/en.yml` 是可编辑的完整语言表。可复制为 `lang/<code>.yml`，编辑 `translations` 中的显示文字，再将 `language` 设为 `<code>` 并重启。自定义文件缺少的项会回退到英文。菜单、聊天提示、实体棋盘标牌与棋子文字均使用该语言表；玩家姓名、房间 ID 和持久化动作不应翻译。`menus/*.yml` 仍可编辑 Dialog 外观与按钮文字，旧中文模板会在显示时按语言表转换，按钮动作由服务端校验。
+## Languages and menus
 
-从 1.3.0 升级只需停服替换 JAR，房间数据格式不变。旧 `lang/en.yml` 会保留用户编辑；新加入的“确认离开”翻译会从内置英文表补齐。主目录标题默认显示 `3D Tabletop Games`，其他语言可覆盖同名翻译键。
+Edit `plugins/3dtabletop/lang/en.yml`, or copy it to `lang/<code>.yml` and set `language: <code>` in `config.yml`. Restart after editing. Existing files are preserved and missing entries fall back to bundled English.
 
-其余配置：`max-rooms`、`reconnect-seconds`、`idle-room-minutes`、`turn-seconds`。房间、座位、世界 UUID、棋桌坐标、随机种子、动作历史保存在 schema 1 `rooms.json`；重启时由历史重放恢复。退出、离线保留、观战、悔棋和再来一局等功能见 [FEATURES.md](FEATURES.md)。
+Common UI messages use named keys and literal parameters. Legacy `translations` remain supported for rule text and existing menu customizations. Menu layouts live in `menus/*.yml`. See [languages and text styling](docs/languages.md).
 
-## 可选接入与兼容边界
+## Build and documentation
 
-插件自身不调用 ServerGames 的服务，也不要求 ServerMenu。当前 ServerGames 2.0.3 的 `/sg menu` 和 ServerMenu 0.7.1 的棋牌页面仍指向旧 `serverboards:boards`，因此安装这些旧版本时，其入口不会打开本版本。它们需要在各自项目中把转发目标改为 `/3dtabletop menu`；本仓库没有修改这两个插件。独立服始终可用 `/3dtabletop` 完成全部操作。实体资源键改为 `3dtabletop:board-cell`；旧棋盘实体会按原有历史重建。
-
-## 构建与验收
-
-在工作区根目录用 Java 25 和自带 Maven 执行：
-
-```powershell
-& .\.tools\apache-maven-3.9.11\bin\mvn.cmd -o "-Dmaven.repo.local=$PWD\.tools\m2" -f server-boards/pom.xml package
-python -X utf8 server-boards/probe/run_standalone.py
+```sh
+mvn -B -ntp package
+python -m unittest discover -s tests -p "test_*.py"
+python tools/package_source.py
 ```
 
-探针在仅装本插件与验收探针的本地 Purpur 26.2 服测试创建、权限、Dialog 回调、四子棋落子、实体生成、重启恢复和旧目录迁移。客户端实际画面与手感由服主验收。许可证、第三方来源与原项目归属见 `LICENSE` 及 JAR 内的 `META-INF/` 声明。
+Use JDK 25, Maven 3.9+ and Python 3.12+ for tools. The plugin build downloads public dependencies and requires no other local plugin modules. Install the shaded `target/3dtabletop-*.jar`.
+
+- [Installation](docs/installation.md) · [Migration](docs/migration.md) · [Languages](docs/languages.md)
+- [Architecture](docs/architecture.md) · [Features](docs/features.md) · [Verification](docs/verification.md)
+- [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Third-party materials](THIRD_PARTY.md)
+
+Licensed under [GPL-3.0-or-later](LICENSE). Original source notices are retained. Runtime worlds, private configuration, credentials and third-party server binaries are excluded from source packages.

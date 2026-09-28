@@ -1,15 +1,25 @@
-"""Boot a clean localhost Purpur server twice to test create and restore."""
+"""Boot a clean localhost Purpur server three times to test create and restore."""
 
 import json
+import hashlib
+import argparse
+import os
+import xml.etree.ElementTree as ET
 import shutil
 import subprocess
 import time
 import zipfile
 from pathlib import Path
 
-project = Path(__file__).resolve().parents[1]
+project = Path(__file__).resolve().parents[2]
 workspace = project.parent
-source = workspace / "table-games" / "tabletop-runtime"
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--server-dir", type=Path, default=workspace / "table-games" / "tabletop-runtime",
+                    help="Prepared Purpur 26.2 cache with purpur-2622.jar, libraries and versions")
+parser.add_argument("--maven-repo", type=Path, default=workspace / ".tools/m2")
+args = parser.parse_args()
+source = args.server_dir
+version = ET.parse(project / "pom.xml").getroot().find("{*}version").text
 runtime = project / "target" / f"standalone-smoke-{time.strftime('%Y%m%d-%H%M%S')}"
 runtime.mkdir(parents=True)
 shutil.copy2(source / "purpur-2622.jar", runtime / "purpur-2622.jar")
@@ -24,17 +34,18 @@ for name in ("libraries", "versions", "cache"):
     "spawn-protection=0\nenable-rcon=false\nenable-query=false\n", encoding="utf-8")
 plugins = runtime / "plugins"
 plugins.mkdir()
-jar = project / "target" / "3dtabletop-1.3.1.jar"
+jar = project / "target" / f"3dtabletop-{version}.jar"
 shutil.copy2(jar, plugins / jar.name)
-paper_api = workspace / ".tools/m2/io/papermc/paper/paper-api/26.2.build.111-stable/paper-api-26.2.build.111-stable.jar"
-kyori = workspace / ".tools/m2/net/kyori"
-classpath = ";".join(map(str, (paper_api,
+tested_digest = hashlib.sha256((plugins / jar.name).read_bytes()).hexdigest()
+paper_api = args.maven_repo / "io/papermc/paper/paper-api/26.2.build.111-stable/paper-api-26.2.build.111-stable.jar"
+kyori = args.maven_repo / "net/kyori"
+classpath = os.pathsep.join(map(str, (paper_api,
     kyori / "adventure-key/5.2.0/adventure-key-5.2.0.jar",
     kyori / "adventure-api/5.2.0/adventure-api-5.2.0.jar")))
 classes = runtime / "probe-classes"
 classes.mkdir()
 subprocess.run([shutil.which("javac"), "-encoding", "UTF-8", "-cp", classpath,
-                "-d", str(classes), str(project / "probe/BoardsStandaloneProbe.java")], check=True)
+                "-d", str(classes), str(project / "tools/standalone-probe/BoardsStandaloneProbe.java")], check=True)
 with zipfile.ZipFile(plugins / "BoardsStandaloneProbe.jar", "w", zipfile.ZIP_DEFLATED) as archive:
     archive.writestr("plugin.yml", "name: BoardsStandaloneProbe\nversion: 1\nmain: dev.tabletop3d.probe.BoardsStandaloneProbe\napi-version: '26.2'\ndepend: [3dtabletop]\n")
     for path in classes.rglob("*.class"):
@@ -88,7 +99,7 @@ for number, marker in ((1, "BOARDS_STANDALONE_CREATE_PASS"), (2, "BOARDS_STANDAL
         if not boots[-1]["pass"]:
             break
 
-receipt = {"runtime": str(runtime), "pass": len(boots) == 3 and all(boot["pass"] for boot in boots),
+receipt = {"version": version, "jar_sha256": tested_digest, "runtime": str(runtime), "pass": len(boots) == 3 and all(boot["pass"] for boot in boots),
            "boots": boots, "client_visual_test": False, "production_deployed": False}
 (runtime / "receipt.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2), encoding="utf-8")
 print(json.dumps(receipt, ensure_ascii=False, indent=2))

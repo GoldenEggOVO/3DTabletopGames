@@ -5,11 +5,17 @@ import dev.tabletop3d.rules.GoGame;
 import dev.tabletop3d.rules.YachtGame;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
+import net.kyori.adventure.text.Component;
+import dev.tabletop3d.ui.MessageText;
 
 import java.util.*;
 
 final class GameMenus implements AutoCloseable {
-    record Button(String id,String label,Runnable action){Button(String label,Runnable action){this("entry",label,action);}}
+    record Button(String id,String label,Runnable action,Component component){
+        Button(String id,String label,Runnable action){this(id,label,action,null);}
+        Button(String label,Runnable action){this("entry",label,action);}
+        Button(String id,Component label,Runnable action){this(id,MessageText.plain(label),action,label);}
+    }
     record Session(UUID token,UUID world,long expires,List<Button> buttons){}
     private final Tabletop3D plugin;private final Map<UUID,Session> sessions=new HashMap<>();
     private final BoardWindow window;
@@ -19,11 +25,17 @@ final class GameMenus implements AutoCloseable {
         show(p,title,description,buttons,back,"dialog");
     }
     void show(Player p,String title,String description,List<Button> buttons,Runnable back,String page){
+        show(p,BoardWindow.text(title),BoardWindow.text(description),buttons,back,page);
+    }
+    void show(Player p,Component title,Component description,List<Button> buttons,Runnable back){
+        show(p,title,description,buttons,back,"dialog");
+    }
+    void show(Player p,Component title,Component description,List<Button> buttons,Runnable back,String page){
         if(!plugin.allowed(p))return;
         List<Button> entries=new ArrayList<>(buttons);
-        if(back!=null)entries.add(new Button("back","返回上一页",back));
-        else if(plugin.mainMenuAvailable())entries.add(new Button("main","返回主菜单",()->{forget(p);Bukkit.dispatchCommand(p,"servermenu:servermenu main");}));
-        entries.add(new Button("close","关闭菜单",()->forget(p)));
+        if(back!=null)entries.add(new Button("back",Language.component("menu.back"),back));
+        else if(plugin.mainMenuAvailable())entries.add(new Button("main",Language.component("menu.main"),()->{forget(p);Bukkit.dispatchCommand(p,"servermenu:servermenu main");}));
+        entries.add(new Button("close",Language.component("menu.close"),()->forget(p)));
         UUID token=UUID.randomUUID();
         if(window!=null){
             var rendered=window.render(page,title,description,entries,token);
@@ -32,8 +44,8 @@ final class GameMenus implements AutoCloseable {
             if(window.open(p,rendered.config(),page))return;
         }
         sessions.put(p.getUniqueId(),new Session(token,p.getWorld().getUID(),System.currentTimeMillis()+120000,List.copyOf(entries)));
-        p.sendMessage(Language.text("§6"+title+"\n§f"+description));
-        for(int i=0;i<entries.size();i++)p.sendMessage(net.kyori.adventure.text.Component.text(Language.text("["+entries.get(i).label()+"] ")).clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/3dtabletop click 3dtabletop:"+token+" "+i)));
+        p.sendMessage(title.append(Component.newline()).append(description));
+        for(int i=0;i<entries.size();i++){var b=entries.get(i);p.sendMessage(Component.text("[ ").append(b.component()!=null?b.component():BoardWindow.text(b.label())).append(Component.text(" ] ")).clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/3dtabletop click 3dtabletop:"+token+" "+i)));}
     }
     void handle(Player p,String action){
         String[] a=action.split(" ");if(a.length!=2||!a[0].startsWith("3dtabletop:"))return;
@@ -45,12 +57,12 @@ final class GameMenus implements AutoCloseable {
     void forget(Player p){sessions.remove(p.getUniqueId());}
     void main(Player p){
         List<Button> b=new ArrayList<>();Room current=plugin.room(p);
-        if(current!=null)b.add(new Button("resume","继续当前对局",()->plugin.resume(p,current)));
+        if(current!=null)b.add(new Button("resume",Language.component("menu.resume"),()->plugin.resume(p,current)));
         for(String kind:Tabletop3D.NAMES.keySet())if(!Set.of("go9","go13").contains(kind))b.add(new Button(kind,Tabletop3D.gameName(kind),()->games(p,kind)));
-        show(p,"3D Tabletop Games","",b,null,"catalog");
+        show(p,Language.component("menu.title"),Component.empty(),b,null,"catalog");
     }
     void games(Player p,String kind){
-        List<Button>b=new ArrayList<>();b.add(new Button("§a创建房间",()->sizes(p,kind)));
+        List<Button>b=new ArrayList<>();b.add(new Button("entry",Language.component("menu.create"),()->sizes(p,kind)));
         plugin.rooms.values().stream().filter(r->r.kind.equals(kind)||kind.equals("go")&&Set.of("go9","go13").contains(r.kind)).limit(12).forEach(r->b.add(new Button(r.name()+"  "+r.seats.size()+"/"+r.capacity+" · "+phase(r),()->{if(r.seat(p.getUniqueId())>=0)plugin.resume(p,r);else if(r.phase==Room.Phase.LOBBY)plugin.join(p,r);else observe(p,r);})));
         show(p,Tabletop3D.gameName(kind),"",b,()->main(p));
     }
@@ -139,7 +151,7 @@ final class GameMenus implements AutoCloseable {
 
 
 
-    void confirmLeave(Player p){Room r=plugin.room(p);if(r==null){main(p);return;}show(p,"离开房间","对局中离开会结束整桌免费局；只关闭菜单则保留座位。",List.of(new Button("§c确认离开",()->plugin.leave(p))),()->room(p,r));}
+    void confirmLeave(Player p){Room r=plugin.room(p);if(r==null){main(p);return;}show(p,Language.component("menu.leave.title"),Language.component("menu.leave.description"),List.of(new Button("entry",Language.component("menu.leave.confirm"),()->plugin.leave(p))),()->room(p,r));}
     void rules(Player p,String kind){String text=switch(kind){
         case"gomoku"->"15×15自由五子棋，先连成五子或更多获胜；不设黑方禁手。";
         case"xiangqi"->"中国象棋：将帅照面、马腿、象眼、象不过河、九宫及自将过滤。将死或困毙判负；重复和长将规则以规则面板标注为准。";

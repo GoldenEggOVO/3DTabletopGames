@@ -1,30 +1,30 @@
 # Dialog layout; button IDs bind server actions. Edit appearance in plugins/3dtabletop/menus.
-Title: '&f@title@'
+Title: '<white>@title@'
 Bottom:
   type: multi
   columns: 1
   buttons:
     entry:
-      text: '&f@label@'
+      text: '<white>@label@'
       width: 350
       actions: [close]
     resume:
-      text: '&e@label@'
+      text: '<yellow>@label@'
       width: 350
       actions: [close]
     connectfour:
-      text: '&f@label@'
+      text: '<white>@label@'
       width: 350
       actions: ['close']
     back:
-      text: '&e返回上一页'
+      text: '<yellow>@label@'
       width: 350
       actions: [close]
     main:
-      text: '&e返回主菜单'
+      text: '<yellow>@label@'
       width: 350
       actions: [close]
   exit:
-    text: '&8[ &c关闭菜单 &8]'
+    text: '<dark_gray>[ <red>@label@ <dark_gray>]'
     width: 230
     actions: [close]

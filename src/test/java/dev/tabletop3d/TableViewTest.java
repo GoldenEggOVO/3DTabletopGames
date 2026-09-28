@@ -20,6 +20,7 @@ class TableViewTest {
     @Test void tableTitleIsAboveTheCenterAndOldEdgeLabelIsAbsent() throws Exception {
         Fixture f=new Fixture("chess");
         TextDisplay title=(TextDisplay)field(f.view,"title");
+        verify(title).setLineWidth(Integer.MAX_VALUE);
         assertEquals(0,title.getLocation().getX(),0.0001);
         assertEquals(0,title.getLocation().getZ(),0.0001);
         assertEquals(((Location)field(f.view,"origin")).getY()+1.65,title.getLocation().getY(),0.0001);
@@ -87,19 +88,71 @@ class TableViewTest {
         assertNull(f.view.verticalHit(eye,new org.bukkit.util.Vector(0,1,0)));assertNull(f.view.verticalHit(eye.clone().add(3,0,0),new org.bukkit.util.Vector(0,0,1)));
         assertNull(f.view.verticalHit(eye.clone().add(0,0,-5),new org.bukkit.util.Vector(0,0,1)));
     }
+    @Test void connectFourFallsFromAboveItsColumnAndSettlesAtTheRuleCell() throws Exception {
+        Fixture f=new Fixture("connectfour");f.move("drop:2");
+        Object token=((Map<?,?>)field(f.view,"tokens")).get("2,0");
+        Location destination=(Location)field(token,"to");
+        List<Entity> parts=(List<Entity>)field(token,"parts");
+        assertTrue(parts.size()>1,"A round disc needs more than the old single cube");
+        assertTrue(parts.getFirst().getLocation().getY()>f.view.origin.getY()+1.7);
+        for(int i=0;i<16;i++) {
+            f.view.tick();
+            Location at=parts.getFirst().getLocation();
+            assertEquals(destination.getX(),at.getX(),1e-6);
+            assertEquals(destination.getZ(),at.getZ(),1e-6);
+            assertTrue(at.getY()>=destination.getY()-1e-6);
+        }
+        assertEquals(destination,parts.getFirst().getLocation());
+        assertEquals(1,f.room.history.size());
+    }
+    @Test void reversiFlipsExistingEntitiesAndSettlesEvenWhenInterrupted() throws Exception {
+        Fixture f=new Fixture("reversi");
+        Map<?,?> before=new HashMap<>((Map<?,?>)field(f.view,"tokens"));
+        var owners=new HashMap<String,Integer>();
+        f.room.board.cells().forEach(c->owners.put(c.id(),c.owner()));
+        f.move(f.room.board.legalActions(0).getFirst());
+        var flipped=f.room.board.cells().stream().filter(c->owners.get(c.id())>=0&&owners.get(c.id())!=c.owner()).findFirst().orElseThrow();
+        Object original=before.get(flipped.id());
+        assertSame(original,((Map<?,?>)field(f.view,"tokens")).get(flipped.id()));
+        List<Entity> parts=(List<Entity>)field(original,"parts");
+        f.view.tick();f.view.tick();
+        int next=f.room.board.currentPlayer();
+        f.move(f.room.board.legalActions(next).getFirst());
+        for(int i=0;i<16;i++)f.view.tick();
+        for(Entity part:parts) {verify(part,never()).remove();verify((BlockDisplay)part,atLeastOnce()).setTransformationMatrix(any());}
+        var finalOwners=new HashMap<String,Integer>();f.room.board.cells().forEach(c->finalOwners.put(c.id(),c.owner()));
+        for(var entry:((Map<?,?>)field(f.view,"tokens")).entrySet())
+            for(Entity part:(List<Entity>)field(entry.getValue(),"parts")) {
+                float y=f.poses.get(part).m11();
+                assertTrue(finalOwners.get(entry.getKey())==0?y>0:y<0,"Final face must match authoritative owner");
+            }
+        assertEquals(2,f.room.history.size());
+        f.view.close();for(Entity part:parts)verify(part).remove();
+    }
+    @Test void restoredConnectFourSpawnsAtRestAndWinKeepsRuleState() throws Exception {
+        Fixture f=new Fixture("connectfour","drop:0","drop:1","drop:0","drop:1","drop:0","drop:1");
+        for(Object token:((Map<?,?>)field(f.view,"tokens")).values())
+            for(Entity part:(List<Entity>)field(token,"parts"))assertEquals(field(token,"to"),part.getLocation());
+        f.move("drop:0");for(int i=0;i<16;i++)f.view.tick();
+        assertTrue(f.room.board.finished());
+        assertEquals(7,((Map<?,?>)field(f.view,"tokens")).size());
+    }
     static Object field(Object t,String n)throws Exception{var f=t.getClass().getDeclaredField(n);f.setAccessible(true);return f.get(t);}
     static final class Fixture {
         final Tabletop3D plugin=mock(Tabletop3D.class);final Player player=mock(Player.class);final World world=mock(World.class);
-        final List<Entity> entities=new ArrayList<>();final Map<Entity,Location> positions=new HashMap<>();final Room room;final TableView view;
-        Fixture(String kind){
+        final List<Entity> entities=new ArrayList<>();final Map<Entity,Location> positions=new HashMap<>();final Map<Entity,org.joml.Matrix4f> poses=new HashMap<>();final Room room;final TableView view;
+        Fixture(String kind,String... initial){
+            when(plugin.displayOutcome(any(),anyString())).thenAnswer(i->i.getArgument(1));
             when(world.spawn(any(Location.class),any(Class.class),any(Consumer.class))).thenAnswer(inv->{
                 Entity e=mock((Class<? extends Entity>)inv.getArgument(1));entities.add(e);positions.put(e,((Location)inv.getArgument(0)).clone());
                 when(e.getPersistentDataContainer()).thenReturn(mock(PersistentDataContainer.class));when(e.isValid()).thenReturn(true);when(e.getLocation()).thenAnswer(a->positions.get(e).clone());
                 doAnswer(a->{positions.put(e,((Location)a.getArgument(0)).clone());return true;}).when(e).teleport(any(Location.class));
                 doAnswer(a->{positions.get(e).setYaw(a.getArgument(0));positions.get(e).setPitch(a.getArgument(1));return null;}).when(e).setRotation(anyFloat(),anyFloat());
+                if(e instanceof Display d)doAnswer(a->{poses.put(e,new org.joml.Matrix4f((org.joml.Matrix4f)a.getArgument(0)));return null;}).when(d).setTransformationMatrix(any());
                 ((Consumer<Entity>)inv.getArgument(2)).accept(e);return e;
             });
             UUID id=UUID.randomUUID();when(player.getUniqueId()).thenReturn(id);room=new Room(UUID.randomUUID(),kind,2,0,0);room.join(id,"本人");room.fillBots();room.board=GameFactory.create(kind,2,0);room.phase=Room.Phase.PLAYING;
+            for(String action:initial){int seat=room.board.currentPlayer();room.board.apply(seat,action);room.event(seat,new JsonPrimitive(action));room.revision++;}
             TableMaps maps=mock(TableMaps.class);when(maps.get(eq(world),any())).thenReturn(Collections.nCopies(4,new ItemStack(Material.FILLED_MAP)));
             view=new TableView(plugin,room,new Location(world,0,80,0),new NamespacedKey("servergames","board-cell"),maps);
         }
