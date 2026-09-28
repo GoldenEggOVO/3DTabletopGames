@@ -1,5 +1,8 @@
 package dev.tabletop3d.probe;
 
+import dev.tabletop3d.internal.gson.*;
+import dev.tabletop3d.rules.BoardGame;
+import dev.tabletop3d.rules.GameFactory;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -43,6 +46,10 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 require(Bukkit.getPluginManager().getPlugin(absent) == null, "unexpected " + absent);
             Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("3dtabletop"));
             require(boards.isEnabled(), "Boards enabled");
+            if (Boolean.getBoolean("boards.probe.snapshot")) {
+                snapshotProbe(boards);
+                return;
+            }
             World world = Bukkit.getWorlds().getFirst();
             modelProbe(boards, world);
             PluginCommand command = Objects.requireNonNull(Bukkit.getPluginCommand("3dtabletop:3dtabletop"));
@@ -107,6 +114,32 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         } catch (Throwable ex) {
             getLogger().log(java.util.logging.Level.SEVERE, "BOARDS_STANDALONE_PROBE_FAIL", ex);
         }
+    }
+
+    /** Compare an imported synthetic snapshot against the real startup restore path. */
+    private void snapshotProbe(Plugin plugin) throws Exception {
+        JsonObject source=JsonParser.parseString(Files.readString(Path.of("multi-room-snapshot.json"))).getAsJsonObject();
+        Map<?,?> restored=(Map<?,?>)field(plugin,"rooms");Set<String> kinds=new HashSet<>();int events=0;
+        require(restored.size()==source.getAsJsonArray("rooms").size(),"all snapshot rooms restored");
+        for(JsonElement element:source.getAsJsonArray("rooms")){
+            JsonObject saved=element.getAsJsonObject();Object room=restored.get(UUID.fromString(saved.get("id").getAsString()));
+            require(room!=null,"original room ID restored");String kind=saved.get("kind").getAsString();kinds.add(kind);
+            require(kind.equals(field(room,"kind"))&&saved.get("capacity").getAsInt()==(int)field(room,"capacity"),"kind and capacity preserved");
+            require(saved.get("seed").getAsLong()==(long)field(room,"seed"),"seed preserved");
+            require(saved.get("anchorWorld").getAsString().equals(field(room,"anchorWorld").toString()),"world preserved");
+            for(String key:List.of("anchorX","anchorY","anchorZ"))require(saved.get(key).getAsDouble()==(double)field(room,key),"position preserved");
+            require(new Gson().toJsonTree(field(room,"seats")).equals(saved.get("seats")),"seats preserved");
+            JsonArray history=(JsonArray)field(room,"history"),before=saved.getAsJsonArray("history");
+            require(history.size()>=before.size(),"saved history retained");
+            for(int i=0;i<before.size();i++)require(history.get(i).equals(before.get(i)),"saved event unchanged");
+            BoardGame live=(BoardGame)field(room,"board"),copy=GameFactory.create(kind,saved.get("capacity").getAsInt(),saved.get("seed").getAsLong());
+            for(JsonElement e:history){JsonObject action=e.getAsJsonObject();copy.apply(action.get("seat").getAsInt(),action.get("action").getAsString());}
+            require(copy.cells().equals(live.cells())&&copy.currentPlayer()==live.currentPlayer()&&copy.finished()==live.finished()&&Objects.equals(copy.outcome(),live.outcome()),"restored rule state matches history");
+            require(Set.of("PLAYING","FINISHED").contains(field(room,"phase").toString()),"restored active or finished phase");events+=before.size();
+        }
+        require(kinds.equals(Set.of("chess","xiangqi","gomoku","aeroplane","checkers","draughts","reversi","go9","go13","go","connectfour")),"all eleven game kinds");
+        require(((Map<?,?>)field(field(plugin,"arena"),"views")).size()==restored.size(),"one model per restored room");
+        getLogger().info("BOARDS_SNAPSHOT_RESTORE_PASS rooms="+restored.size()+" saved_events="+events+" kinds="+kinds.size());
     }
 
     /** Build and navigate real Dialog objects while keeping synthetic rooms out of saves. */

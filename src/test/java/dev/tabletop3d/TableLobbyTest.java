@@ -90,6 +90,21 @@ class TableLobbyTest {
         doReturn(List.of(full)).when(lobby).collect();MockBukkit.getMock().getScheduler().performOneTick();assertEquals(1,joined.get());
         verify(plugin).tell(second,Language.component("chat.table.full"));
     }
+    @Test void theUprightConnectFourRackCanOpenItsMenuFromEitherFace()throws Exception{
+        var plugin=plugin();World world=mock(World.class);plugin.arena=mock(GameWorld.class);
+        var room=new Room(UUID.randomUUID(),"connectfour",2,0,0);
+        TabletopTest.set(plugin,"rooms",new LinkedHashMap<>(Map.of(room.id,room)));
+        when(plugin.arena.center(0)).thenReturn(new Location(world,0,80,0));
+        var lobby=new TableLobby(plugin);var entry=lobby.collect().getFirst();
+        for(int side:new int[]{-1,1})assertTrue(Double.isFinite(TableLobby.hit(entry,new Location(world,0,82,side*2.25),new Vector(0,0,-side))),"The upper rack must be a menu target");
+    }
+    @Test void newTablesAreImmediatelyClickableBeforeThePeriodicRefresh()throws Exception{
+        var plugin=plugin();World world=mock(World.class);Player p=player(world);var lobby=spy(new TableLobby(plugin));
+        var joined=new java.util.concurrent.atomic.AtomicInteger();
+        var target=new TableLobby.Entry("fresh",new Location(world,0,80,0),1.5,1.03,"Chess","等候",List.of(),2,Set.of(),null,true,x->joined.incrementAndGet(),x->{});
+        doReturn(List.of(target)).when(lobby).collect();
+        assertTrue(lobby.request(p));MockBukkit.getMock().getScheduler().performOneTick();assertEquals(1,joined.get());
+    }
     @Test void seatedPlayerOpensMenuAndPlayingTableRejectsOutsider()throws Exception{
         var plugin=plugin();World world=mock(World.class);Player p=player(world);var lobby=spy(new TableLobby(plugin));
         var opened=new java.util.concurrent.atomic.AtomicInteger();var joined=new java.util.concurrent.atomic.AtomicInteger();

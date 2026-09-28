@@ -49,16 +49,19 @@ final class TableLobby implements Listener, AutoCloseable {
         List<Entry> out=new ArrayList<>();
         for(Room r:plugin.rooms.values()){
             Location c=plugin.arena.center(r.table);
-            out.add(new Entry("board:"+r.id,c,1.1,TableGeometry.SURFACE,Tabletop3D.gameName(r.kind),
+            out.add(new Entry("board:"+r.id,c,1.1,TableGeometry.SURFACE+(r.kind.equals("connectfour")?1.85:0),Tabletop3D.gameName(r.kind),
                     r.phase==Room.Phase.LOBBY?"等候":r.phase==Room.Phase.FINISHED?"已结束":"进行中",
                     r.seats.stream().map(Room.Seat::name).toList(),r.capacity,
                     new HashSet<>(r.seats.stream().map(Room.Seat::id).toList()),null,true,p->plugin.join(p,r),p->plugin.menus.room(p,r)));
         }
         return out;
     }
+    private boolean readEntries(){
+        try{entries=List.copyOf(collect());readFailed=false;return true;}
+        catch(ReflectiveOperationException|RuntimeException ex){if(!readFailed)plugin.getLogger().log(java.util.logging.Level.WARNING,"Could not read public table seats",ex);readFailed=true;return false;}
+    }
     void refresh(){
-        try{entries=List.copyOf(collect());readFailed=false;}
-        catch(ReflectiveOperationException|RuntimeException ex){if(!readFailed)plugin.getLogger().log(java.util.logging.Level.WARNING,"Could not read public table seats",ex);readFailed=true;return;}
+        if(!readEntries())return;
         Set<String> alive=new HashSet<>();
         for(Entry e:entries){
             if(e.board)continue;
@@ -92,6 +95,7 @@ final class TableLobby implements Listener, AutoCloseable {
     }
     boolean request(Player p){
         if(!p.isSneaking()||!plugin.allowed(p))return false;
+        if(!readEntries())return false;
         Location eye=p.getEyeLocation();Vector dir=eye.getDirection();Entry target=null;double nearest=Double.POSITIVE_INFINITY;
         for(Entry e:entries){double distance=hit(e,eye,dir);if(distance<nearest){nearest=distance;target=e;}}
         if(target==null)return false;

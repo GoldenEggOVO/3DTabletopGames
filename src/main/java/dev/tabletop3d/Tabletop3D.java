@@ -43,7 +43,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         } catch(Exception|LinkageError ex){getLogger().log(java.util.logging.Level.SEVERE,"Could not initialize table rooms",ex);Bukkit.getPluginManager().disablePlugin(this);}
     }
     @Override public void onDisable(){stopping=true;save();if(tableLobby!=null)tableLobby.close();if(coordinator!=null)coordinator.close();if(comfort!=null)comfort.close();if(menus!=null)menus.close();if(arena!=null)arena.close();}
-    public void suspendView(Player player){if(menus!=null)menus.forget(player);}
+    public void suspendView(Player player){if(menus!=null)menus.forget(player);if(arena!=null)arena.clearSelection(player);}
     public boolean hasActiveGame(Player player){return room(player)!=null;}
     boolean mainMenuAvailable(){return Bukkit.getPluginCommand("servermenu:servermenu")!=null;}
 
@@ -200,7 +200,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     void remove(Room r){for(Room.Seat seat:r.seats)if(!seat.bot())coordinator.release(seat.id(),r.kind);arena.remove(r);rooms.remove(r.id);for(Room.Seat s:r.seats){Player p=Bukkit.getPlayer(s.id());if(p!=null)suspendView(p);}}
     void onMain(Runnable action){if(!stopping&&isEnabled())Bukkit.getScheduler().runTask(this,action);}
     void tick(){
-        if(!loaded)return;long now=System.currentTimeMillis();pulse++;
+        if(!loaded)return;if(comfort!=null)comfort.sync();long now=System.currentTimeMillis();pulse++;
         for(Room r:new ArrayList<>(rooms.values())){
             if(r.undo!=null){if(now>=r.undo.expires){r.undo=null;r.revision++;r.changed=now;announce(r,Language.component("chat.undo.expired"));showRoomToHumans(r);}else continue;}
             if(r.phase==Room.Phase.PAUSED)continue;

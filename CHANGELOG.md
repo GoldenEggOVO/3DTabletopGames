@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.5.1-SNAPSHOT — local acceptance build
+
+- Restore the player's original collision setting when leaving the table area, changing worlds, disconnecting or disabling the plugin; limit hunger protection to authorized seated players within six blocks of their table.
+- Clear private selections when suspending a board view, including external menu transitions.
+- Make new tables immediately reachable by sneak-right-click and accept menu clicks on the upper Connect Four rack from either side.
+- Reject overlapping new table placement before changing room anchors; keep existing saved layouts readable.
+- Show unavailable placements and full columns in the action bar instead of filling chat.
+- Add an isolated eleven-game continuous-play probe and multi-game snapshot recovery checks, with optional soak evidence in local delivery records.
+- Run the Java compiler in a separate process for each compilation to avoid a reproduced JDK 25 compiler state failure. Runtime dependencies and schema 1 data are unchanged.
+
 ## 1.5.0-SNAPSHOT — local acceptance build
 
 - Browse every room across pages, with available seats first, persistent create/help controls and clear Join / Resume / View labels.

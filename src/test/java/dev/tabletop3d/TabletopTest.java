@@ -82,6 +82,22 @@ class TabletopTest {
         when(f.plugin.room(f.player)).thenReturn(f.room);f.room.board.apply(0,"place:7,7");f.clicks.clear();assertTrue(f.click());
         verify(f.plugin,times(1)).apply(any(),anyInt(),any(),any());
     }
+    @Test void anOccupiedPlacementReportsTheCellProblemWithoutChatSpam() throws Exception {
+        Fixture f=new Fixture();f.room.board.apply(0,"place:7,7");f.room.board.apply(1,"place:8,7");
+        assertTrue(f.click());verify(f.plugin,never()).tell(any(),any(net.kyori.adventure.text.Component.class));
+        verify(f.plugin,never()).apply(any(),anyInt(),any(),any());
+        verify(f.player).sendActionBar(Language.component("hint.position.unavailable").colorIfAbsent(net.kyori.adventure.text.format.NamedTextColor.RED));
+    }
+    @Test void suspendingTheViewAlsoClearsPrivateWorldSelection() throws Exception {
+        Fixture f=new Fixture();f.plugin.arena=f.arena;f.plugin.menus=mock(GameMenus.class);
+        doCallRealMethod().when(f.plugin).suspendView(f.player);
+        var selections=(Map<UUID,GameWorld.Pick>)TableViewTest.field(f.arena,"selections");
+        selections.put(f.player.getUniqueId(),new GameWorld.Pick(f.room.id,f.room.revision,"7,7",List.of()));
+        TabletopTest.set(f.plugin,"rooms",new HashMap<UUID,Room>());
+        TableView view=((Map<UUID,TableView>)TableViewTest.field(f.arena,"views")).get(f.room.id);
+        f.plugin.suspendView(f.player);
+        assertTrue(selections.isEmpty());verify(view).clear(f.player);verify(f.plugin.menus).forget(f.player);
+    }
     @Test void pointerDoesNotClickThroughWallsOrOutsideItsTable() throws Exception {
         Fixture f=new Fixture();when(f.world.rayTraceBlocks(any(),any(),anyDouble(),eq(FluidCollisionMode.NEVER),eq(true))).thenReturn(new RayTraceResult(new Vector(0,1,1)));
         assertFalse(f.click());verify(f.plugin,never()).apply(any(),anyInt(),any(),any());

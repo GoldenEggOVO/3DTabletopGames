@@ -98,7 +98,13 @@ final class GameWorld implements Listener, AutoCloseable {
         throw new IllegalStateException("房间缺少可用的世界坐标");
     }
     boolean atTableWorld(Player p,Room r){return p.getWorld().equals(center(r.table).getWorld());}
-    void anchor(Room r,Location location){r.anchorWorld=location.getWorld().getUID();Location snapped=TablePlacement.snap(location,2);r.anchorX=snapped.getX();r.anchorY=snapped.getY();r.anchorZ=snapped.getZ();}
+    void anchor(Room r,Location location){
+        Location snapped=TablePlacement.snap(location,2);UUID worldId=location.getWorld().getUID();
+        for(Room existing:plugin.rooms.values())if(existing!=r&&worldId.equals(existing.anchorWorld)
+            &&Math.abs(snapped.getX()-existing.anchorX)<3&&Math.abs(snapped.getZ()-existing.anchorZ)<3&&Math.abs(snapped.getY()-existing.anchorY)<3)
+            throw new IllegalArgumentException(dev.tabletop3d.ui.MessageText.plain(Language.component("error.table-overlap")));
+        r.anchorWorld=worldId;r.anchorX=snapped.getX();r.anchorY=snapped.getY();r.anchorZ=snapped.getZ();
+    }
 
     Location externalPlatform(int index){
         if(world==null||index<0||index>=5)throw new IllegalArgumentException("无效卡牌桌号");
@@ -294,7 +300,9 @@ final class GameWorld implements Listener, AutoCloseable {
             player.playSound(player.getLocation(),Sound.BLOCK_NOTE_BLOCK_HAT,.25f,1.8f);
             player.sendActionBar(Language.component("hint.selected").colorIfAbsent(NamedTextColor.GREEN));
         }else if(room.kind.equals("aeroplane")&&room.board.legalActions(seat).contains("roll"))plugin.tell(player,Language.component("chat.roll-first"));
-        else plugin.tell(player,Language.component(pick==null?"chat.select-first":"chat.destination"));
+        else if(Set.of("gomoku","go","go9","go13","reversi","connectfour").contains(room.kind))
+            player.sendActionBar(Language.component(room.kind.equals("connectfour")?"hint.column.unavailable":"hint.position.unavailable").colorIfAbsent(NamedTextColor.RED));
+        else player.sendActionBar(Language.component(pick==null?"chat.select-first":"chat.destination").colorIfAbsent(NamedTextColor.GRAY));
     }
     private void execute(Player player,Room room,List<String> choices) {
         selections.remove(player.getUniqueId());
@@ -315,7 +323,7 @@ final class GameWorld implements Listener, AutoCloseable {
     @EventHandler public void voidFall(PlayerMoveEvent e){if(world!=null&&e.getPlayer().getWorld().equals(world)&&e.getPlayer().getY()<60)e.getPlayer().teleport(world.getSpawnLocation());}
     @EventHandler public void quit(PlayerQuitEvent e){clearSelection(e.getPlayer());}
     @EventHandler public void changeWorld(PlayerChangedWorldEvent e){clearSelection(e.getPlayer());}
-    private void clearSelection(Player player) {
+    void clearSelection(Player player) {
         clicks.remove(player.getUniqueId());views.values().forEach(view->view.clear(player));
         Pick old=selections.remove(player.getUniqueId());
         if(old!=null){Room room=plugin.rooms.get(old.room());if(room!=null)render(room);}

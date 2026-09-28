@@ -17,6 +17,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--server-dir", type=Path, default=workspace / "table-games" / "tabletop-runtime",
                     help="Prepared Purpur 26.2 cache with purpur-2622.jar, libraries and versions")
 parser.add_argument("--maven-repo", type=Path, default=workspace / ".tools/m2")
+parser.add_argument("--rooms-snapshot", type=Path, help="Synthetic eleven-game snapshot to restore on boots 2 and 3; remaps its anchors to the fresh fixture world")
 args = parser.parse_args()
 source = args.server_dir
 version = ET.parse(project / "pom.xml").getroot().find("{*}version").text
@@ -39,7 +40,7 @@ shutil.copy2(jar, plugins / jar.name)
 tested_digest = hashlib.sha256((plugins / jar.name).read_bytes()).hexdigest()
 paper_api = args.maven_repo / "io/papermc/paper/paper-api/26.2.build.111-stable/paper-api-26.2.build.111-stable.jar"
 kyori = args.maven_repo / "net/kyori"
-classpath = os.pathsep.join(map(str, (paper_api,
+classpath = os.pathsep.join(map(str, (jar, paper_api,
     kyori / "adventure-key/5.2.0/adventure-key-5.2.0.jar",
     kyori / "adventure-api/5.2.0/adventure-api-5.2.0.jar")))
 classes = runtime / "probe-classes"
@@ -52,18 +53,39 @@ with zipfile.ZipFile(plugins / "BoardsStandaloneProbe.jar", "w", zipfile.ZIP_DEF
         archive.write(path, path.relative_to(classes).as_posix())
 
 boots = []
+snapshot_digest = None
 for number, marker in ((1, "BOARDS_STANDALONE_CREATE_PASS"), (2, "BOARDS_STANDALONE_RESTORE_PASS"),
                        (3, "BOARDS_STANDALONE_MIGRATION_PASS")):
+    if args.rooms_snapshot and number == 2:
+        snapshot_bytes = args.rooms_snapshot.read_bytes()
+        snapshot_digest = hashlib.sha256(snapshot_bytes).hexdigest()
+        snapshot = json.loads(snapshot_bytes)
+        current_rooms = plugins / "3dtabletop/rooms.json"
+        fixture_world = json.loads(current_rooms.read_text(encoding="utf-8"))["rooms"][0]["anchorWorld"]
+        if len(snapshot["rooms"]) != 11 or snapshot.get("returns"):
+            raise ValueError("Expected eleven synthetic rooms and no player return locations")
+        for room in snapshot["rooms"]:
+            if not room["seats"] or not all(seat["bot"] for seat in room["seats"]):
+                raise ValueError("Only synthetic all-bot snapshots are accepted")
+            room["anchorWorld"] = fixture_world
+        snapshot_text = json.dumps(snapshot, ensure_ascii=False, indent=2)
+        current_rooms.write_text(snapshot_text, encoding="utf-8")
+        (runtime / "multi-room-snapshot.json").write_text(snapshot_text, encoding="utf-8")
+    snapshot_mode = bool(args.rooms_snapshot and number > 1)
+    if snapshot_mode:
+        marker = "BOARDS_SNAPSHOT_RESTORE_PASS"
     if number == 3:
         current = plugins / "3dtabletop"
         legacy = plugins / "ServerBoards"
         if not current.resolve().is_relative_to(runtime.resolve()) or not legacy.resolve().is_relative_to(runtime.resolve()):
             raise RuntimeError("Unexpected migration fixture paths")
         shutil.move(current, legacy)
-    with (runtime / f"boot-{number}.stdout.log").open("w", encoding="utf-8") as output:
+    boot_stdout = runtime / f"boot-{number}.stdout.log"
+    with boot_stdout.open("w", encoding="utf-8") as output:
         server = subprocess.Popen([shutil.which("java"), "-Xms512M", "-Xmx2G", "-XX:TieredStopAtLevel=1",
                                    "-Dterminal.jline=false", "-Dterminal.ansi=false",
                                    "-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8",
+                                   f"-Dboards.probe.snapshot={str(snapshot_mode).lower()}",
                                    "-jar", "purpur-2622.jar", "nogui"],
                                   cwd=runtime, stdin=subprocess.PIPE, stdout=output,
                                   stderr=subprocess.STDOUT, text=True,
@@ -72,21 +94,23 @@ for number, marker in ((1, "BOARDS_STANDALONE_CREATE_PASS"), (2, "BOARDS_STANDAL
         try:
             deadline = time.monotonic() + 180
             while time.monotonic() < deadline and server.poll() is None:
-                logfile = runtime / "logs/latest.log"
-                log = logfile.read_text(encoding="utf-8", errors="replace") if logfile.exists() else ""
+                # Each boot owns a fresh file; latest.log can still contain the prior boot's marker.
+                log = boot_stdout.read_text(encoding="utf-8", errors="replace")
                 if marker in log:
                     found = True
                     break
                 if "BOARDS_STANDALONE_PROBE_FAIL" in log:
                     break
                 time.sleep(1)
+        finally:
             if server.poll() is None:
-                server.stdin.write("stop\n")
-                server.stdin.flush()
-                server.wait(timeout=40)
-        except (subprocess.TimeoutExpired, OSError):
-            server.kill()
-            server.wait()
+                try:
+                    server.stdin.write("stop\n")
+                    server.stdin.flush()
+                    server.wait(timeout=40)
+                except (subprocess.TimeoutExpired, OSError):
+                    server.kill()
+                    server.wait()
         log = (runtime / "logs/latest.log").read_text(encoding="utf-8", errors="replace")
         (runtime / f"boot-{number}.log").write_text(log, encoding="utf-8")
         migrated = number != 3 or (legacy.is_dir() and
@@ -101,6 +125,10 @@ for number, marker in ((1, "BOARDS_STANDALONE_CREATE_PASS"), (2, "BOARDS_STANDAL
 
 receipt = {"version": version, "jar_sha256": tested_digest, "runtime": str(runtime), "pass": len(boots) == 3 and all(boot["pass"] for boot in boots),
            "boots": boots, "client_visual_test": False, "production_deployed": False}
+if snapshot_digest:
+    receipt["snapshot_source_sha256"] = snapshot_digest
+    receipt["snapshot_rooms"] = 11
+    receipt["snapshot_world_remapped_for_fixture"] = True
 (runtime / "receipt.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2), encoding="utf-8")
 print(json.dumps(receipt, ensure_ascii=False, indent=2))
 raise SystemExit(0 if receipt["pass"] else 1)

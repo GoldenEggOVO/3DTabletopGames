@@ -11,6 +11,19 @@ class PortableTableTest {
  @TempDir Path dir;
  @BeforeEach void setup(){MockBukkit.mock();}
  @AfterEach void cleanup(){MockBukkit.unmock();}
+ @Test void newTablesCannotIntersectExistingModelsButOtherFloorsAndWorldsRemainAvailable()throws Exception{
+  var plugin=mock(Tabletop3D.class);TabletopTest.set(plugin,"rooms",new LinkedHashMap<UUID,Room>());
+  var arena=mock(GameWorld.class,CALLS_REAL_METHODS);TabletopTest.set(arena,"plugin",plugin);
+  World world=MockBukkit.getMock().addSimpleWorld("tables"),other=MockBukkit.getMock().addSimpleWorld("other");
+  Room first=new Room(UUID.randomUUID(),"connectfour",2,0,0);arena.anchor(first,new Location(world,0,80,0));plugin.rooms.put(first.id,first);
+  Room next=new Room(UUID.randomUUID(),"chess",2,0,1);
+  assertThrows(IllegalArgumentException.class,()->arena.anchor(next,new Location(world,0,80,0)));
+  assertThrows(IllegalArgumentException.class,()->arena.anchor(next,new Location(world,2,80,2)));
+  assertNull(next.anchorWorld,"A rejected placement must not set an anchor");
+  assertDoesNotThrow(()->arena.anchor(next,new Location(world,3,80,0)));
+  assertDoesNotThrow(()->arena.anchor(next,new Location(world,0,83,0)));
+  assertDoesNotThrow(()->arena.anchor(next,new Location(other,0,80,0)));
+ }
  @Test void arbitraryWorldAndGridCenterArePreservedAndSeatChecksDoNotEditTerrain() throws Exception {
   var server=MockBukkit.getMock();var w=server.addSimpleWorld("survival");var other=server.addSimpleWorld("creative");
   var plugin=mock(Tabletop3D.class);when(plugin.getName()).thenReturn("3dtabletop");when(plugin.namespace()).thenReturn("3dtabletop");when(plugin.getPluginLoader()).thenReturn(MockBukkit.createMockPlugin().getPluginLoader());when(plugin.getServer()).thenReturn(server);when(plugin.isEnabled()).thenReturn(true);when(plugin.getDataFolder()).thenReturn(dir.toFile());

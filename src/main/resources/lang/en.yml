@@ -599,3 +599,6 @@ messages:
   'action.drop': 'Drop in column {column}'
   'menu.positions.title': 'Choose a Position'
   'menu.positions.description': 'Choose a legal position to play immediately, or click the board in the world.'
+  'error.table-overlap': 'Another table is too close. Move at least 3 blocks along X or Z from its center, or choose another floor.'
+  'hint.position.unavailable': 'You cannot place here · Choose another position'
+  'hint.column.unavailable': 'That column is full · Choose another column'
