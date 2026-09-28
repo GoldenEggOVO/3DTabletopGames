@@ -38,7 +38,7 @@ public final class XiangqiGame implements BoardGame {
             case 1 -> piece.getColor() == 0 ? "帅" : "将";
             case 2 -> piece.getColor() == 0 ? "仕" : "士";
             case 3 -> piece.getColor() == 0 ? "相" : "象";
-            case 4 -> "马"; case 5 -> "车"; case 6 -> "炮";
+            case 4 -> "马"; case 5 -> "车"; case 6 -> piece.getColor() == 0 ? "炮" : "砲";
             case 7 -> piece.getColor() == 0 ? "兵" : "卒";
             default -> throw new IllegalStateException("Unknown piece");
         };

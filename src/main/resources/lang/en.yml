@@ -237,6 +237,7 @@ translations:
   '游戏类型不能为空': 'Game type cannot be empty'
   '潜行右键：加入 / 房间菜单': 'Sneak-right-click: Join / Room Menu'
   '炮': 'C'
+  '砲': 'C'
   '点': ' pips'
   '点击保留 / 重掷': 'Click to hold / reroll'
   '点击恢复活子': 'Click to restore live stones'
