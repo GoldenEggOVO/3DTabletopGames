@@ -15,6 +15,7 @@ final class GameMenus implements AutoCloseable {
         Button(String id,String label,Runnable action){this(id,label,action,null);}
         Button(String label,Runnable action){this("entry",label,action);}
         Button(String id,Component label,Runnable action){this(id,MessageText.plain(label),action,label);}
+        Button(Component label,Runnable action){this("entry",label,action);}
     }
     record Session(UUID token,UUID world,long expires,List<Button> buttons){}
     private final Tabletop3D plugin;private final Map<UUID,Session> sessions=new HashMap<>();
@@ -52,119 +53,116 @@ final class GameMenus implements AutoCloseable {
         try{UUID token=UUID.fromString(a[0].substring("3dtabletop:".length()));int index=Integer.parseInt(a[1]);Session s=sessions.get(p.getUniqueId());
             if(s==null||!s.token().equals(token)||!s.world().equals(p.getWorld().getUID())||System.currentTimeMillis()>=s.expires()||index<0||index>=s.buttons().size())return;
             sessions.remove(p.getUniqueId());if(plugin.allowed(p))s.buttons().get(index).action().run();
-        }catch(IllegalArgumentException ex){plugin.tell(p,ex.getMessage()==null?"页面已更新，请重新打开":ex.getMessage());}
+        }catch(IllegalArgumentException ex){plugin.tell(p,ex.getMessage()==null?Language.component("error.page-changed"):Language.legacy(ex.getMessage()));}
     }
     void forget(Player p){sessions.remove(p.getUniqueId());}
     void main(Player p){
         List<Button> b=new ArrayList<>();Room current=plugin.room(p);
         if(current!=null)b.add(new Button("resume",Language.component("menu.resume"),()->plugin.resume(p,current)));
-        for(String kind:Tabletop3D.NAMES.keySet())if(!Set.of("go9","go13").contains(kind))b.add(new Button(kind,Tabletop3D.gameName(kind),()->games(p,kind)));
+        for(String kind:Tabletop3D.NAMES.keySet())if(!Set.of("go9","go13").contains(kind))b.add(new Button(kind,RoomText.game(kind),()->games(p,kind)));
         show(p,Language.component("menu.title"),Component.empty(),b,null,"catalog");
     }
     void games(Player p,String kind){
         List<Button>b=new ArrayList<>();b.add(new Button("entry",Language.component("menu.create"),()->sizes(p,kind)));
-        plugin.rooms.values().stream().filter(r->r.kind.equals(kind)||kind.equals("go")&&Set.of("go9","go13").contains(r.kind)).limit(12).forEach(r->b.add(new Button(r.name()+"  "+r.seats.size()+"/"+r.capacity+" · "+phase(r),()->{if(r.seat(p.getUniqueId())>=0)plugin.resume(p,r);else if(r.phase==Room.Phase.LOBBY)plugin.join(p,r);else observe(p,r);})));
-        show(p,Tabletop3D.gameName(kind),"",b,()->main(p));
+        plugin.rooms.values().stream().filter(r->r.kind.equals(kind)||kind.equals("go")&&Set.of("go9","go13").contains(r.kind)).limit(12).forEach(r->b.add(new Button(Language.component("room.list","room",RoomText.name(r),"occupied",r.seats.size(),"capacity",r.capacity,"phase",RoomText.phase(r)),()->{if(r.seat(p.getUniqueId())>=0)plugin.resume(p,r);else if(r.phase==Room.Phase.LOBBY)plugin.join(p,r);else observe(p,r);})));
+        show(p,RoomText.game(kind),Component.empty(),b,()->main(p));
     }
-    void sizes(Player p,String kind){if(kind.equals("go")){show(p,"选择围棋棋盘","9路适合短局，13路适中，19路为完整大棋盘；均采用面积计分、白贴7.5目。",List.of(new Button("9路 · 快速对弈",()->plugin.create(p,"go9",2)),new Button("13路 · 进阶对弈",()->plugin.create(p,"go13",2)),new Button("19路 · 完整棋盘",()->plugin.create(p,"go",2))),()->games(p,kind));return;}int[] sizes=switch(kind){case"uno"->new int[]{2,3,4,6,8,10};case"checkers"->new int[]{2,3,4,6};case"aeroplane","yacht"->new int[]{2,3,4};default->new int[]{Tabletop3D.defaultCapacity(kind)};};
-        if(sizes.length==1){plugin.create(p,kind,sizes[0]);return;}List<Button>b=new ArrayList<>();for(int size:sizes)b.add(new Button(size+"人桌",()->plugin.create(p,kind,size)));show(p,"选择人数","创建后可等好友加入，也可补齐陪练。",b,()->games(p,kind));}
-    static String phase(Room r){return switch(r.phase){case LOBBY->"等候";case STARTING->"正在准备";case PLAYING->"对局中";case PAUSED->"已暂停，记录保留";case FINISHED->"已结束";case ABORTED->"已关闭";};}
-    String status(Room r){StringBuilder s=new StringBuilder("§7"+phase(r)+"\n");for(int i=0;i<r.seats.size();i++){Room.Seat seat=r.seats.get(i);s.append(i+1).append("号 ").append(seat.name()).append(r.ready.contains(seat.id())?" ✓":"").append(r.turn()==i?" §e← 当前回合§7":"").append('\n');}
-        if(r.board!=null)r.board.publicInfo().forEach((k,v)->{if(!Set.of("rules","rulesVariant").contains(k))s.append(v).append('\n');});
-        if(r.undo!=null)s.append("§e正在等待悔棋确认，暂时停止计时和落子。\n");
-        if(r.phase==Room.Phase.FINISHED||r.phase==Room.Phase.PAUSED)s.append(plugin.displayOutcome(r,r.result));return s.toString();}
+    void sizes(Player p,String kind){if(kind.equals("go")){show(p,Language.component("menu.go.title"),Language.component("menu.go.description"),List.of(new Button(Language.component("menu.go.small"),()->plugin.create(p,"go9",2)),new Button(Language.component("menu.go.medium"),()->plugin.create(p,"go13",2)),new Button(Language.component("menu.go.full"),()->plugin.create(p,"go",2))),()->games(p,kind));return;}int[] sizes=switch(kind){case"uno"->new int[]{2,3,4,6,8,10};case"checkers"->new int[]{2,3,4,6};case"aeroplane","yacht"->new int[]{2,3,4};default->new int[]{Tabletop3D.defaultCapacity(kind)};};
+        if(sizes.length==1){plugin.create(p,kind,sizes[0]);return;}List<Button>b=new ArrayList<>();for(int size:sizes)b.add(new Button(Language.component("menu.capacity.option","count",size),()->plugin.create(p,kind,size)));show(p,Language.component("menu.capacity.title"),Language.component("menu.capacity.description"),b,()->games(p,kind));}
+    Component status(Room r){
+        Component text=RoomText.phase(r).append(Component.newline());int turn=r.turn();
+        for(int i=0;i<r.seats.size();i++){Room.Seat seat=r.seats.get(i);text=text.append(Language.component("room.seat","number",i+1,"player",RoomText.player(seat,i+1),"ready",r.ready.contains(seat.id())?" ✓":"","turn",turn==i?Component.space().append(Language.component("room.turn")):Component.empty())).append(Component.newline());}
+        if(r.board!=null)for(var entry:r.board.publicInfo().entrySet())if(!Set.of("rules","rulesVariant").contains(entry.getKey()))text=text.append(Language.legacy(entry.getValue())).append(Component.newline());
+        if(r.undo!=null)text=text.append(Language.component("room.undo.paused"));
+        if(r.phase==Room.Phase.FINISHED||r.phase==Room.Phase.PAUSED)text=text.append(RoomText.outcome(r,r.result));return text;
+    }
     void room(Player p,Room r){
         if(!plugin.rooms.containsKey(r.id)){main(p);return;}int seat=r.seat(p.getUniqueId());if(seat<0){observe(p,r);return;}
         List<Button>b=new ArrayList<>();long revision=r.revision;
-        if(r.phase==Room.Phase.LOBBY){b.add(new Button("ready",r.ready.contains(p.getUniqueId())?"取消准备":"准备",()->plugin.ready(p,r)));if(seat==0)b.add(new Button("bots","补齐陪练并开始",()->plugin.startWithBots(p,r)));}
+        if(r.phase==Room.Phase.LOBBY){b.add(new Button("ready",Language.component(r.ready.contains(p.getUniqueId())?"menu.unready":"menu.ready"),()->plugin.ready(p,r)));if(seat==0)b.add(new Button("bots",Language.component("menu.bots"),()->plugin.startWithBots(p,r)));}
         if(r.phase==Room.Phase.PLAYING){
-            b.add(new Button("play","回到对局",()->{forget(p);plugin.enterArena(p,r);}));
+            b.add(new Button("play",Language.component("menu.play"),()->{forget(p);plugin.enterArena(p,r);}));
             if(r.board instanceof GoGame go){for(String action:List.of("pass","accept","resume"))if(go.legalActions(seat).contains(action))b.add(new Button(actionLabel(r,action),()->plugin.action(p,r,revision,new JsonPrimitive(action))));}
         }
-        if(r.undo!=null){if(r.undo.pending.contains(p.getUniqueId()))b.add(new Button("§a同意悔棋",()->plugin.approveUndo(p,r)));b.add(new Button(r.undo.requester.equals(p.getUniqueId())?"取消悔棋申请":"§c拒绝悔棋",()->plugin.rejectUndo(p,r)));}
-        if(r.phase==Room.Phase.FINISHED)b.add(new Button("rematch",r.ready.contains(p.getUniqueId())?"已准备，等待同桌":"再来一局",()->plugin.rematch(p,r)));
-        b.add(new Button("options","房间选项",()->roomOptions(p,r)));
-        show(p,r.name(),roomSummary(r),b,()->games(p,r.kind),"room");
+        if(r.undo!=null){if(r.undo.pending.contains(p.getUniqueId()))b.add(new Button(Language.component("menu.undo.approve"),()->plugin.approveUndo(p,r)));b.add(new Button(Language.component(r.undo.requester.equals(p.getUniqueId())?"menu.undo.cancel":"menu.undo.reject"),()->plugin.rejectUndo(p,r)));}
+        if(r.phase==Room.Phase.FINISHED)b.add(new Button("rematch",Language.component(r.ready.contains(p.getUniqueId())?"menu.rematch.waiting":"menu.rematch"),()->plugin.rematch(p,r)));
+        b.add(new Button("options",Language.component("menu.options"),()->roomOptions(p,r)));
+        show(p,RoomText.name(r),roomSummary(r),b,()->games(p,r.kind),"room");
     }
-    String roomSummary(Room r){
-        StringBuilder text=new StringBuilder(phase(r)+" · "+r.seats.size()+"/"+r.capacity+" 人\n");
-        for(int i=0;i<r.seats.size();i++){Room.Seat seat=r.seats.get(i);text.append(seat.name());
-            if(r.phase==Room.Phase.LOBBY||r.phase==Room.Phase.FINISHED)text.append(r.ready.contains(seat.id())?" ✓ 已准备":" · 未准备");
-            else if(r.turn()==i)text.append(" ← 当前回合");text.append('\n');}
-        if(r.undo!=null)text.append("等待悔棋确认\n");
-        if(r.phase==Room.Phase.FINISHED||r.phase==Room.Phase.PAUSED)text.append(plugin.displayOutcome(r,r.result));
-        return text.toString().strip();
+    Component roomSummary(Room r){
+        Component text=Language.component("room.summary","phase",RoomText.phase(r),"occupied",r.seats.size(),"capacity",r.capacity);int turn=r.turn();
+        for(int i=0;i<r.seats.size();i++){Room.Seat seat=r.seats.get(i);Component state=Component.empty();
+            if(r.phase==Room.Phase.LOBBY||r.phase==Room.Phase.FINISHED)state=Language.component(r.ready.contains(seat.id())?"room.ready":"room.unready");
+            else if(turn==i)state=Language.component("room.turn");
+            text=text.append(Component.newline()).append(Language.component("room.member","player",RoomText.player(seat,i+1),"state",state));}
+        if(r.undo!=null)text=text.append(Component.newline()).append(Language.component("room.undo.pending"));
+        if(r.phase==Room.Phase.FINISHED||r.phase==Room.Phase.PAUSED)text=text.append(Component.newline()).append(RoomText.outcome(r,r.result));
+        return text;
     }
     void roomOptions(Player p,Room r){
         if(!plugin.rooms.containsKey(r.id)||r.seat(p.getUniqueId())<0){main(p);return;}
         List<Button>b=new ArrayList<>();
-        b.add(new Button("刷新房间",()->room(p,r)));
-        if(r.undo==null&&r.board!=null&&!r.history.isEmpty()&&(r.phase==Room.Phase.PLAYING||r.phase==Room.Phase.FINISHED))b.add(new Button("申请悔棋",()->plugin.requestUndo(p,r)));
-        b.add(new Button("离开房间",()->confirmLeave(p)));
-        show(p,"房间选项","",b,()->room(p,r));
+        b.add(new Button(Language.component("menu.refresh"),()->room(p,r)));
+        if(r.undo==null&&r.board!=null&&!r.history.isEmpty()&&(r.phase==Room.Phase.PLAYING||r.phase==Room.Phase.FINISHED))b.add(new Button(Language.component("menu.undo.request"),()->plugin.requestUndo(p,r)));
+        b.add(new Button(Language.component("menu.leave.title"),()->confirmLeave(p)));
+        show(p,Language.component("menu.options"),Component.empty(),b,()->room(p,r));
     }
     void yacht(Player p,Room r){
         if(!(r.board instanceof YachtGame g))return;int seat=r.seat(p.getUniqueId());long rev=r.revision;List<String> legal=g.legalActions(seat);List<Button>b=new ArrayList<>();
-        if(legal.contains("roll"))b.add(new Button("roll","掷骰子 · 剩余 "+(3-g.rolls())+" 次",()->yachtAction(p,r,rev,"roll")));
-        for(int i=0;i<5;i++){String a="hold:die"+i;if(legal.contains(a))b.add(new Button((g.held(i)?"§a✓ 保留":"□ 重掷")+" 第"+(i+1)+"颗 · "+g.dice()[i]+"点",()->yachtAction(p,r,rev,a)));}
-        StringBuilder sheet=new StringBuilder("骰子：");for(int i=0;i<5;i++)sheet.append(g.dice()[i]).append(g.held(i)?"✓  ":"  ");sheet.append("\n");
-        b.add(new Button("score",legal.stream().anyMatch(a->a.startsWith("score:"))?"选择计分项":"查看计分表",()->yachtScores(p,r)));
-        show(p,"快艇骰子",sheet+"\n"+roomSummary(r),b,()->room(p,r),"yacht");
+        if(legal.contains("roll"))b.add(new Button("roll",Language.component("menu.yacht.roll","count",3-g.rolls()),()->yachtAction(p,r,rev,"roll")));
+        for(int i=0;i<5;i++){String a="hold:die"+i;if(legal.contains(a))b.add(new Button(Language.component("menu.yacht.die","held",Language.component(g.held(i)?"menu.yacht.hold":"menu.yacht.reroll"),"number",i+1,"value",g.dice()[i]),()->yachtAction(p,r,rev,a)));}
+        StringBuilder dice=new StringBuilder();for(int i=0;i<5;i++)dice.append(g.dice()[i]).append(g.held(i)?"✓  ":"  ");
+        b.add(new Button("score",Language.component(legal.stream().anyMatch(a->a.startsWith("score:"))?"menu.yacht.choose-score":"menu.yacht.view-score"),()->yachtScores(p,r)));
+        show(p,RoomText.game("yacht"),Language.component("menu.yacht.dice","dice",dice).append(Component.newline()).append(roomSummary(r)),b,()->room(p,r),"yacht");
     }
     void yachtScores(Player p,Room r){
         if(!(r.board instanceof YachtGame g)||r.seat(p.getUniqueId())<0)return;
         long revision=r.revision;List<String> legal=g.legalActions(r.seat(p.getUniqueId()));
-        List<Button> buttons=new ArrayList<>();StringBuilder sheet=new StringBuilder();
+        List<Button> buttons=new ArrayList<>();Component sheet=Component.empty();
         for(int i=0;i<12;i++){
             String action="score:"+YachtGame.CATEGORIES.get(i);
-            sheet.append(YachtGame.LABELS.get(i)).append("：");
-            for(int seat=0;seat<r.capacity;seat++)sheet.append(seat+1).append("号 ").append(g.written(seat,i)<0?"—":g.written(seat,i)).append("  ");
-            sheet.append('\n');
-            if(legal.contains(action))buttons.add(new Button(YachtGame.LABELS.get(i)+" · "+YachtGame.score(i,g.dice())+" 分",()->yachtAction(p,r,revision,action)));
+            Component category=Language.component("score.category."+i),scores=Component.empty();
+            for(int seat=0;seat<r.capacity;seat++)scores=scores.append(Language.component("menu.yacht.seat-score","number",seat+1,"score",g.written(seat,i)<0?"—":g.written(seat,i)));
+            sheet=sheet.append(Language.component("menu.yacht.score-row","category",category,"scores",scores)).append(Component.newline());
+            if(legal.contains(action))buttons.add(new Button(Language.component("menu.yacht.score","category",category,"score",YachtGame.score(i,g.dice())),()->yachtAction(p,r,revision,action)));
         }
-        show(p,"计分表",sheet.toString(),buttons,()->yacht(p,r),"yacht");
+        show(p,Language.component("menu.yacht.score-sheet"),sheet,buttons,()->yacht(p,r),"yacht");
     }
     void yachtAction(Player p,Room r,long revision,String action){plugin.action(p,r,revision,new JsonPrimitive(action));if(plugin.rooms.containsKey(r.id)&&r.phase==Room.Phase.PLAYING)yacht(p,r);}
     void observe(Player p,Room r){
-        if(plugin.room(p)!=null){plugin.tell(p,"请先结束自己的对局再观战");return;}
-        List<Button>b=new ArrayList<>();b.add(new Button("刷新公开牌局",()->observe(p,r)));
-        if(r.board!=null)b.add(new Button("前往棋盘旁",()->{if(!p.getWorld().equals(plugin.arena.world))plugin.returns.putIfAbsent(p.getUniqueId(),p.getLocation());p.teleport(plugin.arena.seatLocation(r,0));}));
-        show(p,r.name()+" · 观战",status(r)+"\n§8观战仅显示公开信息，不显示任何玩家手牌。",b,()->games(p,r.kind));
+        if(plugin.room(p)!=null){plugin.tell(p,Language.component("chat.observe.own-game"));return;}
+        List<Button>b=new ArrayList<>();b.add(new Button(Language.component("menu.observe.refresh"),()->observe(p,r)));
+        if(r.board!=null)b.add(new Button(Language.component("menu.observe.visit"),()->{if(!p.getWorld().equals(plugin.arena.world))plugin.returns.putIfAbsent(p.getUniqueId(),p.getLocation());p.teleport(plugin.arena.seatLocation(r,0));}));
+        show(p,Language.component("menu.observe.title","room",RoomText.name(r)),status(r).append(Language.component("menu.observe.description")),b,()->games(p,r.kind));
     }
     void boardSources(Player p,Room r,int page){
         int seat=r.seat(p.getUniqueId());if(r.board==null)return;
         List<String> legal=r.board.legalActions(seat);Map<String,List<String>> bySource=new LinkedHashMap<>();
         for(String action:legal){String[] split=action.split(":");String key=split.length>=2?split[1]:action;bySource.computeIfAbsent(key,k->new ArrayList<>()).add(action);}
         List<String> keys=new ArrayList<>(bySource.keySet());List<Button>b=new ArrayList<>();int from=Math.max(0,Math.min(page*12,keys.size()));
-        for(String key:keys.subList(from,Math.min(from+12,keys.size())))b.add(new Button(labelCell(r,key)+" · "+bySource.get(key).size()+"种走法",()->boardChoices(p,r,bySource.get(key),0)));
-        if(from>0)b.add(new Button("上一页",()->boardSources(p,r,page-1)));if(from+12<keys.size())b.add(new Button("下一页",()->boardSources(p,r,page+1)));
-        show(p,"选择棋子",legal.isEmpty()?"现在没有可操作的棋子，请等待你的回合。":"选择棋子，再选择落点；也可以直接点击世界里的棋盘。",b,()->room(p,r));
+        for(String key:keys.subList(from,Math.min(from+12,keys.size())))b.add(new Button(Language.component("menu.pieces.option","piece",labelCell(r,key),"count",bySource.get(key).size()),()->boardChoices(p,r,bySource.get(key),0)));
+        if(from>0)b.add(new Button(Language.component("menu.previous"),()->boardSources(p,r,page-1)));if(from+12<keys.size())b.add(new Button(Language.component("menu.next"),()->boardSources(p,r,page+1)));
+        show(p,Language.component("menu.pieces.title"),Language.component(legal.isEmpty()?"menu.pieces.empty":"menu.pieces.description"),b,()->room(p,r));
     }
-    String labelCell(Room r,String id){return r.board.cells().stream().filter(c->c.id().equals(id)).map(c->c.id()+" "+c.piece()).findFirst().orElse(id.equals("roll")?"掷骰子":id);}
+    Component labelCell(Room r,String id){return r.board.cells().stream().filter(c->c.id().equals(id)).map(c->Component.text(c.id()+" "+Language.glyph(c.piece()))).map(c->(Component)c).findFirst().orElseGet(()->id.equals("roll")?Language.component("action.roll"):Component.text(id));}
     void boardChoices(Player p,Room r,List<String> choices,int page){
         long revision=r.revision;List<Button>b=new ArrayList<>();int from=Math.max(0,Math.min(page*12,choices.size()));
         for(String action:choices.subList(from,Math.min(from+12,choices.size())))b.add(new Button(actionLabel(r,action),()->plugin.action(p,r,revision,new JsonPrimitive(action))));
-        if(from>0)b.add(new Button("上一页",()->{if(r.revision!=revision)boardSources(p,r,0);else boardChoices(p,r,choices,page-1);}));if(from+12<choices.size())b.add(new Button("下一页",()->{if(r.revision!=revision)boardSources(p,r,0);else boardChoices(p,r,choices,page+1);}));
-        show(p,"选择走法",r.kind.equals("chess")?"升变有后、车、象、马四个选项。每次操作都会重新检查回合。":"选择本回合允许的操作，也可以回到桌边直接点击棋盘。",b,()->boardSources(p,r,0));
+        if(from>0)b.add(new Button(Language.component("menu.previous"),()->{if(r.revision!=revision)boardSources(p,r,0);else boardChoices(p,r,choices,page-1);}));if(from+12<choices.size())b.add(new Button(Language.component("menu.next"),()->{if(r.revision!=revision)boardSources(p,r,0);else boardChoices(p,r,choices,page+1);}));
+        show(p,Language.component("menu.moves.title"),Language.component(r.kind.equals("chess")?"menu.moves.chess":"menu.moves.description"),b,()->boardSources(p,r,0));
     }
-    static String actionLabel(Room r,String action){String[] s=action.split(":");if(action.equals("roll"))return"掷骰子";if(action.equals("pass"))return"停一手 · 连续双方停手进入计分";if(action.equals("accept"))return"§a确认死子与计分";if(action.equals("resume"))return"§e对计分有异议 · 继续行棋";if(s.length==2)return(s[0].equals("dead")?"标记 / 取消死子 ":"落子 ")+s[1];if(s.length>=3)return s[1]+" → "+s[2]+(s.length==4?" · 升变"+switch(s[3]){case"q"->"后";case"r"->"车";case"b"->"象";case"n"->"马";default->s[3];}:"");return action;}
+    static Component actionLabel(Room r,String action){String[] s=action.split(":");if(Set.of("roll","pass","accept","resume").contains(action))return Language.component("action."+action);if(s.length==2)return Language.component(s[0].equals("dead")?"action.dead":"action.place","cell",s[1]);if(s.length>=3)return s.length==4?Language.component("action.promote","from",s[1],"to",s[2],"piece",Set.of("q","r","b","n").contains(s[3])?Language.component("promotion."+s[3]):Component.text(s[3])):Language.component("action.move","from",s[1],"to",s[2]);return Component.text(action);}
 
 
 
     void confirmLeave(Player p){Room r=plugin.room(p);if(r==null){main(p);return;}show(p,Language.component("menu.leave.title"),Language.component("menu.leave.description"),List.of(new Button("entry",Language.component("menu.leave.confirm"),()->plugin.leave(p))),()->room(p,r));}
-    void rules(Player p,String kind){String text=switch(kind){
-        case"gomoku"->"15×15自由五子棋，先连成五子或更多获胜；不设黑方禁手。";
-        case"xiangqi"->"中国象棋：将帅照面、马腿、象眼、象不过河、九宫及自将过滤。将死或困毙判负；重复和长将规则以规则面板标注为准。";
-        case"chess"->"国际象棋：王车易位、吃过路兵、四种升变、将死与逼和，含重复与50回合和棋判定。";
-        case"aeroplane"->"飞行棋：6点起飞，同色跳跃/飞越，叠机壁垒；连续第三个6使未完成飞机回营。以此服务器变体为准。";
-        case"checkers"->"121孔六角星中国跳棋，支持2/3/4/6人；相邻步行或连续短跳，把全部棋子送入对面营地获胜。";
-        case"draughts"->"8×8 英美式西洋跳棋：黑先，兵只向前走及吃子，王可双向短跳；有吃必吃，连吃必须用同一棋子，升王立即结束该回合。三次同局面或双方各40步无吃子、无兵移动自动和棋。";
-        case"reversi"->"8×8 黑白棋：黑先，横竖斜线夹住对方棋子并全部翻面；无合法落点自动停手，双方都无法落子时，多子者获胜。";
-        case"go","go9","go13"->"围棋有9/13/19路。面积计分、白贴7.5目，禁自杀和全局同形。双方连续停手后进入死子协商：点击棋块切换标记，双方确认后结算；任何一方都可恢复行棋解决争议。陪练只会基础落子，不具备职业判断。";
-        case"yacht"->"2–4人快艇骰子，每人12轮，每回合最多掷3次，可保留任意骰子；每种计分项只填一次，可主动填零。小顺15、大顺30、快艇50，上半区达到63分额外加35分；没有额外快艇奖励。点击桌上骰子可保留，操作菜单填写计分表。";
-        case"connectfour"->"7列6行竖直四子棋；点击列后重力落子，横、竖、双斜向四连获胜；满盘无赢家则和局。";
-        default->"选择棋类后查看规则。";
-    };Room r=plugin.room(p);if(r!=null&&r.board!=null)text+="\n\n"+r.board.publicInfo().getOrDefault("rules","")+"\n"+r.board.publicInfo().getOrDefault("rulesVariant","");show(p,Tabletop3D.NAMES.getOrDefault(kind,kind)+"规则",text+"\n\n§7回合超时由基础陪练代走；离线/离开世界保留120秒。关闭菜单不退房。",List.of(),()->{if(r!=null)room(p,r);else main(p);});}
+    void rules(Player p,String kind){
+        String key=Set.of("go9","go13").contains(kind)?"go":Tabletop3D.NAMES.containsKey(kind)||kind.equals("yacht")?kind:"default";
+        Component text=Language.component("rules."+key);Room r=plugin.room(p);
+        if(r!=null&&r.board!=null){var info=r.board.publicInfo();text=text.append(Component.newline()).append(Component.newline()).append(Language.legacy(info.getOrDefault("rules",""))).append(Component.newline()).append(Language.legacy(info.getOrDefault("rulesVariant","")));}
+        text=text.append(Component.newline()).append(Component.newline()).append(Language.component("rules.footer","seconds",plugin.getConfig().getLong("reconnect-seconds",120)));
+        show(p,Language.component("rules.title","game",RoomText.game(kind)),text,List.of(),()->{if(r!=null)room(p,r);else main(p);});
+    }
     static String roomState(String state){return switch(state){case "WAITING","LOBBY"->"等候";case "PLAYING","RUNNING"->"对局中";case "STARTING"->"正在准备";case "FINISHED","ENDED"->"已结束";case "PAUSED"->"已暂停";case "ABORTED","CLOSED"->"已关闭";default->state;};}
     static String roomLabel(String game,String id,int occupied,int capacity,String state){return game+" · "+id+"  "+occupied+"/"+capacity+" · "+roomState(state);}
 

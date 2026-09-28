@@ -10,6 +10,24 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class WindowMenuTest {
+    @Test void roomMenusDoNotTranslateOrParseHumanNames() {
+        var plugin=mock(Tabletop3D.class);when(plugin.allowed(any())).thenReturn(true);
+        var player=mock(Player.class);UUID id=UUID.randomUUID();when(player.getUniqueId()).thenReturn(id);
+        var world=mock(World.class);when(world.getUID()).thenReturn(UUID.randomUUID());when(player.getWorld()).thenReturn(world);
+        var room=new Room(UUID.randomUUID(),"chess",2,0,0);
+        String name="<red>准备&c陪练";room.join(id,name);
+        // The mocked plugin has no initialized fields; provide the live room registry.
+        try {var field=Tabletop3D.class.getDeclaredField("rooms");field.setAccessible(true);field.set(plugin,new LinkedHashMap<>(Map.of(room.id,room)));}
+        catch(ReflectiveOperationException ex){throw new AssertionError(ex);}
+        var view=mock(BoardWindow.class);
+        when(view.render(anyString(),any(net.kyori.adventure.text.Component.class),any(net.kyori.adventure.text.Component.class),anyList(),any())).thenAnswer(invocation ->
+            GameMenuLayouts.render(new YamlConfiguration(),(net.kyori.adventure.text.Component)invocation.getArgument(1),(net.kyori.adventure.text.Component)invocation.getArgument(2),invocation.getArgument(3),invocation.getArgument(4)));
+        when(view.open(eq(player),any(),anyString())).thenReturn(true);
+        new GameMenus(plugin,view).room(player,room);
+        var body=org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
+        verify(view).render(eq("room"),any(),body.capture(),anyList(),any());
+        assertTrue(dev.tabletop3d.ui.MessageText.plain(body.getValue()).contains(name),dev.tabletop3d.ui.MessageText.plain(body.getValue()));
+    }
     @Test void namedTitleAndBodyKeepTheirOwnLanguageAndStyles() {
         var config=new YamlConfiguration();config.set("Title","<white>@title@");
         config.set("Body.content.text","<gray>@description@");

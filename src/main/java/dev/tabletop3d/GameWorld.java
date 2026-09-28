@@ -273,13 +273,13 @@ final class GameWorld implements Listener, AutoCloseable {
         if(player.isSneaking()||cell.equals("@menu")){plugin.menus.room(player,room);return true;}
         if(room.phase!=Room.Phase.PLAYING)return true;
         if(room.undo!=null){plugin.menus.room(player,room);return true;}
-        int seat=room.seat(player.getUniqueId());if(seat!=room.board.currentPlayer()&&!(room.board instanceof dev.tabletop3d.rules.GoGame go&&go.scoring())){player.sendActionBar(Component.text(Language.text("还没轮到你，可以先观察棋盘。"),NamedTextColor.GRAY));return true;}
-        if(view.rolling()){player.sendActionBar(Component.text(Language.text("骰子正在翻滚，请稍候。"),NamedTextColor.GOLD));return true;}
+        int seat=room.seat(player.getUniqueId());if(seat!=room.board.currentPlayer()&&!(room.board instanceof dev.tabletop3d.rules.GoGame go&&go.scoring())){player.sendActionBar(Language.component("hint.not-turn").colorIfAbsent(NamedTextColor.GRAY));return true;}
+        if(view.rolling()){player.sendActionBar(Language.component("hint.roll.wait").colorIfAbsent(NamedTextColor.GOLD));return true;}
         pickCell(player,room,seat,cell);return true;
     }
     private void pickCell(Player player,Room room,int seat,String cell) {
         if(cell.equals("@roll")) {
-            if(room.board.legalActions(seat).contains("roll"))execute(player,room,List.of("roll"));else player.sendActionBar(Component.text(Language.text("目前不能继续掷骰，请打开操作菜单。"),NamedTextColor.GOLD));
+            if(room.board.legalActions(seat).contains("roll"))execute(player,room,List.of("roll"));else player.sendActionBar(Language.component("hint.roll.unavailable").colorIfAbsent(NamedTextColor.GOLD));
             return;
         }
         List<String> related=room.board.actionsForCell(seat,cell);
@@ -289,12 +289,12 @@ final class GameWorld implements Listener, AutoCloseable {
         List<String> destinations=destinationActions(pick,cell);if(!destinations.isEmpty()){execute(player,room,destinations);return;}
         List<String> sources=sourceActions(room.board,seat,cell);
         if(!sources.isEmpty()) {
-            if(pick!=null&&pick.source().equals(cell)){selections.remove(player.getUniqueId());player.sendActionBar(Component.text(Language.text("已取消选择"),NamedTextColor.GRAY));return;}
+            if(pick!=null&&pick.source().equals(cell)){selections.remove(player.getUniqueId());player.sendActionBar(Language.component("hint.cancelled").colorIfAbsent(NamedTextColor.GRAY));return;}
             selections.put(player.getUniqueId(),new Pick(room.id,room.revision,cell,List.copyOf(sources)));render(room);
             player.playSound(player.getLocation(),Sound.BLOCK_NOTE_BLOCK_HAT,.25f,1.8f);
-            player.sendActionBar(Component.text(Language.text("已选中 · 蓝点为合法落点 · 再点棋子取消"),NamedTextColor.GREEN));
-        }else if(room.kind.equals("aeroplane")&&room.board.legalActions(seat).contains("roll"))plugin.tell(player,"请先右键棋盘旁的骰子，或从操作菜单掷骰。");
-        else plugin.tell(player,pick==null?"请先选择自己的棋子。":"这个落点不可用，请另选落点或自己的棋子。");
+            player.sendActionBar(Language.component("hint.selected").colorIfAbsent(NamedTextColor.GREEN));
+        }else if(room.kind.equals("aeroplane")&&room.board.legalActions(seat).contains("roll"))plugin.tell(player,Language.component("chat.roll-first"));
+        else plugin.tell(player,Language.component(pick==null?"chat.select-first":"chat.destination"));
     }
     private void execute(Player player,Room room,List<String> choices) {
         selections.remove(player.getUniqueId());
@@ -306,7 +306,7 @@ final class GameWorld implements Listener, AutoCloseable {
             // force a menu to cover the board after each successful world click.
             plugin.apply(room,room.seat(player.getUniqueId()),new com.google.gson.JsonPrimitive(choices.getFirst()),null);
         }
-        catch(IllegalArgumentException ex){plugin.tell(player,"对局已更新，请重新选择棋子。");}
+        catch(IllegalArgumentException ex){plugin.tell(player,Language.component("chat.changed"));}
     }
 
     @EventHandler(ignoreCancelled=true) public void hurt(EntityDamageEvent e){if(world!=null&&e.getEntity().getWorld().equals(world))e.setCancelled(true);}

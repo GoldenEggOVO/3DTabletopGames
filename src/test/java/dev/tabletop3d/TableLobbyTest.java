@@ -35,7 +35,7 @@ class TableLobbyTest {
         assertEquals("桌内：Alice、陪练2\n空位：2 / 4",TableLobby.roster(List.of("Alice","陪练2"),4));
         assertEquals("桌内：暂无玩家\n空位：3 / 3",TableLobby.roster(List.of(),3));
         assertEquals("At table: 中国象棋\nOpen seats: 1 / 2",TableLobby.localizedRoster(List.of("中国象棋"),2));
-        assertEquals("At table: Alice, Bot2\nOpen seats: 0 / 2",TableLobby.localizedRoster(List.of("Alice","陪练2"),2));
+        assertEquals("At table: Alice, 陪练2\nOpen seats: 0 / 2",TableLobby.localizedRoster(List.of("Alice","陪练2"),2));
         assertEquals(0,entry(null,List.of("A","B","C"),2).empty());
     }
     @Test void aimingRejectsMissesWrongWorldAndOutOfReach(){
@@ -87,7 +87,7 @@ class TableLobbyTest {
         Player second=player(world);assertTrue(lobby.request(second));
         var full=new TableLobby.Entry("test",target.center(),1.5,1.03,"麻将","等候",List.of("A","B"),2,Set.of(),null,true,target.join(),target.menu());
         doReturn(List.of(full)).when(lobby).collect();MockBukkit.getMock().getScheduler().performOneTick();assertEquals(1,joined.get());
-        verify(plugin).tell(second,"这张桌子已经满员。");
+        verify(plugin).tell(second,Language.component("chat.table.full"));
     }
     @Test void seatedPlayerOpensMenuAndPlayingTableRejectsOutsider()throws Exception{
         var plugin=plugin();World world=mock(World.class);Player p=player(world);var lobby=spy(new TableLobby(plugin));
@@ -95,7 +95,7 @@ class TableLobbyTest {
         var e=new TableLobby.Entry("test",new Location(world,0,80,0),1.5,1.03,"麻将","进行中",List.of("A"),4,Set.of(p.getUniqueId()),null,true,x->joined.incrementAndGet(),x->opened.incrementAndGet());
         entries(lobby,List.of(e));assertTrue(lobby.request(p));MockBukkit.getMock().getScheduler().performOneTick();assertEquals(1,opened.get());
         Player stranger=player(world);assertTrue(lobby.request(stranger));MockBukkit.getMock().getScheduler().performOneTick();
-        assertEquals(0,joined.get());verify(plugin).tell(stranger,"这张桌子已开局，暂时不能加入。");
+        assertEquals(0,joined.get());verify(plugin).tell(stranger,Language.component("chat.table.started"));
     }
     @Test void ordinaryClickAndSolidObstructionDoNotJoin()throws Exception{
         var plugin=plugin();World world=mock(World.class);Player p=player(world);var lobby=spy(new TableLobby(plugin));

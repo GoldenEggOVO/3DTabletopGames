@@ -20,11 +20,13 @@ Connect Four uses five strips per vertical disc, rack supports, and a 12-tick ve
 
 Both renderers keep their own plugin lifecycle. The text utilities are included in the Tabletop JAR; no dependency on Casino or a shared runtime plugin is introduced. Room data stays at schema 1.
 
+`TableView` caches display inputs (board identity/revision, phase, seats, capacity, result and language generation) before building title Components. Dice labels refresh when their state changes. A bounded set contains only currently moving/flipping pieces; completion and removal take pieces out of that set. The existing two-server-tick rendering cadence and animation lengths are unchanged. These changes reduce idle work; they are not a measured server-capacity claim.
+
 ## Dialog and text
 
 `GameMenus` owns single-use sessions bound to player, world and expiry. `GameMenuLayouts` binds only server actions to editable layouts. `BoardWindow` renders native Paper Dialog; permissions are checked again on callbacks.
 
-`Language.component(key, pairs)` formats named UI messages through `ui.MessageText`. Dynamic arguments are Components/literal values. `Language.text` remains the compatibility boundary for old source phrases and rule descriptions. `ui.LabelLayout` fits table text without discarding the lower instruction lines.
+`Language.component(key, pairs)` formats named UI messages through `ui.MessageText`. `RoomText` supplies shared game/seat/phase/roster/outcome presentation. Dynamic arguments are Components/literal values. Old translation overrides are applied to templates at load time, before parameters exist. `Language.legacy`/`Language.text` remain the compatibility boundary for old source phrases, rule descriptions and stored outcomes. `ui.LabelLayout` fits table text without discarding the lower instruction lines.
 
 ## Extension boundaries
 

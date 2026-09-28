@@ -38,7 +38,8 @@ with zipfile.ZipFile(jar) as artifact:
     if any(n.startswith(("dev/server/games/", "dev/server/boards/")) for n in names):
         raise SystemExit("Legacy package was bundled")
     for required in ("dev/tabletop3d/BoardWindow.class", "dev/tabletop3d/ui/MessageText.class",
-                     "dev/tabletop3d/ui/LabelLayout.class", "lang/en.yml", "menus/catalog.yml"):
+                     "dev/tabletop3d/ui/LabelLayout.class", "dev/tabletop3d/RoomText.class",
+                     "lang/en.yml", "lang/legacy.yml", "menus/catalog.yml"):
         if required not in names:
             raise SystemExit(f"Missing {required}")
 

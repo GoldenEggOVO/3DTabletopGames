@@ -13,21 +13,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** Translates legacy display text without changing persisted rule state or menu actions. */
+/** Named display messages with a compatibility adapter for rule text and old language files. */
 final class Language {
     private static final String MESSAGE = "message:";
-    private static final Map<String,String> ALIASES = Map.ofEntries(
-        Map.entry("menu.title", "3D Tabletop Games"), Map.entry("menu.back", "返回上一页"),
-        Map.entry("menu.main", "返回主菜单"), Map.entry("menu.close", "关闭菜单"),
-        Map.entry("menu.resume", "继续当前对局"), Map.entry("menu.create", "创建房间"),
-        Map.entry("menu.leave.title", "离开房间"), Map.entry("menu.leave.confirm", "确认离开"),
-        Map.entry("menu.leave.description", "对局中离开会结束整桌免费局；只关闭菜单则保留座位。"),
-        Map.entry("table.waiting", "等候准备"), Map.entry("table.hint", "瞄准 · 点击落子"),
-        Map.entry("table.join", "潜行右键：加入 / 房间菜单"));
+    private static final Map<String,String> ALIASES = aliases();
     private static volatile Language current = bundledEnglish();
+    private static long generation;
     private final Map<String, String> entries;
     private final Map<String, String> messages;
     private final Pattern pattern;
@@ -49,17 +44,18 @@ final class Language {
         return MessageText.render(current.messages.getOrDefault(key,key),pairs);
     }
 
+    static long generation() { return generation; }
+
+    /** Rule output and stored reasons keep their existing strings; translate only at the UI boundary. */
+    static Component legacy(String input) {
+        if(input==null)return Component.empty();
+        for(var alias:ALIASES.entrySet())if(alias.getValue().equals(input))return component(alias.getKey());
+        return MessageText.render(text(input));
+    }
+
     static String text(String input) {
         if (input == null || input.isEmpty()) return input;
-        Language language = current;
-        String whole = language.entries.get(input);
-        if (whole != null) return whole;
-        Matcher matcher = language.pattern.matcher(input);
-        StringBuilder result = new StringBuilder();
-        while (matcher.find()) matcher.appendReplacement(result,
-            Matcher.quoteReplacement(language.entries.get(matcher.group())));
-        matcher.appendTail(result);
-        return result.toString();
+        return current.translate(input);
     }
 
     static String glyph(String input) {
@@ -82,14 +78,15 @@ final class Language {
             Path english = directory.resolve("en.yml");
             if (!Files.exists(english)) copy(plugin, "lang/en.yml", english);
             Map<String, String> merged = new LinkedHashMap<>(bundledEnglish().entries);
-            merged.putAll(read(english));
+            merged.putAll(read(english,merged,false));
             if (!code.equals("en")) {
                 Path selected = directory.resolve(code + ".yml");
                 if (!Files.isRegularFile(selected))
                     throw new IllegalArgumentException("Language file missing: " + selected);
-                merged.putAll(read(selected));
+                merged.putAll(read(selected,merged,true));
             }
             current = new Language(merged);
+            generation++;
         } catch (IOException ex) {
             throw new IllegalStateException("Cannot load language files", ex);
         }
@@ -103,15 +100,19 @@ final class Language {
     }
 
     static Map<String, String> read(Path file) throws IOException {
+        return read(file,bundledEnglish().entries,false);
+    }
+
+    private static Map<String, String> read(Path file,Map<String,String> baseline,boolean selected) throws IOException {
         try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
             YamlConfiguration config = yaml();
             try { config.load(reader); }
             catch (Exception ex) { throw new IOException("Invalid language YAML: " + file, ex); }
-            return values(config);
+            return values(config,baseline,selected);
         }
     }
 
-    private static Map<String, String> values(YamlConfiguration config) {
+    private static Map<String, String> values(YamlConfiguration config,Map<String,String> baseline,boolean selected) {
         var section = config.getConfigurationSection("translations");
         if (section == null && !config.isConfigurationSection("messages"))
             throw new IllegalArgumentException("Language file needs translations or messages section");
@@ -123,11 +124,18 @@ final class Language {
             if (entry.getKey().contains("\\n"))
                 values.put(entry.getKey().replace("\\n", "\n"), value.replace("\\n", "\n"));
         }
-        ALIASES.forEach((key,source)->{if(values.containsKey(source))values.put(MESSAGE+key,values.get(source));});
+        // Translate old templates once when loading, before inserting any player names or values.
+        var translations=new LinkedHashMap<>(baseline);translations.putAll(values);
+        var translator=new Language(translations);
+        ALIASES.forEach((key,source)->{
+            boolean changed=values.entrySet().stream().anyMatch(e->(selected||!Objects.equals(baseline.get(e.getKey()),e.getValue()))
+                &&(source.equals(e.getKey())||e.getKey().length()>1&&source.contains(e.getKey())));
+            if(changed)values.put(MESSAGE+key,translator.translate(source));
+        });
         var named=config.getConfigurationSection("messages");
         if(named!=null)for(var entry:named.getValues(false).entrySet()) {
             if(!(entry.getValue() instanceof String value))throw new IllegalArgumentException("Invalid message: "+entry.getKey());
-            MessageText.validate(value);
+            value=value.replace("\\n","\n");MessageText.validate(value);
             values.put(MESSAGE+entry.getKey(),value);
         }
         return values;
@@ -138,10 +146,27 @@ final class Language {
             if (input == null) throw new IllegalStateException("Missing bundled English language file");
             YamlConfiguration config = yaml();
             config.load(new InputStreamReader(input, StandardCharsets.UTF_8));
-            return new Language(values(config));
+            return new Language(values(config,Map.of(),false));
         } catch (Exception ex) {
             throw new IllegalStateException("Cannot read bundled English language file", ex);
         }
+    }
+
+    private String translate(String input) {
+        String whole=entries.get(input);if(whole!=null)return whole;
+        Matcher matcher=pattern.matcher(input);StringBuilder result=new StringBuilder();
+        while(matcher.find())matcher.appendReplacement(result,Matcher.quoteReplacement(entries.get(matcher.group())));
+        matcher.appendTail(result);return result.toString();
+    }
+
+    private static Map<String,String> aliases() {
+        try(InputStream input=Language.class.getClassLoader().getResourceAsStream("lang/legacy.yml")) {
+            if(input==null)throw new IOException("Missing language compatibility mappings");
+            var config=yaml();config.load(new InputStreamReader(input,StandardCharsets.UTF_8));
+            var result=new LinkedHashMap<String,String>();
+            config.getConfigurationSection("messages").getValues(false).forEach((key,value)->result.put(key,((String)value).replace("\\n","\n")));
+            return Map.copyOf(result);
+        }catch(Exception ex){throw new IllegalStateException("Cannot load language compatibility mappings",ex);}
     }
 
     private static YamlConfiguration yaml() {

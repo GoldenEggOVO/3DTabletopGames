@@ -2,6 +2,7 @@ package dev.tabletop3d;
 
 import com.google.gson.*;
 import dev.tabletop3d.rules.*;
+import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -55,11 +56,12 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     }
     Room room(Player p){return room(p.getUniqueId());}
     Room room(UUID p){return rooms.values().stream().filter(r->r.seat(p)>=0&&r.phase!=Room.Phase.ABORTED).findFirst().orElse(null);}
-    void tell(Player p,String message){p.sendMessage(Language.text("§6[日暮棋牌] §f"+message));}
-    void announce(Room r,String message){for(Room.Seat s:r.seats){Player p=Bukkit.getPlayer(s.id());if(p!=null&&!s.bot())tell(p,message);}}
+    void tell(Player p,String message){tell(p,Language.legacy(message));}
+    void tell(Player p,Component message){p.sendMessage(Language.component("chat.prefix","message",message));}
+    void announce(Room r,Component message){for(Room.Seat s:r.seats){Player p=Bukkit.getPlayer(s.id());if(p!=null&&!s.bot())tell(p,message);}}
     @Override public boolean onCommand(CommandSender sender,Command command,String label,String[] args){
-        if(!(sender instanceof Player p)){sender.sendMessage(Language.text("控制台可使用 /3dtabletop status"));if(args.length>0&&args[0].equals("status"))sender.sendMessage("Rooms="+rooms.size()+" world="+(arena.world!=null));return true;}
-        if(!allowed(p)){tell(p,"请先登录，并确认拥有棋牌室权限。");return true;}
+        if(!(sender instanceof Player p)){sender.sendMessage(Language.component("chat.console"));if(args.length>0&&args[0].equals("status"))sender.sendMessage(Language.component("chat.status","rooms",rooms.size(),"world",arena.world!=null));return true;}
+        if(!allowed(p)){tell(p,Language.component("chat.permission"));return true;}
         try{
             String sub=args.length==0?"menu":args[0].toLowerCase(Locale.ROOT);
             switch(sub){
@@ -77,7 +79,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
                 case "rules"->{Room r=room(p);menus.rules(p,args.length>1&&NAMES.containsKey(args[1])?args[1]:r==null?"gomoku":r.kind);}
                 default->menus.main(p);
             }
-        }catch(IllegalArgumentException ex){tell(p,ex.getMessage()==null?"无效操作":ex.getMessage());}
+        }catch(IllegalArgumentException ex){tell(p,ex.getMessage()==null?Language.component("error.invalid"):Language.legacy(ex.getMessage()));}
         return true;
     }
     @Override public List<String> onTabComplete(CommandSender sender,Command cmd,String alias,String[] args){
@@ -119,14 +121,14 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         Room old=room(p);if(old!=null&&old!=r)throw new IllegalArgumentException("请先离开当前对局");
         boolean already=r.seat(p.getUniqueId())>=0;r.join(p.getUniqueId(),p.getName());
         if(!enterArena(p,r)){if(!already){r.seats.removeIf(s->s.id().equals(p.getUniqueId()));r.offline.remove(p.getUniqueId());r.revision++;returns.remove(p.getUniqueId());save();}throw new IllegalArgumentException("传送被取消，无法入座。请解除限制后再试。");}
-        announce(r,p.getName()+" 加入了房间");save();if(comfort!=null)comfort.sync();menus.room(p,r);
+        announce(r,Language.component("chat.joined","player",p.getName()));save();if(comfort!=null)comfort.sync();menus.room(p,r);
     }
     boolean enterArena(Player p,Room r){
         if(!arena.atTableWorld(p,r))returns.putIfAbsent(p.getUniqueId(),p.getLocation().clone());
         if(!p.teleport(arena.seatLocation(r,r.seat(p.getUniqueId())))){r.offline.putIfAbsent(p.getUniqueId(),System.currentTimeMillis());return false;}
         r.offline.remove(p.getUniqueId());return true;
     }
-    void resume(Player p,Room r){if(!enterArena(p,r)){tell(p,"传送被取消，座位暂保留120秒；解除限制后用 /3dtabletop resume 返回。");menus.room(p,r);return;}menus.room(p,r);}
+    void resume(Player p,Room r){if(!enterArena(p,r)){tell(p,Language.component("chat.resume.cancelled"));menus.room(p,r);return;}menus.room(p,r);}
     boolean isBedrock(Player p){
         var geyser=Bukkit.getPluginManager().getPlugin("Geyser-Spigot");
         if(geyser!=null&&geyser.isEnabled())try{Class<?> c=Class.forName("org.geysermc.geyser.api.GeyserApi",true,geyser.getClass().getClassLoader());return (boolean)c.getMethod("isBedrockPlayer",UUID.class).invoke(c.getMethod("api").invoke(null),p.getUniqueId());}
@@ -149,7 +151,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         r.phase=Room.Phase.STARTING;r.busy=true;r.changed=System.currentTimeMillis();
 
             try{r.board=GameFactory.create(r.kind,r.capacity,r.seed);for(JsonElement e:r.history){JsonObject j=e.getAsJsonObject();r.board.apply(j.get("seat").getAsInt(),j.get("action").getAsString());}
-                r.phase=r.completed||r.board.finished()?Room.Phase.FINISHED:Room.Phase.PLAYING;r.busy=false;arena.render(r);save();announce(r,"点击棋盘选择棋子和落点，也可用 /3dtabletop resume 操作。");}
+                r.phase=r.completed||r.board.finished()?Room.Phase.FINISHED:Room.Phase.PLAYING;r.busy=false;arena.render(r);save();announce(r,Language.component("chat.start"));}
             catch(RuntimeException ex){r.busy=false;if(r.restoring)throw ex;pause(r,"规则初始化失败，房间记录已保留");getLogger().log(java.util.logging.Level.WARNING,"Board start failed",ex);}
         
     }
@@ -165,21 +167,20 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
             }catch(IllegalArgumentException ex){if(source!=null)tell(source,ex.getMessage());}
         
     }
-    void finish(Room r,String result){r.phase=Room.Phase.FINISHED;r.completed=true;r.result=result;r.ready.clear();r.undo=null;r.changed=System.currentTimeMillis();announce(r,"本局结束："+displayOutcome(r,result)+"。可用 /3dtabletop rematch 再来一局。");onMain(()->showRoomToHumans(r));}
+    void finish(Room r,String result){r.phase=Room.Phase.FINISHED;r.completed=true;r.result=result;r.ready.clear();r.undo=null;r.changed=System.currentTimeMillis();announce(r,Language.component("chat.finished","result",RoomText.outcome(r,result)));onMain(()->showRoomToHumans(r));}
     void showRoomToHumans(Room r){if(!rooms.containsKey(r.id))return;for(Room.Seat s:r.seats){Player p=Bukkit.getPlayer(s.id());if(!s.bot()&&p!=null&&allowed(p)&&arena.atTableWorld(p,r))menus.room(p,r);}}
-    void requestUndo(Player p,Room r){if(!allowed(p)||!arena.atTableWorld(p,r))return;RoundActions.request(r,p.getUniqueId(),System.currentTimeMillis());if(r.undo.pending.isEmpty())completeUndo(r);else{announce(r,p.getName()+" 申请撤销上一回合，30秒内请在房间菜单同意或拒绝。");showRoomToHumans(r);}}
+    void requestUndo(Player p,Room r){if(!allowed(p)||!arena.atTableWorld(p,r))return;RoundActions.request(r,p.getUniqueId(),System.currentTimeMillis());if(r.undo.pending.isEmpty())completeUndo(r);else{announce(r,Language.component("chat.undo.requested","player",p.getName()));showRoomToHumans(r);}}
     void approveUndo(Player p,Room r){if(!allowed(p)||!arena.atTableWorld(p,r))return;if(RoundActions.approve(r,p.getUniqueId(),System.currentTimeMillis()))completeUndo(r);else showRoomToHumans(r);}
-    void rejectUndo(Player p,Room r){if(!allowed(p))return;RoundActions.reject(r,p.getUniqueId());announce(r,"悔棋申请已取消，继续对局。");showRoomToHumans(r);}
-    void completeUndo(Room r){RoundActions.apply(r);arena.render(r);save();announce(r,"已撤销上一回合及之后的回应，骰子仍沿用原随机序列。");showRoomToHumans(r);}
+    void rejectUndo(Player p,Room r){if(!allowed(p))return;RoundActions.reject(r,p.getUniqueId());announce(r,Language.component("chat.undo.cancelled"));showRoomToHumans(r);}
+    void completeUndo(Room r){RoundActions.apply(r);arena.render(r);save();announce(r,Language.component("chat.undo.complete"));showRoomToHumans(r);}
     void rematch(Player p,Room r){
         if(!allowed(p)||!arena.atTableWorld(p,r))return;
         if(RoundActions.rematchReady(r,p.getUniqueId())){for(Room.Seat s:r.seats){Player other=Bukkit.getPlayer(s.id());if(!s.bot()&&other!=null)suspendView(other);}arena.remove(r);RoundActions.fresh(r,random.nextLong());arena.platform(r.table);start(r);showRoomToHumans(r);}
-        else{announce(r,p.getName()+" 已准备再来一局，等待其他玩家确认。");save();showRoomToHumans(r);}
+        else{announce(r,Language.component("chat.rematch.ready","player",p.getName()));save();showRoomToHumans(r);}
     }
-    String displayOutcome(Room r,String outcome){if(outcome.startsWith("winner:")){try{return r.seats.get(Integer.parseInt(outcome.substring(7))).name()+" 获胜";}catch(RuntimeException ignored){}}return outcome.startsWith("draw:")?"和局（"+outcome.substring(5)+"）":outcome;}
     void leave(Player p){
         Room r=room(p);suspendView(p);if(r!=null){
-            if(r.phase==Room.Phase.PLAYING||r.phase==Room.Phase.STARTING||r.phase==Room.Phase.PAUSED){abort(r,p.getName()+" 离开，免费对局已结束");}
+            if(r.phase==Room.Phase.PLAYING||r.phase==Room.Phase.STARTING||r.phase==Room.Phase.PAUSED){abort(r,p.getName()+" 离开，免费对局已结束",Language.component("result.left","player",p.getName()));}
             else if(r.phase==Room.Phase.FINISHED){remove(r);}
             else{r.seats.removeIf(s->s.id().equals(p.getUniqueId()));r.offline.remove(p.getUniqueId());r.ready.remove(p.getUniqueId());r.revision++;if(r.seats.stream().noneMatch(s->!s.bot()))remove(r);}
         }
@@ -187,14 +188,15 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         returns.remove(p.getUniqueId());save();if(comfort!=null)comfort.sync();menus.main(p);
     }
     void returnFromArena(Player p){Location back=returns.get(p.getUniqueId());if(back!=null&&back.getWorld()!=null&&p.getWorld().equals(arena.world)){if(p.teleport(back))returns.remove(p.getUniqueId());}else if(back!=null&&!p.getWorld().equals(arena.world))returns.remove(p.getUniqueId());}
-    void abort(Room r,String reason){r.phase=Room.Phase.ABORTED;r.result=reason;announce(r,reason);remove(r);save();}
-    void pause(Room r,String reason){r.phase=Room.Phase.PAUSED;r.busy=false;r.result=reason;announce(r,reason);save();}
+    void abort(Room r,String reason){abort(r,reason,Language.legacy(reason));}
+    void abort(Room r,String reason,Component message){r.phase=Room.Phase.ABORTED;r.result=reason;announce(r,message);remove(r);save();}
+    void pause(Room r,String reason){r.phase=Room.Phase.PAUSED;r.busy=false;r.result=reason;announce(r,Language.legacy(reason));save();}
     void remove(Room r){for(Room.Seat seat:r.seats)if(!seat.bot())coordinator.release(seat.id(),r.kind);arena.remove(r);rooms.remove(r.id);for(Room.Seat s:r.seats){Player p=Bukkit.getPlayer(s.id());if(p!=null)suspendView(p);}}
     void onMain(Runnable action){if(!stopping&&isEnabled())Bukkit.getScheduler().runTask(this,action);}
     void tick(){
         if(!loaded)return;long now=System.currentTimeMillis();pulse++;
         for(Room r:new ArrayList<>(rooms.values())){
-            if(r.undo!=null){if(now>=r.undo.expires){r.undo=null;r.revision++;r.changed=now;announce(r,"悔棋申请超时，继续原对局。");showRoomToHumans(r);}else continue;}
+            if(r.undo!=null){if(now>=r.undo.expires){r.undo=null;r.revision++;r.changed=now;announce(r,Language.component("chat.undo.expired"));showRoomToHumans(r);}else continue;}
             if(r.phase==Room.Phase.PAUSED)continue;
             for(Room.Seat s:r.seats)if(!s.bot()){
                 Player p=Bukkit.getPlayer(s.id());boolean present=p!=null&&allowed(p)&&arena.atTableWorld(p,r);
@@ -216,7 +218,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
 
 
     @EventHandler public void world(PlayerChangedWorldEvent e){suspendView(e.getPlayer());Room r=room(e.getPlayer());if(r!=null&&!arena.atTableWorld(e.getPlayer(),r))r.offline.putIfAbsent(e.getPlayer().getUniqueId(),System.currentTimeMillis());}
-    @EventHandler public void joined(PlayerJoinEvent e){Bukkit.getScheduler().runTaskLater(this,()->{if(room(e.getPlayer())!=null)tell(e.getPlayer(),"你的座位仍保留，登录后用 /3dtabletop resume 继续对局。");},60);}
+    @EventHandler public void joined(PlayerJoinEvent e){Bukkit.getScheduler().runTaskLater(this,()->{if(room(e.getPlayer())!=null)tell(e.getPlayer(),Language.component("chat.seat-held"));},60);}
     @EventHandler(priority=EventPriority.MONITOR,ignoreCancelled=true) public void command(PlayerCommandPreprocessEvent e){String c=e.getMessage().split(" ",2)[0].toLowerCase(Locale.ROOT);if(Set.of("/servermenu","/servermenu:servermenu","/menu","/skin","/skins","/skinsrestorer:skin","/skinsrestorer:skins").contains(c))suspendView(e.getPlayer());}
     void save(){
         if(!loaded||!getDataFolder().isDirectory())return;

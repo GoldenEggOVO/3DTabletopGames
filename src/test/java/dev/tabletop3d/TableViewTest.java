@@ -15,8 +15,81 @@ import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
 
 class TableViewTest {
+    @org.junit.jupiter.api.io.TempDir(factory=WorkspaceTempFactory.class) java.nio.file.Path temp;
     @BeforeEach void setup(){MockBukkit.mock();}
     @AfterEach void close(){MockBukkit.unmock();}
+    @Test void idleTablesDoNotReadRuleStateOrResendDiceLabels() throws Exception {
+        for(String kind:List.of("chess","aeroplane")) {
+            Fixture f=new Fixture(kind);
+            f.room.board=spy(f.room.board);f.view.sync();
+            clearInvocations(f.room.board);
+            for(Entity entity:f.entities)clearInvocations(entity);
+            for(int i=0;i<100;i++)f.view.tick();
+            verify(f.room.board,never()).currentPlayer();
+            verify(f.room.board,never()).finished();
+            verify(f.room.board,never()).publicInfo();
+            for(Entity entity:f.entities)if(entity instanceof TextDisplay label)
+                verify(label,never()).text(any(net.kyori.adventure.text.Component.class));
+        }
+    }
+    @Test void rosterKeepsHumanNamesLiteralEvenWhenTheyLookLikeBotNames() throws Exception {
+        Fixture f=new Fixture("gomoku");
+        String name="<red>准备&c陪练";
+        f.room.seats.set(0,new Room.Seat(f.room.seats.getFirst().id(),name,false));
+        f.room.seats.set(1,new Room.Seat(f.room.seats.getLast().id(),"陪练99",false));
+        f.view.tick();
+        var capture=org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
+        verify((TextDisplay)field(f.view,"title"),atLeastOnce()).text(capture.capture());
+        String actual=dev.tabletop3d.ui.MessageText.plain(capture.getValue());
+        assertTrue(actual.contains(name),actual);
+        assertTrue(actual.contains("陪练99"),actual);
+    }
+    @Test void cachedTitleStillReflectsPauseAndExplicitFinishWithoutARevisionChange() throws Exception {
+        Fixture f=new Fixture("chess");long revision=f.room.revision;
+        TextDisplay title=(TextDisplay)field(f.view,"title");
+        var capture=org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
+        f.room.phase=Room.Phase.PAUSED;f.view.tick();verify(title,atLeastOnce()).text(capture.capture());
+        assertTrue(dev.tabletop3d.ui.MessageText.plain(capture.getValue()).contains("Paused"));
+        f.room.phase=Room.Phase.FINISHED;f.room.result="draw:50 回合无吃子且无兵移动";
+        f.view.tick();verify(title,atLeastOnce()).text(capture.capture());
+        String text=dev.tabletop3d.ui.MessageText.plain(capture.getValue());
+        assertTrue(text.contains("Draw (50 moves without a capture or pawn move)"),text);
+        assertEquals(revision,f.room.revision);
+    }
+    @Test void diceLabelUpdatesOnRollCompletionAndThenRemainsIdle() throws Exception {
+        Fixture f=new Fixture("aeroplane");f.move("roll");
+        TextDisplay label=(TextDisplay)field(f.view,"diceLabel");
+        var capture=org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
+        verify(label,atLeastOnce()).text(capture.capture());
+        assertEquals("Rolling…",dev.tabletop3d.ui.MessageText.plain(capture.getValue()));
+        for(int i=0;i<12;i++)f.view.tick();
+        verify(label,atLeastOnce()).text(capture.capture());
+        String next=f.room.board.publicInfo().get("pendingRoll").equals("0")?"Click to Roll":"Choose a plane";
+        assertEquals(next,dev.tabletop3d.ui.MessageText.plain(capture.getValue()));
+        clearInvocations(label);for(int i=0;i<20;i++)f.view.tick();
+        verify(label,never()).text(any(net.kyori.adventure.text.Component.class));
+    }
+    @Test void closingDuringAnAnimationStopsFurtherEntityUpdates() throws Exception {
+        Fixture f=new Fixture("connectfour");f.move("drop:2");f.view.tick();f.view.close();
+        f.entities.forEach(org.mockito.Mockito::clearInvocations);
+        for(int i=0;i<20;i++)f.view.tick();
+        for(Entity entity:f.entities)verify(entity,never()).teleport(any(Location.class));
+    }
+    @Test void loadingAnotherLanguageInvalidatesTheTitleWithoutAStateRevision() throws Exception {
+        Fixture f=new Fixture("chess");long revision=f.room.revision;
+        var config=new org.bukkit.configuration.file.YamlConfiguration();config.set("language","test");
+        when(f.plugin.getConfig()).thenReturn(config);when(f.plugin.getDataFolder()).thenReturn(temp.toFile());
+        when(f.plugin.getResource("lang/en.yml")).thenAnswer(i->getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
+        java.nio.file.Files.createDirectories(temp.resolve("lang"));
+        java.nio.file.Files.writeString(temp.resolve("lang/test.yml"),"messages:\n  'table.title': '<gold>Custom table {number}</gold>'\n");
+        try {
+            Language.load(f.plugin);f.view.tick();
+            var capture=org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
+            verify((TextDisplay)field(f.view,"title"),atLeastOnce()).text(capture.capture());
+            assertTrue(dev.tabletop3d.ui.MessageText.plain(capture.getValue()).contains("Custom table 1"));
+            assertEquals(revision,f.room.revision);
+        }finally{config.set("language","en");Language.load(f.plugin);}
+    }
     @Test void tableTitleIsAboveTheCenterAndOldEdgeLabelIsAbsent() throws Exception {
         Fixture f=new Fixture("chess");
         TextDisplay title=(TextDisplay)field(f.view,"title");
@@ -142,7 +215,6 @@ class TableViewTest {
         final Tabletop3D plugin=mock(Tabletop3D.class);final Player player=mock(Player.class);final World world=mock(World.class);
         final List<Entity> entities=new ArrayList<>();final Map<Entity,Location> positions=new HashMap<>();final Map<Entity,org.joml.Matrix4f> poses=new HashMap<>();final Room room;final TableView view;
         Fixture(String kind,String... initial){
-            when(plugin.displayOutcome(any(),anyString())).thenAnswer(i->i.getArgument(1));
             when(world.spawn(any(Location.class),any(Class.class),any(Consumer.class))).thenAnswer(inv->{
                 Entity e=mock((Class<? extends Entity>)inv.getArgument(1));entities.add(e);positions.put(e,((Location)inv.getArgument(0)).clone());
                 when(e.getPersistentDataContainer()).thenReturn(mock(PersistentDataContainer.class));when(e.isValid()).thenReturn(true);when(e.getLocation()).thenAnswer(a->positions.get(e).clone());

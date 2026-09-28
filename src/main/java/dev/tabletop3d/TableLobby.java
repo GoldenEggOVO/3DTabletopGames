@@ -32,15 +32,18 @@ final class TableLobby implements Listener, AutoCloseable {
         return "桌内："+(names.isEmpty()?"暂无玩家":String.join("、",names))+"\n空位："+Math.max(0,capacity-names.size())+" / "+capacity;
     }
     static String localizedRoster(List<String> names,int capacity){
-        return Language.text("桌内：")+(names.isEmpty()?Language.text("暂无玩家"):String.join(", ",
-                names.stream().map(name -> name.matches("陪练[0-9]+") ? Language.text("陪练")+name.substring(2) : name).toList()))
-                +"\n"+Language.text("空位：")+Math.max(0,capacity-names.size())+" / "+capacity;
+        return dev.tabletop3d.ui.MessageText.plain(rosterText(names,capacity));
+    }
+    private static Component rosterText(List<String> names,int capacity){
+        Component players=Component.empty();
+        for(String name:names){if(!players.equals(Component.empty()))players=players.append(Language.component("room.roster.separator"));players=players.append(Component.text(name));}
+        return RoomText.rosterNames(names.isEmpty()?Language.component("room.roster.empty"):players,names.size(),capacity);
     }
     static Component text(Entry e){
-        return Component.text(Language.text(e.name),NamedTextColor.GOLD).append(Component.newline())
-                .append(Component.text(Language.text(e.status),NamedTextColor.WHITE)).append(Component.newline())
-                .append(Component.text(localizedRoster(e.names,e.capacity),NamedTextColor.WHITE)).append(Component.newline())
-                .append(Component.text(Language.text("潜行右键：加入 / 房间菜单"),NamedTextColor.GRAY));
+        return Language.legacy(e.name).colorIfAbsent(NamedTextColor.GOLD).append(Component.newline())
+                .append(Language.legacy(e.status).colorIfAbsent(NamedTextColor.WHITE)).append(Component.newline())
+                .append(rosterText(e.names,e.capacity).colorIfAbsent(NamedTextColor.WHITE)).append(Component.newline())
+                .append(Language.component("table.join").colorIfAbsent(NamedTextColor.GRAY));
     }
     List<Entry> collect()throws ReflectiveOperationException{
         List<Entry> out=new ArrayList<>();
@@ -101,13 +104,13 @@ final class TableLobby implements Listener, AutoCloseable {
             if(!p.isOnline()||!plugin.allowed(p))return;
             try{
                 Entry live=collect().stream().filter(e->e.id.equals(id)).findFirst().orElse(null);
-                if(live==null){plugin.tell(p,"这张桌子已被删除。");return;}
+                if(live==null){plugin.tell(p,Language.component("chat.table.removed"));return;}
                 if(live.members.contains(p.getUniqueId())){live.menu.accept(p);return;}
-                if(plugin.room(p)!=null){plugin.tell(p,"请先离开当前对局。");return;}
-                if(!live.status.equals("等候")){plugin.tell(p,"这张桌子已开局，暂时不能加入。");return;}
-                if(live.empty()==0){plugin.tell(p,"这张桌子已经满员。");return;}
+                if(plugin.room(p)!=null){plugin.tell(p,Language.component("chat.leave-first"));return;}
+                if(!live.status.equals("等候")){plugin.tell(p,Language.component("chat.table.started"));return;}
+                if(live.empty()==0){plugin.tell(p,Language.component("chat.table.full"));return;}
                 live.join.accept(p);refresh();
-            }catch(ReflectiveOperationException ex){plugin.getLogger().log(java.util.logging.Level.WARNING,"Could not join table",ex);plugin.tell(p,"桌位接口暂不可用。");}
+            }catch(ReflectiveOperationException ex){plugin.getLogger().log(java.util.logging.Level.WARNING,"Could not join table",ex);plugin.tell(p,Language.component("chat.table.unavailable"));}
             catch(IllegalArgumentException|IllegalStateException ex){plugin.tell(p,ex.getMessage());}
         });return true;
     }

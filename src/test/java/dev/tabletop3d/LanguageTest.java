@@ -14,6 +14,61 @@ import static org.mockito.Mockito.*;
 class LanguageTest {
     @TempDir(factory = WorkspaceTempFactory.class) Path temp;
 
+    @Test void legacyDynamicOverridesAreAppliedBeforeLiteralParametersAndNamedOverridesWin() throws Exception {
+        var plugin=mock(Tabletop3D.class);var config=new YamlConfiguration();config.set("language","test");
+        when(plugin.getConfig()).thenReturn(config);when(plugin.getDataFolder()).thenReturn(temp.toFile());
+        when(plugin.getResource("lang/en.yml")).thenAnswer(i->getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
+        Files.createDirectories(temp.resolve("lang"));
+        String english="translations:\n  '创建房间': 'Local Create'\n  '加入了房间': 'joined locally'\n";
+        Files.writeString(temp.resolve("lang/en.yml"),english);
+        Path selected=temp.resolve("lang/test.yml");
+        Files.writeString(selected,"translations:\n  '加入了房间': 'joined custom'\n  '中国象棋': 'Custom Xiangqi'\n  '§6[日暮棋牌] §f': '&6[Custom] &f'\n");
+        String player="<red>加入了房间&c";
+        try {
+            Language.load(plugin);
+            assertEquals(player+" joined custom",plain(Language.component("chat.joined","player",player)));
+            assertEquals("[Custom] "+player,plain(Language.component("chat.prefix","message",net.kyori.adventure.text.Component.text(player))));
+            assertEquals("Local Create",plain(Language.component("menu.create")));
+            assertEquals("Custom Xiangqi",plain(RoomText.game("xiangqi")));
+            assertEquals("Connect Four",plain(RoomText.game("connectfour")));
+            Files.writeString(selected,"translations:\n  '加入了房间': 'unused'\nmessages:\n  'chat.joined': '<green>{player} arrived</green>'\n");
+            Language.load(plugin);
+            assertEquals(player+" arrived",plain(Language.component("chat.joined","player",player)));
+            assertEquals(english,Files.readString(temp.resolve("lang/en.yml")));
+        }finally{Files.delete(temp.resolve("lang/en.yml"));config.set("language","en");Language.load(plugin);}
+    }
+
+    @Test void menusOutcomesAndRosterUseNamedTranslationsWithoutChangingStoredNames() throws Exception {
+        var plugin=mock(Tabletop3D.class);var config=new YamlConfiguration();config.set("language","test");
+        when(plugin.getConfig()).thenReturn(config);when(plugin.getDataFolder()).thenReturn(temp.toFile());
+        when(plugin.getResource("lang/en.yml")).thenAnswer(i->getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
+        Files.createDirectories(temp.resolve("lang"));
+        Files.writeString(temp.resolve("lang/test.yml"),"messages:\n  'room.bot': 'Practice {number}'\n  'room.roster': '{players} | {empty}/{capacity}'\n  'result.winner': 'Winner: {player}'\n  'status.finished': 'Done'\n  'promotion.q': 'Regina'\n");
+        String name="<red>准备&c陪练99";var room=new Room(java.util.UUID.randomUUID(),"chess",2,0,0);
+        room.join(java.util.UUID.randomUUID(),name);room.fillBots();room.phase=Room.Phase.FINISHED;room.result="winner:0";
+        try {
+            Language.load(plugin);
+            assertEquals(name+", Practice 2 | 0/2",plain(RoomText.roster(room.seats,room.capacity)));
+            assertEquals("Winner: "+name,plain(RoomText.outcome(room,room.result)));
+            assertEquals("Done",plain(RoomText.phase(room)));
+            assertEquals("a7 → a8 · Promote to Regina",plain(GameMenus.actionLabel(room,"move:a7:a8:q")));
+            assertEquals(name,room.seats.getFirst().name());assertEquals("winner:0",room.result);
+        }finally{config.set("language","en");Language.load(plugin);}
+    }
+
+    private static String plain(net.kyori.adventure.text.Component text){return dev.tabletop3d.ui.MessageText.plain(text);}
+
+    @Test void selectedLegacyValueOverridesALocalNamedValueEvenWhenItEqualsBundledEnglish() throws Exception {
+        var plugin=mock(Tabletop3D.class);var config=new YamlConfiguration();config.set("language","test");
+        when(plugin.getConfig()).thenReturn(config);when(plugin.getDataFolder()).thenReturn(temp.toFile());
+        when(plugin.getResource("lang/en.yml")).thenAnswer(i->getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
+        Files.createDirectories(temp.resolve("lang"));
+        Files.writeString(temp.resolve("lang/en.yml"),"messages:\n  'menu.create': 'LOCAL OVERRIDE'\n");
+        Files.writeString(temp.resolve("lang/test.yml"),"translations:\n  '创建房间': 'Create Room'\n");
+        try{Language.load(plugin);assertEquals("Create Room",plain(Language.component("menu.create")));}
+        finally{Files.delete(temp.resolve("lang/en.yml"));config.set("language","en");Language.load(plugin);}
+    }
+
     @Test void namedMessagesProtectDynamicNamesAndKeepLegacyOverrides() throws Exception {
         var plugin=mock(Tabletop3D.class);var config=new YamlConfiguration();
         config.set("language","test");when(plugin.getConfig()).thenReturn(config);

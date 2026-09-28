@@ -12,7 +12,7 @@
 2. 完全停服并备份插件数据与世界。将 JAR 放入 `plugins/`，只留一个版本，不安装 `original-*.jar`。
 3. 启动后使用 `/3dtabletop` 创建房间、邀请玩家或添加陪练，在实体桌面操作。
 
-当前源码为 **1.4.0-SNAPSHOT 本地验收版**，尚未发布 Release。本批新增四子棋圆片、竖直落子和支架，黑白棋实体复用与翻面动画，以及公共文字渲染接口。Actions 产物也是开发构建。
+当前源码为 **1.4.1-SNAPSHOT 本地验收版**，尚未发布 Release。在四子棋落子、黑白棋翻面和公共文字渲染接口基础上，本批减少静止棋桌计算，将菜单、聊天、操作提示和房间显示迁移到命名消息，保护玩家名字原文。Actions 产物也是开发构建。
 
 ## 游戏与功能
 
@@ -28,7 +28,7 @@
 
 `config.yml` 保留 `language`、`max-rooms`、`reconnect-seconds`、`idle-room-minutes`、`turn-seconds`。语言默认 `en`，文件位于 `plugins/3dtabletop/lang/`，修改后重启。
 
-本批在语言文件中加入 `messages` 命名消息，支持 MiniMessage 和安全占位符；旧 `translations`、`&`／`§` 颜色码及 `menus/*.yml` 继续兼容。已有文件不覆盖，新消息由内置英文补齐，可手动添加同名 `messages` 项覆盖。详见 [语言说明](docs/languages.md)。这是分阶段迁移，规则提示和部分旧页面仍使用兼容翻译路径。
+语言文件的 `messages` 支持 MiniMessage 和安全占位符；旧 `translations`、`&`／`§` 颜色码及 `menus/*.yml` 继续兼容。已有文件不覆盖，新消息由内置英文补齐，可手动添加同名 `messages` 项覆盖。旧翻译中的自定义内容在加载时映射到消息模板，再插入玩家名字。详见 [语言说明](docs/languages.md)。规则引擎的原始描述、动作报告和已保存的结算原因继续通过兼容层显示，不改写存档。
 
 房间 JSON schema 1、世界 UUID、棋桌坐标、座位、随机种子和动作历史不变。动画是显示效果，不写入存档；重启直接恢复最终棋盘。升级前备份，停服替换 JAR 即可。ServerBoards 旧目录复制迁移见 [中文迁移文档](docs/migration.zh-CN.md)。旧 ServerGames／ServerMenu 的 `/boards` 转发须在其项目另行更新。
 

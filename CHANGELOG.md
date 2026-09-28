@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.1-SNAPSHOT — local acceptance build
+
+- Skip title construction and rule reads while table display state is unchanged; only tick moving or flipping pieces.
+- Keep immediate refresh for seat/phase changes, completed dice rolls and reconstructed boards.
+- Move menus, chat, action hints, rule summaries and room presentation to named messages with literal parameters.
+- Preserve human names containing translation words or formatting markers; identify bots from seat metadata.
+- Derive named templates from customized legacy translations at language load time; explicit named values take precedence.
+- Preserve existing language/menu files and schema 1 room records. No rule changes or additional runtime dependencies.
+
 ## 1.4.0-SNAPSHOT — local acceptance build
 
 - Organize bilingual entry documentation, architecture, language, migration and verification guides.
