@@ -1,5 +1,16 @@
 # Verification and acceptance
 
+## Local build: 1.6.1-SNAPSHOT
+
+- Java: 200 tests passed, zero failures, errors or skipped tests. Python: four migration-tool tests passed.
+- Nine sound regressions cover all catalog games and legacy flight, captures including en passant and stacked Ludo pawns, home arrivals, Reversi flips, Go scoring controls, successful human/bot actions, rejection/refresh/replay silence, one-time results, undo, volume boundaries and private turn eligibility/world/distance.
+- Clean Purpur 26.2-2622 passed creation, restart and legacy-folder migration in `target/standalone-smoke-20260928-150725/`. On every boot the sound probe exercised 12 game profiles and resolved/dispatched all 18 cues through the real native sound registry/API. Native Dialog callbacks, permission rejection and model checks remained green. ServerGames, ServerMenu, ServerCasino and KaMenu were absent.
+- The exact JAR passed a 60-second, 11-game run in `target/soak-20260928-150725/`, with 13 replay comparisons, peak 1,683 owned entities and zero after cleanup. All test servers stopped normally. This is a short lifecycle check, not a long-duration performance benchmark.
+- Existing config files use defaults for omitted sound keys. Room schema, rules, menus and saved history are unchanged. Independent read-only review found no blocking issue.
+- Server dispatch tests cannot establish audible client output, sound balance or synchronization with rendered animations. These remain on the [client checklist](acceptance.zh-CN.md); see [sound configuration](sounds.zh-CN.md).
+
+Verified JAR SHA-256: `1ecf746abc3efd5229273ce2f2168cc44f04c32ebea8c2b49e2ca17088052a8a`. Matching runtime receipts and source commit accompany the local delivery in `verification.json`. No Release or production deployment.
+
 ## Local build: 1.6.0-SNAPSHOT
 
 - Java: 191 tests passed, zero failures, errors or skipped tests. Python: four migration-tool tests passed.

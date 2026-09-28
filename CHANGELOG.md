@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.6.1-SNAPSHOT — local acceptance build
+
+- Add quiet native sound profiles for every available game and restored Aeroplane rooms, with distinct captures, Reversi flips, dice rolls, Ludo home arrivals and Go scoring controls.
+- Add start, win/draw and completed-undo cues; notify only the nearby eligible human whose turn has begun.
+- Trigger move sounds only after successful actions, including bots and menu moves. Rendering, rejected moves, metadata refreshes and startup replay remain silent.
+- Add `sounds.enabled` and `sounds.volume` (0–1), covering selection and private turn feedback as well as shared table sounds. Existing configurations use defaults without being overwritten.
+- No resource pack, dependency, room schema change, Release or production deployment.
+
 ## 1.6.0-SNAPSHOT — local acceptance build
 
 - Replace new Aeroplane Chess creation with Ludo for 2–4 players: automatic first deployment, six to deploy/roll again, captures, no blocking and exact finish. Preserve legacy Aeroplane rules and saved rooms.

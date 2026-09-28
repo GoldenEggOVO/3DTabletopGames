@@ -51,6 +51,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 return;
             }
             World world = Bukkit.getWorlds().getFirst();
+            soundProbe(boards, world);
             modelProbe(boards, world);
             PluginCommand command = Objects.requireNonNull(Bukkit.getPluginCommand("3dtabletop:3dtabletop"));
             AtomicInteger dialogs = new AtomicInteger();
@@ -114,6 +115,27 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         } catch (Throwable ex) {
             getLogger().log(java.util.logging.Level.SEVERE, "BOARDS_STANDALONE_PROBE_FAIL", ex);
         }
+    }
+
+    /** Resolve native sounds against the real server registry and exercise their dispatch. */
+    private void soundProbe(Plugin plugin, World world) throws Exception {
+        ClassLoader loader=plugin.getClass().getClassLoader();
+        Class<?> sounds=Class.forName("dev.tabletop3d.TableSounds",true,loader);
+        Class<?> cueType=Class.forName("dev.tabletop3d.TableSounds$Cue",true,loader);
+        Method move=sounds.getDeclaredMethod("move",String.class,int.class,String.class,List.class,List.class);move.setAccessible(true);
+        Method play=sounds.getDeclaredMethod("play",plugin.getClass(),Location.class,cueType);play.setAccessible(true);
+        Method nativeSound=cueType.getDeclaredMethod("sound");nativeSound.setAccessible(true);
+        Location at=new Location(world,8,84,0);int games=0,cues=0;
+        for(String kind:List.of("chess","xiangqi","gomoku","checkers","draughts","reversi","go9","go13","go","connectfour","ludo","aeroplane")){
+            BoardGame game=GameFactory.create(kind,2,1);var before=game.cells();String action=game.legalActions(0).getFirst();game.apply(0,action);
+            Object cue=move.invoke(null,kind,0,action,before,game.cells());play.invoke(null,plugin,at,cue);games++;
+        }
+        for(Field field:sounds.getDeclaredFields())if(field.getType()==cueType){
+            field.setAccessible(true);Object cue=field.get(null);org.bukkit.Sound sound=(org.bukkit.Sound)nativeSound.invoke(cue);
+            require(org.bukkit.Registry.SOUNDS.get(sound.getKey())!=null,"native sound registered: "+field.getName());
+            play.invoke(null,plugin,at,cue);cues++;
+        }
+        getLogger().info("BOARDS_SOUNDS_PASS games="+games+" cues="+cues+" client_audio_test=false");
     }
 
     /** Compare an imported synthetic snapshot against the real startup restore path. */

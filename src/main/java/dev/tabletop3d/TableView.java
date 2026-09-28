@@ -208,7 +208,6 @@ final class TableView implements AutoCloseable {
         if(changed){lastMove.forEach(Entity::remove);lastMove.clear();
             lastDestination=move.length>=3?move[2]:move.length==2?move[1]:null;
             if(lastDestination!=null&&geometry.byId.containsKey(lastDestination))ring(lastMove,lastDestination,Material.GOLD_BLOCK,null,.90);
-            origin.getWorld().playSound(origin,Set.of("aeroplane","ludo").contains(room.kind)?Sound.BLOCK_WOODEN_BUTTON_CLICK_ON:Sound.BLOCK_WOOD_PLACE,.28f,1.4f);
             if(die!=null&&action.equals("roll")){dieValue=Integer.parseInt(room.board.publicInfo().getOrDefault("dice","1"));diceFrames=12;}
         }
         if(die!=null&&diceFrames==0){dieValue=Math.max(1,Integer.parseInt(room.board.publicInfo().getOrDefault("dice","1")));orientDie(faceRotation(dieValue).invert());}

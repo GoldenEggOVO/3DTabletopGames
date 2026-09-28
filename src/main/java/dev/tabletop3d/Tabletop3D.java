@@ -156,7 +156,8 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         r.phase=Room.Phase.STARTING;r.busy=true;r.changed=System.currentTimeMillis();
 
             try{r.board=GameFactory.create(r.kind,r.capacity,r.seed);for(JsonElement e:r.history){JsonObject j=e.getAsJsonObject();r.board.apply(j.get("seat").getAsInt(),j.get("action").getAsString());}
-                r.phase=r.completed||r.board.finished()?Room.Phase.FINISHED:Room.Phase.PLAYING;r.busy=false;arena.render(r);save();announce(r,Language.component("chat.start"));}
+                r.phase=r.completed||r.board.finished()?Room.Phase.FINISHED:Room.Phase.PLAYING;r.busy=false;arena.render(r);save();announce(r,Language.component("chat.start"));
+                if(!r.restoring&&r.phase==Room.Phase.PLAYING){arena.sound(r,TableSounds.START);arena.turnSound(r);}}
             catch(RuntimeException ex){r.busy=false;if(r.restoring)throw ex;pause(r,"规则初始化失败，房间记录已保留");getLogger().log(java.util.logging.Level.WARNING,"Board start failed",ex);}
         
     }
@@ -168,17 +169,18 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         if(r.phase!=Room.Phase.PLAYING||r.busy||r.undo!=null)return;
         if(!ReplayBudget.allows(r.history,action)){finish(r,"本局达到休闲对局长度上限，按和局结束");save();return;}
 
-            try{r.board.apply(seat,action.getAsString());r.event(seat,action);r.revision++;r.changed=System.currentTimeMillis();arena.render(r);
-                if(r.board.finished())finish(r,r.board.outcome());save();if(source!=null&&source.isOnline())menus.room(source,r);
+            try{List<Cell> before=r.board.cells();int previousTurn=r.turn();r.board.apply(seat,action.getAsString());r.event(seat,action);r.revision++;r.changed=System.currentTimeMillis();arena.render(r);
+                arena.sound(r,TableSounds.move(r.kind,seat,action.getAsString(),before,r.board.cells()));
+                if(r.board.finished())finish(r,r.board.outcome());else if(r.turn()!=previousTurn)arena.turnSound(r);save();if(source!=null&&source.isOnline())menus.room(source,r);
             }catch(IllegalArgumentException ex){if(source!=null)tell(source,ex.getMessage());}
         
     }
-    void finish(Room r,String result){r.phase=Room.Phase.FINISHED;r.completed=true;r.result=result;r.ready.clear();r.undo=null;r.changed=System.currentTimeMillis();announce(r,Language.component("chat.finished","result",RoomText.outcome(r,result)));onMain(()->showRoomToHumans(r));}
+    void finish(Room r,String result){boolean first=r.phase!=Room.Phase.FINISHED;r.phase=Room.Phase.FINISHED;r.completed=true;r.result=result;r.ready.clear();r.undo=null;r.changed=System.currentTimeMillis();if(first)arena.sound(r,result.startsWith("winner:")?TableSounds.WIN:TableSounds.DRAW);announce(r,Language.component("chat.finished","result",RoomText.outcome(r,result)));onMain(()->showRoomToHumans(r));}
     void showRoomToHumans(Room r){if(!rooms.containsKey(r.id))return;for(Room.Seat s:r.seats){Player p=Bukkit.getPlayer(s.id());if(!s.bot()&&p!=null&&allowed(p)&&arena.atTableWorld(p,r))menus.room(p,r);}}
     void requestUndo(Player p,Room r){if(!allowed(p))return;requireLiveRoom(r);if(!arena.atTableWorld(p,r))return;RoundActions.request(r,p.getUniqueId(),System.currentTimeMillis());if(r.undo.pending.isEmpty())completeUndo(r);else{announce(r,Language.component("chat.undo.requested","player",p.getName()));showRoomToHumans(r);}}
     void approveUndo(Player p,Room r){if(!allowed(p))return;requireLiveRoom(r);if(!arena.atTableWorld(p,r))return;if(RoundActions.approve(r,p.getUniqueId(),System.currentTimeMillis()))completeUndo(r);else showRoomToHumans(r);}
     void rejectUndo(Player p,Room r){if(!allowed(p))return;requireLiveRoom(r);RoundActions.reject(r,p.getUniqueId());announce(r,Language.component("chat.undo.cancelled"));showRoomToHumans(r);}
-    void completeUndo(Room r){RoundActions.apply(r);arena.render(r);save();announce(r,Language.component("chat.undo.complete"));showRoomToHumans(r);}
+    void completeUndo(Room r){RoundActions.apply(r);arena.render(r);arena.sound(r,TableSounds.UNDO);save();announce(r,Language.component("chat.undo.complete"));showRoomToHumans(r);}
     void rematch(Player p,Room r){
         if(!allowed(p))return;requireLiveRoom(r);if(!arena.atTableWorld(p,r))return;
         if(RoundActions.rematchReady(r,p.getUniqueId())){for(Room.Seat s:r.seats){Player other=Bukkit.getPlayer(s.id());if(!s.bot()&&other!=null)suspendView(other);}arena.remove(r);RoundActions.fresh(r,random.nextLong());arena.platform(r.table);start(r);showRoomToHumans(r);}

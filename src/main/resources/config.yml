@@ -3,3 +3,7 @@ max-rooms: 12
 reconnect-seconds: 120
 idle-room-minutes: 30
 turn-seconds: 60
+sounds:
+  enabled: true
+  # Multiplier for the quiet native tabletop cues, from 0.0 to 1.0.
+  volume: 1.0

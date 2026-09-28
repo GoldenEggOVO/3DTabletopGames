@@ -161,6 +161,8 @@ final class GameWorld implements Listener, AutoCloseable {
         if(view==null){view=new TableView(plugin,room,center(room.table),tag,maps);views.put(room.id,view);}
         else view.sync();
     }
+    void sound(Room room,TableSounds.Cue cue){TableView view=views.get(room.id);if(view!=null)TableSounds.play(plugin,view.origin,cue);}
+    void turnSound(Room room){TableView view=views.get(room.id);if(view!=null)TableSounds.turn(plugin,room,view.origin);}
     private String aimed(Player player,TableView view) {
         Location eye=player.getEyeLocation();Vector direction=eye.getDirection();
         if(view.geometry.kind.equals("connectfour"))return view.verticalHit(eye,direction);
@@ -304,7 +306,7 @@ final class GameWorld implements Listener, AutoCloseable {
         if(!sources.isEmpty()) {
             if(pick!=null&&pick.source().equals(cell)){selections.remove(player.getUniqueId());player.sendActionBar(Language.component("hint.cancelled").colorIfAbsent(NamedTextColor.GRAY));return;}
             selections.put(player.getUniqueId(),new Pick(room.id,room.revision,cell,List.copyOf(sources)));render(room);
-            player.playSound(player.getLocation(),Sound.BLOCK_NOTE_BLOCK_HAT,.25f,1.8f);
+            TableSounds.select(plugin,player);
             player.sendActionBar(Language.component("hint.selected").colorIfAbsent(NamedTextColor.GREEN));
         }else if(Set.of("aeroplane","ludo").contains(room.kind)&&room.board.legalActions(seat).contains("roll"))plugin.tell(player,Language.component("chat.roll-first"));
         else if(Set.of("gomoku","go","go9","go13","reversi","connectfour").contains(room.kind))

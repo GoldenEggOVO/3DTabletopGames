@@ -14,7 +14,7 @@ Run independently on **Paper / Purpur 26.2 with Java 25**. No resource pack, cli
 2. Stop your server and back up plugin data and worlds. Keep one plugin JAR in `plugins/`; never install `original-*.jar`.
 3. Start the server and run `/3dtabletop`. Create a room, invite players or fill seats with bots, then play on the physical table.
 
-The current source is **1.6.0-SNAPSHOT**, a local acceptance build. It replaces new Aeroplane tables with Ludo, adds pawn and destination previews, refines Xiangqi/Chinese Checkers bases and makes capture targets clearer. Existing Aeroplane rooms retain their original rules and recovery. It has **not been published as a Release**. Snapshot JARs from Actions are development builds; see [verification](docs/verification.md) for the tested scope.
+The current source is **1.6.1-SNAPSHOT**, a local acceptance build. It adds quiet native sounds for every game, captures, dice and round events, with configurable volume. It includes Ludo, pawn and destination previews, refined Xiangqi/Chinese Checkers bases and clearer capture targets. Existing Aeroplane rooms retain their original rules and recovery. It has **not been published as a Release**. Snapshot JARs from Actions are development builds; see [verification](docs/verification.md) for the tested scope.
 
 Upgrading from ServerBoards? Read [migration](docs/migration.md) first. Existing `3dtabletop` configurations, menu layouts and schema 1 room files remain usable.
 

@@ -24,8 +24,12 @@ Sneak-right-click a table to join or open its room menu, including the upper Con
 | `reconnect-seconds` | `120` | Offline return grace period |
 | `idle-room-minutes` | `30` | Idle room timeout |
 | `turn-seconds` | `60` | Turn timeout before basic bot assistance |
+| `sounds.enabled` | `true` | Enable native table, selection and private turn sounds |
+| `sounds.volume` | `1.0` | Multiplier for the quiet presets, clamped to 0–1; 0 mutes all cues |
 
 Restart after configuration or language changes. Layout files are read when opening a menu. Preserve custom layouts and language files during updates.
+
+Sounds use Minecraft's **Blocks** sound category and require no resource pack. Nearby players hear table actions; turn prompts reach only the eligible seated human within eight blocks in the same world. Existing config files may omit both sound keys and use the defaults. Non-finite volume values mute sounds. Re-rendering, startup replay and rejected actions do not emit move sounds.
 
 ## Optional integrations
 
@@ -35,4 +39,4 @@ Old ServerGames 2.0.3 and ServerMenu 0.7.1 forward to `serverboards:boards`, whi
 
 ## Local acceptance build
 
-Install `3dtabletop-1.6.0-SNAPSHOT.jar` on an isolated server first. Check Connect Four drops, Reversi flips, both viewing sides, custom text, direct clicks and restart recovery. Preserve your backup when comparing with a published build.
+Install `3dtabletop-1.6.1-SNAPSHOT.jar` on an isolated server first. Check sound balance and turn prompts, Connect Four drops, Reversi flips, both viewing sides, custom text, direct clicks and restart recovery. Preserve your backup when comparing with a published build.
