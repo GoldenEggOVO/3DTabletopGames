@@ -17,7 +17,7 @@ import java.util.*;
 
 public final class Tabletop3D extends JavaPlugin implements Listener, CommandExecutor, TabCompleter {
     static final Map<String,String> NAMES=new LinkedHashMap<>();
-    static { for(String kind:List.of("xiangqi","gomoku","chess","aeroplane","checkers","draughts","reversi","go","go9","go13","connectfour")) NAMES.put(kind,switch(kind){case "xiangqi"->"中国象棋";case "gomoku"->"五子棋";case "chess"->"国际象棋";case "aeroplane"->"飞行棋";case "checkers"->"中国跳棋";case "draughts"->"西洋跳棋";case "reversi"->"黑白棋";case "connectfour"->"四子棋";default->"围棋";}); }
+    static { for(String kind:List.of("xiangqi","gomoku","chess","ludo","checkers","draughts","reversi","go","go9","go13","connectfour")) NAMES.put(kind,switch(kind){case "xiangqi"->"中国象棋";case "gomoku"->"五子棋";case "chess"->"国际象棋";case "ludo"->"英国十字戏";case "checkers"->"中国跳棋";case "draughts"->"西洋跳棋";case "reversi"->"黑白棋";case "connectfour"->"四子棋";default->"围棋";}); }
     static String gameName(String kind){return kind.equals("go9")?"围棋 · 9路":kind.equals("go13")?"围棋 · 13路":NAMES.getOrDefault(kind,kind);}
     final Map<UUID,Room> rooms=new LinkedHashMap<>();
     final Map<UUID,Location> returns=new HashMap<>();
@@ -92,15 +92,15 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     private void requireLiveRoom(Room room){if(rooms.get(room.id)!=room)throw new IllegalArgumentException("房间已关闭");}
     Room requireRoom(Player p){Room r=room(p);if(r==null)throw new IllegalArgumentException("你尚未加入房间");return r;}
     Room find(String text){return rooms.values().stream().filter(r->r.id.toString().startsWith(text)).findFirst().orElseThrow(()->new IllegalArgumentException("房间已关闭"));}
-    static int defaultCapacity(String kind){return switch(kind){case"checkers"->6;case"aeroplane"->4;default->2;};}
-    static boolean capacityValid(String kind,int n){return switch(kind){case"checkers"->Set.of(2,3,4,6).contains(n);case"aeroplane","yacht"->n>=2&&n<=4;case"gomoku","xiangqi","chess","draughts","reversi","go","go9","go13","connectfour"->n==2;default->false;};}
+    static int defaultCapacity(String kind){return switch(kind){case"checkers"->6;case"ludo","aeroplane"->4;default->2;};}
+    static boolean capacityValid(String kind,int n){return switch(kind){case"checkers"->Set.of(2,3,4,6).contains(n);case"ludo","aeroplane","yacht"->n>=2&&n<=4;case"gomoku","xiangqi","chess","draughts","reversi","go","go9","go13","connectfour"->n==2;default->false;};}
     void create(Player p,String kind,int capacity){
         if(!allowed(p))throw new IllegalArgumentException("请先登录并取得棋类权限");
         if(!coordinator.reserve(p.getUniqueId(),kind))throw new IllegalArgumentException("请先离开当前对局");
         try{createReserved(p,kind,capacity);}catch(RuntimeException|Error ex){try{Room partial=room(p);if(partial!=null)remove(partial);save();}finally{coordinator.release(p.getUniqueId(),kind);}throw ex;}
     }
     void createReserved(Player p,String kind,int capacity){
-        if(Set.of("uno","doudizhu","yacht").contains(kind))throw new IllegalArgumentException("这个游戏暂时停用，请在菜单选择其他游戏。");
+        if(Set.of("uno","doudizhu","yacht","aeroplane","flying").contains(kind))throw new IllegalArgumentException("这个游戏暂时停用，请在菜单选择其他游戏。");
         if(!capacityValid(kind,capacity))throw new IllegalArgumentException("不支持的游戏或人数");
         if(room(p)!=null)throw new IllegalArgumentException("请先离开当前对局");
         if(rooms.size()>=getConfig().getInt("max-rooms",12))throw new IllegalArgumentException("房间已满，请先加入现有房间");

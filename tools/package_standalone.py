@@ -35,7 +35,7 @@ if args.soak:
 snapshot = None
 if args.snapshot:
     snapshot = json.loads(args.snapshot.read_text(encoding="utf-8"))
-    if (not snapshot.get("pass") or snapshot.get("snapshot_rooms") != 11
+    if (not snapshot.get("pass") or snapshot.get("snapshot_rooms") not in (11, 12)
             or len(snapshot.get("boots", [])) != 3 or not all(b.get("pass") for b in snapshot["boots"])):
         raise SystemExit("Passing eleven-game snapshot recovery receipt required")
     if snapshot.get("jar_sha256") != digest or snapshot.get("version") != version:

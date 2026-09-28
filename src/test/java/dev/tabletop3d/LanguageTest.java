@@ -22,7 +22,7 @@ class LanguageTest {
         String english="translations:\n  '创建房间': 'Local Create'\n  '加入了房间': 'joined locally'\n";
         Files.writeString(temp.resolve("lang/en.yml"),english);
         Path selected=temp.resolve("lang/test.yml");
-        Files.writeString(selected,"translations:\n  '加入了房间': 'joined custom'\n  '中国象棋': 'Custom Xiangqi'\n  '§6[日暮棋牌] §f': '&6[Custom] &f'\n");
+        Files.writeString(selected,"translations:\n  '加入了房间': 'joined custom'\n  '中国象棋': 'Custom Xiangqi'\n  '飞行棋': 'Custom Flight'\n  '§6[日暮棋牌] §f': '&6[Custom] &f'\n");
         String player="<red>加入了房间&c";
         try {
             Language.load(plugin);
@@ -30,6 +30,7 @@ class LanguageTest {
             assertEquals("[Custom] "+player,plain(Language.component("chat.prefix","message",net.kyori.adventure.text.Component.text(player))));
             assertEquals("Local Create",plain(Language.component("menu.create")));
             assertEquals("Custom Xiangqi",plain(RoomText.game("xiangqi")));
+            assertEquals("Custom Flight · Legacy",plain(RoomText.game("aeroplane")));
             assertEquals("Connect Four",plain(RoomText.game("connectfour")));
             Files.writeString(selected,"translations:\n  '加入了房间': 'unused'\nmessages:\n  'chat.joined': '<green>{player} arrived</green>'\n");
             Language.load(plugin);

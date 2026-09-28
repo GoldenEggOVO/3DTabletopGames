@@ -28,9 +28,9 @@ public final class BoardsSoakProbe extends JavaPlugin {
             roundType=Class.forName("dev.tabletop3d.RoundActions",true,boards.getClass().getClassLoader());
             Map<UUID,Object> registry=(Map<UUID,Object>)field(boards,"rooms");require(registry.isEmpty(),"fresh fixture required");
             var ctor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class);ctor.setAccessible(true);
-            List<String> kinds=List.of("chess","xiangqi","gomoku","aeroplane","checkers","draughts","reversi","go9","go13","go","connectfour");
+            List<String> kinds=List.of("chess","xiangqi","gomoku","ludo","checkers","draughts","reversi","go9","go13","go","connectfour");
             for(int i=0;i<kinds.size();i++){
-                String kind=kinds.get(i);int capacity=kind.equals("checkers")?6:kind.equals("aeroplane")?4:2;
+                String kind=kinds.get(i);int capacity=kind.equals("checkers")?6:kind.equals("ludo")?4:2;
                 Object room=ctor.newInstance(UUID.randomUUID(),kind,capacity,1000L+i,i);
                 call(arena,"anchor",new Class<?>[]{roomType,Location.class},room,new Location(Bukkit.getWorlds().getFirst(),(i%4)*12,83,(i/4)*12));
                 call(room,"fillBots",new Class<?>[0]);registry.put((UUID)field(room,"id"),room);rooms.add(room);

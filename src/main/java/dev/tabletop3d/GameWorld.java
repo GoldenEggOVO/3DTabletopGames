@@ -136,7 +136,7 @@ final class GameWorld implements Listener, AutoCloseable {
         Location c=center(room.table);double angle=2*Math.PI*Math.max(0,seat)/Math.max(2,room.capacity);
         double dx=Math.sin(angle)*2.25,dz=Math.cos(angle)*2.25;
         if(room.kind.equals("chess")||room.kind.equals("xiangqi")){dx=-dx;dz=-dz;}
-        if(room.kind.equals("aeroplane")){int[] colors=room.capacity==2?new int[]{0,2}:room.capacity==3?new int[]{0,1,2}:new int[]{0,1,2,3};double a=-3*Math.PI/4-colors[Math.floorMod(seat,colors.length)]*Math.PI/2;dx=Math.sin(a)*2.25;dz=Math.cos(a)*2.25;}
+        if(Set.of("aeroplane","ludo").contains(room.kind)){int[] colors=room.capacity==2?new int[]{0,2}:room.capacity==3?new int[]{0,1,2}:new int[]{0,1,2,3};double a=-3*Math.PI/4-colors[Math.floorMod(seat,colors.length)]*Math.PI/2;dx=Math.sin(a)*2.25;dz=Math.cos(a)*2.25;}
         Location location=c.add(dx,0,dz).setDirection(new Vector(-dx,TableGeometry.SURFACE+.05-1.62,-dz));
         if(!location.getBlock().isPassable()||!location.clone().add(0,1,0).getBlock().isPassable())throw new IllegalArgumentException("座位被方块挡住，请换一个更开阔的位置。");
         return location;
@@ -203,6 +203,7 @@ final class GameWorld implements Listener, AutoCloseable {
                 int route=routeColor(cell.id());background=tint(route>=0?COLORS[route%4].value():0x475b54,.3);ink=empty&&route>=0?COLORS[route%4]:ink;
                 glyph=empty?cell.id().startsWith("go")?"终":cell.id().startsWith("ba")?"库":cell.id().startsWith("to")?"起":"·":cell.piece().replace("✈","机");
             }
+            case "ludo" -> {background=0xe8decb;glyph=empty?"·":cell.piece();}
             default -> {}
         }
         Color panel=selected?Color.fromARGB(250,173,125,43):Color.fromARGB(235,background>>16&255,background>>8&255,background&255);
@@ -230,6 +231,11 @@ final class GameWorld implements Listener, AutoCloseable {
         return r<<16|g<<8|b;
     }
     static String coordinate(String kind,Cell cell) {
+        if(kind.equals("ludo")){
+            if(cell.id().startsWith("sk"))return Language.text("Track ")+(Integer.parseInt(cell.id().substring(2))+1);
+            if(cell.id().startsWith("ld"))return Language.text("Home lane ")+(Character.digit(cell.id().charAt(4),10)+1);
+            return Language.text(cell.id().startsWith("go")?"Finish":"Yard");
+        }
         if(kind.equals("chess"))return cell.id().toUpperCase(Locale.ROOT);
         if(Set.of("gomoku","xiangqi","draughts","reversi","go","go9","go13").contains(kind))return String.valueOf((char)('A'+cell.x()))+(cell.y()+1);
         if(kind.equals("yacht"))return "骰子 "+(cell.x()/2+1);
@@ -247,7 +253,7 @@ final class GameWorld implements Listener, AutoCloseable {
         if(cell==null)return List.of();
         return board.actionsForCell(seat,source).stream().filter(action->{
             String[] parts=action.split(":");if(parts.length<3||!parts[0].equals("move"))return false;
-            if(!board.id().equals("aeroplane"))return parts[1].equals(source);
+            if(!Set.of("aeroplane","ludo").contains(board.id()))return parts[1].equals(source);
             try {int plane=Integer.parseInt(parts[1]);return plane/4==seat&&cell.piece().contains(String.valueOf(plane%4+1));}
             catch(NumberFormatException ex){return false;}
         }).toList();
@@ -294,12 +300,13 @@ final class GameWorld implements Listener, AutoCloseable {
         if(pick!=null&&(!pick.room().equals(room.id)||pick.revision()!=room.revision)){selections.remove(player.getUniqueId());pick=null;}
         List<String> destinations=destinationActions(pick,cell);if(!destinations.isEmpty()){execute(player,room,destinations);return;}
         List<String> sources=sourceActions(room.board,seat,cell);
+        if(room.kind.equals("ludo")&&!sources.isEmpty()){execute(player,room,sources);return;}
         if(!sources.isEmpty()) {
             if(pick!=null&&pick.source().equals(cell)){selections.remove(player.getUniqueId());player.sendActionBar(Language.component("hint.cancelled").colorIfAbsent(NamedTextColor.GRAY));return;}
             selections.put(player.getUniqueId(),new Pick(room.id,room.revision,cell,List.copyOf(sources)));render(room);
             player.playSound(player.getLocation(),Sound.BLOCK_NOTE_BLOCK_HAT,.25f,1.8f);
             player.sendActionBar(Language.component("hint.selected").colorIfAbsent(NamedTextColor.GREEN));
-        }else if(room.kind.equals("aeroplane")&&room.board.legalActions(seat).contains("roll"))plugin.tell(player,Language.component("chat.roll-first"));
+        }else if(Set.of("aeroplane","ludo").contains(room.kind)&&room.board.legalActions(seat).contains("roll"))plugin.tell(player,Language.component("chat.roll-first"));
         else if(Set.of("gomoku","go","go9","go13","reversi","connectfour").contains(room.kind))
             player.sendActionBar(Language.component(room.kind.equals("connectfour")?"hint.column.unavailable":"hint.position.unavailable").colorIfAbsent(NamedTextColor.RED));
         else player.sendActionBar(Language.component(pick==null?"chat.select-first":"chat.destination").colorIfAbsent(NamedTextColor.GRAY));

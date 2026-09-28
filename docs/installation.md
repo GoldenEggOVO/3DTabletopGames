@@ -9,7 +9,7 @@ Stop the server before replacing the plugin. Back up worlds and `plugins/3dtable
 ## Commands and games
 
 See the [command table](../README.md#commands-and-permissions). Game IDs:
-`xiangqi`, `gomoku`, `chess`, `aeroplane`, `checkers`, `draughts`, `reversi`, `go`, `go9`, `go13`, `connectfour`.
+`xiangqi`, `gomoku`, `chess`, `ludo`, `checkers`, `draughts`, `reversi`, `go`, `go9`, `go13`, `connectfour`.
 
 `go` is 19×19. Example: `/3dtabletop create connectfour` followed by `/3dtabletop bots` to fill empty seats. A move such as `drop:3` uses zero-based column indices. Menu actions recheck player permissions, room state, turn and revision.
 
@@ -35,4 +35,4 @@ Old ServerGames 2.0.3 and ServerMenu 0.7.1 forward to `serverboards:boards`, whi
 
 ## Local acceptance build
 
-Install `3dtabletop-1.5.1-SNAPSHOT.jar` on an isolated server first. Check Connect Four drops, Reversi flips, both viewing sides, custom text, direct clicks and restart recovery. Preserve your backup when comparing with a published build.
+Install `3dtabletop-1.6.0-SNAPSHOT.jar` on an isolated server first. Check Connect Four drops, Reversi flips, both viewing sides, custom text, direct clicks and restart recovery. Preserve your backup when comparing with a published build.

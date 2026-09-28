@@ -7,6 +7,7 @@ public final class GameFactory {
     public static BoardGame create(String game, int players, long seed) {
         if (game == null) throw new IllegalArgumentException("游戏类型不能为空");
         return switch (game.toLowerCase(Locale.ROOT)) {
+            case "ludo" -> new LudoGame(players,seed);
             case "connectfour" -> { requireTwo(players); yield new ConnectFourGame(); }
             case "gomoku" -> { requireTwo(players); yield new GomokuGame(); }
             case "xiangqi" -> { requireTwo(players); yield new XiangqiGame(); }

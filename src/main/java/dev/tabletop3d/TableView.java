@@ -56,12 +56,12 @@ final class TableView implements AutoCloseable {
                 if(reversi){flipParts.put(d,new Matrix4f().translation((float)((part.x()-part.w()/2)*scale),(float)(part.y()*scale),(float)((part.z()-part.d()/2)*scale)).scale((float)(part.w()*scale),(float)(part.h()*scale),(float)(part.d()*scale)));}
                 if(room.kind.equals("chess")&&c.piece().equals("马"))d.setRotation(c.owner()==0?180:0,0);
                 if(Set.of("go","go9","go13").contains(room.kind)&&part.material()==Material.RED_CONCRETE)deadMarks.add(d);
-                if(room.kind.equals("aeroplane"))d.setRotation(GameWorld.actualColor(room.board.publicInfo(),c.owner())*90,0);parts.add(d);
+                if(Set.of("aeroplane","ludo").contains(room.kind))d.setRotation(GameWorld.actualColor(room.board.publicInfo(),c.owner())*90,0);parts.add(d);
             }
             if(reversi)poseFlip(flipTo);
-            if(room.kind.equals("xiangqi")||room.kind.equals("aeroplane")){
+            if(room.kind.equals("xiangqi")||Set.of("aeroplane","ludo").contains(room.kind)){
                 String glyph=room.kind.equals("xiangqi")?c.piece():token.id.substring(token.id.indexOf(':')+1);
-                TextDisplay label=text(from.clone().add(0,geometry.spacing*(room.kind.equals("xiangqi")?.235:.39),0),glyph,geometry.spacing*(room.kind.equals("xiangqi")?1.50:1.0),true,
+                TextDisplay label=text(from.clone().add(0,geometry.spacing*(room.kind.equals("xiangqi")?.235:room.kind.equals("ludo")?.82:.39),0),glyph,geometry.spacing*(room.kind.equals("xiangqi")?1.50:room.kind.equals("ludo")?.8:1.0),true,
                     c.owner()==0&&room.kind.equals("xiangqi")?NamedTextColor.DARK_RED:NamedTextColor.BLACK);
                 if(room.kind.equals("xiangqi")&&c.owner()==0)label.setRotation(180,-90);
                 parts.add(label);
@@ -103,7 +103,7 @@ final class TableView implements AutoCloseable {
         }
         void tick(){if(frame<duration()){frame++;positionParts(position());}if(flipFrame<10){flipFrame++;poseFlip(flipAngle());}}
         boolean moving(){return frame<duration()||flipFrame<10;}
-        void positionParts(Location at){for(Entity part:parts){Location dest=at.clone();if(part instanceof TextDisplay)dest.add(0,geometry.spacing*(room.kind.equals("xiangqi")?.235:.39),0);dest.setYaw(part.getLocation().getYaw());dest.setPitch(part.getLocation().getPitch());part.teleport(dest);}}
+        void positionParts(Location at){for(Entity part:parts){Location dest=at.clone();if(part instanceof TextDisplay)dest.add(0,geometry.spacing*(room.kind.equals("xiangqi")?.235:room.kind.equals("ludo")?.82:.39),0);dest.setYaw(part.getLocation().getYaw());dest.setPitch(part.getLocation().getPitch());part.teleport(dest);}}
         boolean valid(){return parts.stream().allMatch(Entity::isValid);}
         void remove(){animating.remove(this);parts.forEach(Entity::remove);}
     }
@@ -139,7 +139,7 @@ final class TableView implements AutoCloseable {
         title=text(origin.clone().add(0,1.65,0),"",.48,false,NamedTextColor.GOLD);title.setBillboard(Display.Billboard.CENTER);title.setLineWidth(500);furniture.add(title);
         if(room.kind.equals("xiangqi"))furniture.add(text(origin.clone().add(0,.018,0),Language.component("table.river"),.26,true,NamedTextColor.DARK_GRAY));
         if(room.kind.equals("yacht")){furniture.add(text(origin.clone().add(1.30,.025,0),Language.component("table.roll"),.40,true,NamedTextColor.GOLD));}
-        if(room.kind.equals("aeroplane")){
+        if(Set.of("aeroplane","ludo").contains(room.kind)){
             die=block(origin.clone().add(1.30,.02,0),Material.QUARTZ_BLOCK,0,0,0,.30,.30,.30,null);furniture.add(die);
             int[][] coordinates={{0,0},{-1,-1},{1,1},{-1,1},{1,-1},{-1,0},{1,0}};
             for(int face=1;face<=6;face++){
@@ -171,7 +171,7 @@ final class TableView implements AutoCloseable {
     }
     private List<Token> desired(){
         List<Token> list=new ArrayList<>();for(Cell c:cells.values())if(c.owner()>=0){
-            if(room.kind.equals("aeroplane")){int stack=0;for(char digit:c.piece().toCharArray())if(digit>='1'&&digit<='4')list.add(new Token(c.owner()+":"+digit,c,stack++*.19));}
+            if(Set.of("aeroplane","ludo").contains(room.kind)){int stack=0;for(char digit:c.piece().toCharArray())if(digit>='1'&&digit<='4')list.add(new Token(c.owner()+":"+digit,c,stack++*(room.kind.equals("ludo")?.82:.19)));}
             else list.add(new Token(c.id(),c,0));
         }return list;
     }
@@ -191,7 +191,7 @@ final class TableView implements AutoCloseable {
             if(existing!=null&&existing.valid()&&room.kind.equals("reversi")){
                 old.remove(want.id);existing.flip(want);next.put(want.id,existing);continue;
             }
-            if(existing!=null&&existing.valid()&&(room.kind.equals("aeroplane")||same(existing.token,want))){old.remove(want.id);boolean moved=!existing.token.cell.id().equals(want.cell.id())||existing.token.stack!=want.stack;if(moved)existing.move(want,at(want),changed);else existing.token=want;next.put(want.id,existing);}
+            if(existing!=null&&existing.valid()&&(Set.of("aeroplane","ludo").contains(room.kind)||same(existing.token,want))){old.remove(want.id);boolean moved=!existing.token.cell.id().equals(want.cell.id())||existing.token.stack!=want.stack;if(moved)existing.move(want,at(want),changed);else existing.token=want;next.put(want.id,existing);}
             else pending.add(want);
         }
         String action=lastAction();String[] move=action.split(":");
@@ -200,7 +200,7 @@ final class TableView implements AutoCloseable {
                 source=old.get(move[1]);sourceId=move[1];
                 if(source!=null&&(!source.valid()||!same(source.token,want))){source=null;sourceId=null;}
             }
-            if(source==null&&changed&&!Set.of("aeroplane","reversi","connectfour").contains(room.kind))for(var e:old.entrySet())if(e.getValue().valid()&&same(e.getValue().token,want)&&!e.getValue().token.cell.id().equals(want.cell.id())){source=e.getValue();sourceId=e.getKey();break;}
+            if(source==null&&changed&&!Set.of("aeroplane","ludo","reversi","connectfour").contains(room.kind))for(var e:old.entrySet())if(e.getValue().valid()&&same(e.getValue().token,want)&&!e.getValue().token.cell.id().equals(want.cell.id())){source=e.getValue();sourceId=e.getKey();break;}
             if(source!=null){old.remove(sourceId);source.move(want,at(want),true);next.put(want.id,source);}
             else{Location pos=at(want);Location start=pos.clone();if(changed)start.setY(room.kind.equals("connectfour")?origin.getY()+1.9:pos.getY()+geometry.spacing*.8);TokenView created=new TokenView(want,start);if(changed)created.move(want,pos,true);next.put(want.id,created);}
         }
@@ -208,7 +208,7 @@ final class TableView implements AutoCloseable {
         if(changed){lastMove.forEach(Entity::remove);lastMove.clear();
             lastDestination=move.length>=3?move[2]:move.length==2?move[1]:null;
             if(lastDestination!=null&&geometry.byId.containsKey(lastDestination))ring(lastMove,lastDestination,Material.GOLD_BLOCK,null,.90);
-            origin.getWorld().playSound(origin,room.kind.equals("aeroplane")?Sound.BLOCK_WOODEN_BUTTON_CLICK_ON:Sound.BLOCK_WOOD_PLACE,.28f,1.4f);
+            origin.getWorld().playSound(origin,Set.of("aeroplane","ludo").contains(room.kind)?Sound.BLOCK_WOODEN_BUTTON_CLICK_ON:Sound.BLOCK_WOOD_PLACE,.28f,1.4f);
             if(die!=null&&action.equals("roll")){dieValue=Integer.parseInt(room.board.publicInfo().getOrDefault("dice","1"));diceFrames=12;}
         }
         if(die!=null&&diceFrames==0){dieValue=Math.max(1,Integer.parseInt(room.board.publicInfo().getOrDefault("dice","1")));orientDie(faceRotation(dieValue).invert());}
@@ -227,7 +227,7 @@ final class TableView implements AutoCloseable {
             Component value=Language.component("table.title","game",RoomText.game(room.kind),"number",room.table+1)
                 .append(Component.newline()).append(status.colorIfAbsent(NamedTextColor.WHITE)).append(Component.newline())
                 .append(RoomText.roster(room.seats,room.capacity).colorIfAbsent(NamedTextColor.WHITE)).append(Component.newline())
-                .append(Language.component(room.kind.equals("yacht")?"table.yacht.hint":"table.hint").colorIfAbsent(NamedTextColor.GRAY)).append(Component.newline())
+                .append(Language.component(room.kind.equals("yacht")?"table.yacht.hint":room.kind.equals("ludo")?"table.ludo.hint":"table.hint").colorIfAbsent(NamedTextColor.GRAY)).append(Component.newline())
                 .append(Language.component("table.join").colorIfAbsent(NamedTextColor.GRAY));
             if(!value.equals(lastTitle)){
                 var fit=LabelLayout.fit(value,2.8f,.48f);title.text(fit.text());
@@ -239,7 +239,7 @@ final class TableView implements AutoCloseable {
             titleState=new TitleState(room);
         }
         if(diceLabel!=null&&(changed||wasRolling!=rolling())){
-            String key=rolling()?"table.dice.rolling":room.board.publicInfo().getOrDefault("pendingRoll","0").equals("0")?"table.dice.roll":"table.dice.choose";
+            String key=rolling()?"table.dice.rolling":room.board.publicInfo().getOrDefault("pendingRoll","0").equals("0")?"table.dice.roll":room.kind.equals("ludo")?"table.ludo.choose":"table.dice.choose";
             if(changed||!key.equals(lastDiceKey)){diceLabel.text(Language.component(key).colorIfAbsent(NamedTextColor.GOLD));lastDiceKey=key;}
             wasRolling=rolling();
         }
@@ -280,9 +280,13 @@ final class TableView implements AutoCloseable {
         boolean reset=old==null||!old.signature.equals(signature);
         if(reset){if(old!=null)old.remove();old=new Overlay(signature);overlays.put(p.getUniqueId(),old);}
         if(room.kind.equals("connectfour")){columnCursor(p,old,reset,turn,hover);return;}
+        if(room.kind.equals("ludo")){ludoCursor(p,old,reset,turn&&!rolling(),hover);return;}
         if(reset&&turn&&pick!=null){ring(old.entities,pick.source(),Material.LIME_CONCRETE,p,1.0);Set<String> destinations=new HashSet<>();
             for(String action:pick.actions()){String[] parts=action.split(":");if(parts.length>=3)destinations.add(parts[2]);}
-            for(String id:destinations){Cell cell=geometry.byId.get(id);if(cell!=null)old.entities.add(block(origin.clone().add(geometry.x(cell),.023,geometry.z(cell)),Material.LIGHT_BLUE_CONCRETE,0,0,0,geometry.spacing*.20,.018,geometry.spacing*.20,p));}
+            for(String id:destinations){Cell cell=cells.get(id);if(cell!=null){
+                if(cell.owner()>=0)ring(old.entities,id,Material.LIGHT_BLUE_CONCRETE,p,.96);
+                else old.entities.add(block(origin.clone().add(geometry.x(cell),.023,geometry.z(cell)),Material.LIGHT_BLUE_CONCRETE,0,0,0,geometry.spacing*.20,.018,geometry.spacing*.20,p));
+            }}
         }
         if(!reset&&Objects.equals(old.cell,hover)){if(++old.ticks%10==0)p.sendActionBar(old.feedback);return;}
         old.cell=hover;old.ticks=0;
@@ -302,6 +306,26 @@ final class TableView implements AutoCloseable {
     private String blockedHint(){
         if(room.undo!=null)return "hint.undo";
         return switch(room.phase){case LOBBY->"hint.lobby";case STARTING->"hint.starting";case FINISHED,ABORTED->"hint.finished";case PAUSED->"hint.paused";case PLAYING->room.busy?"hint.busy":"hint.wait";};
+    }
+    private void ludoCursor(Player player,Overlay overlay,boolean reset,boolean turn,String hover){
+        int seat=room.seat(player.getUniqueId());
+        if(reset&&turn)for(Cell cell:cells.values())if(cell.owner()==seat&&!GameWorld.sourceActions(room.board,seat,cell.id()).isEmpty())
+            ring(overlay.entities,cell.id(),Material.YELLOW_CONCRETE,player,.92);
+        if(!reset&&Objects.equals(overlay.cell,hover)){if(++overlay.ticks%10==0)player.sendActionBar(overlay.feedback);return;}
+        overlay.cell=hover;overlay.ticks=0;overlay.hover.forEach(Entity::remove);overlay.hover.clear();
+        List<String> choices=turn?GameWorld.sourceActions(room.board,seat,hover):List.of();
+        if(!choices.isEmpty()){
+            String[] action=choices.getFirst().split(":");Cell destination=cells.get(action[2]);
+            List<Entity> preview=new ArrayList<>();ring(preview,destination.id(),Material.LIME_CONCRETE,player,.96);
+            preview.forEach(entity->overlay.hover.add((BlockDisplay)entity));
+            String effect=destination.owner()>=0&&destination.owner()!=seat?"hint.ludo.capture":destination.id().startsWith("go")?"hint.ludo.finish":"hint.ludo.step";
+            overlay.feedback=Language.component(choices.size()>1?"hint.ludo.stack":"hint.ludo.move","count",choices.size(),"pawn",Integer.parseInt(action[1])%4+1,"destination",GameWorld.coordinate("ludo",destination),"effect",Language.component(effect)).colorIfAbsent(NamedTextColor.GREEN);
+        }else{
+            String key=rolling()?"hint.rolling":!turn?blockedHint():room.board.legalActions(seat).contains("roll")?"hint.roll":"table.ludo.choose";
+            if("@menu".equals(hover))key="hint.menu";
+            overlay.feedback=Language.component(key).colorIfAbsent(NamedTextColor.GOLD);
+        }
+        player.sendActionBar(overlay.feedback);
     }
     private void columnCursor(Player player,Overlay overlay,boolean reset,boolean turn,String hover){
         Cell aimed=hover==null?null:cells.get(hover);String column=aimed==null?null:Integer.toString(aimed.x());

@@ -14,7 +14,7 @@ Run independently on **Paper / Purpur 26.2 with Java 25**. No resource pack, cli
 2. Stop your server and back up plugin data and worlds. Keep one plugin JAR in `plugins/`; never install `original-*.jar`.
 3. Start the server and run `/3dtabletop`. Create a room, invite players or fill seats with bots, then play on the physical table.
 
-The current source is **1.5.1-SNAPSHOT**, a local acceptance build. It adds private Connect Four landing previews, room pagination and rules/help, direct placement controls, lighter Go dead-stone updates and safer stale-menu handling. Table protection now ends when you walk away, new tables respond immediately, and overlapping new placements are rejected. It has **not been published as a Release**. Snapshot JARs from Actions are development builds; see [verification](docs/verification.md) for the tested scope.
+The current source is **1.6.0-SNAPSHOT**, a local acceptance build. It replaces new Aeroplane tables with Ludo, adds pawn and destination previews, refines Xiangqi/Chinese Checkers bases and makes capture targets clearer. Existing Aeroplane rooms retain their original rules and recovery. It has **not been published as a Release**. Snapshot JARs from Actions are development builds; see [verification](docs/verification.md) for the tested scope.
 
 Upgrading from ServerBoards? Read [migration](docs/migration.md) first. Existing `3dtabletop` configurations, menu layouts and schema 1 room files remain usable.
 
@@ -29,7 +29,7 @@ Upgrading from ServerBoards? Read [migration](docs/migration.md) first. Existing
 | Go | 2 | 9×9, 13×13 and 19×19 boards |
 | Chinese Checkers | 2, 3, 4 or 6 | Star board and colored pieces |
 | Draughts | 2 | 8×8 board with crowned kings |
-| Aeroplane Chess | 2–4 | Aircraft, numbered pieces and a physical die |
+| Ludo | 2–4 | Cross board, pawn figures, private move previews and a physical die |
 
 - Rooms, seats, ready checks, bots, spectating, undo agreements and rematches.
 - Saved world anchors, seeds and move history; room recovery after restarting.

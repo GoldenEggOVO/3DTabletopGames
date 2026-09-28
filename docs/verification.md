@@ -1,5 +1,21 @@
 # Verification and acceptance
 
+## Local build: 1.6.0-SNAPSHOT
+
+- Java: 191 tests passed, zero failures, errors or skipped tests. Python: four migration-tool tests passed.
+- New coverage includes Ludo automatic initial deployment, captures, exact finish, no-move turn transitions, all four home lanes, deterministic replay, invalid turns and complete-turn undo preserving the dice stream.
+- Presentation checks cover 2-player diagonal colors, one-click pawn moves, stacked-pawn choices, private landing previews, stable pawn entities, the new catalog and legacy flight translation overrides.
+- Clean local Purpur 26.2-2622 completed create/restart/legacy-directory migration with the final JAR. Real Display checks include Ludo pawn entities and private previews, plus existing Connect Four/Reversi/Go/Chess checks. Native Dialog callbacks, pagination and permission rejection passed through simulated Player calls.
+- A second three-boot run restored 12 rooms and 1,511 saved events, including both new Ludo and legacy Aeroplane, through restart and legacy-folder migration. Final evidence: `target/standalone-smoke-20260928-144809/` and `target/standalone-smoke-20260928-144930/`.
+- The final JAR also passed a 60-second, 11-game continuous run with 23 Ludo actions and 13 replay comparisons. Peak owned entities: 1,664; after removing rooms: zero. No Ludo round finished during this short run. Evidence: `target/soak-20260928-144810/`.
+- Existing Aeroplane remains available to restoration/replay only; the new game kind is `ludo`. Room schema 1 and existing configuration/menu files are preserved.
+- A preceding gameplay build also completed 240 seconds across 11 games, including 89 Ludo actions, 11 undo cycles and 33 replays, with zero remaining entities after removal. This earlier JAR is not the final delivery; final-JAR receipts are recorded separately.
+- Model PNGs are source-geometry renders using approximate material colors and fonts. No connected Minecraft client or production load acceptance is claimed. See [client checklist](acceptance.zh-CN.md) and [Ludo rules/migration](ludo.zh-CN.md).
+
+Exact final-JAR hashes and standalone, snapshot-recovery and continuous-play receipts accompany the local delivery in `verification.json`.
+
+Verified JAR SHA-256: `37a83052ba37297621b7b9fd479b27a2a26b62db9ab3aa861d2a01f7dad9cdae`.
+
 ## Local build: 1.5.1-SNAPSHOT
 
 The exact JAR hash and detailed results accompany the local delivery in `verification.json` and `SHA256SUMS.txt`.
@@ -39,7 +55,7 @@ Three boots cover clean creation, restart recovery and copying a legacy ServerBo
 
 For continuous model/replay testing, `python tools/standalone-probe/run_soak.py --seconds 3600` prepares another isolated fixture on `127.0.0.1:25618`. It runs all eleven game kinds with bots, completes and restarts rounds, periodically undoes/replays moves, compares tracked model entities with live entities and checks cleanup after removing the rooms. It uses the same prepared server/cache and EULA prerequisites as the short probe. Duration is bounded to 60–7200 seconds.
 
-To check a snapshot from that synthetic fixture, copy its `plugins/3dtabletop/rooms.json` while the games are running, then pass the copy to `run_standalone.py --rooms-snapshot path/to/copy.json`. Only eleven-room all-bot fixtures without return locations are accepted. The runner keeps the input unchanged, maps its anchors to the fresh test world, and checks room IDs, seeds, seats, positions, saved history and rule state on both restart and legacy-folder migration. Each boot reads its own new log so a previous success marker cannot end the next boot early.
+To check a snapshot from that synthetic fixture, copy its `plugins/3dtabletop/rooms.json` while the games are running, then pass the copy to `run_standalone.py --rooms-snapshot path/to/copy.json`. Eleven-room fixtures or twelve-room fixtures including legacy Aeroplane are accepted; all players must be bots without return locations. The runner keeps the input unchanged, maps its anchors to the fresh test world, and checks room IDs, seeds, seats, positions, saved history and rule state on both restart and legacy-folder migration. Each boot reads its own new log so a previous success marker cannot end the next boot early.
 
 The packager requires a passing three-boot receipt whose SHA-256 matches the exact local JAR. Add `--soak path/to/soak/receipt.json` and `--snapshot path/to/snapshot/receipt.json` to include the additional checks; incomplete, failed or mismatched receipts are rejected. Corresponding source comes from Git-tracked files; stage/commit intended new source before packaging. CI builds/tests and uploads development artifacts only; it does not create tags or Releases.
 

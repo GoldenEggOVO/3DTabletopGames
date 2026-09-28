@@ -2,13 +2,15 @@ package dev.tabletop3d;
 
 import net.kyori.adventure.text.Component;
 import java.util.List;
+import java.util.Set;
 
 /** Shared presentation for menus, chat and physical tables; never changes stored rule data. */
 final class RoomText {
     private RoomText() {}
 
     static Component game(String kind) {
-        return Tabletop3D.NAMES.containsKey(kind)||kind.equals("yacht")?Language.component("game."+kind):Component.text(kind);
+        if(kind.equals("aeroplane"))return Language.component("game.legacy","game",Language.component("game.aeroplane"));
+        return Tabletop3D.NAMES.containsKey(kind)||Set.of("yacht","aeroplane").contains(kind)?Language.component("game."+kind):Component.text(kind);
     }
 
     static Component name(Room room) {

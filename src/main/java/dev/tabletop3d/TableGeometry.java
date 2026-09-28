@@ -23,7 +23,7 @@ final class TableGeometry {
     double radius(){return spacing*(squares()?.499:kind.equals("yacht")?.65:.46);}
     String hit(double x,double z) {
         if(!Double.isFinite(x)||!Double.isFinite(z))return null;
-        if(Math.abs(x-1.30)<.20&&Math.abs(z)<.22&&(kind.equals("aeroplane")||kind.equals("yacht")))return "@roll";
+        if(Math.abs(x-1.30)<.20&&Math.abs(z)<.22&&(Set.of("aeroplane","ludo","yacht").contains(kind)))return "@roll";
         if(Math.abs(x)<.45&&Math.abs(z-1.27)<.15)return "@menu";
         Cell best=null;double distance=Double.MAX_VALUE;
         for(Cell c:cells){double dx=x-x(c),dz=z-z(c);double d=squares()?Math.max(Math.abs(dx),Math.abs(dz)):Math.hypot(dx,dz);

@@ -137,7 +137,9 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             require(copy.cells().equals(live.cells())&&copy.currentPlayer()==live.currentPlayer()&&copy.finished()==live.finished()&&Objects.equals(copy.outcome(),live.outcome()),"restored rule state matches history");
             require(Set.of("PLAYING","FINISHED").contains(field(room,"phase").toString()),"restored active or finished phase");events+=before.size();
         }
-        require(kinds.equals(Set.of("chess","xiangqi","gomoku","aeroplane","checkers","draughts","reversi","go9","go13","go","connectfour")),"all eleven game kinds");
+        Set<String> expected=new HashSet<>(Set.of("chess","xiangqi","gomoku","aeroplane","checkers","draughts","reversi","go9","go13","go","connectfour"));
+        if(source.getAsJsonArray("rooms").size()==12)expected.add("ludo");
+        require(kinds.equals(expected),"all snapshot kinds including legacy flight");
         require(((Map<?,?>)field(field(plugin,"arena"),"views")).size()==restored.size(),"one model per restored room");
         getLogger().info("BOARDS_SNAPSHOT_RESTORE_PASS rooms="+restored.size()+" saved_events="+events+" kinds="+kinds.size());
     }
@@ -183,7 +185,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         Class<?> viewType=Class.forName("dev.tabletop3d.TableView",true,loader);
         var roomConstructor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class);
         roomConstructor.setAccessible(true);
-        for(String kind:List.of("connectfour","reversi","go9","chess")) {
+        for(String kind:List.of("connectfour","reversi","go9","chess","ludo")) {
             Object room=roomConstructor.newInstance(UUID.randomUUID(),kind,2,1L,0);
             Object game=factory.getMethod("create",String.class,int.class,long.class).invoke(null,kind,2,1L);
             Field board=roomType.getDeclaredField("board");board.setAccessible(true);board.set(room,game);
@@ -224,7 +226,8 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     Location target=(Location)field(token,"to");
                     for(var part:parts) {
                         require(part.isValid() && !part.isPersistent(),"live non-persistent model part: "+kind+" valid="+part.isValid()+" persistent="+part.isPersistent()+" dead="+part.isDead());
-                        require(part.getLocation().distanceSquared(target)<1e-8,"animation settled");
+                        Location expected=target.clone();if(kind.equals("ludo")&&part instanceof TextDisplay)expected.add(0,((Number)field(field(view,"geometry"),"spacing")).doubleValue()*.82,0);
+                        require(part.getLocation().distanceSquared(expected)<1e-8,"animation settled");
                         String transform=((org.bukkit.entity.Display)part).getTransformation().toString();
                         require(!transform.contains("NaN")&&!transform.contains("Infinity"),"finite server transformation");
                     }
@@ -243,10 +246,20 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     getLogger().info("BOARDS_KNIGHT_HEADING "+id+" yaw="+parts.getFirst().getLocation().getYaw());
                     for(var part:parts)require(Math.abs(Math.IEEEremainder(part.getLocation().getYaw()-(id.equals("b1")?180:0),360))<.001,"knight faces opponent: "+id+" yaw="+part.getLocation().getYaw());
                 }
+                if(kind.equals("ludo")){
+                    Class<?> pickType=Class.forName("dev.tabletop3d.GameWorld$Pick",true,loader);
+                    call(view,"cursor",new Class<?>[]{Player.class,pickType,String.class},viewer,null,"sk0");
+                    Object overlay=((Map<?,?>)field(view,"overlays")).get(viewer.getUniqueId());
+                    @SuppressWarnings("unchecked") List<org.bukkit.entity.BlockDisplay> hints=(List<org.bukkit.entity.BlockDisplay>)field(overlay,"hover");
+                    require(hints.size()==4,"Ludo previews the pawn destination");
+                    for(var hint:hints)require(hint.isValid()&&!hint.isVisibleByDefault(),"private live Ludo preview");
+                    call(view,"clear",new Class<?>[]{Player.class},viewer);for(var hint:hints)require(!hint.isValid(),"Ludo preview removed");
+                    for(var entry:previous.entrySet())require(current.get(entry.getKey())==entry.getValue(),"Ludo roll retains pawn entities");
+                }
             } finally {call(view,"close",new Class<?>[0]);}
         }
         world.removePluginChunkTickets(this);
-        getLogger().info("BOARDS_MODELS_PASS connectfour=drop-and-private-preview reversi=reuse-and-flip go=dead-marker-reuse chess=knight-heading");
+        getLogger().info("BOARDS_MODELS_PASS connectfour=drop-and-private-preview reversi=reuse-and-flip go=dead-marker-reuse chess=knight-heading ludo=pawns-and-private-preview");
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

@@ -62,8 +62,8 @@ for number, marker in ((1, "BOARDS_STANDALONE_CREATE_PASS"), (2, "BOARDS_STANDAL
         snapshot = json.loads(snapshot_bytes)
         current_rooms = plugins / "3dtabletop/rooms.json"
         fixture_world = json.loads(current_rooms.read_text(encoding="utf-8"))["rooms"][0]["anchorWorld"]
-        if len(snapshot["rooms"]) != 11 or snapshot.get("returns"):
-            raise ValueError("Expected eleven synthetic rooms and no player return locations")
+        if len(snapshot["rooms"]) not in (11, 12) or snapshot.get("returns"):
+            raise ValueError("Expected eleven or twelve synthetic rooms and no player return locations")
         for room in snapshot["rooms"]:
             if not room["seats"] or not all(seat["bot"] for seat in room["seats"]):
                 raise ValueError("Only synthetic all-bot snapshots are accepted")
@@ -127,7 +127,7 @@ receipt = {"version": version, "jar_sha256": tested_digest, "runtime": str(runti
            "boots": boots, "client_visual_test": False, "production_deployed": False}
 if snapshot_digest:
     receipt["snapshot_source_sha256"] = snapshot_digest
-    receipt["snapshot_rooms"] = 11
+    receipt["snapshot_rooms"] = len(snapshot["rooms"])
     receipt["snapshot_world_remapped_for_fixture"] = True
 (runtime / "receipt.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2), encoding="utf-8")
 print(json.dumps(receipt, ensure_ascii=False, indent=2))

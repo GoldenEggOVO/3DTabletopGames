@@ -14,7 +14,7 @@ final class RoundActions {
         if(seat<0||r.board==null||r.busy||r.undo!=null||r.phase!=Room.Phase.PLAYING&&r.phase!=Room.Phase.FINISHED)throw new IllegalArgumentException("当前不能申请悔棋");
         int cut=r.history.size()-1;while(cut>=0&&r.history.get(cut).getAsJsonObject().get("seat").getAsInt()!=seat)cut--;
         if(cut<0)throw new IllegalArgumentException("你还没有可撤销的回合");
-        if(Set.of("draughts","yacht","aeroplane").contains(r.kind))while(cut>0&&r.history.get(cut-1).getAsJsonObject().get("seat").getAsInt()==seat)cut--;
+        if(Set.of("draughts","yacht","aeroplane","ludo").contains(r.kind))while(cut>0&&r.history.get(cut-1).getAsJsonObject().get("seat").getAsInt()==seat)cut--;
         Set<UUID> others=new HashSet<>();for(Room.Seat s:r.seats)if(!s.bot()&&!s.id().equals(player))others.add(s.id());
         r.undo=new Undo(player,cut,now+30_000,others);r.revision++;
     }

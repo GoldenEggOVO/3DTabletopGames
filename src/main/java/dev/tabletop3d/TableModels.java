@@ -15,8 +15,15 @@ final class TableModels {
             case "gomoku", "go", "go9", "go13", "reversi" -> {Material stone=owner==0?Material.BLACK_CONCRETE:Material.WHITE_CONCRETE;disc(p,stone,.76,.13);if(cell.piece().contains("×"))p.addAll(deadStoneMarks());}
             case "draughts" -> {Material stone=owner==0?Material.POLISHED_BLACKSTONE:Material.SMOOTH_QUARTZ;disc(p,stone,.76,.19);if(cell.piece().equals("王")){disc(p,Material.GOLD_BLOCK,.54,.30);box(p,0,.31,0,.18,.07,.18,stone);}}
             case "yacht" -> {Material body=cell.piece().endsWith("✓")?Material.LIGHT_BLUE_CONCRETE:Material.SMOOTH_QUARTZ;box(p,0,0,0,1.14,1.14,1.14,body);int face=Character.digit(cell.piece().charAt(0),10);int[][] dots={{0,0},{-1,-1},{1,1},{-1,1},{1,-1},{-1,0},{1,0}};for(int i:TableView.pipIndices(face))box(p,dots[i][0]*.30,1.145,dots[i][1]*.30,.14,.025,.14,Material.BLACK_CONCRETE);}
-            case "xiangqi" -> {disc(p,Material.STRIPPED_BIRCH_WOOD,.78,.19);}
-            case "checkers" -> {disc(p,color,.68,.18);box(p,0,.16,0,.44,.22,.44,color);box(p,-.07,.35,-.07,.18,.04,.18,Material.WHITE_CONCRETE);}
+            case "xiangqi" -> {roundedDisc(p,Material.STRIPPED_BIRCH_WOOD,.78,.19);}
+            case "checkers" -> {roundedDisc(p,color,.68,.18);box(p,0,.18,0,.38,.20,.38,color);box(p,-.07,.38,-.07,.15,.035,.15,Material.WHITE_CONCRETE);}
+            case "ludo" -> {
+                roundedDisc(p,color,.64,.12);
+                box(p,0,.12,0,.34,.27,.34,color);
+                box(p,0,.39,0,.24,.08,.24,color);
+                box(p,0,.47,0,.36,.30,.46,color);
+                for(double side:new double[]{-.21,.21})box(p,side,.51,0,.06,.22,.34,color);
+            }
             case "aeroplane" -> {
                 box(p,0,.06,0,.17,.15,.79,color);box(p,0,.10,.04,.74,.10,.19,color);
                 box(p,0,.12,.28,.40,.08,.12,color);box(p,0,.20,.26,.07,.16,.15,color);
@@ -44,6 +51,14 @@ final class TableModels {
         // Adjacent strips preserve the octagonal footprint without overlapping top faces.
         box(parts,0,0,0,width*.68,height,width,material);
         for(double side:new double[]{-.42,.42})box(parts,side*width,0,0,width*.16,height,width*.68,material);
+    }
+    /** Five adjoining strips soften larger pieces; dense Go boards keep the compact mesh. */
+    static void roundedDisc(List<Part> parts,Material material,double width,double height){
+        box(parts,0,0,0,width*.4,height,width,material);
+        for(double side:new double[]{-1,1}){
+            box(parts,side*width*.3,0,0,width*.2,height,width*.88,material);
+            box(parts,side*width*.45,0,0,width*.1,height,width*.60,material);
+        }
     }
     static List<Part> deadStoneMarks(){
         return List.of(new Part(0,.16,0,.65,.035,.10,Material.RED_CONCRETE),new Part(0,.16,0,.10,.035,.65,Material.RED_CONCRETE));

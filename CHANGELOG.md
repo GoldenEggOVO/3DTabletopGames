@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.6.0-SNAPSHOT — local acceptance build
+
+- Replace new Aeroplane Chess creation with Ludo for 2–4 players: automatic first deployment, six to deploy/roll again, captures, no blocking and exact finish. Preserve legacy Aeroplane rules and saved rooms.
+- Add original cross-board artwork and compact pawn models, private movable-pawn markers and destination previews. Single pawns move on one click; stacked pawns use a labeled choice dialog.
+- Preserve the dice stream when undoing a full Ludo turn. Add rules, commands, tab completion and editable English messages.
+- Round Xiangqi/Chinese Checkers bases and make occupied capture destinations visible around pieces; retain lightweight Go meshes.
+- Keep existing translation overrides intact and label restored Aeroplane rooms as Legacy. See [rules and migration](docs/ludo.zh-CN.md).
+- Source and local acceptance artifacts only; no Release or production deployment.
+
 ## 1.5.1-SNAPSHOT — local acceptance build
 
 - Restore the player's original collision setting when leaving the table area, changing worlds, disconnecting or disabling the plugin; limit hunger protection to authorized seated players within six blocks of their table.

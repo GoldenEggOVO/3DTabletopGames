@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
 
 class TabletopTest {
-    static final List<String> KINDS=List.of("chess","xiangqi","gomoku","checkers","aeroplane","draughts","reversi","yacht","go9","go13","go");
+    static final List<String> KINDS=List.of("chess","xiangqi","gomoku","checkers","aeroplane","ludo","draughts","reversi","yacht","go9","go13","go");
     @Test void everyCellCenterMapsBackToItsOwnCellAndFitsTheNativeMap() {
         for(String kind:KINDS){BoardGame board=GameFactory.create(kind,2,0);TableGeometry t=new TableGeometry(kind,board.cells());
             for(Cell c:board.cells()){

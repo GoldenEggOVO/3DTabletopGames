@@ -25,6 +25,7 @@ final class TableArt {
             case "xiangqi" -> grid(g,t,true);
             case "checkers" -> checkers(g,t);
             case "aeroplane" -> flight(g,t);
+            case "ludo" -> ludo(g,t);
             default -> throw new IllegalArgumentException(t.kind);
         }
         g.dispose();return image;
@@ -90,4 +91,24 @@ final class TableArt {
         }
     }
     static void dot(Graphics2D g,int x,int y,double radius,int color){g.setColor(new Color(color));g.fillOval((int)Math.round(x-radius),(int)Math.round(y-radius),(int)Math.round(radius*2),(int)Math.round(radius*2));}
+    static void ludo(Graphics2D g,TableGeometry t){
+        double s=t.spacing*128;
+        g.setColor(new Color(0xf1ead8));g.fillRect(11,11,234,234);
+        for(int color=0;color<4;color++){
+            final int c=color;List<Cell> base=t.cells.stream().filter(p->p.id().startsWith("ba"+c)).toList();
+            int x=base.stream().mapToInt(t::px).min().orElseThrow(),y=base.stream().mapToInt(t::pz).min().orElseThrow();
+            g.setColor(new Color(COLORS[color]));g.fillRoundRect((int)(x-s*1.2),(int)(y-s*1.2),(int)(s*4.4),(int)(s*4.4),14,14);
+            g.setColor(new Color(0xfaf5e7));g.fillRoundRect((int)(x-s*.6),(int)(y-s*.6),(int)(s*3.2),(int)(s*3.2),12,12);
+        }
+        for(Cell cell:t.cells){
+            String id=cell.id();int color=id.startsWith("sk")?Integer.parseInt(id.substring(2))%13==0?Integer.parseInt(id.substring(2))/13:-1:Character.digit(id.charAt(2),10);
+            int x=t.px(cell),y=t.pz(cell);
+            if(id.startsWith("ba")){dot(g,x,y,s*.38,COLORS[color]);dot(g,x,y,s*.25,0xfaf5e7);continue;}
+            int half=(int)Math.round(s*.48);g.setColor(new Color(color<0?0xffffff:COLORS[color]));g.fillRect(x-half,y-half,half*2,half*2);
+            g.setColor(new Color(0x79756c));g.setStroke(new BasicStroke(.7f));g.drawRect(x-half,y-half,half*2,half*2);
+            if(id.startsWith("go"))dot(g,x,y,s*.18,0xfaf5e7);
+            if(id.startsWith("sk")&&color>=0){g.setColor(new Color(0xffffff));g.drawOval(x-3,y-3,6,6);}
+        }
+        g.setColor(new Color(0xc7a06a));g.fillOval(122,122,12,12);
+    }
 }

@@ -83,7 +83,7 @@ final class GameMenus implements AutoCloseable {
         Component description=rooms.isEmpty()?Language.component("menu.rooms.empty"):Language.component("menu.rooms.page","count",rooms.size(),"page",page+1,"pages",pages);
         show(p,RoomText.game(kind),description,b,()->main(p));
     }
-    void sizes(Player p,String kind){if(kind.equals("go")){show(p,Language.component("menu.go.title"),Language.component("menu.go.description"),List.of(new Button(Language.component("menu.go.small"),()->plugin.create(p,"go9",2)),new Button(Language.component("menu.go.medium"),()->plugin.create(p,"go13",2)),new Button(Language.component("menu.go.full"),()->plugin.create(p,"go",2))),()->games(p,kind));return;}int[] sizes=switch(kind){case"uno"->new int[]{2,3,4,6,8,10};case"checkers"->new int[]{2,3,4,6};case"aeroplane","yacht"->new int[]{2,3,4};default->new int[]{Tabletop3D.defaultCapacity(kind)};};
+    void sizes(Player p,String kind){if(kind.equals("go")){show(p,Language.component("menu.go.title"),Language.component("menu.go.description"),List.of(new Button(Language.component("menu.go.small"),()->plugin.create(p,"go9",2)),new Button(Language.component("menu.go.medium"),()->plugin.create(p,"go13",2)),new Button(Language.component("menu.go.full"),()->plugin.create(p,"go",2))),()->games(p,kind));return;}int[] sizes=switch(kind){case"uno"->new int[]{2,3,4,6,8,10};case"checkers"->new int[]{2,3,4,6};case"ludo","aeroplane","yacht"->new int[]{2,3,4};default->new int[]{Tabletop3D.defaultCapacity(kind)};};
         if(sizes.length==1){plugin.create(p,kind,sizes[0]);return;}List<Button>b=new ArrayList<>();for(int size:sizes)b.add(new Button(Language.component("menu.capacity.option","count",size),()->plugin.create(p,kind,size)));show(p,Language.component("menu.capacity.title"),Language.component("menu.capacity.description"),b,()->games(p,kind));}
     Component status(Room r){
         Component text=RoomText.phase(r).append(Component.newline());int turn=r.turn();
@@ -162,7 +162,7 @@ final class GameMenus implements AutoCloseable {
         List<String> keys=new ArrayList<>(bySource.keySet());List<Button>b=new ArrayList<>();int from=Math.max(0,Math.min(page*12,keys.size()));
         for(String key:keys.subList(from,Math.min(from+12,keys.size()))){
             List<String> choices=bySource.get(key);String action=choices.getFirst();
-            boolean direct=choices.size()==1&&(action.startsWith("place:")||action.startsWith("drop:")||action.startsWith("dead:"));
+            boolean direct=choices.size()==1&&(r.kind.equals("ludo")||action.startsWith("place:")||action.startsWith("drop:")||action.startsWith("dead:"));
             Component label=direct?actionLabel(r,action):Language.component("menu.pieces.option","piece",labelCell(r,key),"count",choices.size());
             b.add(new Button(label,()->{if(plugin.rooms.get(r.id)!=r||r.revision!=revision)boardSources(p,r,0);
                 else if(direct)plugin.action(p,r,revision,new JsonPrimitive(action));else boardChoices(p,r,choices,0);}));
@@ -179,7 +179,12 @@ final class GameMenus implements AutoCloseable {
         if(from>0)b.add(new Button(Language.component("menu.previous"),()->{if(r.revision!=revision)boardSources(p,r,0);else boardChoices(p,r,choices,page-1);}));if(from+12<choices.size())b.add(new Button(Language.component("menu.next"),()->{if(r.revision!=revision)boardSources(p,r,0);else boardChoices(p,r,choices,page+1);}));
         show(p,Language.component("menu.moves.title"),Language.component(r.kind.equals("chess")?"menu.moves.chess":"menu.moves.description"),b,()->boardSources(p,r,0));
     }
-    static Component actionLabel(Room r,String action){String[] s=action.split(":");if(Set.of("roll","pass","accept","resume").contains(action))return Language.component("action."+action);if(s.length==2&&s[0].equals("drop"))return Language.component("action.drop","column",Integer.parseInt(s[1])+1);if(s.length==2)return Language.component(s[0].equals("dead")?"action.dead":"action.place","cell",s[1]);if(s.length>=3)return s.length==4?Language.component("action.promote","from",s[1],"to",s[2],"piece",Set.of("q","r","b","n").contains(s[3])?Language.component("promotion."+s[3]):Component.text(s[3])):Language.component("action.move","from",s[1],"to",s[2]);return Component.text(action);}
+    static Component actionLabel(Room r,String action){String[] s=action.split(":");
+        if(r.kind.equals("ludo")&&s.length==3&&s[0].equals("move")){
+            var cell=r.board.cells().stream().filter(c->c.id().equals(s[2])).findFirst().orElseThrow();
+            return Language.component("action.ludo.move","pawn",Integer.parseInt(s[1])%4+1,"destination",GameWorld.coordinate("ludo",cell));
+        }
+        if(Set.of("roll","pass","accept","resume").contains(action))return Language.component("action."+action);if(s.length==2&&s[0].equals("drop"))return Language.component("action.drop","column",Integer.parseInt(s[1])+1);if(s.length==2)return Language.component(s[0].equals("dead")?"action.dead":"action.place","cell",s[1]);if(s.length>=3)return s.length==4?Language.component("action.promote","from",s[1],"to",s[2],"piece",Set.of("q","r","b","n").contains(s[3])?Language.component("promotion."+s[3]):Component.text(s[3])):Language.component("action.move","from",s[1],"to",s[2]);return Component.text(action);}
 
 
 
@@ -188,7 +193,7 @@ final class GameMenus implements AutoCloseable {
         Room r=plugin.room(p);rules(p,kind,()->{if(r!=null)room(p,r);else main(p);});
     }
     private void rules(Player p,String kind,Runnable back){
-        String key=Set.of("go9","go13").contains(kind)?"go":Tabletop3D.NAMES.containsKey(kind)||kind.equals("yacht")?kind:"default";
+        String key=Set.of("go9","go13").contains(kind)?"go":Tabletop3D.NAMES.containsKey(kind)||Set.of("yacht","aeroplane").contains(kind)?kind:"default";
         Component text=Language.component("rules."+key);Room r=plugin.room(p);
         if(r!=null&&r.board!=null&&(r.kind.equals(kind)||kind.equals("go")&&Set.of("go","go9","go13").contains(r.kind))){var info=r.board.publicInfo();text=text.append(Component.newline()).append(Component.newline()).append(Language.legacy(info.getOrDefault("rules",""))).append(Component.newline()).append(Language.legacy(info.getOrDefault("rulesVariant","")));}
         text=text.append(Component.newline()).append(Component.newline()).append(Language.component("rules.footer","seconds",plugin.getConfig().getLong("reconnect-seconds",120)));
