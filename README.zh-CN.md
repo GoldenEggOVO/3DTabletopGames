@@ -39,6 +39,6 @@ mvn -B -ntp package
 python -m unittest discover -s tests -p "test_*.py"
 ```
 
-使用 JDK 25、Maven 3.9+。服务端探针需要准备本地 Purpur 26.2 缓存，详见 [验证说明](docs/verification.md)。自动检查不代替客户端画面与操作体验验收。本次先交付本地 JAR，源码可同步 GitHub，用户明确同意后才发布 Release。
+使用 JDK 25、Maven 3.9+。服务端探针需要准备本地 Purpur 26.2 缓存，详见 [验证说明](docs/verification.md)。自动检查不代替客户端画面与操作体验验收，可按 [中文客户端验收单](docs/acceptance.zh-CN.md) 检查。本次先交付本地 JAR，源码可同步 GitHub，用户明确同意后才发布 Release。
 
 [架构](docs/architecture.md) · [功能清单](docs/features.zh-CN.md) · [更新日志](CHANGELOG.md) · [第三方来源](THIRD_PARTY.md)

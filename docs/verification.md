@@ -20,6 +20,10 @@ Evidence directory: `target/standalone-smoke-20260928-030558/` (local, ignored).
 
 An additional three-boot run passed in `target/standalone-smoke-20260928-031151/`: an eleven-game snapshot containing 1,431 saved moves survived both restart and legacy-folder migration. All seven copied configuration/language/menu files matched the legacy-folder hashes. The snapshot contained bots only; its world UUID was explicitly remapped to the separate fixture world. An earlier test-runner attempt was rejected because it read a stale prior-boot marker and failed to shut down cleanly; the corrected runner reads a distinct log for every boot.
 
+The migration CLI also converted and checked an eleven-game, 1,909-move snapshot using the exact candidate JAR. Source bytes were unchanged, output JSON retained the original data, and a repeated write was refused without changing the existing candidate (`target/migration-cli-soak/receipt.json`). A synthetic runner interruption after a real server startup also exited cleanly and reaped its own server process (`target/probe-interrupt-receipt.json`).
+
+A **3,600-second continuous run** passed in `target/soak-20260928-025900/`: eleven simultaneous all-bot game kinds made **13,942 moves**, completed/restarted **136 rounds**, applied **197 undos** and passed **403 replay comparisons**. Every periodic entity inventory matched the live models, with a peak of 2,651 owned entities. Removing all test rooms left **zero owned entities** and the server exited with code 0. Chinese Checkers made 1,225 moves but did not finish a round within the hour; this is a lifecycle/replay check, not an assessment of bot playing strength or a production performance benchmark.
+
 ## Reproduce
 
 ```sh
