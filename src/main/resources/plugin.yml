@@ -1,5 +1,5 @@
 name: 3dtabletop
-version: 1.7.2-SNAPSHOT
+version: 1.7.3-SNAPSHOT
 main: dev.tabletop3d.Tabletop3D
 api-version: '26.2'
 softdepend: [AuthMe]

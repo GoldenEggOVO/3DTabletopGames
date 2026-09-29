@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.7.3-SNAPSHOT — development build, no Release
+
+- Raise and highlight only the selected Mahjong tile, keep neighbors still and fit up to 17 tiles in one row.
+- Show private unseen-copy counts from the owner’s hand and public tiles, with physical-ID deduplication and no concealed-opponent reads.
+- Add four-way drawable wall counts, shared turn-deadline countdowns, round/turn/last-discard labels and red-dot riichi sticks.
+- Hold Shift for a fixed elevated table position with free mouse aim; release to restore the entry pose. Clear focus on menus, leaving, death, external teleports and shutdown.
+- Preview native tile combinations above private Chi/Pon/Kan buttons and expand multiple choices directly on the table, revalidating current legal actions.
+- Preserve rules, schema 1 room data, custom YAML and resource-pack-free play. Source and local acceptance build only; no Release.
+
 ## 1.7.2-SNAPSHOT — development build, no Release
 
 - Highlight Mahjong tiles in place without raising or separating them. Display owner-only legal call buttons above the hand, preserving every combination in the existing choice dialog.

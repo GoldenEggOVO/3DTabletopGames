@@ -2,9 +2,9 @@
 
 [English](game-modes.md) | [简体中文](game-modes.zh-CN.md)
 
-This page describes **1.7.2-SNAPSHOT**, an unpublished development build. It has not been deployed to production servers. Local artwork and model previews do not replace Minecraft client acceptance; see [verification](verification.md) for evidence and status.
+This page describes **1.7.3-SNAPSHOT**, an unpublished development build. It has not been deployed to production servers. Local artwork and model previews do not replace Minecraft client acceptance; see [verification](verification.md) for evidence and status.
 
-Mahjong tiles highlight in place. When legal calls are available, owner-only Chi/Pon/Kan/Ron/Tsumo/Skip buttons appear above the hand; multiple tile combinations use the existing choice dialog. Optional self-turn Skip dismisses the current prompt without consuming a turn, while response Skip submits the legal pass. The rotating Last Card ring follows turn order and pauses with ended/paused rooms or undo. Its 6/9 artwork is underlined; the existing 1–8 deck is unchanged.
+Mahjong hover highlights and raises only the selected tile; neighbors stay still. Its owner-only Remaining label counts unseen copies from your hand and public tiles, never opponents’ concealed hands. The table center shows the drawable wall count, while overhead labels show the round, turn, real countdown and last discard. Hold Shift near your own table for an elevated fixed position with free mouse aim; release to return. Private call buttons preview the tiles, with Chi/Pon/Kan combinations selectable on the table. Riichi declarations place white sticks with red dots. All text remains editable in language YAML. Optional self-turn Skip dismisses the current prompt without consuming a turn, while response Skip submits the legal pass. The rotating Last Card ring follows turn order and pauses with ended/paused rooms or undo. Its 6/9 artwork is underlined; the existing 1–8 deck is unchanged.
 
 ## Set up a game
 
@@ -119,7 +119,7 @@ After selecting a profile in basic setup, open **Detailed Rules** for that regio
 
 Last Card and Mahjong show hand faces only to their owner. Other players and spectators see backs/counts, public discards and exposed tiles. Open the hand controls to select legal actions; the public-table page lets everyone inspect public information. Last Card also displays the current color, direction, draw penalty and top discard. Mahjong menus show each player's match points.
 
-Both games use original face artwork built from native block displays. Mahjong tiles show suit and honor patterns; Last Card uses larger upright cards. Aim at a card to lift it and move nearby cards aside, then use the card or hand menu to choose a legal action. While seated in a Last Card game, right-click the central deck when drawing is legal. A rejected draw leaves the game unchanged. Newly drawn cards travel from the deck into your private hand; initial display, reconnecting and saved-room recovery show cards in place.
+Both games use original face artwork built from native block displays. Mahjong tiles show suit and honor patterns; Last Card uses larger upright cards. Aim at a Last Card card to lift it and move nearby cards aside; Mahjong raises only the selected tile. Use the physical hand or hand menu to choose a legal action. While seated in a Last Card game, right-click the central deck when drawing is legal. A rejected draw leaves the game unchanged. Newly drawn cards travel from the deck into your private hand; initial display, reconnecting and saved-room recovery show cards in place.
 
 In other games, Xiangqi keeps Chinese piece inscriptions, including 砲. Ludo pawns have no floating number labels; stacked-pawn choices still identify the pieces in the menu. The dice stand uses the die model without an extra artificial shadow mesh.
 
@@ -141,3 +141,10 @@ Saved older rooms retain their original world position and compact dice presenta
 - Original 1.7.0 stock setup, room and hand templates use the new layout in memory after content matching, without changing installed file bytes. Customized layouts keep their ordering and styles; back up and manually merge new templates when desired. This presentation update does not change schema 1 data or game rules.
 
 See [migration](migration.md) for upgrades and older room imports. The [Nintendo game catalog](https://www.nintendo.com/jp/switch/as7ta/games/index.html) is a primary reference for the collection; the linked GameFAQs pages are independent play guides, not Nintendo's official rule specification. This plugin's documented rules and selectable values define its supported modes.
+
+### Mahjong table information and focus
+
+- A normal tile has four copies: own hand 2 / public 0 → Remaining 2; own 1 / public 1 → Remaining 2. Public rivers, melds, indicator tiles and offered tiles are counted once by physical ID. Red and normal fives share a type. The count is unseen copies, which can be in opponents’ hands or the dead wall; it is not a prediction of future draws. The central count is the rules engine’s actual drawable wall count.
+- Hands up to 17 tiles occupy one row. Call previews and unseen-copy labels are visible only to their owner; stale choices are rechecked against current legal actions.
+- The timer shares the actual human/bot/offline turn deadline and pauses for suspended play or pending undo. No second timer or rule change is introduced.
+- Shift focus requires a seat, permission and proximity. Position is held but mouse aim remains free. Release restores your entry position, yaw, pitch and gravity. Menus, leaving, death, external teleports and shutdown clear temporary focus. If the return space is blocked or another plugin cancels the return teleport, focus ends and normal gravity resumes without forcing a teleport. Test camera feel and anti-cheat compatibility on your isolated server.

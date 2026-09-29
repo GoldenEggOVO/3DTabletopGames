@@ -294,11 +294,13 @@ final class GameWorld implements Listener, AutoCloseable {
     @EventHandler public void hanging(org.bukkit.event.hanging.HangingBreakEvent event){if(event.getEntity().getPersistentDataContainer().has(tag))event.setCancelled(true);}
     private boolean worldClick(Player player) {
         if(!plugin.allowed(player))return false;
-        if(player.isSneaking()&&plugin.tableLobby!=null)return false;
+        boolean focused=plugin.comfort!=null&&plugin.comfort.focused(player);
+        if(player.isSneaking()&&!focused&&plugin.tableLobby!=null)return false;
         Room room=plugin.room(player);TableView view=room==null?null:views.get(room.id);if(view==null||room.board==null||!player.getWorld().equals(view.origin.getWorld()))return false;
         String cell=aimed(player,view);if(cell==null)return false;
         long now=System.nanoTime(),last=clicks.getOrDefault(player.getUniqueId(),0L);if(now-last<180_000_000L)return true;clicks.put(player.getUniqueId(),now);
-        if(player.isSneaking()||cell.equals("@menu")){plugin.menus.room(player,room);return true;}
+        if(focused&&cell.equals("@menu"))return true;
+        if(player.isSneaking()&&!focused||cell.equals("@menu")){plugin.menus.room(player,room);return true;}
         if(room.phase!=Room.Phase.PLAYING)return true;
         if(room.undo!=null){plugin.menus.room(player,room);return true;}
         int seat=room.seat(player.getUniqueId());if(seat!=room.board.currentPlayer()&&!(room.board instanceof dev.tabletop3d.rules.GoGame go&&go.scoring())){player.sendActionBar(Language.component("hint.not-turn").colorIfAbsent(NamedTextColor.GRAY));return true;}
@@ -308,7 +310,14 @@ final class GameWorld implements Listener, AutoCloseable {
     }
     private void pickCell(Player player,Room room,int seat,String cell) {
         if(cell.startsWith("@call:")&&room.kind.equals("mahjong")){
-            List<String> choices=MahjongControls.groups(room.board.legalActions(seat)).getOrDefault(cell.substring(6),List.of());
+            String group=cell.substring(6);TableView view=views.get(room.id);
+            if(view!=null&&view.expandHandCall(player,group))return;
+            if(group.startsWith("choice:")){
+                String action=group.substring(7);
+                if(room.board.legalActions(seat).contains(action))execute(player,room,List.of(action));
+                return;
+            }
+            List<String> choices=MahjongControls.groups(room.board.legalActions(seat)).getOrDefault(group,List.of());
             if(!choices.isEmpty())execute(player,room,choices);
             return;
         }

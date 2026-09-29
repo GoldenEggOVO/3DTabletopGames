@@ -213,6 +213,10 @@ final class TableView implements AutoCloseable {
     }
     private String lastAction(){if(room.history.isEmpty())return "";var e=room.history.get(room.history.size()-1).getAsJsonObject().get("action");return e!=null&&e.isJsonPrimitive()?e.getAsString():"";}
     private void updateTitle(){
+        if(room.kind.equals("mahjong")&&room.phase!=Room.Phase.LOBBY&&room.phase!=Room.Phase.STARTING){
+            if(!Component.empty().equals(lastTitle)){title.text(Component.empty());lastTitle=Component.empty();}
+            titleState=null;return;
+        }
         boolean changed=titleState==null||!titleState.matches(room);
         if(changed){
             int turn=room.board.currentPlayer();
@@ -250,6 +254,7 @@ final class TableView implements AutoCloseable {
     boolean deckHit(Location eye,org.bukkit.util.Vector direction){return handTable!=null&&handTable.deckHit(eye,direction);}
     String handCallHit(Player player,Location eye,org.bukkit.util.Vector direction){return handTable==null?null:handTable.callHit(player,eye,direction);}
     void dismissHandCalls(Player player){if(handTable!=null)handTable.dismissCalls(player);}
+    boolean expandHandCall(Player player,String group){return handTable!=null&&handTable.expandCall(player,group);}
     record Hit(String cell,double distance){}
     Hit hitPiece(Location eye,org.bukkit.util.Vector direction){
         Hit nearest=null;

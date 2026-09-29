@@ -43,7 +43,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         } catch(Exception|LinkageError ex){getLogger().log(java.util.logging.Level.SEVERE,"Could not initialize table rooms",ex);Bukkit.getPluginManager().disablePlugin(this);}
     }
     @Override public void onDisable(){stopping=true;save();if(tableLobby!=null)tableLobby.close();if(coordinator!=null)coordinator.close();if(comfort!=null)comfort.close();if(menus!=null)menus.close();if(arena!=null)arena.close();}
-    public void suspendView(Player player){if(menus!=null)menus.forget(player);if(arena!=null)arena.clearSelection(player);}
+    public void suspendView(Player player){if(comfort!=null)comfort.release(player);if(menus!=null)menus.forget(player);if(arena!=null)arena.clearSelection(player);}
     public boolean hasActiveGame(Player player){return room(player)!=null;}
     boolean mainMenuAvailable(){return Bukkit.getPluginCommand("servermenu:servermenu")!=null;}
 
@@ -176,7 +176,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
             for(int seat=0;seat<room.seats.size();seat++){
                 Room.Seat member=room.seats.get(seat);if(member.bot()||previous.indexOf(member)==seat)continue;
                 Player player=Bukkit.getPlayer(member.id());if(player==null||!allowed(player)||!arena.atTableWorld(player,room))continue;
-                Location target=arena.seatLocation(room,seat),before=player.getLocation().clone();suspendView(player);
+                Location target=arena.seatLocation(room,seat);suspendView(player);Location before=player.getLocation().clone();
                 if(!player.teleport(target))return false;moved.put(player,before);
             }
             success=true;return true;
@@ -230,6 +230,11 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     void pause(Room r,String reason){r.phase=Room.Phase.PAUSED;r.busy=false;r.result=reason;announce(r,Language.legacy(reason));save();}
     void remove(Room r){for(Room.Seat seat:r.seats)if(!seat.bot())coordinator.release(seat.id(),r.kind);arena.remove(r);rooms.remove(r.id);for(Room.Seat s:r.seats){Player p=Bukkit.getPlayer(s.id());if(p!=null)suspendView(p);}}
     void onMain(Runnable action){if(!stopping&&isEnabled())Bukkit.getScheduler().runTask(this,action);}
+    long turnWaitMillis(Room room){
+        int turn=room.turn();if(turn<0||turn>=room.seats.size())return 0;
+        Room.Seat seat=room.seats.get(turn);
+        return seat.bot()?2000:room.offline.containsKey(seat.id())?5000:getConfig().getLong("turn-seconds",60)*1000L;
+    }
     void tick(){
         if(!loaded)return;if(comfort!=null)comfort.sync();long now=System.currentTimeMillis();pulse++;
         for(Room r:new ArrayList<>(rooms.values())){
@@ -244,7 +249,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
             if(r.phase==Room.Phase.FINISHED&&now-r.changed>600_000L){remove(r);continue;}
             if(r.phase!=Room.Phase.PLAYING||r.busy)continue;
             int turn=r.turn();if(turn<0||turn>=r.seats.size())continue;
-            Room.Seat s=r.seats.get(turn);long wait=s.bot()?2000:r.offline.containsKey(s.id())?5000:getConfig().getLong("turn-seconds",60)*1000L;
+            Room.Seat s=r.seats.get(turn);long wait=turnWaitMillis(r);
             if(r.board instanceof GoGame go&&go.scoring()&&!s.bot())continue; // A timeout is not a human's agreement to dead stones.
             if(now-r.changed<wait)continue;
     String choice=BoardBots.choose(r.board,turn,random);if(choice!=null)apply(r,turn,new JsonPrimitive(choice),null);

@@ -62,6 +62,8 @@ public final class MahjongGame implements HandGame {
     private String lastWin="",winningPatterns="",winningTile="";
     private int winningHan,winningFu;
     private String result="ongoing",lastAction="Dealer drew a tile";
+    private String lastDiscardTile="";
+    private int lastDiscardBy=-1;
 
     public MahjongGame(int players,long seed,Map<String,String> options) {
         if(players!=4)throw new IllegalArgumentException("Mahjong requires four players");
@@ -78,8 +80,10 @@ public final class MahjongGame implements HandGame {
         for(int seat=0;seat<4;seat++){hands.add(new ArrayList<>());rivers.add(new ArrayList<>());flowers.add(new ArrayList<>());melds.add(new ArrayList<>());exchange.add(new ArrayList<>());ownDiscards.add(new java.util.HashSet<>());scores[seat]=starting;}
         startHand();
     }
+    private int tileCount(){return sichuan!=null?108:taiwan!=null||fuzhou!=null?144:qinhuangdao!=null?qinhuangdao.tileCount():136;}
     private void startHand() {
-        wall=new Wall(Tiles.set(sichuan!=null?108:taiwan!=null||fuzhou!=null?144:qinhuangdao!=null?qinhuangdao.tileCount():136,riichiProfile?Integer.parseInt(option("red-five-count","3")):0),seed+roundSerial*0x9E3779B97F4A7C15L,riichiProfile);
+        wall=new Wall(Tiles.set(tileCount(),riichiProfile?Integer.parseInt(option("red-five-count","3")):0),seed+roundSerial*0x9E3779B97F4A7C15L,riichiProfile);
+        lastDiscardTile="";lastDiscardBy=-1;
         for(int seat=0;seat<4;seat++){hands.get(seat).clear();rivers.get(seat).clear();flowers.get(seat).clear();melds.get(seat).clear();exchange.get(seat).clear();handStartScores[seat]=scores[seat];missingSuit[seat]=-1;passedRonFan[seat]=-1;}
         winners.clear();responders.clear();offered=null;anyCalls=false;kongDraw=false;discardCount=0;phase=Phase.TURN;current=dealer;
         finishedSeats.clear();kongPayments.clear();lastKong=List.of();settlement="";lastWin="";winningPatterns="";discardAfterKong=false;preparationSeat=0;indicator=null;wildcard=-1;
@@ -167,6 +171,7 @@ public final class MahjongGame implements HandGame {
             ownDiscards.get(seat).add(tile.type());discarded[seat]++;
             forbiddenDiscards=java.util.Set.of();
             hands.get(seat).remove(tile);rivers.get(seat).add(tile);discardCount++;discardAfterKong=kongDraw;lastAction="Player "+(seat+1)+" discarded "+tile.face();
+            lastDiscardTile=tile.face();lastDiscardBy=seat;
             offer(seat,tile,Offer.DISCARD);
         }else offer(seat,tile,action.startsWith("kan-added:")?Offer.ADDED_KONG:Offer.CLOSED_KONG);
     }
@@ -456,12 +461,14 @@ public final class MahjongGame implements HandGame {
     }
     @Override public Map<String,String> publicInfo() {
         Map<String,String> info=new LinkedHashMap<>();info.put("profile",profile);info.put("rulesVariant","mahjong-"+profile+"-v1");
+        info.put("tileCount",Integer.toString(tileCount()));
         info.put("phase",phase.name());info.put("dealer",Integer.toString(dealer));info.put("dealerStreak",Integer.toString(dealerStreak));info.put("round",Integer.toString(dealerAdvances+1));info.put("rounds",Integer.toString(roundLimit));info.put("wall",Integer.toString(wall.remaining()));
         info.put("lastAction",lastAction);info.put("lastWin",lastWin);info.put("winningPatterns",winningPatterns);info.put("winningTile",winningTile);info.put("settlement",settlement);info.put("winners",String.join(",",(sichuan!=null?finishedSeats:winners).stream().map(String::valueOf).toList()));
         if(riichiProfile){info.put("han",Integer.toString(winningHan));info.put("fu",Integer.toString(winningFu));}
-        if(indicator!=null)info.put("indicator",indicator.face());if(wildcard>=0)info.put("wildcard",Tiles.face(wildcard));
-        if(riichiProfile){info.put("dora",String.join(",",wall.indicators().stream().map(Tiles.Tile::face).toList()));info.put("honba",Integer.toString(honba));info.put("riichiSticks",Integer.toString(riichiSticks));for(int seat=0;seat<4;seat++)info.put("riichi."+seat,Boolean.toString(riichi[seat]));}
-        if(offered!=null&&(phase==Phase.RON||phase==Phase.CALL||phase==Phase.CHI)){info.put("offeredTile",offered.face());info.put("offeredBy",Integer.toString(source));}
+        if(indicator!=null){info.put("indicator",indicator.face());info.put("indicatorId",indicator.id());}if(wildcard>=0)info.put("wildcard",Tiles.face(wildcard));
+        if(riichiProfile){info.put("dora",String.join(",",wall.indicators().stream().map(Tiles.Tile::face).toList()));info.put("doraIds",String.join(",",wall.indicators().stream().map(Tiles.Tile::id).toList()));info.put("honba",Integer.toString(honba));info.put("riichiSticks",Integer.toString(riichiSticks));for(int seat=0;seat<4;seat++)info.put("riichi."+seat,Boolean.toString(riichi[seat]));}
+        if(lastDiscardBy>=0){info.put("lastDiscardTile",lastDiscardTile);info.put("lastDiscardBy",Integer.toString(lastDiscardBy));}
+        if(offered!=null&&(phase==Phase.RON||phase==Phase.CALL||phase==Phase.CHI)){info.put("offeredTile",offered.face());info.put("offeredId",offered.id());info.put("offeredBy",Integer.toString(source));}
         for(int seat=0;seat<4;seat++){info.put("handSize."+seat,Integer.toString(handSize(seat)));info.put("score."+seat,Integer.toString(scores[seat]));if(sichuan!=null&&phase!=Phase.MISSING&&missingSuit[seat]>=0)info.put("missing."+seat,"mps".substring(missingSuit[seat],missingSuit[seat]+1));}
         return Map.copyOf(info);
     }

@@ -1,4 +1,5 @@
 package dev.tabletop3d.probe;
+import static dev.tabletop3d.ui.MessageText.plain;
 
 import dev.tabletop3d.internal.gson.*;
 import dev.tabletop3d.rules.BoardGame;
@@ -54,6 +55,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             World world = Bukkit.getWorlds().getFirst();
             soundProbe(boards, world);
             modelProbe(boards, world);
+            focusProbe(boards, world);
             handModelProbe(boards, world);
             PluginCommand command = Objects.requireNonNull(Bukkit.getPluginCommand("3dtabletop:3dtabletop"));
             AtomicInteger dialogs = new AtomicInteger();
@@ -119,6 +121,57 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         }
     }
 
+    /** Uses the real event bus and world with a stateful player proxy, not a connected player. */
+    @SuppressWarnings("unchecked")
+    private void focusProbe(Plugin plugin,World world) throws Exception {
+        Class<?> roomType=Class.forName("dev.tabletop3d.Room",true,plugin.getClass().getClassLoader());
+        var constructor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class);constructor.setAccessible(true);
+        UUID id=UUID.randomUUID(),roomId=UUID.randomUUID();Object room=constructor.newInstance(roomId,"mahjong",4,1L,999);
+        Object arena=field(plugin,"arena"),comfort=field(plugin,"comfort");Map<UUID,Object> rooms=(Map<UUID,Object>)field(plugin,"rooms");
+        call(room,"join",new Class<?>[]{UUID.class,String.class},id,"FocusProbe");
+        call(arena,"anchor",new Class<?>[]{roomType,Location.class},room,new Location(world,32,83,0));rooms.put(roomId,room);
+        Location original=new Location(world,32,83,2.25,33,21);
+        var location=new java.util.concurrent.atomic.AtomicReference<>(original.clone());
+        boolean[] gravity={true},collision={true},cancelReturn={false};
+        Player player=(Player)Proxy.newProxyInstance(Player.class.getClassLoader(),new Class<?>[]{Player.class},(proxy,method,args)->switch(method.getName()){
+            case "getUniqueId"->id;case "getName"->"FocusProbe";case "getWorld"->location.get().getWorld();
+            case "getLocation"->location.get().clone();case "getY"->location.get().getY();case "getGameMode"->org.bukkit.GameMode.SURVIVAL;
+            case "isOnline","isValid","hasPermission","isPermissionSet"->true;
+            case "isDead","isInsideVehicle","isOp"->false;
+            case "hasGravity"->gravity[0];case "setGravity"->{gravity[0]=(boolean)args[0];yield null;}
+            case "isCollidable"->collision[0];case "setCollidable"->{collision[0]=(boolean)args[0];yield null;}
+            case "teleport"->{
+                Location to=((Location)args[0]).clone();
+                var event=new org.bukkit.event.player.PlayerTeleportEvent((Player)proxy,location.get().clone(),to,org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.PLUGIN);
+                if(cancelReturn[0]&&to.equals(original))event.setCancelled(true);
+                Bukkit.getPluginManager().callEvent(event);if(!event.isCancelled())location.set(event.getTo().clone());yield !event.isCancelled();
+            }
+            case "hashCode"->id.hashCode();case "equals"->proxy==args[0];case "toString"->"FocusProbe";
+            default->null;
+        });
+        java.util.function.Consumer<Boolean> input=held->{
+            org.bukkit.Input keys=(org.bukkit.Input)Proxy.newProxyInstance(org.bukkit.Input.class.getClassLoader(),new Class<?>[]{org.bukkit.Input.class},
+                (proxy,method,args)->method.getName().equals("isSneak")&&held);
+            Bukkit.getPluginManager().callEvent(new org.bukkit.event.player.PlayerInputEvent(player,keys));
+        };
+        try {
+            input.accept(true);require((boolean)call(comfort,"focused",new Class<?>[]{Player.class},player),"real event registration enters focus");
+            require(!gravity[0]&&!collision[0]&&location.get().getY()==85,"focus owns gravity and collision at elevated position");
+            Location anchor=location.get().clone(),attempt=anchor.clone().add(3,1,3);attempt.setYaw(70);
+            var move=new org.bukkit.event.player.PlayerMoveEvent(player,anchor,attempt);Bukkit.getPluginManager().callEvent(move);
+            require(move.getTo().distanceSquared(anchor)<1e-8&&move.getTo().getYaw()==70,"real event pipeline locks position and preserves aim");
+            input.accept(false);require(location.get().equals(original)&&gravity[0],"input release restores pose and gravity");
+            input.accept(true);Location external=new Location(world,50,83,0);player.teleport(external);input.accept(true);input.accept(false);
+            require(location.get().equals(external)&&gravity[0]&&collision[0],"external teleport wins without focus reentry");
+            location.set(original.clone());input.accept(true);cancelReturn[0]=true;input.accept(false);
+            require(!(boolean)call(comfort,"focused",new Class<?>[]{Player.class},player)&&gravity[0]&&location.get().getY()==85,"cancelled return clears focus and gravity without overriding cancellation");
+            getLogger().info("BOARDS_FOCUS_EVENTS_PASS proxy_player=true real_event_bus=true real_world_clearance=true native_player_physics=false client_visual_test=false");
+        } finally {
+            cancelReturn[0]=false;input.accept(false);call(comfort,"release",new Class<?>[]{Player.class},player);rooms.remove(roomId);
+            call(comfort,"sync",new Class<?>[]{Player.class},player);
+        }
+    }
+
     /** Real Paper visibility metadata: no connected client or screenshot is implied. */
     private void handModelProbe(Plugin plugin,World world) throws Exception {
         ClassLoader loader=plugin.getClass().getClassLoader();Class<?> roomType=Class.forName("dev.tabletop3d.Room",true,loader);
@@ -169,9 +222,21 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     String id=String.valueOf(pieces.keySet().iterator().next());
                     call(hand,"hover",new Class<?>[]{Player.class,String.class},owner,id);
                     for(int tick=0;tick<4;tick++)call(hand,"tick",new Class<?>[0]);
-                    require(body.isGlowing()&&body.getLocation().equals(before),"mahjong highlights without moving tiles");
+                    require(body.isGlowing()&&Math.abs(body.getLocation().getY()-before.getY()-.065)<.0001
+                        &&body.getLocation().getX()==before.getX()&&body.getLocation().getZ()==before.getZ(),"mahjong selected tile lifts without horizontal spreading");
+                    var remaining=(org.bukkit.entity.TextDisplay)field(own,"remaining");privateParts.add(remaining);
+                    require(!remaining.isVisibleByDefault()&&plain(remaining.text()).startsWith("Remaining: "),"native remaining label is owner-only");
+                    Object hud=field(hand,"mahjongHud");
+                    require(((List<?>)field(hud,"entities")).size()==15,"native Mahjong HUD has bounded entity inventory");
+                    var count=(org.bukkit.entity.TextDisplay)((List<?>)field(hud,"counts")).getFirst();
+                    require(plain(count.text()).equals(Integer.toString(((HandGame)board.get(room)).deckSize())),"native tabletop count matches drawable wall");
                     call(hand,"hover",new Class<?>[]{Player.class,String.class},owner,null);
-                    require(!body.isGlowing(),"mahjong highlight clears");
+                    for(int tick=0;tick<4;tick++)call(hand,"tick",new Class<?>[0]);
+                    // Native teleport normalizes -0.0 yaw to +0.0; compare numeric pose, not Location.equals bits.
+                    Location restored=body.getLocation();
+                    require(!body.isGlowing()&&restored.distanceSquared(before)<1e-10
+                        &&restored.getYaw()==before.getYaw()&&restored.getPitch()==before.getPitch()&&plain(remaining.text()).isEmpty(),
+                        "mahjong hover restores position and clears hint: glowing="+body.isGlowing()+" before="+before+" after="+body.getLocation()+" hint="+plain(remaining.text()));
                     BoardGame game=(BoardGame)board.get(room);boolean offered=false;
                     for(int step=0;step<800&&!game.finished();step++){
                         int seat=game.currentPlayer();List<String> legal=game.legalActions(seat);
@@ -182,6 +247,8 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     Field revision=roomType.getDeclaredField("revision");revision.setAccessible(true);revision.setLong(room,revision.getLong(room)+1);
                     call(hand,"show",new Class<?>[]{Player.class},owner);
                     Map<?,?> calls=(Map<?,?>)field(own,"calls");require(!calls.isEmpty(),"available native Mahjong buttons");
+                    boolean previews=false;for(Object button:calls.values())if(((List<?>)field(button,"parts")).size()>2)previews=true;
+                    require(previews,"call buttons include native tile-face combination previews");
                     for(Object button:calls.values())for(Object item:(List<?>)field(button,"parts")){
                         var part=(org.bukkit.entity.Entity)item;privateParts.add(part);
                         require(part.isValid()&&!part.isPersistent()&&!part.isVisibleByDefault(),"Mahjong button is private and temporary");

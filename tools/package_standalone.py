@@ -93,7 +93,8 @@ with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as archive:
         archive.write(path, path.relative_to(project).as_posix())
     archive.write(project / "tools/server_boards_migrate.py", "tools/server_boards_migrate.py")
     for name in ("ludo-side-tray-frames.png", "lastcard-owner-view.png", "mahjong-owner-view.png",
-                 "lastcard-hover-draw-frames.png", "hand-face-art.png", "table-controls-preview.png", "source-geometry-preview.txt"):
+                 "lastcard-hover-draw-frames.png", "hand-face-art.png", "table-controls-preview.png", "mahjong-table-preview.png",
+                 "mahjong-table-preview-notes.txt", "source-geometry-preview.txt"):
         preview = output / "previews" / name
         if preview.is_file():
             archive.write(preview, "previews/" + name)

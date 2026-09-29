@@ -94,6 +94,7 @@ final class TableLobby implements Listener, AutoCloseable {
         if(e.getHand()==EquipmentSlot.HAND&&request(e.getPlayer()))e.setCancelled(true);
     }
     boolean request(Player p){
+        if(plugin.comfort!=null&&plugin.comfort.focused(p))return false;
         if(!p.isSneaking()||!plugin.allowed(p))return false;
         if(!readEntries())return false;
         Location eye=p.getEyeLocation();Vector dir=eye.getDirection();Entry target=null;double nearest=Double.POSITIVE_INFINITY;

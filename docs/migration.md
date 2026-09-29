@@ -1,5 +1,11 @@
 # Migration
 
+## Updating to 1.7.3-SNAPSHOT
+
+Stop and back up the isolated server before replacing its JAR. Keep existing configurations, worlds, language/menu YAML and schema 1 room data. Rules, options, seeds and action histories retain their meaning; no conversion or data reset is needed. Last-discard presentation is rebuilt by replaying saved actions. No resource pack is required.
+
+This version supersedes 1.7.2’s stationary hover: Mahjong selection now lifts only that tile. New Remaining, round, timer, last-discard and riichi-stick labels use bundled English fallback and can be overridden under `table.mahjong.*` in language YAML without replacing customized files. Shift enters a temporary elevated table position; release returns to the entry position when clear and permitted. See [focus limits and count semantics](game-modes.md#mahjong-table-information-and-focus) and the [client checklist](acceptance.zh-CN.md). This is a local acceptance snapshot, not a Release.
+
 ## Updating to 1.7.2-SNAPSHOT
 
 Stop the isolated test server, back up its plugin data and replace the JAR. Room schema, seeds, hands, rule options and move history are unchanged; retain all data and custom menu/language files. New `table.mahjong.*` labels fall back to bundled English and can be overridden in language YAML. No resource pack is required.

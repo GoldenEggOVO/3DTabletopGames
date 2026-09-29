@@ -1,5 +1,16 @@
 # Verification and acceptance
 
+## Local build: 1.7.3-SNAPSHOT
+
+- JDK 25 / Maven package: **452 tests passed**, zero failures, errors or skipped tests. Python: **four migration tests passed**. Added checks cover selected-tile lift/return without neighbor displacement, 17-tile four-seat layout, unseen-copy privacy/deduplication, graphical call combinations, HUD counts/deadlines/riichi sticks, and Shift entry/return/cleanup with cancelled or external teleports.
+- The exact JAR passed three clean Purpur **26.2-2622** boots in `target/standalone-smoke-20260929-130010/` (create, restart and legacy-folder migration). ServerGames, ServerMenu, ServerCasino and KaMenu were absent. Real Display checks covered Mahjong lift/return/glow, owner-only remaining labels, center counts, native call-face previews and cleanup; existing Dialog/callback/permission checks passed. The first probe used bitwise `Location.equals`, which treated native teleport's `-0.0` to `0.0` yaw normalization as a failure. Diagnostic output confirmed identical position, cleared glow/text; numerical pose comparison corrected the probe without changing product code.
+- Shift event checks used the real Bukkit event bus/world clearance and a stateful **Player proxy**, not a connected client. They covered entry, fixed position with mouse aim, return, external teleport precedence and clearing focus after a cancelled return. Native player physics, client input feel and anti-cheat behavior remain client acceptance items.
+- Three further boots in `target/standalone-smoke-20260929-130232/` restored **24 rooms / 1,976 saved events / 14 game identifiers**, including all six Mahjong profiles and legacy Aeroplane. Seeds, options, hands, anchors and action histories retained their meanings; only fixture world UUIDs were remapped.
+- The **60-second / 18-table** run in `target/soak-20260929-125423/` completed **369 actions** and 19 replay comparisons. Peak owned entities: **6,859**; after cleanup: **zero**. No complete round or undo cycle finished in this short run; directed tests cover those paths. Entity inventory includes new HUD and private remaining labels, with exact-set comparisons.
+- No game rules, room schema or custom YAML were reset. The model preview uses production Display geometry with a synthetic demonstration state and approximate fonts/materials; it is not a Minecraft screenshot. See the [client checklist](acceptance.zh-CN.md) for legibility, glow, Shift camera/return and actual operation acceptance. No Release or production deployment.
+
+Verified JAR SHA-256: `ecdcb24e942afdefe676f7aaffa18cf7bf14d30c50c42df1bc6a4873be55c440`. Exact passing receipts accompany the local package in `verification.json`.
+
 ## Local build: 1.7.2-SNAPSHOT
 
 - JDK 25 / Maven: **420 tests passed**, zero failures, errors or skipped tests. Python: **four migration tests passed**. New checks cover stationary Mahjong glow, private legal call buttons, reach/occlusion, response pass versus local dismissal, multi-choice actions, stale actions, pending undo, card-hand preservation, rotating/reversing ring geometry and 6/9 underlines.

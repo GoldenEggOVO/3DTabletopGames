@@ -98,9 +98,11 @@ public final class BoardsSoakProbe extends JavaPlugin {
             Object tray=field(view,"diceTray");if(tray!=null)addEntities(expected,(List<Entity>)field(tray,"entities"));
             Object hand=field(view,"handTable");if(hand!=null){
                 addEntities(expected,(List<Entity>)field(hand,"furniture"));
+                Object hud=field(hand,"mahjongHud");if(hud!=null)addEntities(expected,(List<Entity>)field(hud,"entities"));
                 Object ring=field(hand,"turnRing");if(ring!=null)for(Object part:(List<?>)field(ring,"parts"))addEntities(expected,List.of((Entity)field(part,"entity")));
                 for(Object piece:((Map<?,?>)field(hand,"publicPieces")).values())addEntities(expected,(List<Entity>)field(piece,"parts"));
                 for(Object owner:((Map<?,?>)field(hand,"privateViews")).values()){
+                    Entity remaining=(Entity)field(owner,"remaining");if(remaining!=null)addEntities(expected,List.of(remaining));
                     for(Object piece:((Map<?,?>)field(owner,"pieces")).values())addEntities(expected,(List<Entity>)field(piece,"parts"));
                     for(Object button:((Map<?,?>)field(owner,"calls")).values())addEntities(expected,(List<Entity>)field(button,"parts"));
                 }
