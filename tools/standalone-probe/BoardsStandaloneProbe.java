@@ -157,7 +157,35 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     call(hand,"hover",new Class<?>[]{Player.class,String.class},owner,null);
                     for(int tick=0;tick<4;tick++)call(hand,"tick",new Class<?>[0]);
                     require(Math.abs(body.getLocation().getY()-y)<.0001,"hover exit restores the same card entity");
-                    require(((List<?>)field(hand,"arrows")).size()==4,"four public turn direction arrows");
+                    Object ring=field(hand,"turnRing");List<?> segments=(List<?>)field(ring,"parts");
+                    require(segments.size()==36,"native curved turn ring");
+                    var segment=(org.bukkit.entity.Entity)call(segments.getFirst(),"entity",new Class<?>[0]);
+                    Location before=segment.getLocation();
+                    for(int tick=0;tick<10;tick++)call(hand,"tick",new Class<?>[0]);
+                    require(segment.getLocation().distanceSquared(before)>.001,"native turn ring rotates");
+                }else{
+                    var pieces=(Map<?,?>)field(own,"pieces");Object first=pieces.values().iterator().next();
+                    var body=(org.bukkit.entity.Entity)((List<?>)field(first,"parts")).getFirst();Location before=body.getLocation();
+                    String id=String.valueOf(pieces.keySet().iterator().next());
+                    call(hand,"hover",new Class<?>[]{Player.class,String.class},owner,id);
+                    for(int tick=0;tick<4;tick++)call(hand,"tick",new Class<?>[0]);
+                    require(body.isGlowing()&&body.getLocation().equals(before),"mahjong highlights without moving tiles");
+                    call(hand,"hover",new Class<?>[]{Player.class,String.class},owner,null);
+                    require(!body.isGlowing(),"mahjong highlight clears");
+                    BoardGame game=(BoardGame)board.get(room);boolean offered=false;
+                    for(int step=0;step<800&&!game.finished();step++){
+                        int seat=game.currentPlayer();List<String> legal=game.legalActions(seat);
+                        if(seat==0&&legal.stream().anyMatch(a->a.startsWith("chi:")||a.startsWith("pon:")||a.startsWith("kan-"))){offered=true;break;}
+                        require(!legal.isEmpty(),"mahjong fixture can advance");game.apply(seat,legal.getFirst());
+                    }
+                    require(offered,"real Mahjong game reaches an owner call");
+                    Field revision=roomType.getDeclaredField("revision");revision.setAccessible(true);revision.setLong(room,revision.getLong(room)+1);
+                    call(hand,"show",new Class<?>[]{Player.class},owner);
+                    Map<?,?> calls=(Map<?,?>)field(own,"calls");require(!calls.isEmpty(),"available native Mahjong buttons");
+                    for(Object button:calls.values())for(Object item:(List<?>)field(button,"parts")){
+                        var part=(org.bukkit.entity.Entity)item;privateParts.add(part);
+                        require(part.isValid()&&!part.isPersistent()&&!part.isVisibleByDefault(),"Mahjong button is private and temporary");
+                    }
                 }
                 call(view,"clear",new Class<?>[]{Player.class},owner);
                 require(privateViews.isEmpty()&&privateParts.stream().noneMatch(org.bukkit.entity.Entity::isValid),"private hand removed when view ends");

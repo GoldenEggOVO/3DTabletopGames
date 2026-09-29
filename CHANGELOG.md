@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.7.2-SNAPSHOT — development build, no Release
+
+- Highlight Mahjong tiles in place without raising or separating them. Display owner-only legal call buttons above the hand, preserving every combination in the existing choice dialog.
+- Skip a legal response through the rules engine; dismiss optional self-turn prompts without consuming the turn. Re-entering the table can show the still-legal prompt again.
+- Replace fixed Last Card arrows with a slowly rotating native curved ring. Reverse changes its direction; ended/paused rooms and pending undo stop the animation.
+- Underline central and corner 6/9 artwork without changing the existing 1–8 deck or saved rules.
+- Preserve room data, custom language/menu files and resource-pack-free play. Local acceptance only; no Release.
+
 ## 1.7.1-SNAPSHOT — development build, no Release
 
 - Build original Last Card and Mahjong face patterns from native block displays; no resource pack or client mod is required. Keep concealed faces visible only to their owner.

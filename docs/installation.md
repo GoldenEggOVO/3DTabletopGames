@@ -43,4 +43,4 @@ Old ServerGames 2.0.3 and ServerMenu 0.7.1 forward to `serverboards:boards`, whi
 
 ## Local acceptance build
 
-Install `3dtabletop-1.7.1-SNAPSHOT.jar` on an isolated server first. Check rule selection, private hands from every seat and a spectator, card hover and deck draws, Last Card color changes, Mahjong calls, dice travel/landing and restart recovery. Also check sound balance, existing board interactions and custom text. Preserve your backup when comparing with a published build.
+Install `3dtabletop-1.7.2-SNAPSHOT.jar` on an isolated server first. Check rule selection, private hands from every seat and a spectator, card hover and deck draws, Last Card color changes, Mahjong calls, dice travel/landing and restart recovery. Also check sound balance, existing board interactions and custom text. Preserve your backup when comparing with a published build.

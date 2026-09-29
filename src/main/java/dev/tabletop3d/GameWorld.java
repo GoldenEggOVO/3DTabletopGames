@@ -170,6 +170,7 @@ final class GameWorld implements Listener, AutoCloseable {
     void turnSound(Room room){TableView view=views.get(room.id);if(view!=null)view.turnSound();}
     private String aimed(Player player,TableView view) {
         Location eye=player.getEyeLocation();Vector direction=eye.getDirection();
+        String call=view.handCallHit(player,eye,direction);if(call!=null)return "@call:"+call;
         String hand=view.handHit(player,eye,direction);if(hand!=null)return "@hand:"+hand;
         if(view.deckHit(eye,direction))return "@draw";
         if(view.room.board instanceof dev.tabletop3d.rules.HandGame){
@@ -302,9 +303,15 @@ final class GameWorld implements Listener, AutoCloseable {
         if(room.undo!=null){plugin.menus.room(player,room);return true;}
         int seat=room.seat(player.getUniqueId());if(seat!=room.board.currentPlayer()&&!(room.board instanceof dev.tabletop3d.rules.GoGame go&&go.scoring())){player.sendActionBar(Language.component("hint.not-turn").colorIfAbsent(NamedTextColor.GRAY));return true;}
         if(view.rolling()){player.sendActionBar(Language.component("hint.roll.wait").colorIfAbsent(NamedTextColor.GOLD));return true;}
+        if(cell.equals("@call:dismiss")){view.dismissHandCalls(player);return true;}
         pickCell(player,room,seat,cell);return true;
     }
     private void pickCell(Player player,Room room,int seat,String cell) {
+        if(cell.startsWith("@call:")&&room.kind.equals("mahjong")){
+            List<String> choices=MahjongControls.groups(room.board.legalActions(seat)).getOrDefault(cell.substring(6),List.of());
+            if(!choices.isEmpty())execute(player,room,choices);
+            return;
+        }
         if(cell.equals("@draw")){
             if(room.board.legalActions(seat).contains("draw"))execute(player,room,List.of("draw"));
             else player.sendActionBar(Language.component("hint.hand.draw-unavailable").colorIfAbsent(NamedTextColor.GRAY));

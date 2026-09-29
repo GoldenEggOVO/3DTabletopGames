@@ -76,9 +76,14 @@ final class HandArt {
             g.drawOval(6, 10, 20, 28);
             bitmap(g, DIGITS[number], 10, 15, 13, 18);
             bitmap(g, DIGITS[number], 5, 5, 5, 7);
+            if (number == 6 || number == 9) {
+                g.fillRect(12, 34, 9, 2);
+                g.fillRect(6, 13, 3, 1);
+            }
             Graphics2D rotated = (Graphics2D) g.create();
             rotated.rotate(Math.PI, 16, 24);
             bitmap(rotated, DIGITS[number], 5, 5, 5, 7);
+            if (number == 6 || number == 9) rotated.fillRect(6, 13, 3, 1);
             rotated.dispose();
         } else if (value.equals("Reverse")) {
             reverse(g, 8, 14);

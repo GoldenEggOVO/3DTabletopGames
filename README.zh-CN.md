@@ -12,7 +12,9 @@
 2. 完全停服并备份插件数据与世界。将 JAR 放入 `plugins/`，只留一个版本，不安装 `original-*.jar`。
 3. 启动后使用 `/3dtabletop` 创建房间、邀请玩家或添加陪练，在实体桌面操作。
 
-当前源码为 **1.7.1-SNAPSHOT 开发版**，尚未发布 Release，本次未部署正式服。新增原生方块拼出的原创卡牌与麻将图案，放大并竖立 Last Card 手牌，加入悬停让位、摸牌动画，并整理创建与房间菜单。旧房间保留原有规则和位置。详见 [菜单与模式](docs/game-modes.zh-CN.md)、[麻将房规](docs/mahjong.zh-CN.md) 和 [验证记录](docs/verification.md)。Actions 产物也是开发构建；本地模型预览不能代替 Minecraft 客户端画面与操作验收。
+当前源码为 **1.7.2-SNAPSHOT 开发版**，尚未发布 Release，本次未部署正式服。新增原生方块拼出的原创卡牌与麻将图案，放大并竖立 Last Card 手牌，加入悬停让位、摸牌动画，并整理创建与房间菜单。旧房间保留原有规则和位置。详见 [菜单与模式](docs/game-modes.zh-CN.md)、[麻将房规](docs/mahjong.zh-CN.md) 和 [验证记录](docs/verification.md)。Actions 产物也是开发构建；本地模型预览不能代替 Minecraft 客户端画面与操作验收。
+
+麻将悬停仅原地高亮，手牌上方出现本人可用的吃、碰、杠、和及跳过按钮。Last Card 增加中央旋转方向环，6／9图案带下划线；当前牌库仍为1–8，本次不改变牌库规则。
 
 ## 游戏与功能
 

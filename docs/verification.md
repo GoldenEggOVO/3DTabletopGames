@@ -1,5 +1,16 @@
 # Verification and acceptance
 
+## Local build: 1.7.2-SNAPSHOT
+
+- JDK 25 / Maven: **420 tests passed**, zero failures, errors or skipped tests. Python: **four migration tests passed**. New checks cover stationary Mahjong glow, private legal call buttons, reach/occlusion, response pass versus local dismissal, multi-choice actions, stale actions, pending undo, card-hand preservation, rotating/reversing ring geometry and 6/9 underlines.
+- The exact JAR passed three isolated Purpur **26.2-2622** boots in `target/standalone-smoke-20260929-012122/`. Native checks confirmed a real Mahjong game can reach an owner call and display private temporary buttons, hover toggles glow without changing tile positions, and the 36-part Last Card direction ring moves. Existing menu callback, permission and private-hand checks also passed. No ServerGames, ServerMenu, ServerCasino or KaMenu was installed.
+- Three more boots restored **24 rooms / 1,976 events / 14 game identifiers** in `target/standalone-smoke-20260929-012358/`, including all six Mahjong profiles and legacy Aeroplane. Seeds, options, hand contents, anchors and action history kept their meanings.
+- A **60-second / 18-table** run in `target/soak-20260929-012347/` completed **368 actions**, 20 replay comparisons and one Connect Four round. Peak owned entities: **6,600**; after cleanup: **zero**. No undo cycle completed in this short run; directed tests cover it. The first run exposed a probe inventory omission for the new 36 ring segments; the probe now inventories the ring and private buttons explicitly, retaining exact entity-set and cleanup checks.
+- No card-deck or rule changes: 6/9 art is underlined, while the current Last Card deck remains 1–8. Button labels use editable `table.mahjong.*` language keys. Saved data and custom menus are preserved.
+- Source-geometry previews are approximate, not Minecraft screenshots. Native client glow, label legibility, animation smoothness, sound and client frame rate still require the [client checklist](acceptance.zh-CN.md). No Release or production deployment.
+
+Verified JAR SHA-256: `0e3ddd7b43a4e1c0dbab99c4971811048cf9bfdef53ce3c93e228dc81c0e29f6`. Exact passing receipts accompany the local package in `verification.json`.
+
 ## Local build: 1.7.1-SNAPSHOT
 
 - JDK 25 / Maven: **407 tests passed**, zero failures, errors or skipped tests. Python: **four migration-tool tests passed**. Added regressions cover original face geometry, private hands, hover/draw transitions, deck reach and occlusion, Chinese Xiangqi glyphs, Ludo label/shadow removal, layered menu callbacks and preservation of customized templates.

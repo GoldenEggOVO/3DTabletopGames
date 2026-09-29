@@ -1,5 +1,11 @@
 # Migration
 
+## Updating to 1.7.2-SNAPSHOT
+
+Stop the isolated test server, back up its plugin data and replace the JAR. Room schema, seeds, hands, rule options and move history are unchanged; retain all data and custom menu/language files. New `table.mahjong.*` labels fall back to bundled English and can be overridden in language YAML. No resource pack is required.
+
+Mahjong hover no longer moves tiles. Private buttons follow the current seat’s legal calls; Skip either passes a legal response or only dismisses optional self-turn choices while leaving discard available. Dismissal is local to the current view, so returning to the table can show the prompt again. Last Card’s central ring rotates in turn order. Underlines are rendered for 6/9, but the existing deck remains 1–8. Re-run the client checklist before deployment. This snapshot is not a Release.
+
 ## Updating to 1.7.1-SNAPSHOT
 
 This is an unpublished development build. No Release or production deployment is included. Stop and back up your isolated test server before replacing the JAR; keep its existing configurations, languages, menus, worlds and `rooms.json`.

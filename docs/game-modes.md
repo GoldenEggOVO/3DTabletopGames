@@ -2,7 +2,9 @@
 
 [English](game-modes.md) | [简体中文](game-modes.zh-CN.md)
 
-This page describes **1.7.1-SNAPSHOT**, an unpublished development build. It has not been deployed to production servers. Local artwork and model previews do not replace Minecraft client acceptance; see [verification](verification.md) for evidence and status.
+This page describes **1.7.2-SNAPSHOT**, an unpublished development build. It has not been deployed to production servers. Local artwork and model previews do not replace Minecraft client acceptance; see [verification](verification.md) for evidence and status.
+
+Mahjong tiles highlight in place. When legal calls are available, owner-only Chi/Pon/Kan/Ron/Tsumo/Skip buttons appear above the hand; multiple tile combinations use the existing choice dialog. Optional self-turn Skip dismisses the current prompt without consuming a turn, while response Skip submits the legal pass. The rotating Last Card ring follows turn order and pauses with ended/paused rooms or undo. Its 6/9 artwork is underlined; the existing 1–8 deck is unchanged.
 
 ## Set up a game
 

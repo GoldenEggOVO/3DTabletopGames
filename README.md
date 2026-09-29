@@ -14,9 +14,11 @@ Run independently on **Paper / Purpur 26.2 with Java 25**. No resource pack, cli
 2. Stop your server and back up plugin data and worlds. Keep one plugin JAR in `plugins/`; never install `original-*.jar`.
 3. Start the server and run `/3dtabletop`. Create a room, invite players or fill seats with bots, then play on the physical table.
 
-The current source is **1.7.1-SNAPSHOT**, a development build with original card and Mahjong artwork made from native block displays, larger upright Last Card hands, hover and draw animations, and simpler setup and room menus. Existing rooms retain their rules and positions. It has **not been published as a Release**, and this update does not deploy to production servers. Local model previews do not replace Minecraft client acceptance. See [game modes](docs/game-modes.md), [Mahjong rules](docs/mahjong.md) and [verification](docs/verification.md) for scope and acceptance status.
+The current source is **1.7.2-SNAPSHOT**, a development build with original card and Mahjong artwork made from native block displays, larger upright Last Card hands, hover and draw animations, and simpler setup and room menus. Existing rooms retain their rules and positions. It has **not been published as a Release**, and this update does not deploy to production servers. Local model previews do not replace Minecraft client acceptance. See [game modes](docs/game-modes.md), [Mahjong rules](docs/mahjong.md) and [verification](docs/verification.md) for scope and acceptance status.
 
 Upgrading from ServerBoards? Read [migration](docs/migration.md) first. Existing `3dtabletop` configurations, menu layouts and schema 1 room files remain usable.
+
+Mahjong hover highlights the selected tile in place; private table buttons offer legal calls and skips. Last Card has a rotating central direction ring and underlined 6/9 artwork. Its existing deck remains 1–8; this update does not change card rules.
 
 ## Games and features
 

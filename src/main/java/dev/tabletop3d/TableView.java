@@ -248,6 +248,8 @@ final class TableView implements AutoCloseable {
     boolean rolling(){return diceTray!=null&&diceTray.rolling();}
     String handHit(Player player,Location eye,org.bukkit.util.Vector direction){return handTable==null?null:handTable.hit(player,eye,direction);}
     boolean deckHit(Location eye,org.bukkit.util.Vector direction){return handTable!=null&&handTable.deckHit(eye,direction);}
+    String handCallHit(Player player,Location eye,org.bukkit.util.Vector direction){return handTable==null?null:handTable.callHit(player,eye,direction);}
+    void dismissHandCalls(Player player){if(handTable!=null)handTable.dismissCalls(player);}
     record Hit(String cell,double distance){}
     Hit hitPiece(Location eye,org.bukkit.util.Vector direction){
         Hit nearest=null;

@@ -45,6 +45,41 @@ class HandArtTest {
         assertTrue(wildColors.containsAll(colors));
     }
 
+    @Test void sixAndNineHaveSeparateUnderlinesOnTheCenterAndBothCorners() {
+        for (char color : new char[]{'r', 'b', 'y', 'p'}) {
+            for (String rank : new String[]{"6", "9"}) {
+                BufferedImage card = HandArt.draw(false, color + rank);
+                int ink = 0xfffff7dc;
+                for (int x = 12; x <= 20; x++) {
+                    assertEquals(ink, card.getRGB(x, 34), "Center underline: " + color + rank);
+                    assertEquals(ink, card.getRGB(x, 35), "Center underline thickness: " + color + rank);
+                }
+                for (int x = 6; x <= 8; x++) {
+                    assertEquals(ink, card.getRGB(x, 13), "Upper corner underline: " + color + rank);
+                    assertEquals(ink, card.getRGB(31 - x, 34), "Rotated corner underline: " + color + rank);
+                }
+                int background = card.getRGB(5, 24);
+                assertEquals(background, card.getRGB(16, 33), "Center underline must stay separate from the digit");
+                assertEquals(background, card.getRGB(7, 12), "Upper corner underline must stay separate from the digit");
+                assertEquals(background, card.getRGB(24, 35), "Rotated corner underline must stay separate from the digit");
+                assertEquals(background, card.getRGB(11, 35), "Center underline must stay separate from the oval");
+                assertEquals(background, card.getRGB(21, 35), "Center underline must stay separate from the oval");
+                assertEquals(background, card.getRGB(9, 13), "Upper corner underline must stay separate from the oval");
+                assertEquals(background, card.getRGB(22, 34), "Rotated corner underline must stay separate from the center");
+            }
+        }
+    }
+
+    @Test void otherNumericCardsKeepTheirOriginalUnmarkedRanks() {
+        for (String rank : new String[]{"0", "1", "2", "3", "4", "5", "7", "8"}) {
+            BufferedImage card = HandArt.draw(false, "r" + rank);
+            int background = card.getRGB(5, 24);
+            assertEquals(background, card.getRGB(16, 34), "No center underline: " + rank);
+            assertEquals(background, card.getRGB(7, 13), "No upper corner underline: " + rank);
+            assertEquals(background, card.getRGB(24, 34), "No rotated corner underline: " + rank);
+        }
+    }
+
     @Test void redFivesKeepTheirSuitButUseRedInk() {
         for (char suit : new char[]{'m', 'p', 's'}) {
             BufferedImage normal = HandArt.draw(true, suit + "5");
