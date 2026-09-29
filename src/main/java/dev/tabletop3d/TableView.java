@@ -58,9 +58,9 @@ final class TableView implements AutoCloseable {
                 if(Set.of("aeroplane","ludo").contains(room.kind))d.setRotation(GameWorld.actualColor(room.board.publicInfo(),c.owner())*90,0);parts.add(d);
             }
             if(reversi)poseFlip(flipTo);
-            if(room.kind.equals("xiangqi")||Set.of("aeroplane","ludo").contains(room.kind)){
+            if(room.kind.equals("xiangqi")||room.kind.equals("aeroplane")){
                 String glyph=room.kind.equals("xiangqi")?c.piece():token.id.substring(token.id.indexOf(':')+1);
-                TextDisplay label=text(from.clone().add(0,geometry.spacing*(room.kind.equals("xiangqi")?.235:room.kind.equals("ludo")?.82:.39),0),glyph,geometry.spacing*(room.kind.equals("xiangqi")?1.50:room.kind.equals("ludo")?.8:1.0),true,
+                TextDisplay label=text(from.clone().add(0,geometry.spacing*(room.kind.equals("xiangqi")?.235:.39),0),Component.text(glyph),geometry.spacing*(room.kind.equals("xiangqi")?1.50:1.0),true,
                     c.owner()==0&&room.kind.equals("xiangqi")?NamedTextColor.DARK_RED:NamedTextColor.BLACK);
                 if(room.kind.equals("xiangqi")&&c.owner()==0)label.setRotation(180,-90);
                 parts.add(label);
@@ -102,7 +102,7 @@ final class TableView implements AutoCloseable {
         }
         void tick(){if(frame<duration()){frame++;positionParts(position());}if(flipFrame<10){flipFrame++;poseFlip(flipAngle());}}
         boolean moving(){return frame<duration()||flipFrame<10;}
-        void positionParts(Location at){for(Entity part:parts){Location dest=at.clone();if(part instanceof TextDisplay)dest.add(0,geometry.spacing*(room.kind.equals("xiangqi")?.235:room.kind.equals("ludo")?.82:.39),0);dest.setYaw(part.getLocation().getYaw());dest.setPitch(part.getLocation().getPitch());part.teleport(dest);}}
+        void positionParts(Location at){for(Entity part:parts){Location dest=at.clone();if(part instanceof TextDisplay)dest.add(0,geometry.spacing*(room.kind.equals("xiangqi")?.235:.39),0);dest.setYaw(part.getLocation().getYaw());dest.setPitch(part.getLocation().getPitch());part.teleport(dest);}}
         boolean valid(){return parts.stream().allMatch(Entity::isValid);}
         void remove(){animating.remove(this);parts.forEach(Entity::remove);}
     }
@@ -141,7 +141,7 @@ final class TableView implements AutoCloseable {
         }
         Interaction hit=origin.getWorld().spawn(origin.clone().add(0,.012,0),Interaction.class,e->{tag(e,"@board");e.setInteractionWidth(2.25f);e.setInteractionHeight(.025f);e.setResponsive(true);});furniture.add(hit);
         title=text(origin.clone().add(0,1.65,0),"",.48,false,NamedTextColor.GOLD);title.setBillboard(Display.Billboard.CENTER);title.setLineWidth(500);furniture.add(title);
-        if(room.kind.equals("xiangqi"))furniture.add(text(origin.clone().add(0,.018,0),Language.component("table.river"),.26,true,NamedTextColor.DARK_GRAY));
+        if(room.kind.equals("xiangqi"))furniture.add(text(origin.clone().add(0,.018,0),Component.text("楚河      漢界"),.26,true,NamedTextColor.DARK_GRAY));
         if(room.kind.equals("yacht")){furniture.add(text(origin.clone().add(1.30,.025,0),Language.component("table.roll"),.40,true,NamedTextColor.GOLD));}
         if(Set.of("aeroplane","ludo").contains(room.kind))diceTray=new DiceTray(plugin,room,center,tag,!room.sideTray);
         sync();
@@ -241,12 +241,13 @@ final class TableView implements AutoCloseable {
             wasRolling=rolling();
         }
     }
-    void tick(){for(var iterator=animating.iterator();iterator.hasNext();){TokenView token=iterator.next();token.tick();if(!token.moving())iterator.remove();}if(diceTray!=null)diceTray.tick();updateTitle();if(pendingTurnSound&&!rolling()){pendingTurnSound=false;TableSounds.turn(plugin,room,origin);}}
+    void tick(){for(var iterator=animating.iterator();iterator.hasNext();){TokenView token=iterator.next();token.tick();if(!token.moving())iterator.remove();}if(diceTray!=null)diceTray.tick();if(handTable!=null)handTable.tick();updateTitle();if(pendingTurnSound&&!rolling()){pendingTurnSound=false;TableSounds.turn(plugin,room,origin);}}
     void turnSound(){if(rolling())pendingTurnSound=true;else TableSounds.turn(plugin,room,origin);}
     static Set<Integer> pipIndices(int value){return switch(value){case 1->Set.of(0);case 2->Set.of(1,2);case 3->Set.of(0,1,2);case 4->Set.of(1,2,3,4);case 5->Set.of(0,1,2,3,4);case 6->Set.of(1,2,3,4,5,6);default->throw new IllegalArgumentException("dice face");};}
     static Quaternionf faceRotation(int face){float half=(float)(Math.PI/2);return switch(face){case 1->new Quaternionf();case 2->new Quaternionf().rotateZ(-half);case 3->new Quaternionf().rotateX(half);case 4->new Quaternionf().rotateX(-half);case 5->new Quaternionf().rotateZ(half);case 6->new Quaternionf().rotateX(half*2);default->throw new IllegalArgumentException("dice face");};}
     boolean rolling(){return diceTray!=null&&diceTray.rolling();}
     String handHit(Player player,Location eye,org.bukkit.util.Vector direction){return handTable==null?null:handTable.hit(player,eye,direction);}
+    boolean deckHit(Location eye,org.bukkit.util.Vector direction){return handTable!=null&&handTable.deckHit(eye,direction);}
     record Hit(String cell,double distance){}
     Hit hitPiece(Location eye,org.bukkit.util.Vector direction){
         Hit nearest=null;
@@ -266,7 +267,7 @@ final class TableView implements AutoCloseable {
         int col=(int)Math.floor(x/.28+3.5),row=(int)Math.floor((y-.02)/.28);return col>=0&&col<7&&row>=0&&row<6?col+","+row:null;
     }
     void cursor(Player p,GameWorld.Pick pick,String hover){
-        if(handTable!=null){handTable.show(p);return;}
+        if(handTable!=null){handTable.hover(p,hover!=null&&hover.startsWith("@hand:")?hover.substring(6):null);return;}
         boolean turn=room.phase==Room.Phase.PLAYING&&!room.busy&&room.undo==null&&room.seat(p.getUniqueId())>=0&&(room.seat(p.getUniqueId())==room.board.currentPlayer()||room.board instanceof dev.tabletop3d.rules.GoGame go&&go.scoring());
         String signature=room.revision+"/"+room.phase+"/"+room.busy+"/"+turn+"/"+rolling()+"/"+Language.generation()+"/"+(pick==null?"":pick.source());Overlay old=overlays.get(p.getUniqueId());
         boolean reset=old==null||!old.signature.equals(signature);

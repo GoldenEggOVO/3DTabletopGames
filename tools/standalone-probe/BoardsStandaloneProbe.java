@@ -147,6 +147,18 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     var part=(org.bukkit.entity.Entity)item;privateParts.add(part);
                     require(part.isValid()&&!part.isPersistent()&&!part.isVisibleByDefault(),"private face is live, temporary and hidden by default");
                 }
+                if(kind.equals("lastcard")){
+                    var pieces=(Map<?,?>)field(own,"pieces");Object first=pieces.values().iterator().next();
+                    var body=(org.bukkit.entity.Entity)((List<?>)field(first,"parts")).getFirst();double y=body.getLocation().getY();
+                    String id=String.valueOf(pieces.keySet().iterator().next());
+                    call(hand,"hover",new Class<?>[]{Player.class,String.class},owner,id);
+                    for(int tick=0;tick<4;tick++)call(hand,"tick",new Class<?>[0]);
+                    require(body.getLocation().getY()>y+.09,"live native private card lifts on hover");
+                    call(hand,"hover",new Class<?>[]{Player.class,String.class},owner,null);
+                    for(int tick=0;tick<4;tick++)call(hand,"tick",new Class<?>[0]);
+                    require(Math.abs(body.getLocation().getY()-y)<.0001,"hover exit restores the same card entity");
+                    require(((List<?>)field(hand,"arrows")).size()==4,"four public turn direction arrows");
+                }
                 call(view,"clear",new Class<?>[]{Player.class},owner);
                 require(privateViews.isEmpty()&&privateParts.stream().noneMatch(org.bukkit.entity.Entity::isValid),"private hand removed when view ends");
             } finally {call(view,"close",new Class<?>[0]);}
@@ -228,8 +240,10 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             require(clickMenu(menus,player,"id","back"),"rules return to room browser");
             call(menus,"main",new Class<?>[]{Player.class},player);
             require(clickMenu(menus,player,"id","ludo"),"catalog selects game setup");
+            require(clickMenu(menus,player,"id","details"),"detailed Ludo rules reachable");
             require(clickMenu(menus,player,"id","rule-blocking"),"Ludo blocking setting cycles");
             require(menuLabel(menus,player,"rule-blocking").contains("Any Pawn Blocks"),"blocking change retained in setup");
+            require(clickMenu(menus,player,"id","back"),"settings return preserves draft");
             require(clickMenu(menus,player,"id","mode"),"friends and bot modes cycle");
             require(menuLabel(menus,player,"mode").contains("Bots"),"bot mode retained");
             call(menus,"setup",new Class<?>[]{Player.class,String.class},player,"mahjong");

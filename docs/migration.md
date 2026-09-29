@@ -1,5 +1,17 @@
 # Migration
 
+## Updating to 1.7.1-SNAPSHOT
+
+This is an unpublished development build. No Release or production deployment is included. Stop and back up your isolated test server before replacing the JAR; keep its existing configurations, languages, menus, worlds and `rooms.json`.
+
+This update changes presentation and menu flow. Original Last Card and Mahjong faces use native block displays without a resource pack. Last Card hands are larger and upright, with hover spacing and animations for newly drawn cards. Right-clicking the central deck still requires a legal draw. Recovery shows the saved hand in place without replaying draws. Xiangqi retains Chinese inscriptions, including 砲; floating Ludo pawn numbers and the dice stand's artificial shadow mesh are removed.
+
+Schema 1, `rulesVersion: 1`, stored options, room IDs, world anchors, seats, seeds and action history retain their meaning. Existing game rules are unchanged; no room-data conversion is needed for this update.
+
+Basic setup and detailed rules now use separate pages, with simpler lobby, active-room and private-hand pages. Installed `menus/setup.yml`, `menus/room.yml` and `menus/hand.yml` receive the new layout **in memory only** when their SHA-256 content fingerprint matches the original 1.7.0 stock template. Matching normalizes line endings and surrounding whitespace. The installed file bytes are never changed by this check.
+
+Customized YAML keeps its original ordering and styles. To adopt the new appearance, back up your files and manually merge the corresponding `menus/` templates from the new JAR. Missing language keys fall back to bundled English. Check both a stock layout and your customized layout before deployment; local model previews do not replace [Minecraft client acceptance](acceptance.zh-CN.md).
+
 ## Updating to 1.7.0-SNAPSHOT
 
 Back up and stop the server before replacing the JAR. Keep existing configurations, languages, menus, worlds and `rooms.json`. No data deletion or conversion is required for existing 3dtabletop rooms.
@@ -33,8 +45,8 @@ Old `/boards`, `serverboards:boards` and `serverboards.use` are removed. Update 
 Some old room records lack an explicit world/position. These cannot be guessed. Supply `anchors.json`, keyed by room UUID, with `world`, `x`, `y`, `z`. Already anchored data uses `{}`. Only supported board games are accepted.
 
 ```sh
-python tools/server_boards_migrate.py old-rooms.json anchors.json candidate-rooms.json --jar target/3dtabletop-1.7.0-SNAPSHOT.jar
-python tools/server_boards_migrate.py old-rooms.json anchors.json candidate-rooms.json --jar target/3dtabletop-1.7.0-SNAPSHOT.jar --check
+python tools/server_boards_migrate.py old-rooms.json anchors.json candidate-rooms.json --jar target/3dtabletop-1.7.1-SNAPSHOT.jar
+python tools/server_boards_migrate.py old-rooms.json anchors.json candidate-rooms.json --jar target/3dtabletop-1.7.1-SNAPSHOT.jar --check
 ```
 
 The tool preserves the source, refuses to overwrite a candidate, prints hashes, and replays rules with the exact target JAR. Install the validated candidate only on a stopped isolated test server with matching world UUIDs. Verify seats, board, history and restart behavior before considering production migration.

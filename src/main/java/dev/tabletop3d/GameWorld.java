@@ -171,6 +171,7 @@ final class GameWorld implements Listener, AutoCloseable {
     private String aimed(Player player,TableView view) {
         Location eye=player.getEyeLocation();Vector direction=eye.getDirection();
         String hand=view.handHit(player,eye,direction);if(hand!=null)return "@hand:"+hand;
+        if(view.deckHit(eye,direction))return "@draw";
         if(view.room.board instanceof dev.tabletop3d.rules.HandGame){
             double distance=TableGeometry.intersection(eye.getY(),direction.getY(),view.origin.getY()+.03);
             if(distance<0||eye.getWorld().rayTraceBlocks(eye,direction,Math.max(.001,distance-.035),FluidCollisionMode.NEVER,true)!=null)return null;
@@ -304,6 +305,11 @@ final class GameWorld implements Listener, AutoCloseable {
         pickCell(player,room,seat,cell);return true;
     }
     private void pickCell(Player player,Room room,int seat,String cell) {
+        if(cell.equals("@draw")){
+            if(room.board.legalActions(seat).contains("draw"))execute(player,room,List.of("draw"));
+            else player.sendActionBar(Language.component("hint.hand.draw-unavailable").colorIfAbsent(NamedTextColor.GRAY));
+            return;
+        }
         if(cell.startsWith("@hand:")&&room.board instanceof dev.tabletop3d.rules.HandGame hand){
             String id=cell.substring(6);
             if(hand.hand(seat).stream().noneMatch(piece->piece.id().equals(id)))return;

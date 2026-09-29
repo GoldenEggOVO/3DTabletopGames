@@ -14,8 +14,14 @@ final class GameMenuLayouts {
     private static final Map<String,String> LEGACY_STOCK_LABELS=Map.of(
         "bots","&f补齐陪练并开始","play","&f回到对局","options","&f房间选项");
     private final Path directory;
+    private final Tabletop3D plugin;
+    private static final Map<String,String> PREVIOUS_STOCK=Map.of(
+        "setup","e8b5d4f0e14b3e70edd1d0fd1e1d1f1359f9e60d4a38150f4988079415656122",
+        "room","b427352f17f7a177b4a4a522abb5ea13ea5f52906a52a8621f1baf953aa0c2db",
+        "hand","38f413de466aadea58826919d161b58827c5eeeebd54bed0b8d19699df1264b2");
     record Rendered(YamlConfiguration config,List<GameMenus.Button> buttons){}
     GameMenuLayouts(Tabletop3D plugin){
+        this.plugin=plugin;
         directory=plugin.getDataFolder().toPath().resolve("menus");
         try {
             Files.createDirectories(directory);
@@ -29,7 +35,18 @@ final class GameMenuLayouts {
         } catch(IOException ex){throw new IllegalStateException("不能释放棋牌菜单模板",ex);}
     }
     Rendered load(String page,Component title,Component description,List<GameMenus.Button> buttons,UUID token){
-        try{YamlConfiguration config=new YamlConfiguration();try(Reader in=Files.newBufferedReader(directory.resolve(page+".yml"),StandardCharsets.UTF_8)){config.load(in);}return render(config,title,description,buttons,token);}
+        try{
+            String text=Files.readString(directory.resolve(page+".yml"),StandardCharsets.UTF_8);
+            String digest=HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
+                .digest(text.replace("\r\n","\n").strip().getBytes(StandardCharsets.UTF_8)));
+            // Adopt the revised stock layout without rewriting any installed template.
+            if(digest.equals(PREVIOUS_STOCK.get(page)))try(InputStream input=plugin.getResource("menus/"+page+".yml")){
+                if(input==null)throw new IOException("Missing "+page);
+                text=new String(input.readAllBytes(),StandardCharsets.UTF_8);
+            }
+            YamlConfiguration config=new YamlConfiguration();config.loadFromString(text);
+            return render(config,title,description,buttons,token);
+        }
         catch(Exception ex){throw new IllegalArgumentException("菜单模板读取失败，请检查 3dtabletop/menus/"+page+".yml",ex);}
     }
     static Rendered render(YamlConfiguration config,String title,String description,List<GameMenus.Button> supplied,UUID token){

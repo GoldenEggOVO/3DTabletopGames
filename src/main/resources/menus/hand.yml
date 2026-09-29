@@ -9,9 +9,21 @@ Bottom:
   type: multi
   columns: 2
   buttons:
+    hand-action:
+      text: '<aqua>@label@'
+      width: 185
     entry:
       text: '<white>@label@'
-      width: 180
+      width: 185
+    previous:
+      text: '<yellow>@label@'
+      width: 185
+    next:
+      text: '<yellow>@label@'
+      width: 185
+    back:
+      text: '<gray>@label@'
+      width: 185
   exit:
     text: '<gray>@label@'
     width: 180

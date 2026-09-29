@@ -16,3 +16,5 @@ Original notices and exact source provenance are retained under [`src/main/resou
 Paper/Adventure and JOML are supplied by the server API. Private fonts, runtime configuration, worlds and third-party server/plugin JARs are not distributed here.
 
 The 1.7.0 Last Card, Mahjong, dice animation and hand models are independently implemented in this repository. Public rules and factual option names informed the behavior; Nintendo or other game artwork was not copied. The user-supplied MahjongCraft binary was inspected only for its configuration and public yaku names, not copied or used as a runtime/build dependency. No code or assets from that binary are distributed. See [game references](docs/game-modes.md) and [regional house rules](docs/mahjong.md) for sources and deliberate differences.
+
+The 1.7.1 card and Mahjong face patterns are original pixel drawings converted into native Display geometry. The user-supplied BoardGames-1.1 binary was inspected only for its archive structure and public rendering signatures (SVG and Display usage). None of its code, SVG files or other assets were copied or included; it is not a dependency.

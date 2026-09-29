@@ -14,7 +14,7 @@ Run independently on **Paper / Purpur 26.2 with Java 25**. No resource pack, cli
 2. Stop your server and back up plugin data and worlds. Keep one plugin JAR in `plugins/`; never install `original-*.jar`.
 3. Start the server and run `/3dtabletop`. Create a room, invite players or fill seats with bots, then play on the physical table.
 
-The current source is **1.7.0-SNAPSHOT**, a development build with game setup/rule selection, animated dice stands, Last Card and six Mahjong house profiles. Existing rooms retain their rules and positions. It has **not been published as a Release**. See [game modes](docs/game-modes.md), [Mahjong rules](docs/mahjong.md) and [verification](docs/verification.md) for the exact scope and acceptance status.
+The current source is **1.7.1-SNAPSHOT**, a development build with original card and Mahjong artwork made from native block displays, larger upright Last Card hands, hover and draw animations, and simpler setup and room menus. Existing rooms retain their rules and positions. It has **not been published as a Release**, and this update does not deploy to production servers. Local model previews do not replace Minecraft client acceptance. See [game modes](docs/game-modes.md), [Mahjong rules](docs/mahjong.md) and [verification](docs/verification.md) for scope and acceptance status.
 
 Upgrading from ServerBoards? Read [migration](docs/migration.md) first. Existing `3dtabletop` configurations, menu layouts and schema 1 room files remain usable.
 
@@ -30,13 +30,15 @@ Upgrading from ServerBoards? Read [migration](docs/migration.md) first. Existing
 | Chinese Checkers | 2, 3, 4 or 6 | Star board and colored pieces |
 | Draughts | 2 | 8×8 board with crowned kings |
 | Ludo | 2–4 | Cross board, pawn figures, private move previews and a physical die |
-| Last Card | 2–4 | Colored cards, private hands and a shared discard pile |
-| Mahjong | 4 | Standing private tiles, public rivers and exposed melds |
+| Last Card | 2–4 | Larger upright private cards, hover spacing, a central draw pile and a shared discard pile |
+| Mahjong | 4 | Original tile patterns, standing private hands, public rivers and exposed melds |
 
 - Rooms, seats, ready checks, bots, spectating, undo agreements and rematches.
 - Saved world anchors, seeds and move history; room recovery after restarting.
 - Direct board interaction, legal-move pointers and private hover/Connect Four landing previews.
-- Game → mode/rules → create/start; paginated room browsing and private hand controls.
+- Game → basic setup → optional detailed rules → create/start; focused lobby, playing and private-hand pages.
+- Aim at a Last Card card to lift it and spread its neighbors. Right-click the central deck when drawing is legal; newly drawn cards travel into your hand. Initial and recovered hands appear in place.
+- Chinese Xiangqi piece inscriptions, including 砲; Ludo pawns without floating numbers and dice without an artificial shadow mesh.
 - Six Mahjong profiles: Riichi, Guangdong, Fuzhou, Sichuan, Qinhuangdao and Taiwan. Scores are match points only.
 - Native Paper Dialog with editable YAML layouts and English by default.
 - MiniMessage styling, legacy color compatibility and editable language files.
@@ -66,6 +68,8 @@ Game IDs, configuration and integration details: [installation](docs/installatio
 Edit `plugins/3dtabletop/lang/en.yml`, or copy it to `lang/<code>.yml` and set `language: <code>` in `config.yml`. Restart after editing. Existing files are preserved and missing entries fall back to bundled English.
 
 Menus, chat, action hints and room presentation use named keys and literal parameters. Legacy `translations` remain supported for rule text and existing menu customizations. Menu layouts live in `menus/*.yml`. See [languages and text styling](docs/languages.md).
+
+Unmodified 1.7.0 stock `setup.yml`, `room.yml` and `hand.yml` use the new layout in memory when their content fingerprint matches. Installed files remain byte-for-byte unchanged. Customized layouts retain their ordering and styles; back them up before manually merging the new bundled templates. See [migration](docs/migration.md).
 
 ## Build and documentation
 

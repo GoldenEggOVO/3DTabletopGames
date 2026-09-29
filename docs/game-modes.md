@@ -2,16 +2,18 @@
 
 [English](game-modes.md) | [简体中文](game-modes.zh-CN.md)
 
-This page describes **1.7.0-SNAPSHOT**, an unpublished development build. See [verification](verification.md) for build evidence and Minecraft acceptance status.
+This page describes **1.7.1-SNAPSHOT**, an unpublished development build. It has not been deployed to production servers. Local artwork and model previews do not replace Minecraft client acceptance; see [verification](verification.md) for evidence and status.
 
 ## Set up a game
 
 1. Open `/3dtabletop` and choose a game from the catalog.
-2. On **Game Setup**, choose **With Friends** or **With Bots**, then the player count where available.
-3. Click rule settings to cycle their values. Use the next/previous buttons for additional settings and **Rules** to read the game explanation.
+2. On **Game Setup**, choose **With Friends** or **With Bots**, then the player count where available. Choose Mahjong's regional profile or Go's board size here as well.
+3. Open **Detailed Rules** when you want to change the defaults. Click settings to cycle their values and use next/previous for additional pages. **Back** retains your choices and returns to basic setup; **Rules** opens the game explanation.
 4. Choose **Create Room** for friends, or **Start with Bots**. Friends join the room and ready up; the host can fill remaining seats with bots after the other humans are ready.
 
 **Rules lock when the room is created.** Joining players use those rules; undo and rematch retain them. To change rules, create another room. `/3dtabletop create <kind> [players]` creates a room with default rules; use Game Setup to customize them.
+
+The lobby puts readiness, the host's bot start and room details first. During play, return to the physical table or open the hand/board controls. Room options contain full details, rules, public hand information, undo requests and leaving. Private-hand controls show your cards, current state and legal actions. Returning from a room opens the game catalog; returning from the room browser opens your current room when seated, otherwise the catalog.
 
 | Game | Players | Setup choices |
 | --- | --- | --- |
@@ -109,11 +111,15 @@ All profiles use four seats and match points. The selector offers **Riichi, Guan
 | Match length | Single hand for Guangdong; East round for other profiles | Single hand / East round / East–South match |
 | Starting points | 25,000 | 25,000 / 30,000 / 35,000 |
 
-Regional settings appear after selecting a profile. Switching profiles resets regional choices in the draft; match length and starting points are retained when explicitly set. See [Mahjong rules and option tables](mahjong.md) for hand sizes, regional scoring, defaults, dealer continuation and rule boundaries.
+After selecting a profile in basic setup, open **Detailed Rules** for that region's settings. Switching profiles resets regional choices in the draft; match length and starting points are retained when explicitly set. See [Mahjong rules and option tables](mahjong.md) for hand sizes, regional scoring, defaults, dealer continuation and rule boundaries.
 
 ## Private hands and public information
 
 Last Card and Mahjong show hand faces only to their owner. Other players and spectators see backs/counts, public discards and exposed tiles. Open the hand controls to select legal actions; the public-table page lets everyone inspect public information. Last Card also displays the current color, direction, draw penalty and top discard. Mahjong menus show each player's match points.
+
+Both games use original face artwork built from native block displays. Mahjong tiles show suit and honor patterns; Last Card uses larger upright cards. Aim at a card to lift it and move nearby cards aside, then use the card or hand menu to choose a legal action. While seated in a Last Card game, right-click the central deck when drawing is legal. A rejected draw leaves the game unchanged. Newly drawn cards travel from the deck into your private hand; initial display, reconnecting and saved-room recovery show cards in place.
+
+In other games, Xiangqi keeps Chinese piece inscriptions, including 砲. Ludo pawns have no floating number labels; stacked-pawn choices still identify the pieces in the menu. The dice stand uses the die model without an extra artificial shadow mesh.
 
 Bots are casual opponents. Mahjong bots complete the exchange without repeatedly removing selections, choose a least-held suit for the missing suit, take available wins and riichi, and favor keeping pairs and connected tiles. They inspect only their own hand.
 
@@ -130,5 +136,6 @@ Saved older rooms retain their original world position and compact dice presenta
 - Recovery and undo replay the saved game with its saved options. Rematches keep the rules and host while using a fresh shuffle/dice sequence and a fresh random first-seat choice where selected.
 - Unknown rule options or unsupported rule versions are rejected instead of silently changing a saved game.
 - Existing language and menu customizations are preserved; missing text falls back to bundled English.
+- Original 1.7.0 stock setup, room and hand templates use the new layout in memory after content matching, without changing installed file bytes. Customized layouts keep their ordering and styles; back up and manually merge new templates when desired. This presentation update does not change schema 1 data or game rules.
 
 See [migration](migration.md) for upgrades and older room imports. The [Nintendo game catalog](https://www.nintendo.com/jp/switch/as7ta/games/index.html) is a primary reference for the collection; the linked GameFAQs pages are independent play guides, not Nintendo's official rule specification. This plugin's documented rules and selectable values define its supported modes.

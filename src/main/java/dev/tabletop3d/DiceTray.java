@@ -29,7 +29,7 @@ final class DiceTray implements AutoCloseable {
     private final double width,size,innerHalf;
     private final List<Entity> entities=new ArrayList<>();
     private final List<Pip> pips=new ArrayList<>();
-    private final BlockDisplay die,shadow;
+    private final BlockDisplay die;
     private final TextDisplay label;
     private Component lastLabel=Component.empty();
     private DiceMotion motion;
@@ -52,7 +52,6 @@ final class DiceTray implements AutoCloseable {
             block(Material.STRIPPED_DARK_OAK_WOOD,side*(width-rim)/2,-.03,0,rim,.13,width);
             block(Material.STRIPPED_DARK_OAK_WOOD,0,-.03,side*(width-rim)/2,innerHalf*2,.13,rim);
         }
-        shadow=block(Material.GREEN_TERRACOTTA,0,FELT+.001,0,size*.95,.002,size*.95);
         die=block(Material.WHITE_CONCRETE,0,0,0,size,size,size);
         int[][] coordinates={{0,0},{-1,-1},{1,1},{-1,1},{1,-1},{-1,0},{1,0}};
         for(int face=1;face<=6;face++) {
@@ -117,9 +116,6 @@ final class DiceTray implements AutoCloseable {
             Vector3f at=new Vector3f(pip.center()).rotate(rotation).add(position).sub(corner);
             transform(pip.display(),at,orientation,new Vector3f((float)(size*.13),.004f,(float)(size*.13)));
         }
-        float shadowSize=(float)(size*(.95+Math.min(.2,pose.y()*.25)));
-        transform(shadow,new Vector3f((float)pose.x()-shadowSize/2,(float)(FELT+.001),(float)pose.z()-shadowSize/2),
-            new Quaternionf(),new Vector3f(shadowSize,.002f,shadowSize));
     }
 
     private void transform(BlockDisplay display,Vector3f translation,Quaternionf rotation,Vector3f scale) {

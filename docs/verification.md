@@ -1,5 +1,17 @@
 # Verification and acceptance
 
+## Local build: 1.7.1-SNAPSHOT
+
+- JDK 25 / Maven: **407 tests passed**, zero failures, errors or skipped tests. Python: **four migration-tool tests passed**. Added regressions cover original face geometry, private hands, hover/draw transitions, deck reach and occlusion, Chinese Xiangqi glyphs, Ludo label/shadow removal, layered menu callbacks and preservation of customized templates.
+- The exact JAR passed three clean Purpur **26.2-2622** boots (create, restart and legacy-folder migration) in `target/standalone-smoke-20260928-213839/`. ServerGames, ServerMenu, ServerCasino and KaMenu were absent. Native Display checks included owner-only faces, spectator exclusion, real entity hover/return, four direction arrows and cleanup. Native Dialog checks covered rule pages, 25-room pagination, callbacks and permission rejection through simulated Player calls.
+- A second three-boot run restored **24 rooms / 1,976 saved events / 14 game identifiers** in `target/standalone-smoke-20260928-214026/`, covering legacy Aeroplane, non-default rules, Last Card and all six Mahjong profiles. Room options, saved anchors, private hands and public tiles matched replay after restart and legacy-folder copying. Only synthetic fixture world UUIDs were remapped.
+- The exact JAR completed **60 seconds / 18 tables / 379 actions**, 20 replay comparisons and one Connect Four round in `target/soak-20260928-213850/`. Peak owned entities: **6,595**; after cleanup: **zero**. No undo cycle completed in this short run; directed tests cover undo and recovery. This is lifecycle evidence, not a sustained performance benchmark.
+- Detailed face art increases entity counts. Horizontal pixel runs are merged vertically, common backgrounds use one plane and unchanged cards reuse their entities. Client frame rate, legibility, hover feel and animation smoothness remain pending Minecraft acceptance.
+- Room schema, rule options and history semantics are unchanged. Exact previous stock setup/room/hand templates adopt new layouts in memory; customized templates and installed bytes remain untouched.
+- All bundled sounds remain registered (12 games / 20 cues). No connected Minecraft client or audio acceptance is claimed. PNGs are source-geometry previews with approximate material colors/fonts; the face contact sheet is original artwork, not a game screenshot. No Release or production deployment.
+
+Verified JAR SHA-256: `930369d978f09aac463690f5b447407e216fad71a52cf44d0ebb00719a9cffb5`. Exact runtime receipts accompany the local delivery in `verification.json`.
+
 ## Local build: 1.7.0-SNAPSHOT
 
 - JDK 25 / Maven: **383 tests passed**, zero failures, errors or skipped tests. Python: **four migration-tool tests passed**. New regressions cover room options, host/seat order and cancelled teleports, menu callbacks, private hands, Last Card, six Mahjong profiles, Ludo/Gomoku/Chinese Checkers options, dice timing and replay.

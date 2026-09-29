@@ -16,11 +16,14 @@ class MenuFlowTest {
         Fixture f=new Fixture();f.menus.main(f.player);
         f.buttons.stream().filter(b->b.id().equals("ludo")).findFirst().orElseThrow().action().run();
         assertTrue(f.buttons.stream().anyMatch(b->b.id().equals("mode")));
+        f.buttons.stream().filter(b->b.id().equals("details")).findFirst().orElseThrow().action().run();
         f.buttons.stream().filter(b->b.id().equals("rule-blocking")).findFirst().orElseThrow().action().run();
-        assertTrue(MessageText.plain(f.description).contains("Any Pawn Blocks Passage"));
+        assertTrue(f.buttons.stream().anyMatch(b->b.id().equals("rule-blocking")&&b.label().contains("Any Pawn Blocks Passage")));
+        f.buttons.stream().filter(b->b.id().equals("back")).findFirst().orElseThrow().action().run();
         f.buttons.stream().filter(b->b.id().equals("start")).findFirst().orElseThrow().action().run();
         verify(f.plugin).create(f.player,"ludo",4,Map.of("blocking","on"));
-        f.menus.setup(f.player,"ludo");assertTrue(MessageText.plain(f.description).contains("Blocking: Off"));
+        f.menus.setup(f.player,"ludo");f.buttons.stream().filter(b->b.id().equals("details")).findFirst().orElseThrow().action().run();
+        assertTrue(f.buttons.stream().anyMatch(b->b.id().equals("rule-blocking")&&b.label().contains("Blocking: Off")));
     }
     @Test void botSetupStartsOnlyTheSuccessfullyCreatedRoom() throws Exception {
         Fixture f=new Fixture();f.menus.setup(f.player,"chess");

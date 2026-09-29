@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.7.1-SNAPSHOT — development build, no Release
+
+- Build original Last Card and Mahjong face patterns from native block displays; no resource pack or client mod is required. Keep concealed faces visible only to their owner.
+- Enlarge and stand Last Card hands upright. Hover lifts the selected card and moves its neighbors aside; right-clicking the central deck performs a legal draw. Newly drawn cards animate from the deck, while initial display and room recovery appear at rest.
+- Keep Chinese Xiangqi inscriptions, including 砲. Remove floating Ludo pawn numbers and the dice stand's artificial shadow mesh.
+- Separate basic setup from detailed rule settings. Focus the lobby on readiness and starting, active rooms on returning to the table and playing, and private-hand pages on the owner's cards and current actions.
+- Apply the revised setup, room and hand layouts in memory only when installed templates match the original 1.7.0 stock content. Leave all installed file bytes unchanged; retain customized ordering and styles.
+- Preserve schema 1 room data and existing game rules. Local previews still require Minecraft client acceptance; no Release or production deployment.
+
 ## 1.7.0-SNAPSHOT — development build, no Release
 
 - Select a game, friends/bots and immutable room rules before creating it. Add matching game options for Ludo, Gomoku, Chinese Checkers and starting sides.

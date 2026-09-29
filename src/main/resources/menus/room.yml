@@ -10,19 +10,19 @@ Bottom:
   columns: 1
   buttons:
     ready:
-      text: '<white>@label@'
+      text: '<green><bold>@label@</bold>'
       width: 330
       actions: [close]
     bots:
-      text: '<white>@label@'
+      text: '<aqua>@label@'
       width: 330
       actions: [close]
     play:
-      text: '<white>@label@'
+      text: '<green><bold>@label@</bold>'
       width: 330
       actions: [close]
     controls:
-      text: '<white>@label@'
+      text: '<aqua>@label@'
       width: 330
       actions: [close]
     entry:
@@ -34,7 +34,7 @@ Bottom:
       width: 330
       actions: [close]
     options:
-      text: '<white>@label@'
+      text: '<gray>@label@'
       width: 330
       actions: [close]
     back:

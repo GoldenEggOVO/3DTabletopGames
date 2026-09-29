@@ -93,10 +93,11 @@ class LanguageTest {
         try (var files = Files.walk(source)) {
             for (Path file : files.filter(Files::isRegularFile).toList()) {
                 String name = file.toString();
-                if (name.contains("upstream") || !(name.endsWith(".java") || name.contains("resources\\menus") && name.endsWith(".yml"))) continue;
+                if (file.getFileName().toString().equals("HandArt.java") || name.contains("upstream") || !(name.endsWith(".java") || name.contains("resources\\menus") && name.endsWith(".yml"))) continue;
                 var match = literal.matcher(Files.readString(file));
                 while (match.find()) {
                     String phrase = match.group(1);
+                    if (phrase.equals("楚河      漢界")) continue; // Board markings intentionally remain Chinese.
                     if (han.matcher(phrase).find() && han.matcher(Language.text(phrase)).find())
                         missing.add(name + ": " + phrase);
                 }

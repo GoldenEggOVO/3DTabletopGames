@@ -1,4 +1,16 @@
-# 升级至 3dtabletop 1.7.0-SNAPSHOT
+# 升级至 3dtabletop 1.7.1-SNAPSHOT
+
+## 1.7.1 牌面与菜单整理
+
+本版仍为开发构建，未发布 Release，本次未部署正式服。先在隔离测试服停服备份，再替换 JAR；保留配置、语言、菜单、世界和 `rooms.json`。
+
+本次调整显示与菜单体验：Last Card 和麻将采用原生方块拼出的原创牌面，无需资源包；Last Card 手牌放大竖立，增加悬停让位与实时摸牌动画。右键中央牌堆仍须满足合法摸牌条件，恢复时手牌直接到位，不重播旧摸牌。象棋保留中文棋面，包括“砲”；Ludo 移除小人浮动编号，骰子移除额外假影模型。
+
+schema 1、`rulesVersion: 1`、已保存的规则选项、房间 ID、世界坐标、座位、种子和动作历史的含义不变，现有游戏规则不变，无需转换房间数据。
+
+基础设置与详细规则分为两页，等候、对局与手牌页简化。仅当 `menus/setup.yml`、`menus/room.yml`、`menus/hand.yml` 的 SHA-256 内容指纹匹配 1.7.0 原始默认模板时，才会**在内存中**采用新版布局。匹配时统一换行并忽略文件首尾空白；磁盘文件的字节不会被这一处理改动。
+
+自定义 YML 继续使用原顺序和样式。需要新版外观时，先备份已有文件，再手动合并新版 JAR 内对应的 `menus/` 模板。缺失语言键使用内置英文回退。部署前分别检查默认模板和自己的定制布局；本地模型预览不能替代 [Minecraft 客户端验收](acceptance.zh-CN.md)。
 
 ## 1.7.0 游戏模式与手牌桌
 
@@ -19,7 +31,7 @@
 ## ServerBoards 数据目录
 
 1. 完全停服，备份 `plugins/ServerBoards/`，记录原 `rooms.json` 的 SHA-256，移除旧 ServerBoards JAR。
-2. 安装 `3dtabletop-1.7.0-SNAPSHOT.jar` 并启动。若新目录不存在，插件会将旧目录**复制**为 `plugins/3dtabletop/`，添加 `migration-from-serverboards.txt`；旧目录不删除。
+2. 安装 `3dtabletop-1.7.1-SNAPSHOT.jar` 并启动。若新目录不存在，插件会将旧目录**复制**为 `plugins/3dtabletop/`，添加 `migration-from-serverboards.txt`；旧目录不删除。
 3. 检查 `config.yml`、`menus/*.yml`、`rooms.json` 的副本及 SHA-256。旧配置未写 `language` 时自动使用英文；可手动添加 `language: en`。执行 `/3dtabletop status`，玩家用 `/3dtabletop resume` 查看座位、棋盘和历史，再正常重启检查恢复。
 
 房间 JSON schema 1、世界 UUID、实体桌面坐标、规则动作与菜单配置保持可读。两个数据目录都存在但无迁移标记时插件会拒绝启动；先在停服状态核对并备份两边数据，手工决定使用哪一份。恢复失败时插件保留源文件并另存不可读副本，不会清空房间。原有 `/boards`、`serverboards:boards`、`serverboards.use` 不再注册；请更新自己的命令、权限与菜单转发配置。ServerGames 2.0.3 和 ServerMenu 0.7.1 的旧入口也需在各自项目更新。
@@ -39,11 +51,11 @@
 }
 ```
 
-已有完整锚点的旧 Boards 文件使用 `{}`。脚本检查房间、人数、重复占座、坐标，并使用即将安装的 JAR 逐条重放动作；失败时拒绝产生候选文件，不改源文件或覆盖输出。默认读取同目录或 `target/` 下的 `3dtabletop-1.7.0-SNAPSHOT.jar`，也可传 `--jar`：
+已有完整锚点的旧 Boards 文件使用 `{}`。脚本检查房间、人数、重复占座、坐标，并使用即将安装的 JAR 逐条重放动作；失败时拒绝产生候选文件，不改源文件或覆盖输出。通过 `--jar` 明确指定本次准备安装的构建：
 
 ```powershell
-python server-boards/tools/server_boards_migrate.py old-rooms.json anchors.json candidate-rooms.json
-python server-boards/tools/server_boards_migrate.py old-rooms.json anchors.json candidate-rooms.json --check
+python server-boards/tools/server_boards_migrate.py old-rooms.json anchors.json candidate-rooms.json --jar server-boards/target/3dtabletop-1.7.1-SNAPSHOT.jar
+python server-boards/tools/server_boards_migrate.py old-rooms.json anchors.json candidate-rooms.json --jar server-boards/target/3dtabletop-1.7.1-SNAPSHOT.jar --check
 ```
 
 两次命令打印源与输出的 SHA-256。`--check` 确认差异仅为指定锚点及缺失时补齐的空 `returns`。某房间无法重放时，保留原始备份和该房间记录，检查报告中的房间 ID 与动作序号，不要改写动作历史。

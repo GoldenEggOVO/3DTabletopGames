@@ -50,7 +50,7 @@ class HandTableTest {
     @Test void publicBackCountTracksOnlyCountsAndHasNoPrivateIdentifiers() {
         Fixture f = new Fixture("lastcard"); int initial=f.entities.size();
         when(f.game.handSize(1)).thenReturn(4); f.room.revision++; f.table.sync();
-        assertEquals(initial+2,f.entities.size(),"Each public back has a white edge and a green panel");
+        assertEquals(initial+6,f.entities.size(),"Standing public card backs keep edges, two panels and three stripes");
         verify(f.game,never()).hand(anyInt());
         for (Entity entity:f.entities) {
             verify(entity,never()).setVisibleByDefault(false);
@@ -74,7 +74,9 @@ class HandTableTest {
         for(int i=0;i<20;i++)exposed.add(new HandGame.Piece("kong"+i,"m"+(i/4+1)));
         for(int i=1;i<=8;i++)exposed.add(new HandGame.Piece("flower"+i,"f"+i));
         when(f.game.exposed(0)).thenReturn(exposed);f.room.revision++;f.table.sync();
-        assertEquals(28*3,f.entities.size()-initial,"Every public tile keeps its edge, panel and face text");
+        long bodies=f.entities.subList(initial,f.entities.size()).stream()
+            .filter(e->Math.abs(e.getLocation().getY()-(f.origin.getY()+.017))<1e-6).count();
+        assertEquals(28,bodies,"Every public tile has a body, including all flowers after five kongs");
     }
     @Test void eachSeatedPlayerReceivesOnlyTheirOwnFaceEntities() {
         Fixture f = new Fixture("lastcard"); f.table.show(f.owner);
