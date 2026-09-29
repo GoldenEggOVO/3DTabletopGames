@@ -3,6 +3,7 @@ package dev.tabletop3d.probe;
 import dev.tabletop3d.internal.gson.*;
 import dev.tabletop3d.rules.BoardGame;
 import dev.tabletop3d.rules.GameFactory;
+import dev.tabletop3d.rules.HandGame;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -53,6 +54,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             World world = Bukkit.getWorlds().getFirst();
             soundProbe(boards, world);
             modelProbe(boards, world);
+            handModelProbe(boards, world);
             PluginCommand command = Objects.requireNonNull(Bukkit.getPluginCommand("3dtabletop:3dtabletop"));
             AtomicInteger dialogs = new AtomicInteger();
             Player player = player(world, dialogs, true);
@@ -117,6 +119,41 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         }
     }
 
+    /** Real Paper visibility metadata: no connected client or screenshot is implied. */
+    private void handModelProbe(Plugin plugin,World world) throws Exception {
+        ClassLoader loader=plugin.getClass().getClassLoader();Class<?> roomType=Class.forName("dev.tabletop3d.Room",true,loader);
+        Class<?> viewType=Class.forName("dev.tabletop3d.TableView",true,loader),pickType=Class.forName("dev.tabletop3d.GameWorld$Pick",true,loader);
+        var roomConstructor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class,Map.class);roomConstructor.setAccessible(true);
+        var constructor=viewType.getDeclaredConstructors()[0];constructor.setAccessible(true);
+        for(String kind:List.of("lastcard","mahjong")){
+            int capacity=kind.equals("mahjong")?4:2;Map<String,String> options=kind.equals("mahjong")?Map.of("profile","taiwan"):Map.of();
+            Object room=roomConstructor.newInstance(UUID.randomUUID(),kind,capacity,1L,0,options);
+            Field board=roomType.getDeclaredField("board");board.setAccessible(true);board.set(room,GameFactory.create(kind,capacity,1L,options));
+            Player owner=player(world,new AtomicInteger(),true),spectator=player(world,new AtomicInteger(),true,UUID.randomUUID());
+            call(room,"join",new Class<?>[]{UUID.class,String.class},owner.getUniqueId(),"PrivateHandProbe");call(room,"fillBots",new Class<?>[0]);
+            Field phase=roomType.getDeclaredField("phase");phase.setAccessible(true);
+            @SuppressWarnings({"rawtypes","unchecked"}) Object playing=Enum.valueOf((Class)phase.getType(),"PLAYING");phase.set(room,playing);
+            Object view=constructor.newInstance(plugin,room,new Location(world,8,83,0),new org.bukkit.NamespacedKey("3dtabletop","probe-hand"),field(field(plugin,"arena"),"maps"));
+            List<org.bukkit.entity.Entity> privateParts=new ArrayList<>();
+            try {
+                Object hand=field(view,"handTable");Map<?,?> privateViews=(Map<?,?>)field(hand,"privateViews");
+                call(view,"cursor",new Class<?>[]{Player.class,pickType,String.class},spectator,null,null);
+                require(privateViews.isEmpty(),"spectator does not spawn private faces");
+                call(view,"cursor",new Class<?>[]{Player.class,pickType,String.class},owner,null,null);
+                require(privateViews.size()==1,"only requesting owner has a private view");
+                Object own=privateViews.get(owner.getUniqueId());
+                require(((Map<?,?>)field(own,"pieces")).size()==((HandGame)board.get(room)).handSize(0),"every own tile has a model");
+                for(Object piece:((Map<?,?>)field(own,"pieces")).values())for(Object item:(List<?>)field(piece,"parts")){
+                    var part=(org.bukkit.entity.Entity)item;privateParts.add(part);
+                    require(part.isValid()&&!part.isPersistent()&&!part.isVisibleByDefault(),"private face is live, temporary and hidden by default");
+                }
+                call(view,"clear",new Class<?>[]{Player.class},owner);
+                require(privateViews.isEmpty()&&privateParts.stream().noneMatch(org.bukkit.entity.Entity::isValid),"private hand removed when view ends");
+            } finally {call(view,"close",new Class<?>[0]);}
+        }
+        getLogger().info("BOARDS_HAND_MODELS_PASS games=lastcard,taiwan private_by_default=true spectator_faces=0 client_visual_test=false");
+    }
+
     /** Resolve native sounds against the real server registry and exercise their dispatch. */
     private void soundProbe(Plugin plugin, World world) throws Exception {
         ClassLoader loader=plugin.getClass().getClassLoader();
@@ -154,13 +191,18 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             JsonArray history=(JsonArray)field(room,"history"),before=saved.getAsJsonArray("history");
             require(history.size()>=before.size(),"saved history retained");
             for(int i=0;i<before.size();i++)require(history.get(i).equals(before.get(i)),"saved event unchanged");
-            BoardGame live=(BoardGame)field(room,"board"),copy=GameFactory.create(kind,saved.get("capacity").getAsInt(),saved.get("seed").getAsLong());
+            Map<String,String> options=new LinkedHashMap<>();
+            if(saved.has("options"))saved.getAsJsonObject("options").entrySet().forEach(e->options.put(e.getKey(),e.getValue().getAsString()));
+            require(field(room,"options").equals(options),"selected rules preserved");
+            require((boolean)field(room,"sideTray")== (saved.has("sideTray")&&saved.get("sideTray").getAsBoolean()),"dice stand placement preserved");
+            BoardGame live=(BoardGame)field(room,"board"),copy=GameFactory.create(kind,saved.get("capacity").getAsInt(),saved.get("seed").getAsLong(),options);
             for(JsonElement e:history){JsonObject action=e.getAsJsonObject();copy.apply(action.get("seat").getAsInt(),action.get("action").getAsString());}
             require(copy.cells().equals(live.cells())&&copy.currentPlayer()==live.currentPlayer()&&copy.finished()==live.finished()&&Objects.equals(copy.outcome(),live.outcome()),"restored rule state matches history");
+            if(copy instanceof HandGame expected&&live instanceof HandGame actual)for(int seat=0;seat<copy.playerCount();seat++)
+                require(expected.hand(seat).equals(actual.hand(seat))&&expected.discards(seat).equals(actual.discards(seat))&&expected.exposed(seat).equals(actual.exposed(seat)),"private hands and public tiles replay identically");
             require(Set.of("PLAYING","FINISHED").contains(field(room,"phase").toString()),"restored active or finished phase");events+=before.size();
         }
-        Set<String> expected=new HashSet<>(Set.of("chess","xiangqi","gomoku","aeroplane","checkers","draughts","reversi","go9","go13","go","connectfour"));
-        if(source.getAsJsonArray("rooms").size()==12)expected.add("ludo");
+        Set<String> expected=new HashSet<>();for(JsonElement room:source.getAsJsonArray("rooms"))expected.add(room.getAsJsonObject().get("kind").getAsString());
         require(kinds.equals(expected),"all snapshot kinds including legacy flight");
         require(((Map<?,?>)field(field(plugin,"arena"),"views")).size()==restored.size(),"one model per restored room");
         getLogger().info("BOARDS_SNAPSHOT_RESTORE_PASS rooms="+restored.size()+" saved_events="+events+" kinds="+kinds.size());
@@ -184,8 +226,23 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             require(seen.size()==25,"every room reachable through native pagination");
             require(clickMenu(menus,player,"id","rules"),"rules entry on final room page");
             require(clickMenu(menus,player,"id","back"),"rules return to room browser");
+            call(menus,"main",new Class<?>[]{Player.class},player);
+            require(clickMenu(menus,player,"id","ludo"),"catalog selects game setup");
+            require(clickMenu(menus,player,"id","rule-blocking"),"Ludo blocking setting cycles");
+            require(menuLabel(menus,player,"rule-blocking").contains("Any Pawn Blocks"),"blocking change retained in setup");
+            require(clickMenu(menus,player,"id","mode"),"friends and bot modes cycle");
+            require(menuLabel(menus,player,"mode").contains("Bots"),"bot mode retained");
+            call(menus,"setup",new Class<?>[]{Player.class,String.class},player,"mahjong");
+            Set<String> profiles=new HashSet<>();
+            for(int i=0;i<6;i++){profiles.add(menuLabel(menus,player,"rule-profile"));require(clickMenu(menus,player,"id","rule-profile"),"regional profile cycles");}
+            require(profiles.size()==6,"all six regional profiles reachable");
             getLogger().info("BOARDS_MENU_FLOW_PASS rooms=25 pagination=4 rules=reachable");
         } finally {added.forEach(rooms::remove);call(menus,"forget",new Class<?>[]{Player.class},player);}
+    }
+    private String menuLabel(Object menus,Player player,String id) throws Exception {
+        Object session=((Map<?,?>)field(menus,"sessions")).get(player.getUniqueId());
+        for(Object button:(List<?>)call(session,"buttons",new Class<?>[0]))if(id.equals(call(button,"id",new Class<?>[0])))return (String)call(button,"label",new Class<?>[0]);
+        throw new IllegalStateException("Missing menu entry: "+id);
     }
     private boolean clickMenu(Object menus,Player player,String property,String value) throws Exception {
         Object session=((Map<?,?>)field(menus,"sessions")).get(player.getUniqueId());
@@ -233,7 +290,9 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 }
                 Map<?,?> previous=new HashMap<>((Map<?,?>)field(view,"tokens"));
                 @SuppressWarnings("unchecked") List<String> legal=(List<String>)gameType.getMethod("legalActions",int.class).invoke(game,0);
-                gameType.getMethod("apply",int.class,String.class).invoke(game,0,kind.equals("connectfour")?"drop:3":kind.equals("go9")?"dead:0,0":legal.getFirst());
+                String chosen=kind.equals("connectfour")?"drop:3":kind.equals("go9")?"dead:0,0":legal.getFirst();
+                gameType.getMethod("apply",int.class,String.class).invoke(game,0,chosen);
+                call(room,"event",new Class<?>[]{int.class,JsonElement.class},0,new JsonPrimitive(chosen));
                 Field revision=roomType.getDeclaredField("revision");revision.setAccessible(true);revision.setLong(room,revision.getLong(room)+1);
                 call(view,"sync",new Class<?>[0]);
                 Map<?,?> current=(Map<?,?>)field(view,"tokens");
@@ -241,7 +300,9 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 if(kind.equals("connectfour"))require(current.size()==1,"one dropped chip rendered");
                 if(kind.equals("reversi")||kind.equals("go9"))for(var entry:previous.entrySet())
                     require(current.get(entry.getKey())==entry.getValue(),kind+" reuses existing tokens");
-                for(int i=0;i<16;i++)call(view,"tick",new Class<?>[0]);
+                if(kind.equals("ludo"))require((boolean)call(view,"rolling",new Class<?>[0]),"dice rolling after recorded roll");
+                for(int i=0;i<24;i++)call(view,"tick",new Class<?>[0]);
+                require(!(boolean)call(view,"rolling",new Class<?>[0]),"dice settled after bounded animation");
                 for(Object token:current.values()) {
                     @SuppressWarnings("unchecked") List<org.bukkit.entity.Entity> parts=(List<org.bukkit.entity.Entity>)field(token,"parts");
                     require(parts.size()>=3,"multi-part piece");
@@ -361,6 +422,9 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
 
     private Player player(World world, AtomicInteger dialogs, boolean allowed) {
         UUID id = allowed ? UUID.fromString("00d14a82-6b6c-46ce-b7f8-ecc56a133420") : UUID.randomUUID();
+        return player(world,dialogs,allowed,id);
+    }
+    private Player player(World world,AtomicInteger dialogs,boolean allowed,UUID id) {
         Location location = new Location(world, 0.5, 83, 0.5);
         return (Player) Proxy.newProxyInstance(Player.class.getClassLoader(), new Class<?>[]{Player.class},
             (proxy, method, args) -> switch (method.getName()) {

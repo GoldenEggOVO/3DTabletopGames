@@ -1,0 +1,17 @@
+# Private hand actions are bound to the seated player and room revision.
+Title: '<white>@title@'
+Body:
+  content:
+    type: message
+    text: '<white>@description@'
+    width: 390
+Bottom:
+  type: multi
+  columns: 2
+  buttons:
+    entry:
+      text: '<white>@label@'
+      width: 180
+  exit:
+    text: '<gray>@label@'
+    width: 180

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.7.0-SNAPSHOT — development build, no Release
+
+- Select a game, friends/bots and immutable room rules before creating it. Add matching game options for Ludo, Gomoku, Chinese Checkers and starting sides.
+- Add a separate native dice stand with traveling, tumbling, bouncing and authoritative face settling. New table placement includes its footprint; legacy anchors use a compact stand.
+- Add original Last Card rules/models with private hands, public color/draw-penalty feedback and first/all-place finishes.
+- Add six independently implemented Mahjong house profiles, region-specific settings, private tile models, public table details and match scoring. Document regional differences and source boundaries.
+- Persist rule options, rule version, host identity and dice stand layout. Keep legacy room replay, world anchors, language overrides and custom Dialog layouts.
+- Extend menu, privacy, rule, model, recovery and isolated-server probes. No production deployment or automatic Release.
+
 ## 1.6.1-SNAPSHOT — local acceptance build
 
 - Add quiet native sound profiles for every available game and restored Aeroplane rooms, with distinct captures, Reversi flips, dice rolls, Ludo home arrivals and Go scoring controls.

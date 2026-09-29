@@ -12,6 +12,23 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class MenuFlowTest {
+    @Test void catalogOpensSetupAndRulesReachCreationWithoutChangingTheDefaultDraft() throws Exception {
+        Fixture f=new Fixture();f.menus.main(f.player);
+        f.buttons.stream().filter(b->b.id().equals("ludo")).findFirst().orElseThrow().action().run();
+        assertTrue(f.buttons.stream().anyMatch(b->b.id().equals("mode")));
+        f.buttons.stream().filter(b->b.id().equals("rule-blocking")).findFirst().orElseThrow().action().run();
+        assertTrue(MessageText.plain(f.description).contains("Any Pawn Blocks Passage"));
+        f.buttons.stream().filter(b->b.id().equals("start")).findFirst().orElseThrow().action().run();
+        verify(f.plugin).create(f.player,"ludo",4,Map.of("blocking","on"));
+        f.menus.setup(f.player,"ludo");assertTrue(MessageText.plain(f.description).contains("Blocking: Off"));
+    }
+    @Test void botSetupStartsOnlyTheSuccessfullyCreatedRoom() throws Exception {
+        Fixture f=new Fixture();f.menus.setup(f.player,"chess");
+        f.buttons.stream().filter(b->b.id().equals("mode")).findFirst().orElseThrow().action().run();
+        doAnswer(i->{Room r=f.addRoom(0);r.join(f.player.getUniqueId(),"Player");return null;}).when(f.plugin).create(f.player,"chess",2,Map.of());
+        f.buttons.stream().filter(b->b.id().equals("start")).findFirst().orElseThrow().action().run();
+        verify(f.plugin).startWithBots(f.player,f.plugin.room(f.player));
+    }
     @Test void roomBrowserReachesEveryRoomAndKeepsCreateOnEachPage() throws Exception {
         Fixture f=new Fixture();for(int i=0;i<25;i++)f.addRoom(i);
         f.menus.games(f.player,"chess");Set<String> seen=new HashSet<>();

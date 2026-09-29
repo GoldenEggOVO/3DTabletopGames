@@ -2,18 +2,26 @@ package dev.tabletop3d.rules;
 
 import java.util.*;
 
-/** Deterministic Ludo: automatic first deployment, no blocking, exact finish. */
+/** Deterministic Ludo with immutable room rules and optional full placements. */
 public final class LudoGame implements BoardGame {
     private final int[] colors,progress;
     private final SplittableRandom random;
-    private int current,pendingRoll,lastRoll;
+    private final LudoOptions options;
+    private final List<Integer> placements=new ArrayList<>();
+    private final boolean[] deployed;
+    private int current,pendingRoll,lastRoll,startAttempts;
     private String result="ongoing",lastAction="Ready to roll";
     private static final Map<String,int[]> GEOMETRY=geometry();
 
     public LudoGame(int players,long seed){
+        this(players,seed,LudoOptions.DEFAULT);
+    }
+    public LudoGame(int players,long seed,LudoOptions options){
         colors=switch(players){case 2->new int[]{0,2};case 3->new int[]{0,1,2};case 4->new int[]{0,1,2,3};default->throw new IllegalArgumentException("Ludo requires 2 to 4 players");};
+        this.options=options;
         progress=new int[players*4];Arrays.fill(progress,-1);
-        for(int seat=0;seat<players;seat++)progress[seat*4]=0;
+        deployed=new boolean[players];Arrays.fill(deployed,options.autoFirst());
+        if(options.autoFirst())for(int seat=0;seat<players;seat++)progress[seat*4]=0;
         random=new SplittableRandom(seed);
     }
     @Override public String id(){return "ludo";}
@@ -21,6 +29,7 @@ public final class LudoGame implements BoardGame {
     @Override public int currentPlayer(){return current;}
     @Override public boolean finished(){return !result.equals("ongoing");}
     @Override public String outcome(){return result;}
+    public List<Integer> placements(){return List.copyOf(placements);}
     private String cell(int pawn,int step){
         int color=colors[pawn/4];
         return step<0?"ba"+color+"_"+(pawn%4):step==56?"go"+color:step>=51?"ld"+color+"_"+(step-51):"sk"+((color*13+step)%52);
@@ -40,9 +49,20 @@ public final class LudoGame implements BoardGame {
         List<String> moves=new ArrayList<>();
         for(int i=seat*4;i<seat*4+4;i++){
             int step=progress[i];if(step==56||step<0&&pendingRoll!=6)continue;
-            int next=step<0?0:step+pendingRoll;if(next<=56)moves.add("move:"+i+":"+cell(i,next));
+            int next=nextStep(i);if(next<=56&&!blocked(i,next))moves.add("move:"+i+":"+cell(i,next));
         }
         return List.copyOf(moves);
+    }
+    private int nextStep(int pawn){
+        int next=progress[pawn]<0?0:progress[pawn]+pendingRoll;return options.exactFinish()?next:Math.min(56,next);
+    }
+    private boolean blocked(int pawn,int next){
+        if(!options.blocking())return false;
+        for(int step=progress[pawn]+1;step<next;step++){
+            String intermediate=cell(pawn,step);
+            for(int other=0;other<progress.length;other++)if(other!=pawn&&cell(other).equals(intermediate))return true;
+        }
+        return false;
     }
     @Override public List<String> actionsForCell(int seat,String id){
         if(id==null||pendingRoll==0)return List.of();
@@ -52,21 +72,33 @@ public final class LudoGame implements BoardGame {
         if(action==null||!legalActions(seat).contains(action))throw new IllegalArgumentException("Invalid Ludo action");
         if(action.equals("roll")){
             pendingRoll=lastRoll=random.nextInt(1,7);lastAction="Player "+(seat+1)+" rolled "+lastRoll;
-            if(legalActions(seat).isEmpty()){lastAction+="; no legal move";next(lastRoll==6);}return;
+            if(legalActions(seat).isEmpty()){
+                lastAction+="; no legal move";
+                if(!deployed[seat]&&++startAttempts<options.startingRolls())pendingRoll=0;else next(lastRoll==6);
+            }return;
         }
-        int pawn=Integer.parseInt(action.split(":")[1]);progress[pawn]=progress[pawn]<0?0:progress[pawn]+pendingRoll;
+        int pawn=Integer.parseInt(action.split(":")[1]);progress[pawn]=nextStep(pawn);
+        deployed[seat]=true;
         int captured=0;
         if(progress[pawn]<=50)for(int other=0;other<progress.length;other++){
             if(other/4!=seat&&cell(other).equals(cell(pawn))){progress[other]=-1;captured++;}
         }
         lastAction="Player "+(seat+1)+" moved pawn "+(pawn%4+1)+(captured>0?"; captured "+captured:"");
         boolean won=true;for(int i=seat*4;i<seat*4+4;i++)won&=progress[i]==56;
-        if(won){result="winner:"+seat;pendingRoll=0;}else next(pendingRoll==6);
+        if(won){
+            placements.add(seat);
+            if(!options.allPlaces()||placements.size()==colors.length-1){
+                if(options.allPlaces())for(int other=0;other<colors.length;other++)if(!placements.contains(other))placements.add(other);
+                result="winner:"+placements.getFirst();pendingRoll=0;
+            }else next(false);
+        }else next(pendingRoll==6);
     }
-    private void next(boolean again){if(!again)current=(current+1)%colors.length;pendingRoll=0;}
+    private void next(boolean again){if(!again)do{current=(current+1)%colors.length;}while(placements.contains(current));pendingRoll=0;startAttempts=0;}
     @Override public Map<String,String> publicInfo(){
-        return Map.of("rules","Four pawns; first pawn starts out; six deploys and rolls again; capture sends rivals to yard; exact finish",
-            "rulesVariant","ludo-auto-first-no-blocking-exact-v1","ruleLimit","Automatic deployment is at game start only; captured pawns need six; no triple-six penalty",
+        return Map.of("rules","Four pawns; "+(options.autoFirst()?"first pawn starts out":"all pawns start in yard")+"; six deploys and rolls again; capture sends rivals to yard; "
+                +(options.blocking()?"occupied intermediate cells block; ":"")+(options.exactFinish()?"exact finish":"overshoot finishes")+(options.allPlaces()?"; play for all places":""),
+            "rulesVariant","ludo-"+(options.autoFirst()?"auto-first":options.startingRolls()==3?"three-attempts":"six-required")+"-"+(options.blocking()?"blocking":"no-blocking")+"-"+(options.exactFinish()?"exact":"over-ok")+(options.allPlaces()?"-all-places":"")+"-v1",
+            "ruleLimit",(options.autoFirst()?"Automatic deployment is at game start only":options.startingRolls()==3?"Up to three attempts per turn until the first deployment":"All pawns start in yard")+"; captured pawns need six; no triple-six penalty",
             "phase",finished()?"对局结束":pendingRoll==0?"等待掷骰":"选择棋子","turn","玩家 "+(current+1),
             "lastAction",lastAction,"dice",String.valueOf(lastRoll),"pendingRoll",String.valueOf(pendingRoll),"colors",Arrays.toString(colors));
     }

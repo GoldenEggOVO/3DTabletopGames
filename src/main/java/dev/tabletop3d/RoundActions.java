@@ -1,6 +1,5 @@
 package dev.tabletop3d;
 
-import dev.tabletop3d.rules.GameFactory;
 import java.util.*;
 
 /** Consent and fresh rounds; reconstruct before committing any takeback. */
@@ -25,7 +24,7 @@ final class RoundActions {
     static void reject(Room r,UUID player){if(r.undo==null||r.seat(player)<0)throw new IllegalArgumentException("没有待处理的悔棋申请");r.undo=null;r.revision++;r.changed=System.currentTimeMillis();}
     static void apply(Room r){
         if(r.undo==null||!r.undo.pending.isEmpty())throw new IllegalArgumentException("需等待其他真人玩家同意");
-        var restored=GameFactory.create(r.kind,r.capacity,r.seed);
+        var restored=r.newBoard();
         for(int i=0;i<r.undo.cut;i++){var event=r.history.get(i).getAsJsonObject();restored.apply(event.get("seat").getAsInt(),event.get("action").getAsString());}
         while(r.history.size()>r.undo.cut)r.history.remove(r.history.size()-1);
         r.board=restored;r.undo=null;r.phase=restored.finished()?Room.Phase.FINISHED:Room.Phase.PLAYING;r.completed=restored.finished();r.result=restored.finished()?restored.outcome():"";r.ready.clear();r.revision++;r.changed=System.currentTimeMillis();

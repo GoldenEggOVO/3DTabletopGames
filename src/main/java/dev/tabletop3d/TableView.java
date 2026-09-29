@@ -24,11 +24,10 @@ final class TableView implements AutoCloseable {
     private final Set<TokenView> animating=new LinkedHashSet<>();
     private final Map<UUID,Overlay> overlays=new HashMap<>();
     private final List<Entity> lastMove=new ArrayList<>();
-    private TextDisplay title,diceLabel;private BlockDisplay die;
-    private record Pip(BlockDisplay display,Vector3f center,Quaternionf face){}
-    private final List<Pip> pips=new ArrayList<>();
-    private long revision=-1;private int diceFrames,dieValue=1;private Component lastTitle;
+    private TextDisplay title;private DiceTray diceTray;private HandTable handTable;
+    private long revision=-1;private int renderedHistory;private Component lastTitle;
     private TitleState titleState;private boolean wasRolling;private String lastDiceKey;
+    private boolean pendingTurnSound;
     private record TitleState(dev.tabletop3d.rules.BoardGame board,long revision,Room.Phase phase,
                               List<Room.Seat> seats,int capacity,int table,String result,long language) {
         TitleState(Room room){this(room.board,room.revision,room.phase,List.copyOf(room.seats),room.capacity,room.table,room.result,Language.generation());}
@@ -118,6 +117,11 @@ final class TableView implements AutoCloseable {
         furniture.add(block(origin,Material.DARK_OAK_PLANKS,0,-.19,0,2.25,.14,2.25,null));
         for(double x:new double[]{-.99,.99})for(double z:new double[]{-.99,.99})furniture.add(block(origin,Material.STRIPPED_DARK_OAK_LOG,x,-TableGeometry.SURFACE,z,.15,TableGeometry.SURFACE-.13,.15,null));
         for(double v:new double[]{-1.06,1.06}){furniture.add(block(origin,Material.STRIPPED_DARK_OAK_WOOD,v,-.05,0,.10,.11,2.22,null));furniture.add(block(origin,Material.STRIPPED_DARK_OAK_WOOD,0,-.05,v,2.22,.11,.10,null));}
+        if(room.board instanceof dev.tabletop3d.rules.HandGame){
+            furniture.add(block(origin,Material.GREEN_CONCRETE,0,-.05,0,2.04,.05,2.04,null));
+            title=text(origin.clone().add(0,1.8,0),"",.4,false,NamedTextColor.GOLD);title.setBillboard(Display.Billboard.CENTER);furniture.add(title);
+            handTable=new HandTable(plugin,room,origin,tag);sync();return;
+        }
         if(room.kind.equals("connectfour")){
             for(int x=0;x<=7;x++)furniture.add(block(origin,Material.BLUE_CONCRETE,(x-3.5)*.28,.02,0,.035,1.72,.12,null));
             for(int y=0;y<=6;y++)furniture.add(block(origin,Material.BLUE_CONCRETE,0,.02+y*.28,0,2,.035,.12,null));
@@ -139,19 +143,7 @@ final class TableView implements AutoCloseable {
         title=text(origin.clone().add(0,1.65,0),"",.48,false,NamedTextColor.GOLD);title.setBillboard(Display.Billboard.CENTER);title.setLineWidth(500);furniture.add(title);
         if(room.kind.equals("xiangqi"))furniture.add(text(origin.clone().add(0,.018,0),Language.component("table.river"),.26,true,NamedTextColor.DARK_GRAY));
         if(room.kind.equals("yacht")){furniture.add(text(origin.clone().add(1.30,.025,0),Language.component("table.roll"),.40,true,NamedTextColor.GOLD));}
-        if(Set.of("aeroplane","ludo").contains(room.kind)){
-            die=block(origin.clone().add(1.30,.02,0),Material.QUARTZ_BLOCK,0,0,0,.30,.30,.30,null);furniture.add(die);
-            int[][] coordinates={{0,0},{-1,-1},{1,1},{-1,1},{1,-1},{-1,0},{1,0}};
-            for(int face=1;face<=6;face++){
-                Quaternionf rotation=faceRotation(face);
-                for(int dotIndex:pipIndices(face)){
-                    Vector3f pos=new Vector3f(coordinates[dotIndex][0]*.09f,.155f,coordinates[dotIndex][1]*.09f).rotate(rotation);
-                    BlockDisplay dot=block(origin.clone().add(1.30,.17,0),Material.BLACK_CONCRETE,0,0,0,.04,.006,.04,null);
-                    pips.add(new Pip(dot,pos,rotation));furniture.add(dot);
-                }
-            }
-            diceLabel=text(origin.clone().add(1.30,.025,.34),Language.component("table.dice.roll"),.28,true,NamedTextColor.GOLD);furniture.add(diceLabel);orientDie(new Quaternionf());
-        }
+        if(Set.of("aeroplane","ludo").contains(room.kind))diceTray=new DiceTray(plugin,room,center,tag,!room.sideTray);
         sync();
     }
     private void tag(Entity entity,String id){entity.setPersistent(false);entity.setGravity(false);entity.setInvulnerable(true);entity.getPersistentDataContainer().set(tag,PersistentDataType.STRING,room.id+"|"+id);}
@@ -178,6 +170,8 @@ final class TableView implements AutoCloseable {
     private Location at(Token t){if(room.kind.equals("connectfour"))return origin.clone().add((t.cell.x()-3)*.28,.05+t.cell.y()*.28,0);return origin.clone().add(geometry.x(t.cell),.03+t.stack*geometry.spacing,geometry.z(t.cell));}
     private boolean same(Token a,Token b){return a.cell.owner()==b.cell.owner()&&a.cell.piece().equals(b.cell.piece());}
     void sync(){
+        if(renderedBoard!=room.board)pendingTurnSound=false;
+        if(handTable!=null){handTable.sync();renderedBoard=room.board;revision=room.revision;updateTitle();return;}
         boolean changed=revision>=0&&(revision!=room.revision||renderedBoard!=room.board);
         if(revision==room.revision&&renderedBoard==room.board&&tokens.values().stream().allMatch(TokenView::valid)){updateTitle();return;}
         cells.clear();room.board.cells().forEach(cell->cells.put(cell.id(),cell));
@@ -208,10 +202,14 @@ final class TableView implements AutoCloseable {
         if(changed){lastMove.forEach(Entity::remove);lastMove.clear();
             lastDestination=move.length>=3?move[2]:move.length==2?move[1]:null;
             if(lastDestination!=null&&geometry.byId.containsKey(lastDestination))ring(lastMove,lastDestination,Material.GOLD_BLOCK,null,.90);
-            if(die!=null&&action.equals("roll")){dieValue=Integer.parseInt(room.board.publicInfo().getOrDefault("dice","1"));diceFrames=12;}
+
         }
-        if(die!=null&&diceFrames==0){dieValue=Math.max(1,Integer.parseInt(room.board.publicInfo().getOrDefault("dice","1")));orientDie(faceRotation(dieValue).invert());}
-        renderedBoard=room.board;revision=room.revision;updateTitle();
+        if(diceTray!=null){
+            int value=Math.max(1,Integer.parseInt(room.board.publicInfo().getOrDefault("dice","1")));
+            if(renderedBoard==room.board&&room.history.size()==renderedHistory+1&&action.equals("roll"))diceTray.roll(value,room.seed^room.history.size());
+            else if(renderedBoard!=room.board)diceTray.settle(value);
+        }
+        renderedHistory=room.history.size();renderedBoard=room.board;revision=room.revision;updateTitle();
     }
     private String lastAction(){if(room.history.isEmpty())return "";var e=room.history.get(room.history.size()-1).getAsJsonObject().get("action");return e!=null&&e.isJsonPrimitive()?e.getAsString():"";}
     private void updateTitle(){
@@ -226,7 +224,7 @@ final class TableView implements AutoCloseable {
             Component value=Language.component("table.title","game",RoomText.game(room.kind),"number",room.table+1)
                 .append(Component.newline()).append(status.colorIfAbsent(NamedTextColor.WHITE)).append(Component.newline())
                 .append(RoomText.roster(room.seats,room.capacity).colorIfAbsent(NamedTextColor.WHITE)).append(Component.newline())
-                .append(Language.component(room.kind.equals("yacht")?"table.yacht.hint":room.kind.equals("ludo")?"table.ludo.hint":"table.hint").colorIfAbsent(NamedTextColor.GRAY)).append(Component.newline())
+                .append(Language.component(handTable!=null?"table.hand.hint":room.kind.equals("yacht")?"table.yacht.hint":room.kind.equals("ludo")?"table.ludo.hint":"table.hint").colorIfAbsent(NamedTextColor.GRAY)).append(Component.newline())
                 .append(Language.component("table.join").colorIfAbsent(NamedTextColor.GRAY));
             if(!value.equals(lastTitle)){
                 var fit=LabelLayout.fit(value,2.8f,.48f);title.text(fit.text());
@@ -237,23 +235,18 @@ final class TableView implements AutoCloseable {
             }
             titleState=new TitleState(room);
         }
-        if(diceLabel!=null&&(changed||wasRolling!=rolling())){
+        if(diceTray!=null&&(changed||wasRolling!=rolling())){
             String key=rolling()?"table.dice.rolling":room.board.publicInfo().getOrDefault("pendingRoll","0").equals("0")?"table.dice.roll":room.kind.equals("ludo")?"table.ludo.choose":"table.dice.choose";
-            if(changed||!key.equals(lastDiceKey)){diceLabel.text(Language.component(key).colorIfAbsent(NamedTextColor.GOLD));lastDiceKey=key;}
+            if(changed||!key.equals(lastDiceKey)){diceTray.label(Language.component(key).colorIfAbsent(NamedTextColor.GOLD));lastDiceKey=key;}
             wasRolling=rolling();
         }
     }
-    void tick(){updateTitle();for(var iterator=animating.iterator();iterator.hasNext();){TokenView token=iterator.next();token.tick();if(!token.moving())iterator.remove();}if(diceFrames>0){
-        diceFrames--;float spin=diceFrames*.85f;orientDie(new Quaternionf().rotateXYZ(spin,spin*.7f,spin*.5f));
-        if(diceFrames==0){orientDie(faceRotation(dieValue).invert());updateTitle();}
-    }}
+    void tick(){for(var iterator=animating.iterator();iterator.hasNext();){TokenView token=iterator.next();token.tick();if(!token.moving())iterator.remove();}if(diceTray!=null)diceTray.tick();updateTitle();if(pendingTurnSound&&!rolling()){pendingTurnSound=false;TableSounds.turn(plugin,room,origin);}}
+    void turnSound(){if(rolling())pendingTurnSound=true;else TableSounds.turn(plugin,room,origin);}
     static Set<Integer> pipIndices(int value){return switch(value){case 1->Set.of(0);case 2->Set.of(1,2);case 3->Set.of(0,1,2);case 4->Set.of(1,2,3,4);case 5->Set.of(0,1,2,3,4);case 6->Set.of(1,2,3,4,5,6);default->throw new IllegalArgumentException("dice face");};}
     static Quaternionf faceRotation(int face){float half=(float)(Math.PI/2);return switch(face){case 1->new Quaternionf();case 2->new Quaternionf().rotateZ(-half);case 3->new Quaternionf().rotateX(half);case 4->new Quaternionf().rotateX(-half);case 5->new Quaternionf().rotateZ(half);case 6->new Quaternionf().rotateX(half*2);default->throw new IllegalArgumentException("dice face");};}
-    private void orientDie(Quaternionf q){
-        die.setInterpolationDelay(0);die.setTransformation(new Transformation(new Vector3f(-.15f,-.15f,-.15f).rotate(q).add(0,.15f,0),q,new Vector3f(.30f),new Quaternionf()));
-        for(Pip pip:pips){Quaternionf rotation=new Quaternionf(q).mul(pip.face);Vector3f translation=new Vector3f(pip.center).rotate(q).sub(new Vector3f(.02f,.003f,.02f).rotate(rotation));pip.display.setInterpolationDelay(0);pip.display.setTransformation(new Transformation(translation,rotation,new Vector3f(.04f,.006f,.04f),new Quaternionf()));}
-    }
-    boolean rolling(){return diceFrames>0;}
+    boolean rolling(){return diceTray!=null&&diceTray.rolling();}
+    String handHit(Player player,Location eye,org.bukkit.util.Vector direction){return handTable==null?null:handTable.hit(player,eye,direction);}
     record Hit(String cell,double distance){}
     Hit hitPiece(Location eye,org.bukkit.util.Vector direction){
         Hit nearest=null;
@@ -262,8 +255,7 @@ final class TableView implements AutoCloseable {
             var hit=box.rayTrace(eye.toVector(),direction,TableGeometry.REACH);
             if(hit!=null){double distance=hit.getHitPosition().distance(eye.toVector());if(nearest==null||distance<nearest.distance)nearest=new Hit(token.token.cell.id(),distance);}
         }
-        if(die!=null){var hit=new org.bukkit.util.BoundingBox(origin.getX()+1.12,origin.getY()+.015,origin.getZ()-.18,origin.getX()+1.48,origin.getY()+.37,origin.getZ()+.18).rayTrace(eye.toVector(),direction,TableGeometry.REACH);
-            if(hit!=null){double distance=hit.getHitPosition().distance(eye.toVector());if(nearest==null||distance<nearest.distance)nearest=new Hit("@roll",distance);}}
+        if(diceTray!=null){double distance=diceTray.hit(eye,direction);if(distance>=0&&(nearest==null||distance<nearest.distance))nearest=new Hit("@roll",distance);}
         return nearest;
     }
     String verticalHit(Location eye,org.bukkit.util.Vector direction){
@@ -274,6 +266,7 @@ final class TableView implements AutoCloseable {
         int col=(int)Math.floor(x/.28+3.5),row=(int)Math.floor((y-.02)/.28);return col>=0&&col<7&&row>=0&&row<6?col+","+row:null;
     }
     void cursor(Player p,GameWorld.Pick pick,String hover){
+        if(handTable!=null){handTable.show(p);return;}
         boolean turn=room.phase==Room.Phase.PLAYING&&!room.busy&&room.undo==null&&room.seat(p.getUniqueId())>=0&&(room.seat(p.getUniqueId())==room.board.currentPlayer()||room.board instanceof dev.tabletop3d.rules.GoGame go&&go.scoring());
         String signature=room.revision+"/"+room.phase+"/"+room.busy+"/"+turn+"/"+rolling()+"/"+Language.generation()+"/"+(pick==null?"":pick.source());Overlay old=overlays.get(p.getUniqueId());
         boolean reset=old==null||!old.signature.equals(signature);
@@ -349,6 +342,6 @@ final class TableView implements AutoCloseable {
     private static void oldHoverAdd(Overlay overlay,Entity entity){overlay.hover.add((BlockDisplay)entity);}
     private void ring(List<Entity> list,String id,Material material,Player viewer,double fraction){Cell c=geometry.byId.get(id);if(c==null)return;double width=geometry.spacing*fraction,stroke=geometry.spacing*.065;Location at=origin.clone().add(geometry.x(c),.025,geometry.z(c));
         for(double side:new double[]{-width/2,width/2}){list.add(block(at,material,side,0,0,stroke,.012,width,viewer));list.add(block(at,material,0,0,side,width,.012,stroke,viewer));}}
-    void clear(Player player){Overlay old=overlays.remove(player.getUniqueId());if(old!=null)old.remove();}
-    @Override public void close(){tokens.values().forEach(TokenView::remove);tokens.clear();furniture.forEach(Entity::remove);overlays.values().forEach(Overlay::remove);overlays.clear();lastMove.forEach(Entity::remove);}
+    void clear(Player player){if(handTable!=null)handTable.clear(player);Overlay old=overlays.remove(player.getUniqueId());if(old!=null)old.remove();}
+    @Override public void close(){pendingTurnSound=false;if(handTable!=null)handTable.close();if(diceTray!=null)diceTray.close();tokens.values().forEach(TokenView::remove);tokens.clear();furniture.forEach(Entity::remove);overlays.values().forEach(Overlay::remove);overlays.clear();lastMove.forEach(Entity::remove);}
 }

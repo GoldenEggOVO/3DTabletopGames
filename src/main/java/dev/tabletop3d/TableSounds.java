@@ -2,6 +2,7 @@ package dev.tabletop3d;
 
 import dev.tabletop3d.rules.Cell;
 import java.util.List;
+import java.util.Set;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 
@@ -26,8 +27,12 @@ final class TableSounds {
     static final Cue WIN=new Cue(Sound.ENTITY_PLAYER_LEVELUP,.3f,1.3f);
     static final Cue DRAW=new Cue(Sound.BLOCK_NOTE_BLOCK_CHIME,.25f,.8f);
     static final Cue TURN=new Cue(Sound.BLOCK_NOTE_BLOCK_PLING,.15f,1.2f);
+    static final Cue CARD=new Cue(Sound.ITEM_BOOK_PAGE_TURN,.25f,1.4f);
+    static final Cue TILE=new Cue(Sound.BLOCK_BONE_BLOCK_HIT,.24f,1.5f);
 
     static Cue move(String kind,int seat,String action,List<Cell> before,List<Cell> after){
+        if(kind.equals("lastcard"))return action.equals("declare")?CONFIRM:CARD;
+        if(kind.equals("mahjong"))return Set.of("ron","tsumo","riichi").contains(action.split(":")[0])?CONFIRM:action.equals("pass")?PASS:TILE;
         if(action.equals("roll"))return ROLL;
         if(action.equals("pass"))return PASS;
         if(action.startsWith("dead:")||action.startsWith("hold:"))return SELECT;

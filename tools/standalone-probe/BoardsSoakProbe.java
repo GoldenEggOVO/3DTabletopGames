@@ -3,6 +3,7 @@ package dev.tabletop3d.probe;
 import dev.tabletop3d.internal.gson.*;
 import dev.tabletop3d.rules.BoardGame;
 import dev.tabletop3d.rules.GameFactory;
+import dev.tabletop3d.rules.HandGame;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.Plugin;
@@ -27,15 +28,18 @@ public final class BoardsSoakProbe extends JavaPlugin {
             roomType=Class.forName("dev.tabletop3d.Room",true,boards.getClass().getClassLoader());
             roundType=Class.forName("dev.tabletop3d.RoundActions",true,boards.getClass().getClassLoader());
             Map<UUID,Object> registry=(Map<UUID,Object>)field(boards,"rooms");require(registry.isEmpty(),"fresh fixture required");
-            var ctor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class);ctor.setAccessible(true);
-            List<String> kinds=List.of("chess","xiangqi","gomoku","ludo","checkers","draughts","reversi","go9","go13","go","connectfour");
+            var ctor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class,Map.class);ctor.setAccessible(true);
+            List<String> kinds=List.of("chess","xiangqi","gomoku","ludo","checkers","draughts","reversi","go9","go13","go","connectfour","lastcard",
+                "mahjong:riichi","mahjong:guangdong","mahjong:fuzhou","mahjong:sichuan","mahjong:qinhuangdao","mahjong:taiwan");
             for(int i=0;i<kinds.size();i++){
-                String kind=kinds.get(i);int capacity=kind.equals("checkers")?6:kind.equals("ludo")?4:2;
-                Object room=ctor.newInstance(UUID.randomUUID(),kind,capacity,1000L+i,i);
+                String label=kinds.get(i),kind=label.split(":")[0];int capacity=kind.equals("checkers")?6:Set.of("ludo","lastcard","mahjong").contains(kind)?4:2;
+                Map<String,String> options=kind.equals("mahjong")?Map.of("profile",label.split(":")[1],"rounds","1"):kind.equals("ludo")?Map.of("blocking","on"):Map.of();
+                Object room=ctor.newInstance(UUID.randomUUID(),kind,capacity,1000L+i,i,options);
+                if(kind.equals("ludo")){Field tray=roomType.getDeclaredField("sideTray");tray.setAccessible(true);tray.setBoolean(room,true);}
                 call(arena,"anchor",new Class<?>[]{roomType,Location.class},room,new Location(Bukkit.getWorlds().getFirst(),(i%4)*12,83,(i/4)*12));
                 call(room,"fillBots",new Class<?>[0]);registry.put((UUID)field(room,"id"),room);rooms.add(room);
                 call(arena,"platform",new Class<?>[]{int.class},i);call(boards,"start",new Class<?>[]{roomType},room);
-                moves.put(kind,0);rounds.put(kind,0);lengths.put((UUID)field(room,"id"),0);
+                moves.put(label,0);rounds.put(label,0);lengths.put((UUID)field(room,"id"),0);
             }
             seconds=Integer.getInteger("tabletop.soak.seconds",3600);require(seconds>=60&&seconds<=7200,"bounded duration");
             started=System.currentTimeMillis();getLogger().info("TABLETOP_SOAK_STARTED seconds="+seconds+" games="+kinds.size());
@@ -47,7 +51,7 @@ public final class BoardsSoakProbe extends JavaPlugin {
         try{
             samples++;long elapsed=(System.currentTimeMillis()-started)/1000;
             for(Object room:rooms){
-                String kind=(String)field(room,"kind");UUID id=(UUID)field(room,"id");JsonArray history=(JsonArray)field(room,"history");
+                String kind=label(room);UUID id=(UUID)field(room,"id");JsonArray history=(JsonArray)field(room,"history");
                 int last=lengths.get(id);if(history.size()>last)moves.merge(kind,history.size()-last,Integer::sum);
                 String phase=field(room,"phase").toString();require(!phase.equals("PAUSED")&&!phase.equals("ABORTED"),kind+" unexpected "+phase);
                 if(phase.equals("FINISHED")){
@@ -77,9 +81,13 @@ public final class BoardsSoakProbe extends JavaPlugin {
     }
     private void replay(Object room)throws Exception{
         String kind=(String)field(room,"kind");BoardGame live=(BoardGame)field(room,"board");
-        BoardGame copy=GameFactory.create(kind,(int)field(room,"capacity"),(long)field(room,"seed"));
+        @SuppressWarnings("unchecked") Map<String,String> options=(Map<String,String>)field(room,"options");
+        BoardGame copy=GameFactory.create(kind,(int)field(room,"capacity"),(long)field(room,"seed"),options);
         for(JsonElement e:(JsonArray)field(room,"history")){var move=e.getAsJsonObject();copy.apply(move.get("seat").getAsInt(),move.get("action").getAsString());}
-        require(copy.cells().equals(live.cells())&&copy.currentPlayer()==live.currentPlayer()&&copy.finished()==live.finished()&&Objects.equals(copy.outcome(),live.outcome()),kind+" replay differs");replays++;
+        require(copy.cells().equals(live.cells())&&copy.currentPlayer()==live.currentPlayer()&&copy.finished()==live.finished()&&Objects.equals(copy.outcome(),live.outcome()),kind+" replay differs");
+        if(copy instanceof HandGame expected&&live instanceof HandGame actual)for(int seat=0;seat<copy.playerCount();seat++)
+            require(expected.hand(seat).equals(actual.hand(seat))&&expected.discards(seat).equals(actual.discards(seat))&&expected.exposed(seat).equals(actual.exposed(seat)),"hand replay differs");
+        replays++;
     }
     @SuppressWarnings("unchecked") private void validateEntities()throws Exception{
         Set<UUID> expected=new HashSet<>();Map<?,?> views=(Map<?,?>)field(arena,"views");
@@ -87,8 +95,18 @@ public final class BoardsSoakProbe extends JavaPlugin {
         for(Object view:views.values()){
             for(String key:List.of("furniture","lastMove"))for(Entity e:(List<Entity>)field(view,key)){require(e.isValid(),"tracked entity is invalid");expected.add(e.getUniqueId());}
             for(Object token:((Map<?,?>)field(view,"tokens")).values())for(Entity e:(List<Entity>)field(token,"parts")){require(e.isValid(),"tracked piece is invalid");expected.add(e.getUniqueId());}
+            Object tray=field(view,"diceTray");if(tray!=null)addEntities(expected,(List<Entity>)field(tray,"entities"));
+            Object hand=field(view,"handTable");if(hand!=null){
+                addEntities(expected,(List<Entity>)field(hand,"furniture"));
+                for(Object piece:((Map<?,?>)field(hand,"publicPieces")).values())addEntities(expected,(List<Entity>)field(piece,"parts"));
+                for(Object owner:((Map<?,?>)field(hand,"privateViews")).values())for(Object piece:((Map<?,?>)field(owner,"pieces")).values())addEntities(expected,(List<Entity>)field(piece,"parts"));
+            }
         }
         Set<UUID> actual=ownedEntities();require(actual.equals(expected),"model entity leak or missing part: actual="+actual.size()+" expected="+expected.size());peakEntities=Math.max(peakEntities,actual.size());
+    }
+    private static void addEntities(Set<UUID> expected,List<Entity> entities){for(Entity entity:entities){require(entity.isValid(),"tracked display is invalid");expected.add(entity.getUniqueId());}}
+    private static String label(Object room)throws Exception{
+        String kind=(String)field(room,"kind");Object profile=((Map<?,?>)field(room,"options")).get("profile");return kind.equals("mahjong")?kind+":"+(profile==null?"riichi":profile):kind;
     }
     private Set<UUID> ownedEntities(){Set<UUID> ids=new HashSet<>();NamespacedKey key=new NamespacedKey("3dtabletop","board-cell");for(World world:Bukkit.getWorlds())for(Entity entity:world.getEntities())if(entity.isValid()&&entity.getPersistentDataContainer().has(key))ids.add(entity.getUniqueId());return ids;}
     private void write(boolean pass,long elapsed,int remaining)throws Exception{

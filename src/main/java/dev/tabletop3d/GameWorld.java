@@ -101,8 +101,12 @@ final class GameWorld implements Listener, AutoCloseable {
     void anchor(Room r,Location location){
         Location snapped=TablePlacement.snap(location,2);UUID worldId=location.getWorld().getUID();
         for(Room existing:plugin.rooms.values())if(existing!=r&&worldId.equals(existing.anchorWorld)
-            &&Math.abs(snapped.getX()-existing.anchorX)<3&&Math.abs(snapped.getZ()-existing.anchorZ)<3&&Math.abs(snapped.getY()-existing.anchorY)<3)
+            &&TablePlacement.overlaps(snapped.getX(),snapped.getY(),snapped.getZ(),r.sideTray,existing.anchorX,existing.anchorY,existing.anchorZ,existing.sideTray))
             throw new IllegalArgumentException(dev.tabletop3d.ui.MessageText.plain(Language.component("error.table-overlap")));
+        if(r.sideTray)for(int x=(int)Math.floor(snapped.getX()+1.30);x<=Math.floor(snapped.getX()+2.70);x++)
+            for(int y=snapped.getBlockY();y<=Math.floor(snapped.getY()+1.8);y++)
+                for(int z=(int)Math.floor(snapped.getZ()-.70);z<=Math.floor(snapped.getZ()+.70);z++)
+                    if(!snapped.getWorld().getBlockAt(x,y,z).isPassable())throw new IllegalArgumentException(dev.tabletop3d.ui.MessageText.plain(Language.component("error.tray-space")));
         r.anchorWorld=worldId;r.anchorX=snapped.getX();r.anchorY=snapped.getY();r.anchorZ=snapped.getZ();
     }
 
@@ -162,9 +166,17 @@ final class GameWorld implements Listener, AutoCloseable {
         else view.sync();
     }
     void sound(Room room,TableSounds.Cue cue){TableView view=views.get(room.id);if(view!=null)TableSounds.play(plugin,view.origin,cue);}
-    void turnSound(Room room){TableView view=views.get(room.id);if(view!=null)TableSounds.turn(plugin,room,view.origin);}
+    boolean rolling(Room room){TableView view=views.get(room.id);return view!=null&&view.rolling();}
+    void turnSound(Room room){TableView view=views.get(room.id);if(view!=null)view.turnSound();}
     private String aimed(Player player,TableView view) {
         Location eye=player.getEyeLocation();Vector direction=eye.getDirection();
+        String hand=view.handHit(player,eye,direction);if(hand!=null)return "@hand:"+hand;
+        if(view.room.board instanceof dev.tabletop3d.rules.HandGame){
+            double distance=TableGeometry.intersection(eye.getY(),direction.getY(),view.origin.getY()+.03);
+            if(distance<0||eye.getWorld().rayTraceBlocks(eye,direction,Math.max(.001,distance-.035),FluidCollisionMode.NEVER,true)!=null)return null;
+            Vector point=eye.toVector().add(direction.clone().multiply(distance)).subtract(view.origin.toVector());
+            return Math.abs(point.getX())<1.125&&Math.abs(point.getZ())<1.125?"@menu":null;
+        }
         if(view.geometry.kind.equals("connectfour"))return view.verticalHit(eye,direction);
         double distance=TableGeometry.intersection(eye.getY(),direction.getY(),view.origin.getY()+.03);
         TableView.Hit piece=view.hitPiece(eye,direction);
@@ -292,6 +304,12 @@ final class GameWorld implements Listener, AutoCloseable {
         pickCell(player,room,seat,cell);return true;
     }
     private void pickCell(Player player,Room room,int seat,String cell) {
+        if(cell.startsWith("@hand:")&&room.board instanceof dev.tabletop3d.rules.HandGame hand){
+            String id=cell.substring(6);
+            if(hand.hand(seat).stream().noneMatch(piece->piece.id().equals(id)))return;
+            List<String> choices=room.board.legalActions(seat).stream().filter(action->{String[] parts=action.split(":");return parts.length>1&&List.of(parts[1].split(",")).contains(id);}).toList();
+            if(!choices.isEmpty())execute(player,room,choices);else plugin.menus.hand(player,room,0);return;
+        }
         if(cell.equals("@roll")) {
             if(room.board.legalActions(seat).contains("roll"))execute(player,room,List.of("roll"));else player.sendActionBar(Language.component("hint.roll.unavailable").colorIfAbsent(NamedTextColor.GOLD));
             return;

@@ -4,6 +4,14 @@ import org.bukkit.Location;
 
 /** Even-width map mosaics meet at a block corner; odd-width mosaics at a block centre. */
 final class TablePlacement {
+    static boolean overlaps(double x,double y,double z,boolean tray,double otherX,double otherY,double otherZ,boolean otherTray){
+        if(Math.abs(y-otherY)>=3)return false;
+        if(Math.abs(x-otherX)<3&&Math.abs(z-otherZ)<3)return true;
+        // Retain the original board/seat clearance; add only the side stand's footprint.
+        if(tray&&Math.abs(x+2-otherX)<2.05&&Math.abs(z-otherZ)<2.05)return true;
+        if(otherTray&&Math.abs(otherX+2-x)<2.05&&Math.abs(z-otherZ)<2.05)return true;
+        return tray&&otherTray&&Math.abs(x-otherX)<1.55&&Math.abs(z-otherZ)<1.55;
+    }
     static Location snap(Location source, int width) {
         double offset = width % 2 == 0 ? 0.0 : 0.5;
         return new Location(source.getWorld(), Math.floor(source.getX() - offset + .5) + offset,

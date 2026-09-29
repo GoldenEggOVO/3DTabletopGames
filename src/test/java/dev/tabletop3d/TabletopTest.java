@@ -111,7 +111,7 @@ class TabletopTest {
         final Map<UUID,Long> clicks=new HashMap<>();
         Fixture()throws Exception{
             UUID id=UUID.randomUUID();room.join(id,"测试玩家");room.fillBots();room.board=GameFactory.create("gomoku",2,0);room.phase=Room.Phase.PLAYING;
-            TableView view=mock(TableView.class);set(view,"origin",new Location(world,0,.85,0));set(view,"geometry",new TableGeometry("gomoku",room.board.cells()));
+            TableView view=mock(TableView.class);set(view,"room",room);set(view,"origin",new Location(world,0,.85,0));set(view,"geometry",new TableGeometry("gomoku",room.board.cells()));
             set(arena,"plugin",plugin);set(arena,"views",new HashMap<>(Map.of(room.id,view)));set(arena,"clicks",clicks);set(arena,"selections",new HashMap<>());arena.world=world;
             when(plugin.allowed(player)).thenReturn(true);when(plugin.room(player)).thenReturn(room);when(player.getUniqueId()).thenReturn(id);when(player.getWorld()).thenReturn(world);
             when(player.getEyeLocation()).thenAnswer(a->new Location(world,0,1.62,2.25).setDirection(new Vector(0,-.74,-2.25)));

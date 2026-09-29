@@ -28,8 +28,8 @@ class TableSoundsTest {
         Set<Sound> palette=new HashSet<>();
         var kinds=new ArrayList<>(Tabletop3D.NAMES.keySet());kinds.add("aeroplane");
         for(String kind:kinds){
-            BoardGame game=GameFactory.create(kind,2,0);List<Cell> before=game.cells();String action=game.legalActions(0).getFirst();game.apply(0,action);
-            var cue=TableSounds.move(kind,0,action,before,game.cells());
+            BoardGame game=GameFactory.create(kind,kind.equals("mahjong")?4:2,0);int seat=game.currentPlayer();List<Cell> before=game.cells();String action=game.legalActions(seat).getFirst();game.apply(seat,action);
+            var cue=TableSounds.move(kind,seat,action,before,game.cells());
             assertNotNull(cue.sound(),kind);assertTrue(cue.volume()>0&&cue.volume()<=.4f,kind);assertTrue(cue.pitch()>=.5f&&cue.pitch()<=2f,kind);palette.add(cue.sound());
         }
         assertTrue(palette.size()>=6,"Materials and dice should sound different");
@@ -123,6 +123,7 @@ class TableSoundsTest {
         f.plugin.arena=mock(GameWorld.class,CALLS_REAL_METHODS);TabletopTest.set(f.plugin.arena,"plugin",f.plugin);
         TabletopTest.set(f.plugin.arena,"views",new HashMap<>(Map.of(f.room.id,f.view)));TabletopTest.set(f.plugin.arena,"selections",new HashMap<>());
         doCallRealMethod().when(f.plugin).apply(any(),anyInt(),any(),any());doCallRealMethod().when(f.plugin).start(any());
+        doCallRealMethod().when(f.plugin).prepareSeats(any());
         doCallRealMethod().when(f.plugin).finish(any(),anyString());doCallRealMethod().when(f.plugin).completeUndo(any());return f;
     }
 }

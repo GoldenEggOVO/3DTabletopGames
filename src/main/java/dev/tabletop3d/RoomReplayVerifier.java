@@ -21,7 +21,7 @@ public final class RoomReplayVerifier {
             String id = room.get("id").getAsString();
             try {
                 var game = GameFactory.create(room.get("kind").getAsString(),
-                    room.get("capacity").getAsInt(), room.get("seed").getAsLong());
+                    room.get("capacity").getAsInt(), room.get("seed").getAsLong(),Room.readOptions(room));
                 int index = 0;
                 for (JsonElement event : room.getAsJsonArray("history")) {
                     JsonObject move = event.getAsJsonObject();

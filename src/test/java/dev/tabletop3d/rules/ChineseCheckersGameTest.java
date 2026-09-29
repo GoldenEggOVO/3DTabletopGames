@@ -6,6 +6,47 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ChineseCheckersGameTest {
+    private static ChineseCheckersGame configured(int players, boolean own, boolean otherCamps, boolean all) throws Exception {
+        return new ChineseCheckersGame(players, new ChineseCheckersOptions(own, otherCamps, all));
+    }
+    @Test void disablingOwnJumpsStillAllowsOpponentBridges() throws Exception {
+        ChineseCheckersGame game = configured(2, false, true, false);
+        position(game, Map.of("4,8",0,"5,8",0,"3,8",1));
+        assertFalse(game.legalActions(0).contains("move:4,8:6,8"));
+        assertTrue(game.legalActions(0).contains("move:4,8:2,8"));
+    }
+    @Test void disablingOtherCampsRejectsLandingsButAllowsOwnGoal() throws Exception {
+        ChineseCheckersGame game = configured(2, true, false, false);
+        position(game, Map.of("4,4",0));
+        assertFalse(game.legalActions(0).contains("move:4,4:3,4"));
+        assertTrue(game.legalActions(0).contains("move:4,4:4,3"));
+        ChineseCheckersGame allowed = configured(2, true, true, false);
+        position(allowed, Map.of("4,4",0));
+        assertTrue(allowed.legalActions(0).contains("move:4,4:3,4"));
+    }
+    @Test void allPlacesContinuesAfterFirstAndSkipsFinishedSeats() throws Exception {
+        ChineseCheckersGame game = configured(3, true, true, true);
+        Map<String,Integer> pegs = new HashMap<>();
+        for (String id : List.of("6,0","5,1","6,1","5,2","6,2","7,2","5,3","6,3","7,3","4,4")) pegs.put(id,0);
+        pegs.put("4,8",1); pegs.put("8,8",2);
+        position(game, pegs);
+        game.apply(0,"move:4,4:4,3");
+        assertFalse(game.finished()); assertEquals(1,game.currentPlayer());
+        assertTrue(game.legalActions(0).isEmpty());
+        game.apply(1,"move:4,8:3,8"); game.apply(2,"move:8,8:9,8");
+        assertEquals(1,game.currentPlayer());
+        assertEquals("0",game.publicInfo().get("ranking"));
+    }
+    @Test void allPlacesAssignsLastPlaceAndPreservesTheFirstWinner() throws Exception {
+        ChineseCheckersGame game = configured(3, true, true, true);
+        Map<String,Integer> pegs = new HashMap<>();
+        for (String id : List.of("6,0","5,1","6,1","5,2","6,2","7,2","5,3","6,3","7,3","4,4")) pegs.put(id,0);
+        for (String id : List.of("9,12","10,12","11,12","12,12","9,11","10,11","11,11","10,10","11,10","9,9")) pegs.put(id,1);
+        pegs.put("4,8",2); position(game,pegs);
+        game.apply(0,"move:4,4:4,3"); game.apply(1,"move:9,9:10,9");
+        assertTrue(game.finished()); assertEquals("winner:0",game.outcome());
+        assertEquals("0,1,2",game.publicInfo().get("ranking"));
+    }
     @SuppressWarnings("unchecked") private static void position(ChineseCheckersGame game, Map<String,Integer> pegs) throws Exception {
         Field field = ChineseCheckersGame.class.getDeclaredField("occupied"); field.setAccessible(true);
         Map<String,Integer> occupied = (Map<String,Integer>) field.get(game);

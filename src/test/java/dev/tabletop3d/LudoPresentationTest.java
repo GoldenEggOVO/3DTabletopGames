@@ -25,7 +25,7 @@ class LudoPresentationTest {
     }
     @Test void hoveringALudoPawnShowsPrivateDestinationsAndKeepsPieceEntities()throws Exception{
         var f=new TableViewTest.Fixture("ludo");Map<?,?> before=new HashMap<>((Map<?,?>)TableViewTest.field(f.view,"tokens"));
-        f.move("roll");for(int i=0;i<12;i++)f.view.tick();int count=f.entities.size();
+        f.move("roll");for(int i=0;i<DiceMotion.FRAMES;i++)f.view.tick();int count=f.entities.size();
         String source=f.room.board.cells().stream().filter(c->!GameWorld.sourceActions(f.room.board,0,c.id()).isEmpty()).findFirst().orElseThrow().id();
         int history=f.room.history.size();f.view.cursor(f.player,null,source);assertTrue(f.entities.size()>count);
         List<Entity> hints=List.copyOf(f.entities.subList(count,f.entities.size()));
@@ -47,7 +47,7 @@ class LudoPresentationTest {
     @Test void stackedPawnsExplainTheChoiceAndKeepAllOptions()throws Exception{
         var f=new TableViewTest.Fixture("ludo");
         var field=f.room.board.getClass().getDeclaredField("progress");field.setAccessible(true);((int[])field.get(f.room.board))[1]=0;
-        f.move("roll");for(int i=0;i<12;i++)f.view.tick();f.view.cursor(f.player,null,"sk0");
+        f.move("roll");for(int i=0;i<DiceMotion.FRAMES;i++)f.view.tick();f.view.cursor(f.player,null,"sk0");
         var message=org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);verify(f.player).sendActionBar(message.capture());
         assertTrue(dev.tabletop3d.ui.MessageText.plain(message.getValue()).contains("choose a pawn"));
         var arena=mock(GameWorld.class,CALLS_REAL_METHODS);TabletopTest.set(arena,"plugin",f.plugin);TabletopTest.set(arena,"selections",new HashMap<>());

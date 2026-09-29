@@ -13,7 +13,7 @@ project = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("receipt", type=Path, help="Passing three-boot runtime receipt")
 parser.add_argument("--soak", type=Path, help="Optional passing continuous-game receipt for the same JAR")
-parser.add_argument("--snapshot", type=Path, help="Optional passing eleven-game recovery receipt for the same JAR")
+parser.add_argument("--snapshot", type=Path, help="Optional passing multi-game recovery receipt for the same JAR")
 args = parser.parse_args()
 version = ET.parse(project / "pom.xml").getroot().find("{*}version").text
 jar = project / "target" / f"3dtabletop-{version}.jar"
@@ -35,9 +35,9 @@ if args.soak:
 snapshot = None
 if args.snapshot:
     snapshot = json.loads(args.snapshot.read_text(encoding="utf-8"))
-    if (not snapshot.get("pass") or snapshot.get("snapshot_rooms") not in (11, 12)
+    if (not snapshot.get("pass") or not 1 <= snapshot.get("snapshot_rooms", 0) <= 32
             or len(snapshot.get("boots", [])) != 3 or not all(b.get("pass") for b in snapshot["boots"])):
-        raise SystemExit("Passing eleven-game snapshot recovery receipt required")
+        raise SystemExit("Passing multi-game snapshot recovery receipt required")
     if snapshot.get("jar_sha256") != digest or snapshot.get("version") != version:
         raise SystemExit("Snapshot receipt must match this exact JAR")
 
@@ -61,7 +61,9 @@ with zipfile.ZipFile(jar) as artifact:
         raise SystemExit("Legacy package was bundled")
     for required in ("dev/tabletop3d/BoardWindow.class", "dev/tabletop3d/ui/MessageText.class",
                      "dev/tabletop3d/ui/LabelLayout.class", "dev/tabletop3d/RoomText.class",
-                     "lang/en.yml", "lang/legacy.yml", "menus/catalog.yml"):
+                     "dev/tabletop3d/rules/MahjongGame.class", "dev/tabletop3d/rules/LastCardGame.class",
+                     "dev/tabletop3d/HandTable.class", "dev/tabletop3d/DiceTray.class",
+                     "lang/en.yml", "lang/legacy.yml", "menus/catalog.yml", "menus/setup.yml", "menus/hand.yml"):
         if required not in names:
             raise SystemExit(f"Missing {required}")
 
@@ -90,5 +92,9 @@ with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as archive:
     for path in sorted((project / "docs").rglob("*.md")):
         archive.write(path, path.relative_to(project).as_posix())
     archive.write(project / "tools/server_boards_migrate.py", "tools/server_boards_migrate.py")
+    for name in ("ludo-side-tray-frames.png", "lastcard-owner-view.png", "mahjong-owner-view.png"):
+        preview = output / "previews" / name
+        if preview.is_file():
+            archive.write(preview, "previews/" + name)
 print(json.dumps({"package": str(package), "zip_sha256": hashlib.sha256(package.read_bytes()).hexdigest(),
                   "jar_sha256": digest, "junit": totals, "runtime_pass": True}, indent=2))

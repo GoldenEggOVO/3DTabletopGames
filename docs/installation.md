@@ -9,11 +9,15 @@ Stop the server before replacing the plugin. Back up worlds and `plugins/3dtable
 ## Commands and games
 
 See the [command table](../README.md#commands-and-permissions). Game IDs:
-`xiangqi`, `gomoku`, `chess`, `ludo`, `checkers`, `draughts`, `reversi`, `go`, `go9`, `go13`, `connectfour`.
+`xiangqi`, `gomoku`, `chess`, `ludo`, `checkers`, `draughts`, `reversi`, `go`, `go9`, `go13`, `connectfour`, `lastcard`, `mahjong`.
 
 `go` is 19×19. Example: `/3dtabletop create connectfour` followed by `/3dtabletop bots` to fill empty seats. A move such as `drop:3` uses zero-based column indices. Menu actions recheck player permissions, room state, turn and revision.
 
+The `create` command uses standard rules; use the native game setup page to change rules before creating a room. `mahjong` always has four seats and defaults to Riichi. Last Card supports two to four players. Tab actions never expose another player's concealed-hand actions.
+
 Sneak-right-click a table to join or open its room menu, including the upper Connect Four rack. New table centers need at least three blocks of separation along X or Z, or three blocks vertically; this does not relocate existing saved tables. A seated, authorized player receives collision and hunger protection within six blocks of their own table. Walking away restores the original collision setting within one second; changing worlds or disconnecting restores it immediately.
+
+New dice stands also require clear space on the table's +X side. Keep at least five blocks between adjacent dice-table centers along X; the placement check rejects obstructions instead of editing blocks. Restored tables without the new stand flag use a compact stand at their existing anchor.
 
 ## config.yml
 
@@ -39,4 +43,4 @@ Old ServerGames 2.0.3 and ServerMenu 0.7.1 forward to `serverboards:boards`, whi
 
 ## Local acceptance build
 
-Install `3dtabletop-1.6.1-SNAPSHOT.jar` on an isolated server first. Check sound balance and turn prompts, Connect Four drops, Reversi flips, both viewing sides, custom text, direct clicks and restart recovery. Preserve your backup when comparing with a published build.
+Install `3dtabletop-1.7.0-SNAPSHOT.jar` on an isolated server first. Check rule selection, private hands from every seat and a spectator, Last Card color changes, Mahjong calls, dice travel/landing and restart recovery. Also check sound balance, existing board interactions and custom text. Preserve your backup when comparing with a published build.

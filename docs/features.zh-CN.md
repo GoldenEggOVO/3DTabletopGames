@@ -1,6 +1,6 @@
 # 3dtabletop 功能与验收清单
 
-此清单按原 ServerBoards 源码、菜单、配置与测试逐项核对。`YachtGame` 仅为历史规则源码，不在目录中；卡牌、麻将未启用。
+此清单按 3dtabletop 源码、菜单、配置与测试逐项核对。`YachtGame` 仅为历史规则源码，不在目录中；1.7.0-SNAPSHOT 加入 Last Card 和六种麻将房规。
 
 | 功能 | 入口或数据 | 验收 |
 | --- | --- | --- |
@@ -15,8 +15,14 @@
 | 权限及 AuthMe 登录门禁 | `3dtabletop.use`、`allowed` | 权限测试、干净服拒绝无权限操作 |
 | 配置、房间与棋盘持久化 | `config.yml`、`rooms.json`、旧目录复制 | 数据迁移测试、干净服重启恢复 |
 | Tab 补全 | `CommandSuggestions` | `CommandSuggestionsTest` |
+| 游戏模式、先后手、可选规则 | `GameOptions`、原生设置页、不可变房间规则 | 菜单、座位调整、保存与重放测试 |
+| Last Card、六地区麻将、局内计分 | `HandGame`、各地区规则、私有手牌与公开详情 | 牌型、回合、物理牌与点数守恒、回放测试 |
+| 牌背和暗杠隐私 | 隐藏后生成的私人 Display，牌背及匿名暗杠 ID | `HandTableTest`、`HandMenuTest`、服务器元数据探针 |
+| 独立投骰台 | 位移、翻滚、反弹、点数停稳、动画期间锁操作 | 动画、放置、共享入口与服务器模型测试 |
 
 本批验证结果见 [verification.md](verification.md)。模型自动验收覆盖四子棋竖直落子、重启静止恢复、黑白棋实体复用与翻面结束状态；实际客户端画面与手感由用户验收。
+
+新规则的完整范围及地区取舍见 [游戏模式](game-modes.zh-CN.md) 和 [麻将房规](mahjong.zh-CN.md)。历史飞行棋继续按原规则恢复；没有重开停用的 Yacht 或斗地主。
 
 ## 1.5.0-SNAPSHOT 操作改进
 

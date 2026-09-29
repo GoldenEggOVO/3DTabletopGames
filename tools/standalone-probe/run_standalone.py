@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--server-dir", type=Path, default=workspace / "table-games" / "tabletop-runtime",
                     help="Prepared Purpur 26.2 cache with purpur-2622.jar, libraries and versions")
 parser.add_argument("--maven-repo", type=Path, default=workspace / ".tools/m2")
-parser.add_argument("--rooms-snapshot", type=Path, help="Synthetic eleven-game snapshot to restore on boots 2 and 3; remaps its anchors to the fresh fixture world")
+parser.add_argument("--rooms-snapshot", type=Path, help="Synthetic all-bot snapshot to restore on boots 2 and 3; remaps its anchors to the fresh fixture world")
 args = parser.parse_args()
 source = args.server_dir
 version = ET.parse(project / "pom.xml").getroot().find("{*}version").text
@@ -62,8 +62,8 @@ for number, marker in ((1, "BOARDS_STANDALONE_CREATE_PASS"), (2, "BOARDS_STANDAL
         snapshot = json.loads(snapshot_bytes)
         current_rooms = plugins / "3dtabletop/rooms.json"
         fixture_world = json.loads(current_rooms.read_text(encoding="utf-8"))["rooms"][0]["anchorWorld"]
-        if len(snapshot["rooms"]) not in (11, 12) or snapshot.get("returns"):
-            raise ValueError("Expected eleven or twelve synthetic rooms and no player return locations")
+        if not 1 <= len(snapshot["rooms"]) <= 32 or snapshot.get("returns"):
+            raise ValueError("Expected 1-32 synthetic rooms and no player return locations")
         for room in snapshot["rooms"]:
             if not room["seats"] or not all(seat["bot"] for seat in room["seats"]):
                 raise ValueError("Only synthetic all-bot snapshots are accepted")

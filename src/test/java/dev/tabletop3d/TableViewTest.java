@@ -50,7 +50,7 @@ class TableViewTest {
         Fixture f=new Fixture("aeroplane");f.move("roll");f.view.cursor(f.player,null,"@roll");
         var capture=org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
         verify(f.player).sendActionBar(capture.capture());assertTrue(dev.tabletop3d.ui.MessageText.plain(capture.getValue()).contains("rolling"));
-        for(int i=0;i<12;i++)f.view.tick();f.view.cursor(f.player,null,"@roll");
+        for(int i=0;i<DiceMotion.FRAMES;i++)f.view.tick();f.view.cursor(f.player,null,"@roll");
         verify(f.player,atLeastOnce()).sendActionBar(capture.capture());assertFalse(dev.tabletop3d.ui.MessageText.plain(capture.getValue()).contains("rolling"));
     }
     @Test void goDeadGroupMarkersReuseStonesAndRemoveOnlyTheMarkers() throws Exception {
@@ -126,16 +126,23 @@ class TableViewTest {
     }
     @Test void diceLabelUpdatesOnRollCompletionAndThenRemainsIdle() throws Exception {
         Fixture f=new Fixture("aeroplane");f.move("roll");
-        TextDisplay label=(TextDisplay)field(f.view,"diceLabel");
+        TextDisplay label=(TextDisplay)field(field(f.view,"diceTray"),"label");
         var capture=org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
         verify(label,atLeastOnce()).text(capture.capture());
         assertEquals("Rolling…",dev.tabletop3d.ui.MessageText.plain(capture.getValue()));
-        for(int i=0;i<12;i++)f.view.tick();
+        for(int i=0;i<DiceMotion.FRAMES;i++)f.view.tick();
         verify(label,atLeastOnce()).text(capture.capture());
         String next=f.room.board.publicInfo().get("pendingRoll").equals("0")?"Click to Roll":"Choose a plane";
         assertEquals(next,dev.tabletop3d.ui.MessageText.plain(capture.getValue()));
         clearInvocations(label);for(int i=0;i<20;i++)f.view.tick();
         verify(label,never()).text(any(net.kyori.adventure.text.Component.class));
+    }
+    @Test void revisionChangesNeverReplayTheLastRollAndRestoreStartsSettled() throws Exception {
+        Fixture f=new Fixture("ludo");f.move("roll");assertTrue(f.view.rolling());
+        for(int i=0;i<DiceMotion.FRAMES;i++)f.view.tick();assertFalse(f.view.rolling());
+        Object tray=field(f.view,"diceTray");Object landed=field(tray,"pose");
+        f.room.revision++;f.view.sync();assertFalse(f.view.rolling());assertSame(landed,field(tray,"pose"));
+        Fixture restored=new Fixture("ludo","roll");assertFalse(restored.view.rolling());
     }
     @Test void closingDuringAnAnimationStopsFurtherEntityUpdates() throws Exception {
         Fixture f=new Fixture("connectfour");f.move("drop:2");f.view.tick();f.view.close();
@@ -283,6 +290,7 @@ class TableViewTest {
         final Tabletop3D plugin=mock(Tabletop3D.class);final Player player=mock(Player.class);final World world=mock(World.class);
         final List<Entity> entities=new ArrayList<>();final Map<Entity,Location> positions=new HashMap<>();final Map<Entity,org.joml.Matrix4f> poses=new HashMap<>();final Map<Entity,org.bukkit.util.Transformation> transforms=new HashMap<>();final Room room;final TableView view;
         Fixture(String kind,String... initial){
+            when(plugin.getConfig()).thenReturn(new org.bukkit.configuration.file.YamlConfiguration());
             when(world.spawn(any(Location.class),any(Class.class),any(Consumer.class))).thenAnswer(inv->{
                 Entity e=mock((Class<? extends Entity>)inv.getArgument(1));entities.add(e);positions.put(e,((Location)inv.getArgument(0)).clone());
                 when(e.getPersistentDataContainer()).thenReturn(mock(PersistentDataContainer.class));when(e.isValid()).thenReturn(true);when(e.getLocation()).thenAnswer(a->positions.get(e).clone());

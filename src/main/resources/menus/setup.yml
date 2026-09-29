@@ -1,0 +1,23 @@
+# Game setup; rules are immutable after room creation. Existing custom pages stay intact.
+Title: '<white>@title@'
+Body:
+  content:
+    type: message
+    text: '<white>@description@'
+    width: 370
+Bottom:
+  type: multi
+  columns: 2
+  buttons:
+    mode:
+      text: '<aqua>@label@'
+      width: 180
+    capacity:
+      text: '<aqua>@label@'
+      width: 180
+    entry:
+      text: '<white>@label@'
+      width: 180
+  exit:
+    text: '<gray>@label@'
+    width: 180

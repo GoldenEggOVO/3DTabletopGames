@@ -10,7 +10,7 @@ import net.kyori.adventure.text.Component;
 
 /** Editable window layout with room actions bound only at open time. */
 final class GameMenuLayouts {
-    static final List<String> PAGES=List.of("dialog","catalog","room","yacht");
+    static final List<String> PAGES=List.of("dialog","catalog","room","setup","hand","yacht");
     private static final Map<String,String> LEGACY_STOCK_LABELS=Map.of(
         "bots","&f补齐陪练并开始","play","&f回到对局","options","&f房间选项");
     private final Path directory;

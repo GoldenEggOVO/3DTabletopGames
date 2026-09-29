@@ -21,13 +21,17 @@ public final class ChineseCheckersGame implements BoardGame {
     };
     private final Board geometry = new Board();
     private final int[] colors;
+    private final ChineseCheckersOptions options;
+    private final List<Integer> ranking = new ArrayList<>();
     private final Map<String, Integer> occupied = new LinkedHashMap<>();
     private final Map<String, Integer> repeats = new HashMap<>();
     private int current, passes;
     private String result = "ongoing", lastAction = "等待第一步";
     private Map<String, List<String>> cached;
 
-    public ChineseCheckersGame(int players) {
+    public ChineseCheckersGame(int players) { this(players, ChineseCheckersOptions.DEFAULT); }
+    public ChineseCheckersGame(int players, ChineseCheckersOptions options) {
+        this.options = Objects.requireNonNull(options);
         colors = switch (players) {
             case 2 -> new int[]{0, 3};
             case 3 -> new int[]{0, 2, 4};
@@ -43,6 +47,7 @@ public final class ChineseCheckersGame implements BoardGame {
     @Override public int currentPlayer() { return current; }
     @Override public boolean finished() { return !result.equals("ongoing"); }
     @Override public String outcome() { return result; }
+    public ChineseCheckersOptions options() { return options; }
     @Override public List<Cell> cells() {
         List<Cell> out = new ArrayList<>(121);
         for (int j = 0; j < Board.sizeJ; j++) for (int i = 0; i < Board.sizeI; i++) {
@@ -64,6 +69,14 @@ public final class ChineseCheckersGame implements BoardGame {
         return new Point(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
     }
     private static String id(Point p) { return p.i + "," + p.j; }
+    private boolean allowedCamp(String destination) {
+        if (options.enterOtherCamps()) return true;
+        for (int camp = 0; camp < CAMPS.length; camp++) {
+            if (camp == colors[current] || camp == (colors[current] + 3) % 6) continue;
+            for (int[] xy : CAMPS[camp]) if (destination.equals(xy[0] + "," + xy[1])) return false;
+        }
+        return true;
+    }
     private Map<String, List<String>> moves() {
         if (cached != null) return cached;
         Map<String, List<String>> out = new TreeMap<>();
@@ -74,7 +87,7 @@ public final class ChineseCheckersGame implements BoardGame {
             Point start = point(origin);
             for (int d = 0; d < 6; d++) {
                 Point to = geometry.hop(start, d);
-                if (to != null && !occupied.containsKey(id(to)) && (!goal.contains(origin) || goal.contains(id(to))))
+                if (to != null && !occupied.containsKey(id(to)) && allowedCamp(id(to)) && (!goal.contains(origin) || goal.contains(id(to))))
                     out.put("move:" + origin + ":" + id(to), List.of(origin, id(to)));
             }
             // Other pieces stay fixed during a multi-jump. The moving piece's origin
@@ -87,10 +100,12 @@ public final class ChineseCheckersGame implements BoardGame {
                 for (int d = 0; d < 6; d++) {
                     Point middle = geometry.hop(point(from), d);
                     if (middle == null || id(middle).equals(origin) || !occupied.containsKey(id(middle))) continue;
+                    if (!options.jumpOwn() && occupied.get(id(middle)) == current) continue;
                     Point to = geometry.hop(middle, d);
                     if (to == null) continue;
                     String destination = id(to);
                     if (occupied.containsKey(destination) || seen.contains(destination)) continue;
+                    if (!allowedCamp(destination)) continue;
                     if (goal.contains(from) && !goal.contains(destination)) continue;
                     seen.add(destination);
                     List<String> next = new ArrayList<>(path); next.add(destination);
@@ -114,19 +129,31 @@ public final class ChineseCheckersGame implements BoardGame {
             List<String> path = moves().get(action);
             occupied.remove(path.getFirst()); occupied.put(path.getLast(), seat); passes = 0;
             lastAction = "玩家 " + (seat + 1) + " " + String.join(" → ", path);
-            if (target(seat).stream().allMatch(p -> occupied.getOrDefault(p, -1) == seat)) result = "winner:" + seat;
+            if (target(seat).stream().allMatch(p -> occupied.getOrDefault(p, -1) == seat)) {
+                ranking.add(seat);
+                if (!options.allPlaces()) result = "winner:" + seat;
+                else if (ranking.size() == colors.length - 1) {
+                    for (int other = 0; other < colors.length; other++) if (!ranking.contains(other)) ranking.add(other);
+                    result = "winner:" + ranking.getFirst();
+                }
+            }
         }
         cached = null;
         if (finished()) return;
-        current = (current + 1) % colors.length;
-        if (passes >= colors.length) result = "draw:blocked";
+        do { current = (current + 1) % colors.length; } while (ranking.contains(current));
+        if (passes >= colors.length - ranking.size()) result = "draw:blocked";
         else if (repeats.merge(positionKey(), 1, Integer::sum) >= 3) result = "draw:threefold-repetition";
     }
-    private String positionKey() { return current + ":" + new TreeMap<>(occupied); }
+    private String positionKey() { return current + ":" + ranking + ":" + new TreeMap<>(occupied); }
     @Override public Map<String, String> publicInfo() {
-        return Map.of("rules", "六角星 121 孔，每人 10 子；邻格步行或隔一子连续短跳；先占满对营获胜",
-                "rulesVariant", "standard-star-short-jumps", "ruleLimit", "进入目标营后不能离开；允许经过其他营地；三次重复和棋",
+        String rules = options.equals(ChineseCheckersOptions.DEFAULT) ? "六角星 121 孔，每人 10 子；邻格步行或隔一子连续短跳；先占满对营获胜"
+                : "121-hole star, ten pegs each; adjacent steps or consecutive short jumps; " + (options.allPlaces() ? "finish all places" : "first player home wins");
+        String limits = options.equals(ChineseCheckersOptions.DEFAULT) ? "进入目标营后不能离开；允许经过其他营地；三次重复和棋"
+                : "Cannot leave the target camp; " + (options.jumpOwn() ? "may jump own pegs; " : "cannot jump own pegs; ") + (options.enterOtherCamps() ? "may enter other camps; " : "cannot enter other camps; ") + "threefold repetition draws";
+        return Map.of("rules", rules,
+                "rulesVariant", "standard-star-short-jumps", "ruleLimit", limits,
                 "phase", finished() ? "对局结束" : "等待走棋", "turn", "玩家 " + (current + 1),
-                "lastAction", lastAction, "colors", Arrays.toString(colors), "coordinateSystem", "x=2*column+row%2,y=row");
+                "lastAction", lastAction, "colors", Arrays.toString(colors), "coordinateSystem", "x=2*column+row%2,y=row",
+                "ranking", String.join(",", ranking.stream().map(String::valueOf).toList()));
     }
 }

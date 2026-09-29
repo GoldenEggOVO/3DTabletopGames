@@ -14,7 +14,7 @@ Run independently on **Paper / Purpur 26.2 with Java 25**. No resource pack, cli
 2. Stop your server and back up plugin data and worlds. Keep one plugin JAR in `plugins/`; never install `original-*.jar`.
 3. Start the server and run `/3dtabletop`. Create a room, invite players or fill seats with bots, then play on the physical table.
 
-The current source is **1.6.1-SNAPSHOT**, a local acceptance build. It adds quiet native sounds for every game, captures, dice and round events, with configurable volume. It includes Ludo, pawn and destination previews, refined Xiangqi/Chinese Checkers bases and clearer capture targets. Existing Aeroplane rooms retain their original rules and recovery. It has **not been published as a Release**. Snapshot JARs from Actions are development builds; see [verification](docs/verification.md) for the tested scope.
+The current source is **1.7.0-SNAPSHOT**, a development build with game setup/rule selection, animated dice stands, Last Card and six Mahjong house profiles. Existing rooms retain their rules and positions. It has **not been published as a Release**. See [game modes](docs/game-modes.md), [Mahjong rules](docs/mahjong.md) and [verification](docs/verification.md) for the exact scope and acceptance status.
 
 Upgrading from ServerBoards? Read [migration](docs/migration.md) first. Existing `3dtabletop` configurations, menu layouts and schema 1 room files remain usable.
 
@@ -30,15 +30,18 @@ Upgrading from ServerBoards? Read [migration](docs/migration.md) first. Existing
 | Chinese Checkers | 2, 3, 4 or 6 | Star board and colored pieces |
 | Draughts | 2 | 8×8 board with crowned kings |
 | Ludo | 2–4 | Cross board, pawn figures, private move previews and a physical die |
+| Last Card | 2–4 | Colored cards, private hands and a shared discard pile |
+| Mahjong | 4 | Standing private tiles, public rivers and exposed melds |
 
 - Rooms, seats, ready checks, bots, spectating, undo agreements and rematches.
 - Saved world anchors, seeds and move history; room recovery after restarting.
 - Direct board interaction, legal-move pointers and private hover/Connect Four landing previews.
-- Paginated room browsing, rules/help and an optional menu path for moves.
+- Game → mode/rules → create/start; paginated room browsing and private hand controls.
+- Six Mahjong profiles: Riichi, Guangdong, Fuzhou, Sichuan, Qinhuangdao and Taiwan. Scores are match points only.
 - Native Paper Dialog with editable YAML layouts and English by default.
 - MiniMessage styling, legacy color compatibility and editable language files.
 
-Rules and variant details: [feature inventory](docs/features.md). Historical Yacht sources are not enabled; cards and Mahjong are not included in the game catalog.
+Rules and variant details: [feature inventory](docs/features.md). Historical Yacht sources remain disabled. Last Card is a 52-card variant, not a branded UNO implementation. Regional Mahjong follows documented house rules and is not a drop-in replacement for MahjongCraft.
 
 ## Commands and permissions
 

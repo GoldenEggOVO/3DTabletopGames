@@ -8,6 +8,13 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 class PortableTableTest {
+ @Test void sideTrayHasClearanceAgainstNeighborTablesWithoutMovingLegacyAnchors(){
+  assertFalse(TablePlacement.overlaps(0,80,0,false,3,80,0,false));
+  assertTrue(TablePlacement.overlaps(0,80,0,true,3,80,0,false));
+  assertTrue(TablePlacement.overlaps(3,80,0,false,0,80,0,true));
+  assertFalse(TablePlacement.overlaps(0,80,0,true,5,80,0,false));
+  assertFalse(TablePlacement.overlaps(0,80,0,true,3,83,0,false));
+ }
  @TempDir Path dir;
  @BeforeEach void setup(){MockBukkit.mock();}
  @AfterEach void cleanup(){MockBukkit.unmock();}

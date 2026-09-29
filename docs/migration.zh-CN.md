@@ -1,4 +1,14 @@
-# 升级至 3dtabletop 1.5.1-SNAPSHOT
+# 升级至 3dtabletop 1.7.0-SNAPSHOT
+
+## 1.7.0 游戏模式与手牌桌
+
+停服备份整个 `plugins/3dtabletop/` 后替换 JAR。保留现有配置、语言、菜单和房间文件；新增的 `menus/setup.yml`、`menus/hand.yml` 会补齐，已有文件不覆盖，新语言键由内置英文回退。
+
+房间仍使用 schema 1，新增 `rulesVersion: 1`、`options`、`owner`、`sideTray`。旧房间缺少这些字段时继续使用原规则、原世界和原坐标；旧骰子桌使用紧凑投骰台，新建骰子桌才使用独立大投骰台。新房间的规则在创建时锁定，重启、悔棋和重赛沿用相同设置。先手设置改变座位时，房主权限仍属于创建者。
+
+新增 `lastcard` 和四人 `mahjong`，后者默认日本立直，其他地区通过设置页选择。它们采用自己的房间历史，不导入 MahjongCraft 或旧卡牌／麻将插件存档。不要把参考 JAR 放进本插件目录。
+
+升级后分别检查旧房间恢复、带自定义规则的新房间重启恢复、私人手牌可见性和菜单回调。若需要退回旧版，停服后恢复升级前备份；旧版不理解新增游戏与规则字段，不能直接拿新存档降级。具体房规见 [游戏模式](game-modes.zh-CN.md) 与 [六种麻将](mahjong.zh-CN.md)。
 
 ## 已有 3dtabletop 安装
 
@@ -9,7 +19,7 @@
 ## ServerBoards 数据目录
 
 1. 完全停服，备份 `plugins/ServerBoards/`，记录原 `rooms.json` 的 SHA-256，移除旧 ServerBoards JAR。
-2. 安装 `3dtabletop-1.5.1-SNAPSHOT.jar` 并启动。若新目录不存在，插件会将旧目录**复制**为 `plugins/3dtabletop/`，添加 `migration-from-serverboards.txt`；旧目录不删除。
+2. 安装 `3dtabletop-1.7.0-SNAPSHOT.jar` 并启动。若新目录不存在，插件会将旧目录**复制**为 `plugins/3dtabletop/`，添加 `migration-from-serverboards.txt`；旧目录不删除。
 3. 检查 `config.yml`、`menus/*.yml`、`rooms.json` 的副本及 SHA-256。旧配置未写 `language` 时自动使用英文；可手动添加 `language: en`。执行 `/3dtabletop status`，玩家用 `/3dtabletop resume` 查看座位、棋盘和历史，再正常重启检查恢复。
 
 房间 JSON schema 1、世界 UUID、实体桌面坐标、规则动作与菜单配置保持可读。两个数据目录都存在但无迁移标记时插件会拒绝启动；先在停服状态核对并备份两边数据，手工决定使用哪一份。恢复失败时插件保留源文件并另存不可读副本，不会清空房间。原有 `/boards`、`serverboards:boards`、`serverboards.use` 不再注册；请更新自己的命令、权限与菜单转发配置。ServerGames 2.0.3 和 ServerMenu 0.7.1 的旧入口也需在各自项目更新。
@@ -29,7 +39,7 @@
 }
 ```
 
-已有完整锚点的旧 Boards 文件使用 `{}`。脚本检查房间、人数、重复占座、坐标，并使用即将安装的 JAR 逐条重放动作；失败时拒绝产生候选文件，不改源文件或覆盖输出。默认读取同目录或 `target/` 下的 `3dtabletop-1.5.1-SNAPSHOT.jar`，也可传 `--jar`：
+已有完整锚点的旧 Boards 文件使用 `{}`。脚本检查房间、人数、重复占座、坐标，并使用即将安装的 JAR 逐条重放动作；失败时拒绝产生候选文件，不改源文件或覆盖输出。默认读取同目录或 `target/` 下的 `3dtabletop-1.7.0-SNAPSHOT.jar`，也可传 `--jar`：
 
 ```powershell
 python server-boards/tools/server_boards_migrate.py old-rooms.json anchors.json candidate-rooms.json
