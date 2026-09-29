@@ -38,8 +38,10 @@ final class HandTable implements AutoCloseable {
         Spec spec;
         final List<Entity> parts = new ArrayList<>();
         final List<Vector> offsets = new ArrayList<>();
+        final List<Material> materials = new ArrayList<>();
+        boolean disabled;
         PieceView(Spec spec, Player viewer) { this.spec = spec; build(viewer); }
-        void add(Entity entity, Vector offset) { parts.add(entity); offsets.add(offset); }
+        void add(Entity entity, Vector offset,Material material) { parts.add(entity); offsets.add(offset); materials.add(material); }
         Vector displacement=new Vector(), start=new Vector(), target=new Vector();
         int frame=4, duration=4, delay;
         boolean drawing;
@@ -48,12 +50,12 @@ final class HandTable implements AutoCloseable {
         double depth(){return spec.standing()?(mahjong?.052:.008):(mahjong?.146:.245);}
         void build(Player viewer) {
             Location at=at(spec.pose());String id=viewer==null?"@board":"@hand:"+spec.id();
-            double scale=mahjong&&!spec.standing()&&viewer==null?.66:1;
+            double scale=1;
             double w=width()*scale,h=height()*scale,d=depth()*scale;
-            add(block(at,Material.SMOOTH_QUARTZ,w,h,d,id,viewer),new Vector());
+            add(block(at,Material.SMOOTH_QUARTZ,w,h,d,id,viewer),new Vector(),Material.SMOOTH_QUARTZ);
             if(spec.back()){
                 Vector panel=spec.standing()?rotated(0,.012,d/2+.002,spec.pose()):new Vector(0,.014*scale,0);
-                add(block(at.clone().add(panel),Material.GREEN_CONCRETE,w*.84,spec.standing()?h-.024:.002,spec.standing()?.002:d*.86,id,viewer),panel);
+                add(block(at.clone().add(panel),Material.GREEN_CONCRETE,w*.84,spec.standing()?h-.024:.002,spec.standing()?.002:d*.86,id,viewer),panel,Material.GREEN_CONCRETE);
             }else{
                 var sprite=HandSprites.of(mahjong,spec.face());
                 Map<Material,Integer> area=new EnumMap<>(Material.class);
@@ -66,16 +68,16 @@ final class HandTable implements AutoCloseable {
                     double x=((rect.x()+rect.width()/2.0)/32-.5)*w;
                     Vector offset=spec.standing()?rotated(x,h-(rect.y()+rect.height())/48.0*h,d/2+.003+(rect==layers.getFirst()?0:.0008),spec.pose()):
                         rotated(x,.014*scale+(rect==layers.getFirst()?0:.0008),((rect.y()+rect.height()/2.0)/48-.5)*d,spec.pose());
-                    add(block(at.clone().add(offset),rect.material(),rw,spec.standing()?rh:.002,spec.standing()?.001:rh,id,viewer),offset);
+                    add(block(at.clone().add(offset),rect.material(),rw,spec.standing()?rh:.002,spec.standing()?.001:rh,id,viewer),offset,rect.material());
                 }
             }
             if(spec.standing()){
                 Vector back=rotated(0,.012,-d/2-.002,spec.pose());
-                add(block(at.clone().add(back),Material.GREEN_CONCRETE,w*.84,h-.024,.002,id,viewer),back);
+                add(block(at.clone().add(back),Material.GREEN_CONCRETE,w*.84,h-.024,.002,id,viewer),back,Material.GREEN_CONCRETE);
                 if(!mahjong){
                     for(int i=0;i<3;i++){
                         Vector stripe=rotated(0,.055+i*.052,-d/2-.004,spec.pose());
-                        add(block(at.clone().add(stripe),Material.SMOOTH_QUARTZ,w*.55,.006,.001,id,viewer),stripe);
+                        add(block(at.clone().add(stripe),Material.SMOOTH_QUARTZ,w*.55,.006,.001,id,viewer),stripe,Material.SMOOTH_QUARTZ);
                     }
                 }
             }
@@ -115,9 +117,20 @@ final class HandTable implements AutoCloseable {
             ((Display)parts.getFirst()).setGlowColorOverride(Color.YELLOW);
             parts.getFirst().setGlowing(selected);
         }
+        void playable(boolean allowed){
+            if(disabled==!allowed)return;disabled=!allowed;
+            for(int i=0;i<parts.size();i++){
+                Material original=materials.get(i),gray=switch(original){
+                    case WHITE_CONCRETE,SMOOTH_QUARTZ -> Material.LIGHT_GRAY_CONCRETE;
+                    case BLACK_CONCRETE,BLUE_CONCRETE,GREEN_CONCRETE -> Material.GRAY_CONCRETE;
+                    default -> Material.GRAY_CONCRETE;
+                };
+                ((BlockDisplay)parts.get(i)).setBlock((allowed?original:i==0?Material.GRAY_CONCRETE:gray).createBlockData());
+            }
+        }
         BoundingBox bounds(boolean sticky) {
             Location base=at(spec.pose()),at=base.clone().add(displacement);
-            double scale=mahjong&&!spec.standing()?.66:1;
+            double scale=1;
             double angle=Math.toRadians(spec.pose().yaw()),w=width()*scale/2+.003,d=depth()*scale/2+.003;
             double rx=Math.abs(Math.cos(angle))*w+Math.abs(Math.sin(angle))*d;
             double rz=Math.abs(Math.sin(angle))*w+Math.abs(Math.cos(angle))*d;
@@ -136,6 +149,9 @@ final class HandTable implements AutoCloseable {
         int seat = -1, historySize;
         String hover;
         String callGroup;
+        String pressedTile;
+        Location pressedEye;
+        long pressedAt;
         TextDisplay remaining;
         boolean callsEnabled;
         long dismissedRevision=-1;
@@ -186,16 +202,18 @@ final class HandTable implements AutoCloseable {
     }
     static Pose handPose(int seat,int players,int index,int count,boolean mahjong) {
         int columns=mahjong?17:18,row=index/columns,inRow=Math.min(columns,Math.max(1,count-row*columns));
+        if(mahjong&&inRow%3==2)inRow--;
         double unit=mahjong?.101:Math.min(.155,(players==3?1.24:1.62)/Math.max(1,inRow-1));
         double centered=index%columns-(inRow-1)/2.0,tangent=centered*unit;
+        if(mahjong&&index%columns>=inRow)tangent+=.075;
         Pose base=seatPose(seat,players,tangent,(mahjong?1.27:players==3?.78:.91)-row*(mahjong?.085:.27));
         return mahjong?base:new Pose(base.x(),base.z(),base.yaw()+(float)(centered*1.2),row*.055);
     }
     static Pose riverPose(int seat,int players,int index) {
-        return seatPose(seat,players,(index%6-2.5)*.068,.65-(index/6)*.10);
+        return seatPose(seat,players,(index%6-2.5)*.101,.97-(index/6)*.16);
     }
     static Pose exposedPose(int seat,int players,int index) {
-        return seatPose(seat,players,1.20-(index%14)*.068,1.10-(index/14)*.11);
+        return seatPose(seat,players,1.22-(index%7)*.101,1.10-(index/7)*.16);
     }
     private static Pose seatPose(int seat,int players,double tangent,double radius) {
         double angle=2*Math.PI*seat/players;
@@ -249,6 +267,15 @@ final class HandTable implements AutoCloseable {
             if (mahjong) {
                 publicRow(wanted,game.discards(seat),"discard:"+seat,seat,game.playerCount(),false);
                 publicRow(wanted,game.exposed(seat),"exposed:"+seat,seat,game.playerCount(),true);
+            }
+        }
+        if(mahjong){
+            Map<String,String> info=game.publicInfo();String[] faces=info.getOrDefault("dora","").split(","),ids=info.getOrDefault("doraIds","").split(",");
+            for(int i=0;i<faces.length;i++)if(!faces[i].isEmpty()){
+                String id=i<ids.length&&!ids[i].isEmpty()?ids[i]:Integer.toString(i);
+                Pose frame=seatPose(2,4,(i-(faces.length-1)/2.0)*.101,1.44);
+                // Raise the frame indicators above the opposing concealed row for the lowered Shift view.
+                wanted.add(new Spec("dora:"+id,faces[i],new Pose(frame.x(),frame.z(),frame.yaw(),.15),false,false,-1));
             }
         }
         if (!mahjong) game.cells().stream().filter(cell -> cell.id().equals("discard") && !cell.piece().isEmpty())
@@ -311,6 +338,7 @@ final class HandTable implements AutoCloseable {
         }
         view.historySize=room.history.size();
         view.board=game; view.revision=room.revision; view.language=Language.generation(); view.seat=seat;
+        updatePlayable(view);
         view.callsEnabled=callsEnabled;buildCalls(view);
     }
     private void buildCalls(PrivateView view){
@@ -318,7 +346,9 @@ final class HandTable implements AutoCloseable {
         if(!view.callsEnabled||view.dismissedRevision==room.revision)return;
         HandGame game=(HandGame)room.board;var groups=MahjongControls.groups(game.legalActions(view.seat));
         Map<String,String> buttons=new LinkedHashMap<>();
-        if(view.callGroup!=null){
+        if("riichi".equals(view.callGroup)){
+            buttons.put("back","back");buttons.put("dismiss","dismiss");
+        }else if(view.callGroup!=null){
             for(String choice:groups.getOrDefault(view.callGroup,List.of()))buttons.put("choice:"+choice,view.callGroup);
             buttons.put("back","back");
             if(groups.containsKey("pass"))buttons.put("pass","pass");
@@ -328,16 +358,43 @@ final class HandTable implements AutoCloseable {
             int row=i/3,count=Math.min(3,buttons.size()-row*3);
             Pose base=seatPose(view.seat,game.playerCount(),(i%3-(count-1)/2.0)*.43,.79);i++;
             String action=button.getKey().startsWith("choice:")?button.getKey().substring(7):groups.getOrDefault(button.getKey(),List.of()).stream().findFirst().orElse("");
-            List<String> faces=Set.of("chi","pon","kan").contains(button.getValue())?MahjongPresentation.choiceFaces(game,view.seat,action):List.of();
+            List<String> faces=button.getKey().startsWith("choice:")&&Set.of("chi","pon","kan").contains(button.getValue())?MahjongPresentation.choiceFaces(game,view.seat,action):List.of();
             view.calls.put(button.getKey(),new CallView(button.getValue(),new Pose(base.x(),base.z(),base.yaw(),.30+row*.30),view.player,faces));
         }
     }
     boolean expandCall(Player player,String group){
         show(player);PrivateView view=privateViews.get(player.getUniqueId());if(view==null||!view.callsEnabled)return false;
-        if(group.equals("back")){view.callGroup=null;buildCalls(view);return true;}
-        if(!Set.of("chi","pon","kan").contains(group))return false;
-        if(MahjongControls.groups(((HandGame)room.board).legalActions(view.seat)).getOrDefault(group,List.of()).size()<2)return false;
-        view.callGroup=group;buildCalls(view);return true;
+        if(group.equals("back")){view.callGroup=null;updatePlayable(view);buildCalls(view);return true;}
+        if(!Set.of("chi","pon","kan","riichi").contains(group))return false;
+        if(MahjongControls.groups(((HandGame)room.board).legalActions(view.seat)).getOrDefault(group,List.of()).isEmpty())return false;
+        view.callGroup=group;updatePlayable(view);buildCalls(view);
+        if(group.equals("riichi"))player.sendActionBar(Language.component("hint.mahjong.riichi").colorIfAbsent(NamedTextColor.GOLD));
+        return true;
+    }
+    private void updatePlayable(PrivateView view){
+        if(!mahjong)return;Set<String> legal=Set.copyOf(((HandGame)room.board).legalActions(view.seat));
+        String prefix="riichi".equals(view.callGroup)?"riichi:":"discard:";
+        for(PieceView piece:view.pieces.values()){
+            String id=piece.spec.id();boolean selected=legal.contains("exchange-remove:"+id);
+            piece.playable(room.phase==Room.Phase.PLAYING&&(legal.contains(prefix+id)||legal.contains("exchange-add:"+id)||selected));
+            if(selected){piece.highlight(true);piece.shift(new Vector(0,.035,0));}
+        }
+    }
+    void keepHandPress(Player player){keepHandPress(player,System.nanoTime());}
+    void keepHandPress(Player player,long now){PrivateView view=privateViews.get(player.getUniqueId());if(view!=null&&view.pressedTile!=null)view.pressedAt=now;}
+    String handAction(Player player,String id){return handAction(player,id,System.nanoTime());}
+    String handAction(Player player,String id,long now){
+        show(player);PrivateView view=privateViews.get(player.getUniqueId());if(view==null||!mahjong)return null;
+        String action=("riichi".equals(view.callGroup)?"riichi:":"discard:")+id;
+        List<String> legal=((HandGame)room.board).legalActions(view.seat);
+        if(legal.contains("exchange-remove:"+id))return "exchange-remove:"+id;
+        if(legal.contains("exchange-add:"+id))return "exchange-add:"+id;
+        if(!view.pieces.containsKey(id)||!legal.contains(action)){keepHandPress(player,now);return null;}
+        Location eye=player.getEyeLocation();
+        if(view.pressedEye!=null&&eye!=null&&!Objects.equals(id,view.pressedTile)&&now-view.pressedAt<600_000_000L
+                &&eye.getWorld().equals(view.pressedEye.getWorld())&&eye.distanceSquared(view.pressedEye)<.0064
+                &&eye.getDirection().dot(view.pressedEye.getDirection())>Math.cos(Math.toRadians(2))){view.pressedAt=now;return null;}
+        view.pressedTile=id;view.pressedEye=eye==null?null:eye.clone();view.pressedAt=now;return action;
     }
     void hover(Player player,String selected){
         show(player);PrivateView view=privateViews.get(player.getUniqueId());if(view==null)return;
@@ -345,9 +402,10 @@ final class HandTable implements AutoCloseable {
         if(target==null||target.spec.back())selected=null;
         if(Objects.equals(view.hover,selected))return;view.hover=selected;
         List<PieceView> pieces=new ArrayList<>(view.pieces.values());int chosen=-1;
+        List<String> legal=mahjong?((HandGame)room.board).legalActions(view.seat):List.of();
         for(int i=0;i<pieces.size();i++)if(pieces.get(i).spec.id().equals(selected))chosen=i;
         for(int i=0;i<pieces.size();i++){
-            if(mahjong){pieces.get(i).highlight(selected!=null&&MahjongPresentation.sameType(pieces.get(i).spec.face(),target.spec.face()));pieces.get(i).shift(new Vector(0,i==chosen?.065:0,0));continue;}
+            if(mahjong){boolean exchanging=legal.contains("exchange-remove:"+pieces.get(i).spec.id());pieces.get(i).highlight(exchanging||selected!=null&&MahjongPresentation.sameType(pieces.get(i).spec.face(),target.spec.face()));pieces.get(i).shift(new Vector(0,i==chosen?.065:exchanging?.035:0,0));continue;}
             PieceView piece=pieces.get(i);double lift=i==chosen?.105:0;
             double gap=chosen<0||i==chosen?0:Math.signum(i-chosen)*.045/Math.max(1,Math.abs(i-chosen));
             piece.shift(rotated(gap,lift,0,new Pose(0,0,(float)(-360.0*view.seat/((HandGame)room.board).playerCount()))));
@@ -358,13 +416,16 @@ final class HandTable implements AutoCloseable {
             else{
                 view.remaining.teleport(at(target.spec.pose()).add(0,.24,0));
                 int remaining=MahjongPresentation.remaining((HandGame)room.board,view.seat,target.spec.face());
-                view.remaining.text(Language.component("table.mahjong.remaining","count",remaining).colorIfAbsent(remaining==0?NamedTextColor.RED:NamedTextColor.YELLOW));
+                Component hint=Language.component("table.mahjong.remaining","count",remaining).colorIfAbsent(remaining==0?NamedTextColor.RED:NamedTextColor.YELLOW);
+                if(room.board instanceof dev.tabletop3d.rules.MahjongGame game&&game.noYaku(view.seat,target.spec.id().replaceFirst("^discard:[0-3]:","")))
+                    hint=hint.append(Component.newline()).append(Language.component("table.mahjong.no-yaku").color(NamedTextColor.RED));
+                view.remaining.text(hint);
                 for(var entry:publicPieces.entrySet()){
                     PieceView piece=entry.getValue();
                     if(piece.spec.back()||!MahjongPresentation.sameType(piece.spec.face(),target.spec.face()))continue;
                     // Replace only this viewer's public body with an identical private glowing body.
                     Entity body=piece.parts.getFirst();player.hideEntity(plugin,body);
-                    BlockDisplay copy=block(at(piece.spec.pose()),Material.SMOOTH_QUARTZ,piece.width()*.66,piece.height()*.66,piece.depth()*.66,"@board",player);
+                    BlockDisplay copy=block(at(piece.spec.pose()),Material.SMOOTH_QUARTZ,piece.width(),piece.height(),piece.depth(),"@board",player);
                     copy.setGlowColorOverride(Color.YELLOW);copy.setGlowing(true);view.matches.put(entry.getKey(),copy);
                 }
             }
@@ -372,7 +433,7 @@ final class HandTable implements AutoCloseable {
     }
     void dismissCalls(Player player){
         show(player);PrivateView view=privateViews.get(player.getUniqueId());
-        if(view!=null&&view.calls.containsKey("dismiss")){view.dismissedRevision=room.revision;view.clearCalls();}
+        if(view!=null&&view.calls.containsKey("dismiss")){view.dismissedRevision=room.revision;view.callGroup=null;updatePlayable(view);view.clearCalls();}
     }
     String callHit(Player player,Location eye,Vector direction){
         if(!mahjong)return null;

@@ -138,7 +138,13 @@ final class GameMenus implements AutoCloseable {
         if(r.phase==Room.Phase.LOBBY){b.add(new Button("ready",Language.component(r.ready.contains(p.getUniqueId())?"menu.unready":"menu.ready"),()->plugin.ready(p,r)));if(r.host(p.getUniqueId()))b.add(new Button("bots",Language.component("menu.bots"),()->plugin.startWithBots(p,r)));}
         if(r.phase==Room.Phase.PLAYING){
             b.add(new Button("play",Language.component("menu.play"),()->{forget(p);plugin.enterArena(p,r);}));
-            if(r.undo==null)b.add(new Button("controls",Language.component(r.board instanceof dev.tabletop3d.rules.HandGame?"menu.hand-controls":"menu.board-controls"),()->boardSources(p,r,0)));
+            if(r.board!=null&&!r.busy&&r.undo==null){
+                List<String> actions=Set.of("go","go9","go13").contains(r.kind)?List.of("pass","accept","resume"):r.kind.equals("lastcard")?List.of("declare"):List.of();
+                if(!actions.isEmpty()){
+                    long revision=r.revision;List<String> legal=r.board.legalActions(seat);
+                    for(String action:actions)if(legal.contains(action))b.add(new Button(action,r.kind.equals("lastcard")?HandText.action(r,seat,action):actionLabel(r,action),()->plugin.action(p,r,revision,new JsonPrimitive(action))));
+                }
+            }
         }
         if(r.undo!=null){if(r.undo.pending.contains(p.getUniqueId()))b.add(new Button(Language.component("menu.undo.approve"),()->plugin.approveUndo(p,r)));b.add(new Button(Language.component(r.undo.requester.equals(p.getUniqueId())?"menu.undo.cancel":"menu.undo.reject"),()->plugin.rejectUndo(p,r)));}
         if(r.phase==Room.Phase.FINISHED)b.add(new Button("rematch",Language.component(r.ready.contains(p.getUniqueId())?"menu.rematch.waiting":"menu.rematch"),()->plugin.rematch(p,r)));
@@ -173,7 +179,7 @@ final class GameMenus implements AutoCloseable {
     void roomOptions(Player p,Room r){
         if(plugin.rooms.get(r.id)!=r||r.seat(p.getUniqueId())<0){main(p);return;}
         List<Button>b=new ArrayList<>();
-        if(r.undo==null&&r.board!=null&&!r.history.isEmpty()&&(r.phase==Room.Phase.PLAYING||r.phase==Room.Phase.FINISHED))b.add(new Button(Language.component("menu.undo.request"),()->plugin.requestUndo(p,r)));
+        if(Set.of("xiangqi","gomoku","chess","checkers","draughts","reversi","go","go9","go13","connectfour").contains(r.kind)&&r.undo==null&&r.board!=null&&!r.history.isEmpty()&&(r.phase==Room.Phase.PLAYING||r.phase==Room.Phase.FINISHED))b.add(new Button(Language.component("menu.undo.request"),()->plugin.requestUndo(p,r)));
         b.add(new Button("leave",Language.component("menu.leave.title"),()->confirmLeave(p)));
         show(p,Language.component("menu.options"),compactRoomSummary(r),b,()->room(p,r));
     }
@@ -248,8 +254,8 @@ final class GameMenus implements AutoCloseable {
         if(plugin.rooms.get(r.id)!=r){main(p);return;}
         long revision=r.revision;List<Button>b=new ArrayList<>();int from=Math.max(0,Math.min(page*12,choices.size()));
         for(String action:choices.subList(from,Math.min(from+12,choices.size())))b.add(new Button(r.board instanceof dev.tabletop3d.rules.HandGame?HandText.action(r,r.seat(p.getUniqueId()),action):actionLabel(r,action),()->plugin.action(p,r,revision,new JsonPrimitive(action))));
-        if(from>0)b.add(new Button(Language.component("menu.previous"),()->{if(r.revision!=revision)boardSources(p,r,0);else boardChoices(p,r,choices,page-1);}));if(from+12<choices.size())b.add(new Button(Language.component("menu.next"),()->{if(r.revision!=revision)boardSources(p,r,0);else boardChoices(p,r,choices,page+1);}));
-        show(p,Language.component("menu.moves.title"),Language.component(r.kind.equals("chess")?"menu.moves.chess":"menu.moves.description"),b,()->boardSources(p,r,0));
+        if(from>0)b.add(new Button(Language.component("menu.previous"),()->{if(r.revision!=revision)room(p,r);else boardChoices(p,r,choices,page-1);}));if(from+12<choices.size())b.add(new Button(Language.component("menu.next"),()->{if(r.revision!=revision)room(p,r);else boardChoices(p,r,choices,page+1);}));
+        show(p,Language.component("menu.moves.title"),Language.component(r.kind.equals("chess")?"menu.moves.chess":"menu.moves.description"),b,()->room(p,r));
     }
     static Component actionLabel(Room r,String action){String[] s=action.split(":");
         if(r.kind.equals("ludo")&&s.length==3&&s[0].equals("move")){

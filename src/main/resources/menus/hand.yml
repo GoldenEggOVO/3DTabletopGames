@@ -25,5 +25,5 @@ Bottom:
       text: '<gray>@label@'
       width: 185
   exit:
-    text: '<gray>@label@'
-    width: 180
+    text: '<dark_gray>[ <red>@label@ <dark_gray>]'
+    width: 230

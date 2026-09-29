@@ -10,6 +10,32 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class WindowMenuTest {
+    @Test void everyMenuUsesTheSameDedicatedCloseButtonAndPreservesBackStyle() throws Exception {
+        for(String page:GameMenuLayouts.PAGES){
+            var config=new YamlConfiguration();
+            try(var input=WindowMenuTest.class.getResourceAsStream("/menus/"+page+".yml")){
+                assertNotNull(input,page);config.loadFromString(new String(input.readAllBytes(),java.nio.charset.StandardCharsets.UTF_8));
+            }
+            config.set("Bottom.exit.tooltip",List.of("Old page-specific close hint"));
+            String backStyle=config.getString("Bottom.buttons.back.text");
+            UUID token=UUID.randomUUID();
+            var rendered=GameMenuLayouts.render(config,"Title","",List.of(
+                new GameMenus.Button("back","Back",()->{}),new GameMenus.Button("close","Close Menu",()->{})),token);
+            assertEquals("<dark_gray>[ <red>Close Menu <dark_gray>]",rendered.config().getString("Bottom.exit.text"),page);
+            assertEquals(230,rendered.config().getInt("Bottom.exit.width"),page);
+            assertFalse(rendered.config().contains("Bottom.exit.tooltip"),page);
+            assertEquals(List.of("3dtabletop:"+token+" 1"),rendered.config().getStringList("Bottom.exit.actions"),page);
+            assertEquals(backStyle.replace("@label@","Back"),rendered.config().getString("Bottom.buttons.slot0.text"),page);
+        }
+    }
+    @Test void closeInvalidatesTheMenuSessionWithoutLeavingTheRoom() throws Exception {
+        var f=new MenuFlowTest.Fixture();Room room=f.addRoom(0);room.join(f.player.getUniqueId(),"Owner");
+        f.menus.room(f.player,room);
+        f.buttons.stream().filter(button->button.id().equals("close")).findFirst().orElseThrow().action().run();
+        var field=GameMenus.class.getDeclaredField("sessions");field.setAccessible(true);
+        assertFalse(((Map<?,?>)field.get(f.menus)).containsKey(f.player.getUniqueId()));
+        assertSame(room,f.plugin.room(f.player));verify(f.plugin,never()).leave(f.player);
+    }
     @Test void roomMenusDoNotTranslateOrParseHumanNames() {
         var plugin=mock(Tabletop3D.class);when(plugin.allowed(any())).thenReturn(true);
         var player=mock(Player.class);UUID id=UUID.randomUUID();when(player.getUniqueId()).thenReturn(id);

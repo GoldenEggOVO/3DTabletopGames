@@ -7,8 +7,9 @@ final class MahjongControls {
     private MahjongControls() {}
     static Map<String,List<String>> groups(List<String> legal) {
         Map<String,List<String>> result=new LinkedHashMap<>();
-        for(String group:List.of("ron","tsumo","kan","pon","chi","riichi","pass","next-hand")){
+        for(String group:List.of("ron","tsumo","kan","pon","chi","riichi","pass","next-hand","exchange-confirm","missing-m","missing-p","missing-s")){
             List<String> choices=legal.stream().filter(action->{
+                if(group.startsWith("missing-"))return action.equals("missing:"+group.substring(8));
                 String verb=action.split(":",2)[0];return group.equals("kan")?verb.startsWith("kan-"):verb.equals(group);
             }).toList();
             if(!choices.isEmpty())result.put(group,choices);

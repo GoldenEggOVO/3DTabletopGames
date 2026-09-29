@@ -51,10 +51,12 @@ class MenuFlowTest {
         verify(f.plugin,never()).join(any(),any());
         assertFalse(f.buttons.stream().anyMatch(b->b.label().contains(r.id.toString().substring(0,6))));
     }
-    @Test void roomKeepsControlsAndRulesRemainAvailableFromTheCommand() throws Exception {
+    @Test void roomReturnsToTheTableAndRulesRemainAvailableFromTheCommand() throws Exception {
         Fixture f=new Fixture();Room r=f.addRoom(0);r.join(f.player.getUniqueId(),"Player");r.fillBots();r.board=GameFactory.create("chess",2,0);r.phase=Room.Phase.PLAYING;
         f.menus.room(f.player,r);
-        assertTrue(f.buttons.stream().anyMatch(b->b.id().equals("controls")));
+        assertFalse(f.buttons.stream().anyMatch(b->b.id().equals("controls")));
+        f.buttons.stream().filter(b->b.id().equals("play")).findFirst().orElseThrow().action().run();
+        verify(f.plugin).enterArena(f.player,r);
         f.menus.roomOptions(f.player,r);
         assertFalse(f.buttons.stream().anyMatch(b->b.id().equals("rules")));
         f.menus.rules(f.player,"chess");

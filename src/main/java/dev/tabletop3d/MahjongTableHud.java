@@ -39,13 +39,13 @@ final class MahjongTableHud implements AutoCloseable {
 
     MahjongTableHud(Tabletop3D plugin,Room room,Location surfaceOrigin,NamespacedKey tag) {
         this.plugin=plugin;this.room=room;this.origin=surfaceOrigin.clone();this.tag=tag;
-        block(origin.clone().add(0,.015,0),Material.BLACK_CONCRETE,.60f,.012f,.60f);
+        block(origin.clone().add(0,.015,0),Material.BLACK_CONCRETE,.90f,.012f,.90f);
         for(int seat=0;seat<4;seat++) {
             double angle=seat*Math.PI/2;
-            Location number=origin.clone().add(.17*Math.sin(angle),.029,.17*Math.cos(angle));
+            Location number=origin.clone().add(.24*Math.sin(angle),.029,.24*Math.cos(angle));
             number.setYaw(-90*seat);
             counts.add(text(number,true));
-            Location stick=origin.clone().add(.26*Math.sin(angle),.029,.26*Math.cos(angle));
+            Location stick=origin.clone().add(.38*Math.sin(angle),.029,.38*Math.cos(angle));
             stick.setYaw(-90*seat);
             BlockDisplay body=block(stick,Material.WHITE_CONCRETE,.12f,.006f,.018f);
             BlockDisplay dot=block(stick.clone().add(0,.007,0),Material.RED_CONCRETE,.012f,.002f,.012f);
@@ -56,8 +56,8 @@ final class MahjongTableHud implements AutoCloseable {
         discard=text(origin.clone().add(0,.72,0),false);
         for(int seat=0;seat<4;seat++) {
             double angle=seat*Math.PI/2;
-            Location wind=origin.clone().add(.95*Math.cos(angle)+.82*Math.sin(angle),.02,
-                -.95*Math.sin(angle)+.82*Math.cos(angle));
+            Location wind=origin.clone().add(1.24*Math.cos(angle)+1.30*Math.sin(angle),.02,
+                -1.24*Math.sin(angle)+1.30*Math.cos(angle));
             wind.setYaw(-90*seat);winds.add(text(wind,true));
             Location score=origin.clone().add(2.8*Math.sin(angle),1.4,2.8*Math.cos(angle));
             score.setYaw(180-90*seat);scores.add(text(score,false,true));
@@ -74,7 +74,7 @@ final class MahjongTableHud implements AutoCloseable {
             rendered=game;revision=room.revision;info=Map.copyOf(game.publicInfo());
             remaining=game.deckSize();turn=game.currentPlayer();
         }
-        for(TextDisplay count:counts)label(count,Component.text(remaining,NamedTextColor.WHITE),.15f,.065f);
+        for(TextDisplay count:counts)label(count,Component.text(remaining,NamedTextColor.WHITE),.30f,.13f);
         int dealer=Integer.parseInt(info.getOrDefault("dealer","0"));
         for(int seat=0;seat<4;seat++) {
             int wind=Math.floorMod(seat-dealer,4);

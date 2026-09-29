@@ -46,6 +46,88 @@ class MahjongTableControlsTest {
             assertTrue(new Vector(meld.x(),0,meld.z()).dot(right)>1);
         }
     }
+    @Test void drawingKeepsOldTilesStillAndLeavesTheNewTileSeparateOnTheRight(){
+        for(int seat=0;seat<4;seat++)for(int count:new int[]{1,4,7,10,13,16}){
+            for(int i=0;i<count;i++)assertEquals(HandTable.handPose(seat,4,i,count,true),HandTable.handPose(seat,4,i,count+1,true));
+            var last=HandTable.handPose(seat,4,count-1,count+1,true);var drawn=HandTable.handPose(seat,4,count,count+1,true);
+            assertTrue(Math.hypot(drawn.x()-last.x(),drawn.z()-last.z())>.16,"The drawn tile needs a visible gap");
+        }
+    }
+    @Test void evenASinglePonCombinationIsShownOnlyAfterSelectingPon() throws Exception {
+        var f=new HandTableTest.Fixture("mahjong");
+        when(f.game.hand(0)).thenReturn(List.of(new dev.tabletop3d.rules.HandGame.Piece("a","m1"),new dev.tabletop3d.rules.HandGame.Piece("b","m1")));
+        when(f.game.publicInfo()).thenReturn(Map.of("offeredTile","m1"));
+        when(f.game.legalActions(0)).thenReturn(List.of("pon:a,b","pass"));f.table.show(f.owner);
+        Object own=((Map<?,?>)TableViewTest.field(f.table,"privateViews")).get(f.owner.getUniqueId());
+        Map<?,?> calls=(Map<?,?>)TableViewTest.field(own,"calls");
+        assertEquals(2,((List<?>)TableViewTest.field(calls.get("pon"),"parts")).size(),"First stage has only the action button");
+        assertTrue(f.table.expandCall(f.owner,"pon"));
+        assertEquals(Set.of("choice:pon:a,b","back","pass"),calls.keySet());
+        assertTrue(((List<?>)TableViewTest.field(calls.get("choice:pon:a,b"),"parts")).size()>5);
+        f.table.close();
+    }
+    @Test void illegalTilesAreGrayAndRiichiIsArmedByItsButton() throws Exception {
+        var f=new HandTableTest.Fixture("mahjong");
+        when(f.game.legalActions(0)).thenReturn(List.of("riichi:b","discard:a","discard:b"));f.table.show(f.owner);
+        Object own=((Map<?,?>)TableViewTest.field(f.table,"privateViews")).get(f.owner.getUniqueId());
+        Map<?,?> pieces=(Map<?,?>)TableViewTest.field(own,"pieces");
+        assertTrue(f.table.expandCall(f.owner,"riichi"));
+        Entity disabled=(Entity)((List<?>)TableViewTest.field(pieces.get("a"),"parts")).getFirst();
+        verify((org.bukkit.entity.BlockDisplay)disabled).setBlock(org.bukkit.Material.GRAY_CONCRETE.createBlockData());
+        assertNull(f.table.handAction(f.owner,"a"));
+        assertEquals("riichi:b",f.table.handAction(f.owner,"b"));
+        assertTrue(f.table.expandCall(f.owner,"back"));
+        verify((org.bukkit.entity.BlockDisplay)disabled,atLeastOnce()).setBlock(org.bukkit.Material.SMOOTH_QUARTZ.createBlockData());
+        when(f.game.legalActions(0)).thenReturn(List.of("discard:b"));f.room.revision++;f.table.show(f.owner);
+        verify((org.bukkit.entity.BlockDisplay)disabled,atLeast(2)).setBlock(org.bukkit.Material.GRAY_CONCRETE.createBlockData());
+        f.table.close();
+    }
+    @Test void repeatedDiscardPressCannotHitAReplacementTileUntilAimChangesOrClicksStop(){
+        var f=new HandTableTest.Fixture("mahjong");
+        when(f.owner.getEyeLocation()).thenReturn(f.origin.clone().add(0,1,1.8).setDirection(new Vector(0,-1,-1)));
+        when(f.game.legalActions(0)).thenReturn(List.of("discard:a","discard:b"));
+        assertEquals("discard:a",f.table.handAction(f.owner,"a",1_000_000_000L));
+        assertNull(f.table.handAction(f.owner,"b",1_250_000_000L));
+        assertNull(f.table.handAction(f.owner,"b",1_800_000_000L),"Each rapid rejected click keeps the guard active");
+        when(f.game.legalActions(0)).thenReturn(List.of());
+        f.table.keepHandPress(f.owner,2_200_000_000L);f.table.keepHandPress(f.owner,2_700_000_000L);
+        when(f.game.legalActions(0)).thenReturn(List.of("discard:a","discard:b"));
+        assertNull(f.table.handAction(f.owner,"b",3_200_000_000L),"Continuous presses during the other seats' turns must still protect the next draw");
+        when(f.owner.getEyeLocation()).thenReturn(f.origin.clone().add(0,1,1.8).setDirection(new Vector(.15,-1,-1)));
+        assertEquals("discard:b",f.table.handAction(f.owner,"b",3_350_000_000L));
+        assertEquals("discard:a",f.table.handAction(f.owner,"a",4_050_000_000L));
+        f.table.close();
+    }
+    @Test void sichuanPreparationCanSelectRemoveConfirmAndChooseAMissingSuitAtTheTable() throws Exception {
+        var f=new HandTableTest.Fixture("mahjong");
+        when(f.game.legalActions(0)).thenReturn(List.of("exchange-add:a","exchange-remove:b","exchange-confirm"));f.table.show(f.owner);
+        assertEquals("exchange-add:a",f.table.handAction(f.owner,"a"));
+        assertEquals("exchange-remove:b",f.table.handAction(f.owner,"b"));
+        Object own=((Map<?,?>)TableViewTest.field(f.table,"privateViews")).get(f.owner.getUniqueId());
+        Map<?,?> calls=(Map<?,?>)TableViewTest.field(own,"calls");assertTrue(calls.containsKey("exchange-confirm"));
+        Map<?,?> pieces=(Map<?,?>)TableViewTest.field(own,"pieces");
+        Entity selected=(Entity)((List<?>)TableViewTest.field(pieces.get("b"),"parts")).getFirst();verify(selected).setGlowing(true);
+        when(f.game.legalActions(0)).thenReturn(List.of("missing:m","missing:p","missing:s"));f.room.revision++;f.table.show(f.owner);
+        assertEquals(Set.of("missing-m","missing-p","missing-s"),calls.keySet());
+        assertEquals(List.of("missing:p"),MahjongControls.groups(f.game.legalActions(0)).get("missing-p"));
+        f.table.close();
+    }
+    @Test void doraIndicatorsUseFullSizeNativeTilesOnTheMiddleOfTheFrame() throws Exception {
+        var f=new HandTableTest.Fixture("mahjong");
+        when(f.game.publicInfo()).thenReturn(Map.of("dora","m1,p2,s3","doraIds","d1,d2,d3"));f.room.revision++;f.table.sync();
+        Map<?,?> pieces=(Map<?,?>)TableViewTest.field(f.table,"publicPieces");
+        for(int i=0;i<3;i++){
+            Object tile=pieces.get("dora:d"+(i+1));assertNotNull(tile);
+            Entity body=(Entity)((List<?>)TableViewTest.field(tile,"parts")).getFirst();
+            assertEquals(1.44,Math.abs(body.getLocation().getZ()-f.origin.getZ()),.00001);
+            assertTrue(Math.abs(body.getLocation().getX()-f.origin.getX())<.15);
+            assertTrue(body.getLocation().getY()>f.origin.getY()+.157,"Frame indicators must clear the concealed standing row from the lowered Shift view");
+            var transforms=org.mockito.ArgumentCaptor.forClass(org.bukkit.util.Transformation.class);
+            verify((org.bukkit.entity.BlockDisplay)body).setTransformation(transforms.capture());
+            assertEquals(.094,transforms.getValue().getScale().x,.00001);
+        }
+        f.table.close();
+    }
     @Test void mahjongHoverLiftsOnlySelectedTileAndRestoresIt() throws Exception {
         var f=new HandTableTest.Fixture("mahjong");int start=f.entities.size();f.table.show(f.owner);
         Map<Entity,Location> positions=new HashMap<>();
@@ -110,7 +192,7 @@ class MahjongTableControlsTest {
         assertEquals(List.of("chi:a,b","chi:a,c"),groups.get("chi"));
         assertEquals(List.of("ron"),new ArrayList<>(MahjongControls.groups(List.of("ron")).keySet()));
         assertEquals(List.of("kan","dismiss"),new ArrayList<>(MahjongControls.groups(List.of("kan-closed:a","discard:a")).keySet()));
-        assertTrue(MahjongControls.groups(List.of("exchange:a,b,c","missing:m","discard:a")).isEmpty());
+        assertEquals(List.of("missing-m","dismiss"),new ArrayList<>(MahjongControls.groups(List.of("exchange:a,b,c","missing:m","discard:a")).keySet()));
     }
     @Test void callButtonsAreOwnerOnlyReachableAndDisappearAfterResponse(){
         var f=new HandTableTest.Fixture("mahjong");

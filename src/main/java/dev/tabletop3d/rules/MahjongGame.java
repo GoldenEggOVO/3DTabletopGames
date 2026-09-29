@@ -111,6 +111,18 @@ public final class MahjongGame implements HandGame {
     @Override public List<Piece> exposed(int seat){List<Piece> result=new ArrayList<>();for(int m=0;m<melds.get(seat).size();m++){Meld meld=melds.get(seat).get(m);for(int i=0;i<meld.tiles().size();i++)result.add(meld.open()||riichiProfile?piece(meld.tiles().get(i)):new Piece("masked-"+seat+"-"+m+"-"+i,"back"));}flowers.get(seat).forEach(t->result.add(piece(t)));return List.copyOf(result);}
     private static Piece piece(Tiles.Tile tile){return new Piece(tile.id(),tile.face());}
 
+    /** Checks the observer's complete hand for missing yaku on the current draw or pending public discard. */
+    public boolean noYaku(int seat,String tileId) {
+        if(!riichiProfile||seat<0||seat>=4||tileId==null)return false;
+        boolean tsumo=phase==Phase.TURN&&seat==current;
+        Tiles.Tile tile=tsumo?drawnTile:seat!=source&&offer==Offer.DISCARD&&(phase==Phase.RON||phase==Phase.CALL||phase==Phase.CHI)?offered:null;
+        if(tile==null||!tile.id().equals(tileId))return false;
+        List<Tiles.Tile> candidate=new ArrayList<>(hands.get(seat));if(!tsumo)candidate.add(tile);
+        if(!candidate.contains(tile)||riichiValue(seat,tile,tsumo).isPresent())return false;
+        int[] counts=Tiles.counts(candidate);
+        return !HandSolver.solve(counts,0,4-melds.get(seat).size()).isEmpty()||melds.get(seat).isEmpty()&&(HandSolver.sevenPairs(counts,0,false)||HandSolver.orphans(counts,0));
+    }
+
     @Override public List<String> legalActions(int seat) {
         if(finished()||seat!=current)return List.of();
         if(phase==Phase.EXCHANGE)return exchangeActions(seat);

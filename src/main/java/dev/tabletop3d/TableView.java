@@ -256,6 +256,8 @@ final class TableView implements AutoCloseable {
     String handCallHit(Player player,Location eye,org.bukkit.util.Vector direction){return handTable==null?null:handTable.callHit(player,eye,direction);}
     void dismissHandCalls(Player player){if(handTable!=null)handTable.dismissCalls(player);}
     boolean expandHandCall(Player player,String group){return handTable!=null&&handTable.expandCall(player,group);}
+    String mahjongHandAction(Player player,String id){return handTable==null?null:handTable.handAction(player,id);}
+    void maintainMahjongPress(Player player){if(handTable!=null)handTable.keepHandPress(player);}
     record Hit(String cell,double distance){}
     Hit hitPiece(Location eye,org.bukkit.util.Vector direction){
         Hit nearest=null;

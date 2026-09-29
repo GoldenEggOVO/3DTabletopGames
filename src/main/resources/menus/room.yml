@@ -21,10 +21,6 @@ Bottom:
       text: '<green><bold>@label@</bold>'
       width: 330
       actions: [close]
-    controls:
-      text: '<aqua>@label@'
-      width: 330
-      actions: [close]
     entry:
       text: '<white>@label@'
       width: 330

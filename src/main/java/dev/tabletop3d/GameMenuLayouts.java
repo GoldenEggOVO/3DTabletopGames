@@ -55,7 +55,7 @@ final class GameMenuLayouts {
     static Rendered render(YamlConfiguration config,Component title,Component description,List<GameMenus.Button> supplied,UUID token){
         var section=config.getConfigurationSection("Bottom.buttons");List<String> order=section==null?List.of():new ArrayList<>(section.getKeys(false));
         Map<String,Map<String,Object>> styles=new HashMap<>();if(section!=null)for(String id:order){var node=section.getConfigurationSection(id);if(node!=null)styles.put(id,new LinkedHashMap<>(node.getValues(false)));}
-        var exit=config.getConfigurationSection("Bottom.exit");if(exit!=null)styles.put("close",new LinkedHashMap<>(exit.getValues(false)));
+        styles.put("close",Map.of("text","<dark_gray>[ <red>@label@ <dark_gray>]","width",230));
         List<GameMenus.Button> entries=new ArrayList<>(supplied);entries.sort(Comparator.comparingInt(b->b.id().equals("resume")?-1:b.id().equals("close")?order.size()+3:b.id().equals("main")?order.size()+2:b.id().equals("back")?order.size()+1:order.contains(b.id())?order.indexOf(b.id()):order.size()));
         String titleTemplate=config.getString("Title","@title@");
         config.set("Title",titleTemplate.replace("@title@",MessageText.plain(title)));

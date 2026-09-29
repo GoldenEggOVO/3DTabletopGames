@@ -138,7 +138,7 @@ class HandTableTest {
             for (int i=0;i<18;i++) tiles.add(tileBounds(HandTable.riverPose(seat,4,i)));
             for (int i=0;i<28;i++) {
                 var pose=HandTable.exposedPose(seat,4,i);
-                assertTrue(Math.max(Math.abs(pose.x()),Math.abs(pose.z()))<=1.20+.00001);
+                assertTrue(Math.max(Math.abs(pose.x()),Math.abs(pose.z()))<=1.23+.00001);
                 tiles.add(tileBounds(pose));
             }
         }
@@ -146,7 +146,7 @@ class HandTableTest {
             assertFalse(tiles.get(i).overlaps(tiles.get(j)),"Public tile collision: "+i+" / "+j);
     }
     private static org.bukkit.util.BoundingBox tileBounds(HandTable.Pose pose) {
-        double angle=Math.toRadians(pose.yaw()),w=.094*.66/2,d=.146*.66/2;
+        double angle=Math.toRadians(pose.yaw()),w=.094/2,d=.146/2;
         double x=Math.abs(Math.cos(angle))*w+Math.abs(Math.sin(angle))*d;
         double z=Math.abs(Math.sin(angle))*w+Math.abs(Math.cos(angle))*d;
         return new org.bukkit.util.BoundingBox(pose.x()-x,0,pose.z()-z,pose.x()+x,.02,pose.z()+z);

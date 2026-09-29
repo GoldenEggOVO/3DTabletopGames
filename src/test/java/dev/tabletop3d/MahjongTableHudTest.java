@@ -97,14 +97,36 @@ class MahjongTableHudTest {
 
     @Test void enlargedCountsFitCenterPadAndWindsSitToEachSeatsRight() {
         Fixture f=new Fixture();
-        assertEquals(.6f,f.transforms.get(f.spawned.getFirst()).getScale().x,1e-6);
-        assertTrue(f.transforms.get(f.count(0)).getScale().x>.2f);
-        double[][] corners={{.95,.82},{.82,-.95},{-.95,-.82},{-.82,.95}};
+        float pad=f.transforms.get(f.spawned.getFirst()).getScale().x;
+        assertTrue(pad/2<.577,"Center pad clears the innermost full-size river tile");
+        for(int remaining:List.of(9,69,136)) {
+            when(f.game.deckSize()).thenReturn(remaining);f.room.revision++;f.hud.tick(1_000);
+            for(int seat=0;seat<4;seat++) {
+                Location at=f.locations.get(f.count(seat));
+                float scale=f.transforms.get(f.count(seat)).getScale().x;
+                double height=.2*scale,width=Integer.toString(remaining).length()*.15*scale;
+                assertTrue(height>=.125,"Wall count is readable at the table center");
+                assertTrue(width<=.301,"Three-digit count retains its allotted width");
+                double radius=Math.hypot(at.getX(),at.getZ());
+                assertTrue(radius+height/2<pad/2,"Count remains within its pad");
+                assertTrue(width/2<radius-height/2,"Neighboring seat counts do not overlap");
+                double stickRadius=Math.hypot(f.locations.get(f.stick(seat)).getX(),f.locations.get(f.stick(seat)).getZ());
+                assertTrue(stickRadius-.009>radius+height/2,"Riichi stick clears the larger count");
+                assertTrue(stickRadius+.009<pad/2,"Riichi stick remains within the center pad");
+            }
+        }
+        double[][] corners={{1.24,1.30},{1.30,-1.24},{-1.24,-1.30},{-1.30,1.24}};
         for(int seat=0;seat<4;seat++) {
             Location at=f.locations.get(f.wind(seat));
             assertEquals(corners[seat][0],at.getX(),1e-6);
             assertEquals(corners[seat][1],at.getZ(),1e-6);
             verify(f.wind(seat)).setRotation((float)(-90*seat),-90f);
+            var inscription=new org.bukkit.util.BoundingBox(at.getX()-.12,0,at.getZ()-.12,at.getX()+.12,.02,at.getZ()+.12);
+            for(int tile=0;tile<28;tile++){
+                var pose=HandTable.exposedPose(seat,4,tile);
+                double x=seat%2==0?.047:.073,z=seat%2==0?.073:.047;
+                assertFalse(inscription.overlaps(new org.bukkit.util.BoundingBox(pose.x()-x,0,pose.z()-z,pose.x()+x,.02,pose.z()+z)),"Melds must not cover wind inscriptions");
+            }
         }
     }
 

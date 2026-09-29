@@ -1,5 +1,16 @@
 # Verification and acceptance
 
+## Local build: 1.7.5-SNAPSHOT
+
+- JDK 25 / Maven package: **467 tests passed**, zero failures, errors or skipped tests; Python: **four migration tests passed**. Regressions cover stable pre-draw tile positions, the separate rightmost draw, continuous-click protection through other turns and temporarily empty slots, illegal-tile gray/restoration, armed Riichi, two-stage calls, exact No Yaku boundaries, necessary Go/Last Card/Sichuan actions and standardized Close rendering/callbacks.
+- The exact JAR passed three clean Purpur **26.2-2622** boots in `target/standalone-smoke-20260929-165916/` (create, restart, legacy-folder migration). Native Display, private hand controls, required menu actions, 25-room pagination and all **27 vanilla sound cues** passed. Shift used real events/world clearance with a stateful Player proxy; connected-client physics and camera/audio feel remain acceptance items.
+- Three further boots in `target/standalone-smoke-20260929-170112/` restored **22 rooms / 1,896 saved events / 14 game identifiers**, including all four supported Mahjong profiles. Only fixture world UUIDs were remapped.
+- The **60-second / 16-table** run in `target/soak-20260929-165917/` completed **331 actions**, 18 replay comparisons and one Connect Four round. Peak owned entities: **4,631**; after cleanup: **zero**. No undo cycle completed in this short run; directed tests cover those paths.
+- Earlier probe assertions still expected the removed full-move menu and the previous Shift height. They were updated to check the physical Connect Four action, absence of that menu and the current focus pose. Layout review caught wind/meld overlap and concealed-row occlusion of frame indicators; geometry regressions now cover their corrected positions. Review also caught necessary state actions and empty-slot clicks omitted from the initial menu/input changes; these were repaired before the final build.
+- Close rendering is uniform even for customized layouts; installed YAML bytes and other custom styling remain untouched. No room-schema or history change. The preview uses production geometry with a synthetic state, approximate fonts/materials and simulated text backface culling; native glow is not drawn. Minecraft visual/audio/interaction acceptance is pending. No Release or production deployment.
+
+Verified JAR SHA-256: `16f07e1991d5b2ccc89b7e180a0faffa68e076fcd1ed190d25f5649e15576adf`. Exact passing receipts accompany the local package in `verification.json`.
+
 ## Local build: 1.7.4-SNAPSHOT
 
 - JDK 25 / Maven package: **448 tests passed**, zero failures, errors or skipped tests; Python: **four migration tests passed**. Removed-profile tests were removed with their rule implementations. New checks cover private matching glow, rightmost draws, four-seat layout, wind/score orientation, Shift invisibility restoration, menu removal, sound transitions and rejected legacy profiles without save corruption.

@@ -298,7 +298,9 @@ final class GameWorld implements Listener, AutoCloseable {
         boolean focused=plugin.comfort!=null&&plugin.comfort.focused(player);
         if(player.isSneaking()&&!focused&&plugin.tableLobby!=null)return false;
         Room room=plugin.room(player);TableView view=room==null?null:views.get(room.id);if(view==null||room.board==null||!player.getWorld().equals(view.origin.getWorld()))return false;
-        String cell=aimed(player,view);if(cell==null)return false;
+        String cell=aimed(player,view);
+        if(room.kind.equals("mahjong")&&room.phase==Room.Phase.PLAYING&&(cell==null||!cell.startsWith("@hand:")||room.seat(player.getUniqueId())!=room.board.currentPlayer()))view.maintainMahjongPress(player);
+        if(cell==null)return false;
         long now=System.nanoTime(),last=clicks.getOrDefault(player.getUniqueId(),0L);if(now-last<180_000_000L)return true;clicks.put(player.getUniqueId(),now);
         if(cell.startsWith("@tile:")||focused&&cell.equals("@menu"))return true;
         if(player.isSneaking()&&!focused||cell.equals("@menu")){plugin.menus.room(player,room);return true;}
@@ -330,8 +332,14 @@ final class GameWorld implements Listener, AutoCloseable {
         if(cell.startsWith("@hand:")&&room.board instanceof dev.tabletop3d.rules.HandGame hand){
             String id=cell.substring(6);
             if(hand.hand(seat).stream().noneMatch(piece->piece.id().equals(id)))return;
+            if(room.kind.equals("mahjong")){
+                TableView view=views.get(room.id);String action=view==null?null:view.mahjongHandAction(player,id);
+                if(action!=null)execute(player,room,List.of(action));
+                else player.sendActionBar(Language.component("hint.unavailable").colorIfAbsent(NamedTextColor.GRAY));
+                return;
+            }
             List<String> choices=room.board.legalActions(seat).stream().filter(action->{String[] parts=action.split(":");return parts.length>1&&List.of(parts[1].split(",")).contains(id);}).toList();
-            if(!choices.isEmpty())execute(player,room,choices);else plugin.menus.hand(player,room,0);return;
+            if(!choices.isEmpty())execute(player,room,choices);else player.sendActionBar(Language.component("hint.unavailable").colorIfAbsent(NamedTextColor.GRAY));return;
         }
         if(cell.equals("@roll")) {
             if(room.board.legalActions(seat).contains("roll"))execute(player,room,List.of("roll"));else player.sendActionBar(Language.component("hint.roll.unavailable").colorIfAbsent(NamedTextColor.GOLD));

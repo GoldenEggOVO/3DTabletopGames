@@ -88,6 +88,13 @@ class TabletopTest {
         verify(f.plugin,never()).apply(any(),anyInt(),any(),any());
         verify(f.player).sendActionBar(Language.component("hint.position.unavailable").colorIfAbsent(net.kyori.adventure.text.format.NamedTextColor.RED));
     }
+    @Test void continuousMahjongPressesDuringOtherTurnsMaintainTheReplacementGuard() throws Exception {
+        Fixture f=new Fixture();set(f.room,"kind","mahjong");
+        HandGame game=mock(HandGame.class);when(game.currentPlayer()).thenReturn(1);f.room.board=game;
+        TableView view=((Map<UUID,TableView>)TableViewTest.field(f.arena,"views")).get(f.room.id);
+        when(view.handHit(eq(f.player),any(),any())).thenReturn("other-tile");
+        assertTrue(f.click());verify(view).maintainMahjongPress(f.player);verify(f.plugin,never()).apply(any(),anyInt(),any(),any());
+    }
     @Test void suspendingTheViewAlsoClearsPrivateWorldSelection() throws Exception {
         Fixture f=new Fixture();f.plugin.arena=f.arena;f.plugin.menus=mock(GameMenus.class);
         doCallRealMethod().when(f.plugin).suspendView(f.player);
@@ -103,6 +110,17 @@ class TabletopTest {
         assertFalse(f.click());verify(f.plugin,never()).apply(any(),anyInt(),any(),any());
         when(f.world.rayTraceBlocks(any(),any(),anyDouble(),eq(FluidCollisionMode.NEVER),eq(true))).thenReturn(null);
         when(f.player.getEyeLocation()).thenReturn(new Location(f.world,0,1.62,2.25).setDirection(new Vector(0,1,0)));assertFalse(f.click());
+    }
+    @Test void emptyMahjongDrawSlotKeepsRepeatedPressProtectionDuringOtherTurns() throws Exception {
+        for(boolean overTable:new boolean[]{false,true}){
+            Fixture f=new Fixture();set(f.room,"kind","mahjong");
+            HandGame game=mock(HandGame.class);when(game.currentPlayer()).thenReturn(1);f.room.board=game;
+            TableView view=((Map<UUID,TableView>)TableViewTest.field(f.arena,"views")).get(f.room.id);
+            f.plugin.comfort=mock(TableComfort.class);when(f.plugin.comfort.focused(f.player)).thenReturn(true);
+            when(f.player.getEyeLocation()).thenReturn(new Location(f.world,0,1.62,2.25).setDirection(new Vector(0,overTable?-.74:1,-2.25)));
+            assertEquals(overTable,f.click());verify(view).maintainMahjongPress(f.player);
+            verify(f.plugin,never()).apply(any(),anyInt(),any(),any());
+        }
     }
     static void set(Object object,String name,Object value)throws Exception{Field f=object.getClass().getDeclaredField(name);f.setAccessible(true);f.set(object,value);}
     static final class Fixture {

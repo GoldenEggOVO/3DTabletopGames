@@ -107,8 +107,8 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 Object room = rooms.values().iterator().next();
                 call(boards, "startWithBots", new Class<?>[]{Player.class, room.getClass()}, player, room);
                 call(menus,"room",new Class<?>[]{Player.class,room.getClass()},player,room);
-                require(clickMenu(menus,player,"id","controls"),"room controls entry");
-                require(clickMenu(menus,player,"label","Drop in column 4"),"direct drop menu callback");
+                require(!clickMenu(menus,player,"id","controls"),"room omits the full move selector");
+                call(field(boards,"arena"),"pickCell",new Class<?>[]{Player.class,room.getClass(),int.class,String.class},player,room,0,"3,0");
                 Path data = boards.getDataFolder().toPath().resolve("rooms.json");
                 require(Files.readString(data).contains("drop:3"), "core rule action persisted");
                 require(!world.getEntitiesByClass(TextDisplay.class).isEmpty(), "board entities rendered");
@@ -157,7 +157,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         };
         try {
             input.accept(true);require((boolean)call(comfort,"focused",new Class<?>[]{Player.class},player),"real event registration enters focus");
-            require(!gravity[0]&&!collision[0]&&invisible[0]&&Math.abs(location.get().getY()-84.35)<.0001,"focus owns gravity, collision and invisibility at close position");
+            require(!gravity[0]&&!collision[0]&&invisible[0]&&Math.abs(location.get().getY()-84.08)<.0001,"focus owns gravity, collision and invisibility at close position");
             Location anchor=location.get().clone(),attempt=anchor.clone().add(3,1,3);attempt.setYaw(70);
             var move=new org.bukkit.event.player.PlayerMoveEvent(player,anchor,attempt);Bukkit.getPluginManager().callEvent(move);
             require(move.getTo().distanceSquared(anchor)<1e-8&&move.getTo().getYaw()==70,"real event pipeline locks position and preserves aim");
@@ -165,7 +165,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             input.accept(true);Location external=new Location(world,50,83,0);player.teleport(external);input.accept(true);input.accept(false);
             require(location.get().equals(external)&&gravity[0]&&collision[0],"external teleport wins without focus reentry");
             location.set(original.clone());input.accept(true);cancelReturn[0]=true;input.accept(false);
-            require(!(boolean)call(comfort,"focused",new Class<?>[]{Player.class},player)&&gravity[0]&&!invisible[0]&&Math.abs(location.get().getY()-84.35)<.0001,"cancelled return clears focus flags without overriding cancellation");
+            require(!(boolean)call(comfort,"focused",new Class<?>[]{Player.class},player)&&gravity[0]&&!invisible[0]&&Math.abs(location.get().getY()-84.08)<.0001,"cancelled return clears focus flags without overriding cancellation");
             getLogger().info("BOARDS_FOCUS_EVENTS_PASS proxy_player=true real_event_bus=true real_world_clearance=true native_player_physics=false client_visual_test=false");
         } finally {
             cancelReturn[0]=false;input.accept(false);call(comfort,"release",new Class<?>[]{Player.class},player);rooms.remove(roomId);
@@ -248,8 +248,11 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     Field revision=roomType.getDeclaredField("revision");revision.setAccessible(true);revision.setLong(room,revision.getLong(room)+1);
                     call(hand,"show",new Class<?>[]{Player.class},owner);
                     Map<?,?> calls=(Map<?,?>)field(own,"calls");require(!calls.isEmpty(),"available native Mahjong buttons");
+                    for(Object button:calls.values())require(((List<?>)field(button,"parts")).size()==2,"first-stage call buttons do not expose a combination yet");
+                    String group=calls.keySet().stream().map(String::valueOf).filter(key->List.of("chi","pon","kan").contains(key)).findFirst().orElseThrow();
+                    require((boolean)call(hand,"expandCall",new Class<?>[]{Player.class,String.class},owner,group),"selecting a call opens its combinations");
                     boolean previews=false;for(Object button:calls.values())if(((List<?>)field(button,"parts")).size()>2)previews=true;
-                    require(previews,"call buttons include native tile-face combination previews");
+                    require(previews,"second-stage call buttons include native tile-face combination previews");
                     for(Object button:calls.values())for(Object item:(List<?>)field(button,"parts")){
                         var part=(org.bukkit.entity.Entity)item;privateParts.add(part);
                         require(part.isValid()&&!part.isPersistent()&&!part.isVisibleByDefault(),"Mahjong button is private and temporary");

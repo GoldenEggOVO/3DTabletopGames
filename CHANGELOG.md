@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.7.5-SNAPSHOT — development build, no Release
+
+- Restore full-size public Mahjong tiles, enlarge wall digits and put dora indicators at the frame midpoint; keep wind inscriptions clear of melds.
+- Lower Shift focus while preserving standing hand-face readability and invisibility restoration.
+- Keep old hand positions stable on draws, leave a rightmost draw gap and guard replacement discards during continuous clicks across turns.
+- Gray unavailable tiles, show red No Yaku on complete Riichi shapes and offer two-stage Chi/Pon/Kan, armed Riichi, Ron and Tsumo buttons.
+- Preserve physical Sichuan exchange/missing-suit preparation and necessary Go/Last Card state actions.
+- Remove full hand/board move-menu entry points and chance/hand undo requests; standardize every Close button without rewriting installed YAML.
+
 ## 1.7.4-SNAPSHOT — development build, no Release
 
 - Enlarge Mahjong tables to 3×3, add seat wind inscriptions and inward-facing scores, enlarge the wall counter and place melds at each player's lower-right corner.

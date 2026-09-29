@@ -1,6 +1,7 @@
 package dev.tabletop3d;
 
 import dev.tabletop3d.rules.LastCardGame;
+import dev.tabletop3d.rules.GameFactory;
 import dev.tabletop3d.ui.MessageText;
 import java.util.*;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ class MenuExperienceTest {
     }
     @Test void playingRoomOptionsOmitDetailsPublicTableAndRules() throws Exception {
         var f=new MenuFlowTest.Fixture();Room r=handRoom(f);f.menus.room(f.player,r);
-        assertEquals(List.of("play","controls","options","back","close"),ids(f));
+        assertEquals(List.of("play","options","back","close"),ids(f));
         assertFalse(MessageText.plain(f.description).contains(MessageText.plain(RoomText.options(r.kind,r.options))));
         click(f,"options");assertEquals(List.of("leave","back","close"),ids(f));
         click(f,"back");assertTrue(ids(f).contains("play"));
@@ -69,6 +70,72 @@ class MenuExperienceTest {
             }
             f.plugin.rooms.remove(r.id);
         }
+    }
+    @Test void everyPlayingGameReturnsToTheTableWithoutAFullMoveSelector() throws Exception {
+        var f=new MenuFlowTest.Fixture();
+        for(String kind:Tabletop3D.NAMES.keySet()){
+            Room r=playingRoom(f,kind);f.menus.room(f.player,r);
+            assertEquals(Set.of("go","go9","go13").contains(kind)?List.of("play","pass","options","back","close"):List.of("play","options","back","close"),ids(f),kind);
+            click(f,"play");verify(f.plugin).enterArena(f.player,r);
+            f.plugin.rooms.remove(r.id);
+        }
+    }
+    @Test void chanceAndHiddenHandGamesOmitUndoWhileBoardGamesKeepIt() throws Exception {
+        var f=new MenuFlowTest.Fixture();
+        for(String kind:List.of("ludo","aeroplane","yacht","lastcard","mahjong","chess","checkers","draughts","xiangqi","gomoku","go","go9","go13","reversi","connectfour")){
+            Room r=playingRoom(f,kind);r.history.add(new com.google.gson.JsonPrimitive("played"));
+            for(Room.Phase phase:List.of(Room.Phase.PLAYING,Room.Phase.FINISHED)){
+                r.phase=phase;f.menus.roomOptions(f.player,r);
+                boolean boardGame=Set.of("chess","checkers","draughts","xiangqi","gomoku","go","go9","go13","reversi","connectfour").contains(kind);
+                assertEquals(boardGame,f.buttons.stream().anyMatch(b->b.label().equals("Request Undo")),kind+" "+phase);
+            }
+            f.plugin.rooms.remove(r.id);
+        }
+    }
+    @Test void physicalTargetChoiceReturnsToRoomInsteadOfTheFullMoveSelector() throws Exception {
+        var f=new MenuFlowTest.Fixture();Room r=playingRoom(f,"chess");
+        f.menus.boardChoices(f.player,r,List.of("move:a7:a8:q","move:a7:a8:n"),0);
+        f.buttons.getFirst().action().run();verify(f.plugin).action(f.player,r,r.revision,new com.google.gson.JsonPrimitive("move:a7:a8:q"));
+        click(f,"back");assertEquals(List.of("play","options","back","close"),ids(f));
+    }
+    @Test void goRoomOffersOnlyLegalStateActionsAndScoringKeepsBothPlayersChoices() throws Exception {
+        for(String kind:List.of("go","go9","go13")){
+            var f=new MenuFlowTest.Fixture();Room r=playingRoom(f,kind);r.revision=12;
+            f.menus.room(f.player,r);assertEquals(List.of("play","pass","options","back","close"),ids(f),kind);
+            click(f,"pass");verify(f.plugin).action(f.player,r,12,new com.google.gson.JsonPrimitive("pass"));
+            r.board.apply(0,"pass");r.revision++;f.menus.room(f.player,r);
+            assertEquals(List.of("play","options","back","close"),ids(f),"Only the current player can pass");
+            r.board.apply(1,"pass");r.revision++;f.menus.room(f.player,r);
+            assertEquals(List.of("play","accept","resume","options","back","close"),ids(f),kind);
+            click(f,"accept");verify(f.plugin).action(f.player,r,14,new com.google.gson.JsonPrimitive("accept"));
+            r.board.apply(0,"accept");r.revision++;f.menus.room(f.player,r);
+            assertEquals(List.of("play","resume","options","back","close"),ids(f),"A confirmed player can still dispute scoring");
+            click(f,"resume");verify(f.plugin).action(f.player,r,15,new com.google.gson.JsonPrimitive("resume"));
+            r.busy=true;f.menus.room(f.player,r);assertEquals(List.of("play","options","back","close"),ids(f));
+            r.busy=false;r.undo=new RoundActions.Undo(f.player.getUniqueId(),0,30_000,Set.of());f.menus.room(f.player,r);
+            assertTrue(Collections.disjoint(ids(f),List.of("pass","accept","resume")),"Undo pauses state actions");
+        }
+    }
+    @Test void lastCardRoomKeepsDeclarationWithoutOfferingCardMovesOrAnInventedDrawPass() throws Exception {
+        var f=new MenuFlowTest.Fixture();Room r=playingRoom(f,"lastcard");var game=(LastCardGame)r.board;
+        TabletopTest.set(game,"hands",new ArrayList<>(List.of(new ArrayList<>(List.of(0,1)),new ArrayList<>(List.of(12,13)),new ArrayList<>(List.of(24,25)),new ArrayList<>(List.of(36,37)))));
+        List<Integer> deck=new ArrayList<>();for(int card=0;card<52;card++)if(!Set.of(0,1,12,13,24,25,36,37).contains(card))deck.add(card);
+        TabletopTest.set(game,"deck",deck);
+        TabletopTest.set(game,"current",0);r.revision=7;
+        assertTrue(game.legalActions(0).contains("declare"));f.menus.room(f.player,r);
+        assertEquals(List.of("play","declare","options","back","close"),ids(f));
+        click(f,"declare");verify(f.plugin).action(f.player,r,7,new com.google.gson.JsonPrimitive("declare"));
+        game.apply(0,"declare");r.revision++;f.menus.room(f.player,r);
+        assertEquals(List.of("play","options","back","close"),ids(f),"Declaration cannot repeat within a turn");
+        assertTrue(deck.remove(Integer.valueOf(26)));TabletopTest.set(game,"pile",new ArrayList<>(List.of(26)));TabletopTest.set(game,"activeColor","b");
+        assertEquals(List.of("draw"),game.legalActions(0));game.apply(0,"draw");r.revision++;f.menus.room(f.player,r);
+        assertTrue(game.legalActions(0).isEmpty());assertEquals(1,game.currentPlayer());
+        assertEquals(List.of("play","options","back","close"),ids(f),"Drawing already ends the turn");
+    }
+    private static Room playingRoom(MenuFlowTest.Fixture f,String kind){
+        Room r=new Room(UUID.randomUUID(),kind,Tabletop3D.defaultCapacity(kind),0,0);
+        r.join(f.player.getUniqueId(),"Owner");r.fillBots();r.board=GameFactory.create(kind,r.capacity,0);
+        r.phase=Room.Phase.PLAYING;f.plugin.rooms.put(r.id,r);return r;
     }
     private static Room handRoom(MenuFlowTest.Fixture f){
         Room r=new Room(UUID.randomUUID(),"lastcard",2,0,0);r.board=new LastCardGame(2,0);

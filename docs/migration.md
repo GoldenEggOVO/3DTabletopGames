@@ -1,3 +1,7 @@
+## Updating to 1.7.5-SNAPSHOT
+
+Saved rules, room schema, tile IDs, seeds and history are unchanged. Public tiles and center digits are larger; dora indicators and wind labels have new positions. Recheck surrounding clearance and Shift camera feel on a test server. Full hand/board action-menu entry points and chance/hand undo requests are removed. Necessary Go/Last Card state actions and Sichuan table preparation remain accessible. All Close buttons render with one style even for custom layouts; installed YAML remains untouched. New No Yaku and Riichi-selection language keys fall back to bundled English.
+
 # Migration
 
 ## Updating to 1.7.4-SNAPSHOT
