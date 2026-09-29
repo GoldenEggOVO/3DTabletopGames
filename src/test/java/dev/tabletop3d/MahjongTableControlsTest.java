@@ -12,6 +12,40 @@ import static org.mockito.Mockito.*;
 class MahjongTableControlsTest {
     @BeforeEach void setup(){MockBukkit.mock();}
     @AfterEach void cleanup(){MockBukkit.unmock();}
+    @Test void matchingHandAndPublicTilesGlowPrivatelyFromEitherTargetAndZeroIsRed() throws Exception {
+        var f=new HandTableTest.Fixture("mahjong");
+        when(f.game.hand(0)).thenReturn(List.of(new dev.tabletop3d.rules.HandGame.Piece("a","m0"),new dev.tabletop3d.rules.HandGame.Piece("b","m5")));
+        when(f.game.discards(1)).thenReturn(List.of(new dev.tabletop3d.rules.HandGame.Piece("c","m5"),new dev.tabletop3d.rules.HandGame.Piece("d","m5")));
+        f.room.revision++;f.table.sync();f.table.hover(f.owner,"a");
+        Object own=((Map<?,?>)TableViewTest.field(f.table,"privateViews")).get(f.owner.getUniqueId());
+        Map<?,?> pieces=(Map<?,?>)TableViewTest.field(own,"pieces"),matches=(Map<?,?>)TableViewTest.field(own,"matches");
+        for(Object piece:pieces.values())verify((Entity)((List<?>)TableViewTest.field(piece,"parts")).getFirst()).setGlowing(true);
+        assertEquals(2,matches.size());
+        for(Object value:matches.values()){
+            Entity e=(Entity)value;verify(e).setVisibleByDefault(false);verify(f.owner).showEntity(f.plugin,e);verify(f.spectator,never()).showEntity(f.plugin,e);
+        }
+        var label=(org.bukkit.entity.TextDisplay)TableViewTest.field(own,"remaining");
+        verify(label).text(Language.component("table.mahjong.remaining","count",0).colorIfAbsent(net.kyori.adventure.text.format.NamedTextColor.RED));
+        String publicId=String.valueOf(matches.keySet().iterator().next());
+        Map<?,?> publicPieces=(Map<?,?>)TableViewTest.field(f.table,"publicPieces");
+        Entity body=(Entity)((List<?>)TableViewTest.field(publicPieces.get(publicId),"parts")).getFirst();
+        Location eye=body.getLocation().clone().add(0,.8,0);
+        assertEquals("public:"+publicId,f.table.hit(f.owner,eye,new Vector(0,-1,0)));
+        f.table.hover(f.owner,"public:"+publicId);assertEquals(2,matches.size());
+        f.table.hover(f.owner,null);assertTrue(matches.isEmpty());verify(f.owner,atLeastOnce()).showEntity(f.plugin,body);
+        verify(f.game,never()).hand(1);f.table.close();
+    }
+    @Test void mahjongHandOrderRunsTowardTheOwnersRightAndMeldsStayAtTheirRightCorner(){
+        for(int seat=0;seat<4;seat++){
+            double angle=seat*Math.PI/2;
+            Vector towardCenter=new Vector(-Math.sin(angle),0,-Math.cos(angle));
+            Vector right=towardCenter.crossProduct(new Vector(0,1,0));
+            var first=HandTable.handPose(seat,4,0,14,true);var last=HandTable.handPose(seat,4,13,14,true);
+            assertTrue(new Vector(last.x()-first.x(),0,last.z()-first.z()).dot(right)>1);
+            var meld=HandTable.exposedPose(seat,4,0);
+            assertTrue(new Vector(meld.x(),0,meld.z()).dot(right)>1);
+        }
+    }
     @Test void mahjongHoverLiftsOnlySelectedTileAndRestoresIt() throws Exception {
         var f=new HandTableTest.Fixture("mahjong");int start=f.entities.size();f.table.show(f.owner);
         Map<Entity,Location> positions=new HashMap<>();

@@ -9,7 +9,7 @@ final class BoardBots {
     static String choose(BoardGame board,int seat,Random random){
         List<String> legal=board.legalActions(seat);if(legal.isEmpty())return null;
         if(board instanceof HandGame hand){
-            for(String action:List.of("ron","tsumo","rob-gold","declare"))if(legal.contains(action))return action;
+            for(String action:List.of("ron","tsumo","declare"))if(legal.contains(action))return action;
             if(board.id().equals("mahjong")){
                 String choice=mahjong(hand,seat,legal,random);if(choice!=null)return choice;
             }

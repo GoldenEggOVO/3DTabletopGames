@@ -17,10 +17,8 @@ final class HandText {
         }
         Component result=Language.component("hand.mahjong-state","phase",Language.component("hand.phase."+info.getOrDefault("phase","TURN")),
             "round",info.getOrDefault("round","1"),"remaining",game.deckSize());
-        for(String key:List.of("indicator","wildcard","dora")){
-            String value=info.getOrDefault(key,"");
-            if(!value.isBlank())result=result.append(Component.newline()).append(Language.component("hand.public."+key,"tiles",faces(kind,value)));
-        }
+        String dora=info.getOrDefault("dora","");
+        if(!dora.isBlank())result=result.append(Component.newline()).append(Language.component("hand.public.dora","tiles",faces(kind,dora)));
         String patterns=info.getOrDefault("winningPatterns","");
         if(!patterns.isBlank()){
             Component names=Component.empty();for(String pattern:patterns.split(",")){

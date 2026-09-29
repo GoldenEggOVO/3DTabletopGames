@@ -22,8 +22,6 @@ public final class Wall {
         if(!deadWall)return tiles.get(--back);
         back--;return tiles.get(tiles.size()-14+replacements++);
     }
-    /** Remove the next tile from the tail for a regional public wildcard indicator. */
-    public Tiles.Tile reveal(){return front<back?tiles.get(--back):null;}
     public List<Tiles.Tile> indicators(){return indicators(false);}
     public List<Tiles.Tile> uraIndicators(){return indicators(true);}
     private List<Tiles.Tile> indicators(boolean ura) {

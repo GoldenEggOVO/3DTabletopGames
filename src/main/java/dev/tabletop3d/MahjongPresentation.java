@@ -11,6 +11,7 @@ import java.util.Map;
 /** Presentation uses only the seated owner's hand and public information. */
 final class MahjongPresentation {
     private MahjongPresentation() {}
+    static boolean sameType(String first,String second){int value=type(first);return value>=0&&value==type(second);}
     static int remaining(HandGame game,int seat,String face) {
         int type=type(face);if(type<0)return 0;
         Map<String,String> info=game.publicInfo();
@@ -23,7 +24,6 @@ final class MahjongPresentation {
             for(var tile:game.exposed(player))visible.put(tile.id(),tile.face());
         }
         if(info.containsKey("offeredId"))visible.put(info.get("offeredId"),info.get("offeredTile"));
-        if(info.containsKey("indicator"))visible.put(info.getOrDefault("indicatorId","indicator"),info.get("indicator"));
         String[] dora=info.getOrDefault("dora","").split(","),ids=info.getOrDefault("doraIds","").split(",");
         for(int i=0;i<dora.length;i++)if(!dora[i].isEmpty())visible.put(i<ids.length&&!ids[i].isEmpty()?ids[i]:"dora-"+i,dora[i]);
         return Math.max(0,total-(int)visible.values().stream().filter(value->type(value)==type).count());

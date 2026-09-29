@@ -20,14 +20,12 @@ public final class GenerateModeSnapshot {
         add("checkers",3,Map.of("jump-own","forbid","other-camps","forbid","finish","all"));
         add("chess",2,Map.of("first","opponent"));
         add("lastcard",4,Map.of());add("lastcard",3,Map.of("finish","all"));
-        for(String profile:List.of("riichi","guangdong","fuzhou","sichuan","qinhuangdao","taiwan")){
+        for(String profile:List.of("riichi","guangdong","sichuan","taiwan")){
             Map<String,String> options=new LinkedHashMap<>(Map.of("profile",profile,"rounds","1"));
             options.putAll(switch(profile){
                 case "riichi"->Map.of("red-five-count","4","open-tanyao","false");
                 case "guangdong"->Map.of("ron-payment","2000","seven-pairs","false");
-                case "fuzhou"->Map.of("point-per-flower","200","allow-qiang-jin","false");
                 case "sichuan"->Map.of("exchange-direction","ACROSS","max-fan","5");
-                case "qinhuangdao"->Map.of("tile-set","SUITS","wildcard-mode","FIXED","fixed-wildcard","P5","ron-mode","MULTIPLE");
                 default->Map.of("minimum-tai","2","max-tai","32");
             });add("mahjong",4,options);
         }

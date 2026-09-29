@@ -1,5 +1,12 @@
 # Migration
 
+## Updating to 1.7.4-SNAPSHOT
+
+Mahjong tables now occupy 3×3 blocks around their existing anchors. Check surrounding terrain and adjacent tables before use; saved anchors are not moved automatically. Matching-tile glow is private, drawn tiles stay rightmost, and Shift focus temporarily hides players and restores their previous visibility on exit. Menu Help/Details entries are removed even with customized menu templates; setup rule editing remains available and installed YAML files are preserved.
+
+Only Riichi, Guangdong, Sichuan and Taiwan remain supported. A room file containing Fuzhou or Qinhuangdao is rejected with an unreadable backup; it is not silently converted or overwritten. Finish/remove those rooms using the previous version before upgrading, preserving a backup. This is an unpublished development snapshot.
+
+
 ## Updating to 1.7.3-SNAPSHOT
 
 Stop and back up the isolated server before replacing its JAR. Keep existing configurations, worlds, language/menu YAML and schema 1 room data. Rules, options, seeds and action histories retain their meaning; no conversion or data reset is needed. Last-discard presentation is rebuilt by replaying saved actions. No resource pack is required.

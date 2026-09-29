@@ -117,6 +117,101 @@ class TableSoundsTest {
         when(plugin.allowed(player)).thenReturn(true);room.board.apply(0,"place:0,0");TableSounds.turn(plugin,room,player.getLocation());assertEquals(1,player.getHeardSounds().size());
     }
 
+    @Test void mahjongDiscardAndFinalPassIncludeOnlyTheDrawThatActuallyHappened()throws Exception{
+        MahjongGame game=mahjong("z1 m1 m2 m3 m4 m5 m6 p1 p2 p3 s4 s5 s6 z2",
+            "z1 z1 p1 p2 p4 p5 s1 s2 s4 s5 z2 z3 z4","","");
+        assertEquals(List.of(TableSounds.TILE_DISCARD),mahjongMove(game,"discard:s0_0"));
+        assertEquals(List.of(TableSounds.PASS,TableSounds.TILE_DRAW),mahjongMove(game,"pass"));
+        game=mahjong("z1 m1 m2 m3 m4 m5 m6 p1 p2 p3 s4 s5 s6 z2","","","");
+        assertEquals(List.of(TableSounds.TILE_DISCARD,TableSounds.TILE_DRAW),mahjongMove(game,"discard:s0_0"));
+    }
+
+    @Test void mahjongMeldsAndReplacementDrawsHaveDistinctMaterialCues()throws Exception{
+        MahjongGame game=mahjong("z1 m1 m2 m3 m4 m5 m6 p1 p2 p3 s4 s5 s6 z2",
+            "z1 z1 p1 p2 p4 p5 s1 s2 s4 s5 z2 z3 z4","","");
+        mahjongMove(game,"discard:s0_0");
+        assertEquals(List.of(TableSounds.TILE_PON),mahjongMove(game,"pon:s1_0,s1_1"));
+        game=mahjongProfile("riichi","m3 m1 m2 m4 m5 m6 p1 p2 p3 s4 s5 s6 z1 z2","m1 m2 z1","","");
+        mahjongMove(game,"discard:s0_0");
+        assertEquals(List.of(TableSounds.TILE_CHI),mahjongMove(game,"chi:s1_0,s1_1"));
+        game=mahjong("m1 m1 m1 m1 m2 m3 p4 p5 p6 s7 s8 s9 z1 z1","","","");
+        assertEquals(List.of(TableSounds.TILE_KAN,TableSounds.TILE_DRAW),mahjongMove(game,"kan-closed:s0_0"));
+    }
+
+    @Test void mahjongRobbedKongDoesNotSoundLikeACompletedKongAndWinWaitsForResponses()throws Exception{
+        MahjongGame game=mahjong("z1 m1 m2 m3 p1 p2 p3 s1 s2 s3 z2",
+            "m1 m2 m3 m4 m5 m6 p2 p3 p4 s7 s8 s9 z1",
+            "m1 m2 m3 m4 m5 m6 p2 p3 p4 s7 s8 s9 z1","");
+        addPon(game);
+        assertEquals(List.of(TableSounds.SELECT),mahjongMove(game,"kan-added:s0_0"));
+        assertEquals(List.of(TableSounds.CONFIRM),mahjongMove(game,"ron"));
+        assertEquals(List.of(TableSounds.MAHJONG_WIN),mahjongMove(game,"pass"));
+        assertEquals("ROUND_END",game.publicInfo().get("phase"));
+        assertEquals(List.of(TableSounds.START),mahjongMove(game,"next-hand"));
+    }
+
+    @Test void mahjongRiichiIncludesTheDiscardAndKongCompletesAfterRobbersPass()throws Exception{
+        var game=mahjongProfile("riichi","m1 m2 m3 m4 m5 m6 p2 p3 p4 s7 s8 s9 z1 z2","","","");
+        assertEquals(List.of(TableSounds.TILE_DISCARD,TableSounds.RIICHI,TableSounds.TILE_DRAW),mahjongMove(game,"riichi:s0_13"));
+        game=mahjong("z1 m1 m2 m3 p1 p2 p3 s1 s2 s3 z2","m1 m2 m3 m4 m5 m6 p2 p3 p4 s7 s8 s9 z1","","");
+        addPon(game);assertEquals(List.of(TableSounds.SELECT),mahjongMove(game,"kan-added:s0_0"));
+        assertEquals(List.of(TableSounds.TILE_KAN,TableSounds.TILE_DRAW),mahjongMove(game,"pass"));
+    }
+
+    @Test void mahjongCommittedActionsPlayOnceAndRejectedActionsAndRestoreStayQuiet()throws Exception{
+        var plugin=mock(Tabletop3D.class);plugin.arena=mock(GameWorld.class);
+        var room=new Room(UUID.randomUUID(),"mahjong",4,0,0);room.fillBots();room.phase=Room.Phase.PLAYING;
+        room.board=mahjong("z1 m1 m2 m3 m4 m5 m6 p1 p2 p3 s4 s5 s6 z2","","","");
+        TabletopTest.set(plugin,"rooms",new LinkedHashMap<>(Map.of(room.id,room)));
+        doCallRealMethod().when(plugin).apply(any(),anyInt(),any(),any());
+        plugin.apply(room,1,new JsonPrimitive("discard:s0_0"),null);
+        verify(plugin.arena,never()).sound(any(),any());
+        plugin.apply(room,0,new JsonPrimitive("discard:s0_0"),null);
+        verify(plugin.arena).sound(room,TableSounds.TILE_DISCARD);verify(plugin.arena).sound(room,TableSounds.TILE_DRAW);
+        clearInvocations(plugin.arena);room.restoring=true;
+        plugin.apply(room,room.turn(),new JsonPrimitive(room.board.legalActions(room.turn()).getFirst()),null);
+        verify(plugin.arena,never()).sound(any(),any());
+    }
+
+    @Test void mahjongFinalSelfDrawHasOneWinCueWithoutTheGenericFinishSound()throws Exception{
+        var plugin=mock(Tabletop3D.class);plugin.arena=mock(GameWorld.class);
+        var room=new Room(UUID.randomUUID(),"mahjong",4,0,0);room.fillBots();room.phase=Room.Phase.PLAYING;
+        room.board=mahjong("m1 m2 m3 m4 m5 m6 p2 p3 p4 s7 s8 s9 z1 z1","","","");
+        TabletopTest.set(room.board,"roundLimit",1);TabletopTest.set(plugin,"rooms",new LinkedHashMap<>(Map.of(room.id,room)));
+        doCallRealMethod().when(plugin).apply(any(),anyInt(),any(),any());doCallRealMethod().when(plugin).finish(any(),anyString());
+        plugin.apply(room,0,new JsonPrimitive("tsumo"),null);
+        assertEquals(Room.Phase.FINISHED,room.phase);verify(plugin.arena,times(1)).sound(any(),any());
+        verify(plugin.arena).sound(room,TableSounds.MAHJONG_WIN);
+    }
+
+    @Test void drawingAndReplacingAFlowerAfterPassingRonIsNotAKong(){
+        var game=mock(HandGame.class);when(game.playerCount()).thenReturn(4);
+        when(game.exposed(anyInt())).thenReturn(List.of());
+        when(game.publicInfo()).thenReturn(Map.of("phase","RON","wall","10","lastWin",""));
+        var before=TableSounds.mahjongState(game);
+        when(game.exposed(1)).thenReturn(List.of(new HandGame.Piece("flower","f1")));
+        when(game.publicInfo()).thenReturn(Map.of("phase","TURN","wall","8","lastWin",""));
+        assertEquals(List.of(TableSounds.PASS,TableSounds.TILE_DRAW),TableSounds.mahjong("pass",before,TableSounds.mahjongState(game)));
+    }
+
+    private static List<TableSounds.Cue> mahjongMove(MahjongGame game,String action){
+        var before=TableSounds.mahjongState(game);game.apply(game.currentPlayer(),action);
+        return TableSounds.mahjong(action,before,TableSounds.mahjongState(game));
+    }
+    @SuppressWarnings("unchecked") private static void addPon(MahjongGame game)throws Exception{
+        var melds=(List<List<dev.tabletop3d.rules.mahjong.Meld>>)TableViewTest.field(game,"melds");
+        melds.getFirst().add(new dev.tabletop3d.rules.mahjong.Meld(dev.tabletop3d.rules.mahjong.Meld.Kind.TRIPLET,
+            List.of(new dev.tabletop3d.rules.mahjong.Tiles.Tile("a",27,false),new dev.tabletop3d.rules.mahjong.Tiles.Tile("b",27,false),new dev.tabletop3d.rules.mahjong.Tiles.Tile("c",27,false)),true,3));
+    }
+    private static MahjongGame mahjong(String... hands)throws Exception{return mahjongProfile("guangdong",hands);}
+    @SuppressWarnings("unchecked") private static MahjongGame mahjongProfile(String profile,String... hands)throws Exception{
+        var game=new MahjongGame(4,0,Map.of("profile",profile,"rounds","4"));
+        var values=(List<List<dev.tabletop3d.rules.mahjong.Tiles.Tile>>)TableViewTest.field(game,"hands");
+        for(int seat=0;seat<4;seat++){values.get(seat).clear();int index=0;for(String face:hands[seat].split(" "))if(!face.isEmpty())
+            values.get(seat).add(new dev.tabletop3d.rules.mahjong.Tiles.Tile("s"+seat+"_"+index++,dev.tabletop3d.rules.mahjong.Tiles.type(face),false));}
+        return game;
+    }
+
     private TableViewTest.Fixture application(String kind)throws Exception{
         var f=new TableViewTest.Fixture(kind);when(f.plugin.getConfig()).thenReturn(new YamlConfiguration());
         TabletopTest.set(f.plugin,"rooms",new LinkedHashMap<>(Map.of(f.room.id,f.room)));

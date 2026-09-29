@@ -22,11 +22,15 @@ class TableComfortFocusTest {
             f.input(true);assertTrue(f.comfort.focused(f.player));Location focus=f.location.get();
             assertTrue(focus.getY()>original.getY());
             double angle=2*Math.PI*seat/4;
-            assertEquals(Math.sin(angle)*1.5,focus.getX(),.0001);
-            assertEquals(Math.cos(angle)*1.5,focus.getZ(),.0001);
+            assertEquals(Math.sin(angle)*1.45,focus.getX(),.0001);
+            assertEquals(Math.cos(angle)*1.45,focus.getZ(),.0001);
+            var hand=HandTable.handPose(seat,4,8,17,true);
+            assertTrue(Math.hypot(focus.getX(),focus.getZ())>Math.hypot(hand.x(),hand.z())+.026,"Camera stays on the front side of the standing hand");
+            assertEquals(original.getY()+1.35,focus.getY(),.0001);
             assertTrue(focus.getPitch()>45&&focus.getPitch()<80);
             assertTrue(focus.getDirection().dot(new org.bukkit.util.Vector(-focus.getX(),0,-focus.getZ()))>0);
-            verify(f.player).setGravity(false);f.input(false);
+            verify(f.player).setGravity(false);verify(f.player).setInvisible(true);f.input(false);
+            verify(f.player).setInvisible(false);
             assertEquals(original,f.location.get());assertFalse(f.comfort.focused(f.player));verify(f.player).setGravity(true);
         }
     }
@@ -96,6 +100,15 @@ class TableComfortFocusTest {
         Location original=f.location.get().clone();f.input(true);
         try(var bukkit=mockStatic(Bukkit.class,CALLS_REAL_METHODS)){bukkit.when(Bukkit::getOnlinePlayers).thenReturn(List.of(f.player));f.comfort.close();}
         assertEquals(original,f.location.get());verify(f.player,never()).setGravity(true);verify(f.player,never()).setCollidable(true);
+    }
+    @Test void focusHidesWholePlayerFromPeersAndRestoresPreexistingInvisibility(){
+        Fixture f=new Fixture(0);Player peer=mock(Player.class);when(peer.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(f.player.isInvisible()).thenReturn(true);
+        try(var bukkit=mockStatic(Bukkit.class,CALLS_REAL_METHODS)){
+            bukkit.when(Bukkit::getOnlinePlayers).thenReturn(List.of(f.player,peer));
+            f.input(true);verify(peer).hidePlayer(f.plugin,f.player);f.input(false);
+            verify(peer).showPlayer(f.plugin,f.player);verify(f.player,never()).setInvisible(false);
+        }
     }
     static final class Fixture {
         final Tabletop3D plugin=mock(Tabletop3D.class);final Player player=mock(Player.class);final World world=mock(World.class);final Block block=mock(Block.class);

@@ -19,20 +19,19 @@ class MenuExperienceTest {
     @Test void mahjongProfileStaysOnBasicSetupWhileAllRegionalRulesRemainReachable() throws Exception {
         var f=new MenuFlowTest.Fixture();f.menus.setup(f.player,"mahjong");
         click(f,"rule-profile");click(f,"rule-profile");
-        assertFalse(ids(f).contains("rule-base-flowers"));
+        assertFalse(ids(f).contains("rule-base-points"));
         click(f,"details");Set<String> seen=new HashSet<>();
         do {seen.addAll(ids(f));if(!ids(f).contains("next"))break;click(f,"next");}while(true);
-        assertTrue(seen.containsAll(List.of("rule-base-flowers","rule-jin-que-multiplier")));
+        assertTrue(seen.containsAll(List.of("rule-base-points","rule-refund-kong-on-exhaustion")));
         click(f,"back");click(f,"start");
-        verify(f.plugin).create(f.player,"mahjong",4,Map.of("profile","fuzhou"));
+        verify(f.plugin).create(f.player,"mahjong",4,Map.of("profile","sichuan"));
     }
-    @Test void playingRoomKeepsDetailsAndPublicTableBehindOptions() throws Exception {
+    @Test void playingRoomOptionsOmitDetailsPublicTableAndRules() throws Exception {
         var f=new MenuFlowTest.Fixture();Room r=handRoom(f);f.menus.room(f.player,r);
         assertEquals(List.of("play","controls","options","back","close"),ids(f));
         assertFalse(MessageText.plain(f.description).contains(MessageText.plain(RoomText.options(r.kind,r.options))));
-        click(f,"options");assertTrue(ids(f).containsAll(List.of("details","public-table","rules","leave")));
-        click(f,"details");assertTrue(MessageText.plain(f.description).contains("Other player"));
-        click(f,"back");assertTrue(ids(f).contains("leave"));
+        click(f,"options");assertEquals(List.of("leave","back","close"),ids(f));
+        click(f,"back");assertTrue(ids(f).contains("play"));
     }
     @Test void roomAndBrowserBackReturnToAnExistingRoomOrCatalog() throws Exception {
         var f=new MenuFlowTest.Fixture();Room r=f.addRoom(0);r.join(f.player.getUniqueId(),"Owner");
@@ -48,12 +47,28 @@ class MenuExperienceTest {
         assertTrue(ids(f).contains("hand-action"));
         click(f,"back");assertTrue(ids(f).contains("play"));
     }
-    @Test void lobbyHasOnlyReadinessStartAndDetailsAsItsPrimaryActions() throws Exception {
+    @Test void lobbyHasReadinessStartAndRoomOptionsAsItsPrimaryActions() throws Exception {
         var f=new MenuFlowTest.Fixture();Room r=f.addRoom(0);r.join(f.player.getUniqueId(),"Owner");f.menus.room(f.player,r);
         assertEquals(List.of("ready","bots","options","back","close"),ids(f));
+        assertEquals("Room Options",f.buttons.stream().filter(b->b.id().equals("options")).findFirst().orElseThrow().label());
         assertFalse(MessageText.plain(f.description).contains(MessageText.plain(RoomText.options(r.kind,r.options))));
-        click(f,"options");assertFalse(ids(f).contains("details"));
-        assertTrue(MessageText.plain(f.description).contains(MessageText.plain(RoomText.options(r.kind,r.options))));
+        click(f,"options");assertEquals(List.of("leave","back","close"),ids(f));
+        assertFalse(MessageText.plain(f.description).contains(MessageText.plain(RoomText.options(r.kind,r.options))));
+    }
+    @Test void everyGameOmitsHelpAndDetailEntriesThroughoutItsMenus() throws Exception {
+        var f=new MenuFlowTest.Fixture();
+        for(String kind:Tabletop3D.NAMES.keySet()){
+            f.menus.setup(f.player,kind);assertFalse(ids(f).contains("rules"),kind+" setup");
+            f.menus.games(f.player,kind);assertFalse(ids(f).contains("rules"),kind+" browser");
+            Room r=new Room(UUID.randomUUID(),kind,Tabletop3D.defaultCapacity(kind),0,0);
+            r.join(f.player.getUniqueId(),"Owner");f.plugin.rooms.put(r.id,r);
+            for(Room.Phase phase:Room.Phase.values()){
+                r.phase=phase;f.menus.room(f.player,r);
+                assertTrue(f.buttons.stream().noneMatch(b->Set.of("rules","public-table").contains(b.id())||b.label().equals("Room Details")),kind+" "+phase);
+                click(f,"options");assertTrue(Collections.disjoint(ids(f),List.of("rules","details","public-table")),kind+" options "+phase);
+            }
+            f.plugin.rooms.remove(r.id);
+        }
     }
     private static Room handRoom(MenuFlowTest.Fixture f){
         Room r=new Room(UUID.randomUUID(),"lastcard",2,0,0);r.board=new LastCardGame(2,0);

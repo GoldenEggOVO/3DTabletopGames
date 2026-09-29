@@ -117,10 +117,11 @@ final class HandTable implements AutoCloseable {
         }
         BoundingBox bounds(boolean sticky) {
             Location base=at(spec.pose()),at=base.clone().add(displacement);
-            double angle=Math.toRadians(spec.pose().yaw()),w=width()/2+.003,d=spec.standing()?depth()/2+.003:depth()/2;
+            double scale=mahjong&&!spec.standing()?.66:1;
+            double angle=Math.toRadians(spec.pose().yaw()),w=width()*scale/2+.003,d=depth()*scale/2+.003;
             double rx=Math.abs(Math.cos(angle))*w+Math.abs(Math.sin(angle))*d;
             double rz=Math.abs(Math.sin(angle))*w+Math.abs(Math.cos(angle))*d;
-            BoundingBox box=new BoundingBox(at.getX()-rx,at.getY(),at.getZ()-rz,at.getX()+rx,at.getY()+height(),at.getZ()+rz);
+            BoundingBox box=new BoundingBox(at.getX()-rx,at.getY(),at.getZ()-rz,at.getX()+rx,at.getY()+height()*scale,at.getZ()+rz);
             if(sticky&&!drawing)box.union(new BoundingBox(base.getX()-rx,base.getY(),base.getZ()-rz,base.getX()+rx,base.getY()+height(),base.getZ()+rz));
             return box;
         }
@@ -129,6 +130,7 @@ final class HandTable implements AutoCloseable {
         final Player player;
         final Map<String,PieceView> pieces = new LinkedHashMap<>();
         final Map<String,CallView> calls = new LinkedHashMap<>();
+        final Map<String,Entity> matches = new LinkedHashMap<>();
         HandGame board;
         long revision = -1, language = -1;
         int seat = -1, historySize;
@@ -168,7 +170,8 @@ final class HandTable implements AutoCloseable {
 
     HandTable(Tabletop3D plugin, Room room, Location surfaceOrigin, NamespacedKey tag) {
         this.plugin=plugin; this.room=room; this.origin=surfaceOrigin.clone(); this.tag=tag; mahjong=room.kind.equals("mahjong");
-        furniture.add(block(origin.clone().add(0,.003,0),Material.GREEN_TERRACOTTA,2.02,.008,2.02,"@board",null));
+        double felt=mahjong?2.77:2.02;
+        furniture.add(block(origin.clone().add(0,.003,0),Material.GREEN_TERRACOTTA,felt,.008,felt,"@board",null));
         double deckX=-.22;
         Location deck=origin.clone().add(deckX,.015,0);
         if(!mahjong){
@@ -185,14 +188,14 @@ final class HandTable implements AutoCloseable {
         int columns=mahjong?17:18,row=index/columns,inRow=Math.min(columns,Math.max(1,count-row*columns));
         double unit=mahjong?.101:Math.min(.155,(players==3?1.24:1.62)/Math.max(1,inRow-1));
         double centered=index%columns-(inRow-1)/2.0,tangent=centered*unit;
-        Pose base=seatPose(seat,players,tangent,(mahjong?.91:players==3?.78:.91)-row*(mahjong?.085:.27));
+        Pose base=seatPose(seat,players,tangent,(mahjong?1.27:players==3?.78:.91)-row*(mahjong?.085:.27));
         return mahjong?base:new Pose(base.x(),base.z(),base.yaw()+(float)(centered*1.2),row*.055);
     }
     static Pose riverPose(int seat,int players,int index) {
-        return seatPose(seat,players,(index%6-2.5)*.068,.49-(index/6)*.10);
+        return seatPose(seat,players,(index%6-2.5)*.068,.65-(index/6)*.10);
     }
     static Pose exposedPose(int seat,int players,int index) {
-        return seatPose(seat,players,(index%14-6.5)*.068,.61+(index/14)*.10);
+        return seatPose(seat,players,1.20-(index%14)*.068,1.10-(index/14)*.11);
     }
     private static Pose seatPose(int seat,int players,double tangent,double radius) {
         double angle=2*Math.PI*seat/players;
@@ -296,7 +299,7 @@ final class HandTable implements AutoCloseable {
         Set<String> previous=Set.copyOf(view.pieces.keySet());
         boolean animate=!mahjong&&view.board==game&&room.history.size()==view.historySize+1&&!room.restoring;
         reconcile(view.pieces,wanted,player); hideOwnBacks(player,seat);
-        view.hover=null;view.callGroup=null;int drawn=0;
+        clearMatches(view);view.hover=null;view.callGroup=null;int drawn=0;
         if(mahjong){
             if(view.remaining==null)view.remaining=text(origin,Component.empty(),.13f,(float)(-360.0*seat/game.playerCount()),false,"@remaining",player);
             else view.remaining.text(Component.empty());
@@ -338,21 +341,32 @@ final class HandTable implements AutoCloseable {
     }
     void hover(Player player,String selected){
         show(player);PrivateView view=privateViews.get(player.getUniqueId());if(view==null)return;
-        if(selected!=null&&!view.pieces.containsKey(selected))selected=null;
+        PieceView target=selected!=null&&selected.startsWith("public:")?publicPieces.get(selected.substring(7)):view.pieces.get(selected);
+        if(target==null||target.spec.back())selected=null;
         if(Objects.equals(view.hover,selected))return;view.hover=selected;
         List<PieceView> pieces=new ArrayList<>(view.pieces.values());int chosen=-1;
         for(int i=0;i<pieces.size();i++)if(pieces.get(i).spec.id().equals(selected))chosen=i;
         for(int i=0;i<pieces.size();i++){
-            if(mahjong){pieces.get(i).highlight(i==chosen);pieces.get(i).shift(new Vector(0,i==chosen?.065:0,0));continue;}
+            if(mahjong){pieces.get(i).highlight(selected!=null&&MahjongPresentation.sameType(pieces.get(i).spec.face(),target.spec.face()));pieces.get(i).shift(new Vector(0,i==chosen?.065:0,0));continue;}
             PieceView piece=pieces.get(i);double lift=i==chosen?.105:0;
             double gap=chosen<0||i==chosen?0:Math.signum(i-chosen)*.045/Math.max(1,Math.abs(i-chosen));
             piece.shift(rotated(gap,lift,0,new Pose(0,0,(float)(-360.0*view.seat/((HandGame)room.board).playerCount()))));
         }
         if(mahjong&&view.remaining!=null){
-            if(chosen<0)view.remaining.text(Component.empty());
+            clearMatches(view);
+            if(selected==null)view.remaining.text(Component.empty());
             else{
-                PieceView tile=pieces.get(chosen);view.remaining.teleport(at(tile.spec.pose()).add(0,.24,0));
-                view.remaining.text(Language.component("table.mahjong.remaining","count",MahjongPresentation.remaining((HandGame)room.board,view.seat,tile.spec.face())).colorIfAbsent(NamedTextColor.YELLOW));
+                view.remaining.teleport(at(target.spec.pose()).add(0,.24,0));
+                int remaining=MahjongPresentation.remaining((HandGame)room.board,view.seat,target.spec.face());
+                view.remaining.text(Language.component("table.mahjong.remaining","count",remaining).colorIfAbsent(remaining==0?NamedTextColor.RED:NamedTextColor.YELLOW));
+                for(var entry:publicPieces.entrySet()){
+                    PieceView piece=entry.getValue();
+                    if(piece.spec.back()||!MahjongPresentation.sameType(piece.spec.face(),target.spec.face()))continue;
+                    // Replace only this viewer's public body with an identical private glowing body.
+                    Entity body=piece.parts.getFirst();player.hideEntity(plugin,body);
+                    BlockDisplay copy=block(at(piece.spec.pose()),Material.SMOOTH_QUARTZ,piece.width()*.66,piece.height()*.66,piece.depth()*.66,"@board",player);
+                    copy.setGlowColorOverride(Color.YELLOW);copy.setGlowing(true);view.matches.put(entry.getKey(),copy);
+                }
             }
         }
     }
@@ -390,7 +404,15 @@ final class HandTable implements AutoCloseable {
     }
     void clear(Player player) {
         PrivateView view=privateViews.remove(player.getUniqueId());
-        if (view!=null) { view.remove(); restoreBacks(player,view.seat); }
+        if (view!=null) { clearMatches(view);view.remove(); restoreBacks(player,view.seat); }
+    }
+    private void clearMatches(PrivateView view){
+        for(var entry:view.matches.entrySet()){
+            PieceView piece=publicPieces.get(entry.getKey());
+            if(piece!=null)view.player.showEntity(plugin,piece.parts.getFirst());
+            entry.getValue().remove();
+        }
+        view.matches.clear();
     }
     String hit(Player player,Location eye,Vector direction) {
         if (!eligible(player)) { clear(player); return null; }
@@ -401,6 +423,11 @@ final class HandTable implements AutoCloseable {
         for (PieceView piece:view.pieces.values()) {
             var hit=piece.bounds(piece.spec.id().equals(view.hover)).rayTrace(eye.toVector(),ray,nearest);
             if (hit!=null) { nearest=hit.getHitPosition().distance(eye.toVector()); selected=piece.spec.id(); }
+        }
+        if(mahjong)for(PieceView piece:publicPieces.values()){
+            if(piece.spec.back())continue;
+            var hit=piece.bounds(false).rayTrace(eye.toVector(),ray,nearest);
+            if(hit!=null){nearest=hit.getHitPosition().distance(eye.toVector());selected="public:"+piece.spec.id();}
         }
         if (selected==null || origin.getWorld().rayTraceBlocks(eye,ray,Math.max(.001,nearest-.015),FluidCollisionMode.NEVER,true)!=null) return null;
         return selected;
@@ -418,7 +445,7 @@ final class HandTable implements AutoCloseable {
         if (closed) return; closed=true;
         if(turnRing!=null)turnRing.close();
         if(mahjongHud!=null)mahjongHud.close();
-        privateViews.values().forEach(PrivateView::remove); privateViews.clear();
+        privateViews.values().forEach(view->{clearMatches(view);view.remove();}); privateViews.clear();
         publicPieces.values().forEach(PieceView::remove); publicPieces.clear(); furniture.forEach(Entity::remove); furniture.clear();
     }
 }

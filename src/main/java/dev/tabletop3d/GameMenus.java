@@ -87,7 +87,6 @@ final class GameMenus implements AutoCloseable {
             ()->setup(p,new Setup(kind,draft.capacity(),draft.bots(),GameOptions.change(kind,draft.options(),option)))));
         if(settings.stream().anyMatch(option->!option.key().equals("profile")))buttons.add(new Button("details",Language.component("setup.details"),()->setupRules(p,draft,0)));
         buttons.add(new Button("rooms",Language.component("setup.rooms"),()->games(p,kind)));
-        buttons.add(new Button("rules",Language.component("menu.rules"),()->rules(p,kind,()->setup(p,draft))));
         Component description=Language.component("setup.summary","mode",Language.component(draft.bots()?"setup.bots":"setup.friends"),"count",draft.capacity())
             .append(Component.newline()).append(Language.component("setup.basic-hint"));
         show(p,Language.component("setup.title","game",RoomText.game(kind)),description,buttons,()->main(p),"setup");
@@ -110,7 +109,6 @@ final class GameMenus implements AutoCloseable {
             .sorted(Comparator.comparingInt(r->r.seat(p.getUniqueId())>=0?0:r.phase==Room.Phase.LOBBY&&r.seats.size()<r.capacity?1:2)).toList();
         int pages=Math.max(1,(rooms.size()+ROOM_PAGE_SIZE-1)/ROOM_PAGE_SIZE),page=Math.max(0,Math.min(requestedPage,pages-1));
         List<Button>b=new ArrayList<>();b.add(new Button("entry",Language.component("menu.create"),()->setup(p,kind)));
-        b.add(new Button("rules",Language.component("menu.rules"),()->rules(p,kind,()->games(p,kind,page))));
         for(Room r:rooms.subList(page*ROOM_PAGE_SIZE,Math.min((page+1)*ROOM_PAGE_SIZE,rooms.size()))){
             String action=r.seat(p.getUniqueId())>=0?"menu.rooms.resume":r.phase==Room.Phase.LOBBY&&r.seats.size()<r.capacity?"menu.rooms.join":"menu.rooms.view";
             Component label=Language.component("room.list","room",RoomText.name(r),"occupied",r.seats.size(),"capacity",r.capacity,"phase",RoomText.phase(r));
@@ -144,7 +142,7 @@ final class GameMenus implements AutoCloseable {
         }
         if(r.undo!=null){if(r.undo.pending.contains(p.getUniqueId()))b.add(new Button(Language.component("menu.undo.approve"),()->plugin.approveUndo(p,r)));b.add(new Button(Language.component(r.undo.requester.equals(p.getUniqueId())?"menu.undo.cancel":"menu.undo.reject"),()->plugin.rejectUndo(p,r)));}
         if(r.phase==Room.Phase.FINISHED)b.add(new Button("rematch",Language.component(r.ready.contains(p.getUniqueId())?"menu.rematch.waiting":"menu.rematch"),()->plugin.rematch(p,r)));
-        b.add(new Button("options",Language.component(r.phase==Room.Phase.LOBBY?"room.details":"menu.options"),()->roomOptions(p,r)));
+        b.add(new Button("options",Language.component("menu.options"),()->roomOptions(p,r)));
         show(p,RoomText.name(r),compactRoomSummary(r),b,()->main(p),"room");
     }
     private Component compactRoomSummary(Room r){
@@ -175,16 +173,9 @@ final class GameMenus implements AutoCloseable {
     void roomOptions(Player p,Room r){
         if(plugin.rooms.get(r.id)!=r||r.seat(p.getUniqueId())<0){main(p);return;}
         List<Button>b=new ArrayList<>();
-        if(r.phase!=Room.Phase.LOBBY)b.add(new Button("details",Language.component("room.details"),()->roomDetails(p,r)));
-        if(r.board instanceof dev.tabletop3d.rules.HandGame)b.add(new Button("public-table",Language.component("hand.public-table"),()->publicHandTable(p,r,()->roomOptions(p,r))));
-        b.add(new Button("rules",Language.component("menu.rules"),()->rules(p,r.kind,()->roomOptions(p,r))));
         if(r.undo==null&&r.board!=null&&!r.history.isEmpty()&&(r.phase==Room.Phase.PLAYING||r.phase==Room.Phase.FINISHED))b.add(new Button(Language.component("menu.undo.request"),()->plugin.requestUndo(p,r)));
         b.add(new Button("leave",Language.component("menu.leave.title"),()->confirmLeave(p)));
-        show(p,Language.component(r.phase==Room.Phase.LOBBY?"room.details":"menu.options"),r.phase==Room.Phase.LOBBY?roomSummary(r):compactRoomSummary(r),b,()->room(p,r));
-    }
-    private void roomDetails(Player p,Room r){
-        if(plugin.rooms.get(r.id)!=r||r.seat(p.getUniqueId())<0){main(p);return;}
-        show(p,Language.component("room.details"),roomSummary(r),List.of(new Button("refresh",Language.component("menu.refresh"),()->roomDetails(p,r))),()->roomOptions(p,r));
+        show(p,Language.component("menu.options"),compactRoomSummary(r),b,()->room(p,r));
     }
     void yacht(Player p,Room r){
         if(!(r.board instanceof YachtGame g))return;int seat=r.seat(p.getUniqueId());long rev=r.revision;List<String> legal=g.legalActions(seat);List<Button>b=new ArrayList<>();
@@ -212,25 +203,8 @@ final class GameMenus implements AutoCloseable {
         if(plugin.rooms.get(r.id)!=r){plugin.tell(p,Language.component("error.page-changed"));games(p,r.kind);return;}
         if(plugin.room(p)!=null){plugin.tell(p,Language.component("chat.observe.own-game"));return;}
         List<Button>b=new ArrayList<>();b.add(new Button(Language.component("menu.observe.refresh"),()->observe(p,r)));
-        if(r.board instanceof dev.tabletop3d.rules.HandGame)b.add(new Button("public-table",Language.component("hand.public-table"),()->publicHandTable(p,r,()->observe(p,r))));
         if(r.board!=null)b.add(new Button(Language.component("menu.observe.visit"),()->{if(plugin.rooms.get(r.id)!=r){plugin.tell(p,Language.component("error.page-changed"));games(p,r.kind);return;}if(!p.getWorld().equals(plugin.arena.world))plugin.returns.putIfAbsent(p.getUniqueId(),p.getLocation());p.teleport(plugin.arena.seatLocation(r,0));}));
         show(p,Language.component("menu.observe.title","room",RoomText.name(r)),status(r).append(Language.component("menu.observe.description")),b,()->games(p,r.kind));
-    }
-    void publicHandTable(Player player,Room room,Runnable back){
-        if(plugin.rooms.get(room.id)!=room){main(player);return;}
-        if(!(room.board instanceof dev.tabletop3d.rules.HandGame game))return;
-        Component text=roomSummary(room);
-        for(int seat=0;seat<game.playerCount();seat++){
-            Component name=seat<room.seats.size()?RoomText.player(room.seats.get(seat),seat+1):Language.component("room.player");
-            text=text.append(Component.newline()).append(Language.component("hand.public-seat","player",name,"count",game.handSize(seat)));
-            for(boolean river:List.of(true,false)){
-                Component tiles=Component.empty();for(var piece:river?game.discards(seat):game.exposed(seat)){
-                    if(!tiles.equals(Component.empty()))tiles=tiles.append(Component.text(" · "));tiles=tiles.append(HandText.piece(room.kind,piece.face()));
-                }
-                if(!tiles.equals(Component.empty()))text=text.append(Component.newline()).append(Language.component(river?"hand.public-river":"hand.public-exposed","tiles",tiles));
-            }
-        }
-        show(player,Language.component("hand.public-table"),text,List.of(new Button("refresh",Language.component("menu.refresh"),()->publicHandTable(player,room,back))),back);
     }
     void boardSources(Player p,Room r,int page){
         if(plugin.rooms.get(r.id)!=r){main(p);return;}

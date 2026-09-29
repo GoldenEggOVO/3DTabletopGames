@@ -1,6 +1,6 @@
 # 3dtabletop 功能与验收清单
 
-此清单按 3dtabletop 源码、菜单、配置与测试逐项核对。`YachtGame` 仅为历史规则源码，不在目录中；1.7.0-SNAPSHOT 加入 Last Card 和六种麻将房规。
+此清单按 3dtabletop 源码、菜单、配置与测试逐项核对。`YachtGame` 仅为历史规则源码，不在目录中；当前支持 Last Card 和四种麻将房规。
 
 | 功能 | 入口或数据 | 验收 |
 | --- | --- | --- |
@@ -16,7 +16,7 @@
 | 配置、房间与棋盘持久化 | `config.yml`、`rooms.json`、旧目录复制 | 数据迁移测试、干净服重启恢复 |
 | Tab 补全 | `CommandSuggestions` | `CommandSuggestionsTest` |
 | 游戏模式、先后手、可选规则 | `GameOptions`、原生设置页、不可变房间规则 | 菜单、座位调整、保存与重放测试 |
-| Last Card、六地区麻将、局内计分 | `HandGame`、各地区规则、私有手牌与公开详情 | 牌型、回合、物理牌与点数守恒、回放测试 |
+| Last Card、四地区麻将、局内计分 | `HandGame`、各地区规则、私有手牌与公开桌面 | 牌型、回合、物理牌与点数守恒、回放测试 |
 | 牌背和暗杠隐私 | 隐藏后生成的私人 Display，牌背及匿名暗杠 ID | `HandTableTest`、`HandMenuTest`、服务器元数据探针 |
 | 独立投骰台 | 位移、翻滚、反弹、点数停稳、动画期间锁操作 | 动画、放置、共享入口与服务器模型测试 |
 

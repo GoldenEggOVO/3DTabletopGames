@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.7.4-SNAPSHOT — development build, no Release
+
+- Enlarge Mahjong tables to 3×3, add seat wind inscriptions and inward-facing scores, enlarge the wall counter and place melds at each player's lower-right corner.
+- Privately highlight matching own/public tiles from either hover target; keep newly drawn tiles rightmost and color Remaining zero red.
+- Move Shift focus closer while temporarily hiding the player and equipment; restore prior visibility and gravity on exit.
+- Add distinct vanilla Mahjong draw/discard/call/riichi/win sounds.
+- Remove Rules & Help, Room Details and Public Table Details menu entries while retaining setup rule editing.
+- Remove Fuzhou and Qinhuangdao Mahjong profiles; retain Riichi, Guangdong, Sichuan and Taiwan. Removed-profile saves are rejected and backed up rather than converted.
+
+
 ## 1.7.3-SNAPSHOT — development build, no Release
 
 - Raise and highlight only the selected Mahjong tile, keep neighbors still and fit up to 17 tiles in one row.

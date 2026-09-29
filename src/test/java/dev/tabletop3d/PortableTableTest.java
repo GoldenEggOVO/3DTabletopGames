@@ -16,6 +16,11 @@ class PortableTableTest {
   assertFalse(TablePlacement.overlaps(0,80,0,true,3,83,0,false));
  }
  @TempDir Path dir;
+ @Test void enlargedMahjongEdgeCannotIntersectAnAdjacentSideTray(){
+  assertTrue(TablePlacement.overlaps(0,80,0,true,1.125,4.2,80,0,false,1.5));
+  assertTrue(TablePlacement.overlaps(4.2,80,0,false,1.5,0,80,0,true,1.125));
+  assertFalse(TablePlacement.overlaps(0,80,0,true,1.125,4.5,80,0,false,1.5));
+ }
  @BeforeEach void setup(){MockBukkit.mock();}
  @AfterEach void cleanup(){MockBukkit.unmock();}
  @Test void newTablesCannotIntersectExistingModelsButOtherFloorsAndWorldsRemainAvailable()throws Exception{

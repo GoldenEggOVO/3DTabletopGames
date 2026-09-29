@@ -132,7 +132,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         call(arena,"anchor",new Class<?>[]{roomType,Location.class},room,new Location(world,32,83,0));rooms.put(roomId,room);
         Location original=new Location(world,32,83,2.25,33,21);
         var location=new java.util.concurrent.atomic.AtomicReference<>(original.clone());
-        boolean[] gravity={true},collision={true},cancelReturn={false};
+        boolean[] gravity={true},collision={true},cancelReturn={false},invisible={false};
         Player player=(Player)Proxy.newProxyInstance(Player.class.getClassLoader(),new Class<?>[]{Player.class},(proxy,method,args)->switch(method.getName()){
             case "getUniqueId"->id;case "getName"->"FocusProbe";case "getWorld"->location.get().getWorld();
             case "getLocation"->location.get().clone();case "getY"->location.get().getY();case "getGameMode"->org.bukkit.GameMode.SURVIVAL;
@@ -140,6 +140,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             case "isDead","isInsideVehicle","isOp"->false;
             case "hasGravity"->gravity[0];case "setGravity"->{gravity[0]=(boolean)args[0];yield null;}
             case "isCollidable"->collision[0];case "setCollidable"->{collision[0]=(boolean)args[0];yield null;}
+            case "isInvisible"->invisible[0];case "setInvisible"->{invisible[0]=(boolean)args[0];yield null;}
             case "teleport"->{
                 Location to=((Location)args[0]).clone();
                 var event=new org.bukkit.event.player.PlayerTeleportEvent((Player)proxy,location.get().clone(),to,org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.PLUGIN);
@@ -156,15 +157,15 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         };
         try {
             input.accept(true);require((boolean)call(comfort,"focused",new Class<?>[]{Player.class},player),"real event registration enters focus");
-            require(!gravity[0]&&!collision[0]&&location.get().getY()==85,"focus owns gravity and collision at elevated position");
+            require(!gravity[0]&&!collision[0]&&invisible[0]&&Math.abs(location.get().getY()-84.35)<.0001,"focus owns gravity, collision and invisibility at close position");
             Location anchor=location.get().clone(),attempt=anchor.clone().add(3,1,3);attempt.setYaw(70);
             var move=new org.bukkit.event.player.PlayerMoveEvent(player,anchor,attempt);Bukkit.getPluginManager().callEvent(move);
             require(move.getTo().distanceSquared(anchor)<1e-8&&move.getTo().getYaw()==70,"real event pipeline locks position and preserves aim");
-            input.accept(false);require(location.get().equals(original)&&gravity[0],"input release restores pose and gravity");
+            input.accept(false);require(location.get().equals(original)&&gravity[0]&&!invisible[0],"input release restores pose, gravity and visibility");
             input.accept(true);Location external=new Location(world,50,83,0);player.teleport(external);input.accept(true);input.accept(false);
             require(location.get().equals(external)&&gravity[0]&&collision[0],"external teleport wins without focus reentry");
             location.set(original.clone());input.accept(true);cancelReturn[0]=true;input.accept(false);
-            require(!(boolean)call(comfort,"focused",new Class<?>[]{Player.class},player)&&gravity[0]&&location.get().getY()==85,"cancelled return clears focus and gravity without overriding cancellation");
+            require(!(boolean)call(comfort,"focused",new Class<?>[]{Player.class},player)&&gravity[0]&&!invisible[0]&&Math.abs(location.get().getY()-84.35)<.0001,"cancelled return clears focus flags without overriding cancellation");
             getLogger().info("BOARDS_FOCUS_EVENTS_PASS proxy_player=true real_event_bus=true real_world_clearance=true native_player_physics=false client_visual_test=false");
         } finally {
             cancelReturn[0]=false;input.accept(false);call(comfort,"release",new Class<?>[]{Player.class},player);rooms.remove(roomId);
@@ -227,7 +228,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     var remaining=(org.bukkit.entity.TextDisplay)field(own,"remaining");privateParts.add(remaining);
                     require(!remaining.isVisibleByDefault()&&plain(remaining.text()).startsWith("Remaining: "),"native remaining label is owner-only");
                     Object hud=field(hand,"mahjongHud");
-                    require(((List<?>)field(hud,"entities")).size()==15,"native Mahjong HUD has bounded entity inventory");
+                    require(((List<?>)field(hud,"entities")).size()==23,"native Mahjong HUD has bounded entity inventory");
                     var count=(org.bukkit.entity.TextDisplay)((List<?>)field(hud,"counts")).getFirst();
                     require(plain(count.text()).equals(Integer.toString(((HandGame)board.get(room)).deckSize())),"native tabletop count matches drawable wall");
                     call(hand,"hover",new Class<?>[]{Player.class,String.class},owner,null);
@@ -331,8 +332,6 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 if(!clickMenu(menus,player,"id","next"))break;
             }
             require(seen.size()==25,"every room reachable through native pagination");
-            require(clickMenu(menus,player,"id","rules"),"rules entry on final room page");
-            require(clickMenu(menus,player,"id","back"),"rules return to room browser");
             call(menus,"main",new Class<?>[]{Player.class},player);
             require(clickMenu(menus,player,"id","ludo"),"catalog selects game setup");
             require(clickMenu(menus,player,"id","details"),"detailed Ludo rules reachable");
@@ -343,9 +342,9 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             require(menuLabel(menus,player,"mode").contains("Bots"),"bot mode retained");
             call(menus,"setup",new Class<?>[]{Player.class,String.class},player,"mahjong");
             Set<String> profiles=new HashSet<>();
-            for(int i=0;i<6;i++){profiles.add(menuLabel(menus,player,"rule-profile"));require(clickMenu(menus,player,"id","rule-profile"),"regional profile cycles");}
-            require(profiles.size()==6,"all six regional profiles reachable");
-            getLogger().info("BOARDS_MENU_FLOW_PASS rooms=25 pagination=4 rules=reachable");
+            for(int i=0;i<4;i++){profiles.add(menuLabel(menus,player,"rule-profile"));require(clickMenu(menus,player,"id","rule-profile"),"regional profile cycles");}
+            require(profiles.size()==4,"all four regional profiles reachable");
+            getLogger().info("BOARDS_MENU_FLOW_PASS rooms=25 pagination=4 setup-rules=reachable");
         } finally {added.forEach(rooms::remove);call(menus,"forget",new Class<?>[]{Player.class},player);}
     }
     private String menuLabel(Object menus,Player player,String id) throws Exception {

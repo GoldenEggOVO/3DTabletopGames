@@ -30,7 +30,7 @@ public final class BoardsSoakProbe extends JavaPlugin {
             Map<UUID,Object> registry=(Map<UUID,Object>)field(boards,"rooms");require(registry.isEmpty(),"fresh fixture required");
             var ctor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class,Map.class);ctor.setAccessible(true);
             List<String> kinds=List.of("chess","xiangqi","gomoku","ludo","checkers","draughts","reversi","go9","go13","go","connectfour","lastcard",
-                "mahjong:riichi","mahjong:guangdong","mahjong:fuzhou","mahjong:sichuan","mahjong:qinhuangdao","mahjong:taiwan");
+                "mahjong:riichi","mahjong:guangdong","mahjong:sichuan","mahjong:taiwan");
             for(int i=0;i<kinds.size();i++){
                 String label=kinds.get(i),kind=label.split(":")[0];int capacity=kind.equals("checkers")?6:Set.of("ludo","lastcard","mahjong").contains(kind)?4:2;
                 Map<String,String> options=kind.equals("mahjong")?Map.of("profile",label.split(":")[1],"rounds","1"):kind.equals("ludo")?Map.of("blocking","on"):Map.of();
@@ -103,6 +103,7 @@ public final class BoardsSoakProbe extends JavaPlugin {
                 for(Object piece:((Map<?,?>)field(hand,"publicPieces")).values())addEntities(expected,(List<Entity>)field(piece,"parts"));
                 for(Object owner:((Map<?,?>)field(hand,"privateViews")).values()){
                     Entity remaining=(Entity)field(owner,"remaining");if(remaining!=null)addEntities(expected,List.of(remaining));
+                    for(Object match:((Map<?,?>)field(owner,"matches")).values())addEntities(expected,List.of((Entity)match));
                     for(Object piece:((Map<?,?>)field(owner,"pieces")).values())addEntities(expected,(List<Entity>)field(piece,"parts"));
                     for(Object button:((Map<?,?>)field(owner,"calls")).values())addEntities(expected,(List<Entity>)field(button,"parts"));
                 }

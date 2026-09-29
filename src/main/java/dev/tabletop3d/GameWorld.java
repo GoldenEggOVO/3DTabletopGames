@@ -101,7 +101,7 @@ final class GameWorld implements Listener, AutoCloseable {
     void anchor(Room r,Location location){
         Location snapped=TablePlacement.snap(location,2);UUID worldId=location.getWorld().getUID();
         for(Room existing:plugin.rooms.values())if(existing!=r&&worldId.equals(existing.anchorWorld)
-            &&TablePlacement.overlaps(snapped.getX(),snapped.getY(),snapped.getZ(),r.sideTray,existing.anchorX,existing.anchorY,existing.anchorZ,existing.sideTray))
+            &&TablePlacement.overlaps(snapped.getX(),snapped.getY(),snapped.getZ(),r.sideTray,r.kind.equals("mahjong")?1.5:1.125,existing.anchorX,existing.anchorY,existing.anchorZ,existing.sideTray,existing.kind.equals("mahjong")?1.5:1.125))
             throw new IllegalArgumentException(dev.tabletop3d.ui.MessageText.plain(Language.component("error.table-overlap")));
         if(r.sideTray)for(int x=(int)Math.floor(snapped.getX()+1.30);x<=Math.floor(snapped.getX()+2.70);x++)
             for(int y=snapped.getBlockY();y<=Math.floor(snapped.getY()+1.8);y++)
@@ -171,13 +171,14 @@ final class GameWorld implements Listener, AutoCloseable {
     private String aimed(Player player,TableView view) {
         Location eye=player.getEyeLocation();Vector direction=eye.getDirection();
         String call=view.handCallHit(player,eye,direction);if(call!=null)return "@call:"+call;
-        String hand=view.handHit(player,eye,direction);if(hand!=null)return "@hand:"+hand;
+        String hand=view.handHit(player,eye,direction);if(hand!=null)return (hand.startsWith("public:")?"@tile:":"@hand:")+hand;
         if(view.deckHit(eye,direction))return "@draw";
         if(view.room.board instanceof dev.tabletop3d.rules.HandGame){
             double distance=TableGeometry.intersection(eye.getY(),direction.getY(),view.origin.getY()+.03);
             if(distance<0||eye.getWorld().rayTraceBlocks(eye,direction,Math.max(.001,distance-.035),FluidCollisionMode.NEVER,true)!=null)return null;
             Vector point=eye.toVector().add(direction.clone().multiply(distance)).subtract(view.origin.toVector());
-            return Math.abs(point.getX())<1.125&&Math.abs(point.getZ())<1.125?"@menu":null;
+            double half=view.room.kind.equals("mahjong")?1.5:1.125;
+            return Math.abs(point.getX())<half&&Math.abs(point.getZ())<half?"@menu":null;
         }
         if(view.geometry.kind.equals("connectfour"))return view.verticalHit(eye,direction);
         double distance=TableGeometry.intersection(eye.getY(),direction.getY(),view.origin.getY()+.03);
@@ -299,7 +300,7 @@ final class GameWorld implements Listener, AutoCloseable {
         Room room=plugin.room(player);TableView view=room==null?null:views.get(room.id);if(view==null||room.board==null||!player.getWorld().equals(view.origin.getWorld()))return false;
         String cell=aimed(player,view);if(cell==null)return false;
         long now=System.nanoTime(),last=clicks.getOrDefault(player.getUniqueId(),0L);if(now-last<180_000_000L)return true;clicks.put(player.getUniqueId(),now);
-        if(focused&&cell.equals("@menu"))return true;
+        if(cell.startsWith("@tile:")||focused&&cell.equals("@menu"))return true;
         if(player.isSneaking()&&!focused||cell.equals("@menu")){plugin.menus.room(player,room);return true;}
         if(room.phase!=Room.Phase.PLAYING)return true;
         if(room.undo!=null){plugin.menus.room(player,room);return true;}

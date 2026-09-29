@@ -30,9 +30,6 @@ Bottom:
     rooms:
       text: '<gray>@label@'
       width: 330
-    rules:
-      text: '<gray>@label@'
-      width: 330
     entry:
       text: '<white>@label@'
       width: 330

@@ -98,6 +98,8 @@ class LanguageTest {
                 while (match.find()) {
                     String phrase = match.group(1);
                     if (phrase.equals("楚河      漢界")) continue; // Board markings intentionally remain Chinese.
+                    if (file.getFileName().toString().equals("MahjongTableHud.java")
+                            && java.util.Set.of("東", "南", "西", "北").contains(phrase)) continue; // Seat wind inscriptions.
                     if (han.matcher(phrase).find() && han.matcher(Language.text(phrase)).find())
                         missing.add(name + ": " + phrase);
                 }

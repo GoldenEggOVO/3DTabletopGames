@@ -1,8 +1,10 @@
 package dev.tabletop3d;
 
 import dev.tabletop3d.rules.Cell;
+import dev.tabletop3d.rules.HandGame;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 
@@ -29,10 +31,44 @@ final class TableSounds {
     static final Cue TURN=new Cue(Sound.BLOCK_NOTE_BLOCK_PLING,.15f,1.2f);
     static final Cue CARD=new Cue(Sound.ITEM_BOOK_PAGE_TURN,.25f,1.4f);
     static final Cue TILE=new Cue(Sound.BLOCK_BONE_BLOCK_HIT,.24f,1.5f);
+    static final Cue TILE_DRAW=new Cue(Sound.BLOCK_BAMBOO_WOOD_HIT,.16f,1.7f);
+    static final Cue TILE_DISCARD=new Cue(Sound.BLOCK_BONE_BLOCK_PLACE,.28f,1.35f);
+    static final Cue TILE_CHI=new Cue(Sound.BLOCK_BONE_BLOCK_HIT,.26f,1.8f);
+    static final Cue TILE_PON=new Cue(Sound.BLOCK_BONE_BLOCK_PLACE,.32f,1.05f);
+    static final Cue TILE_KAN=new Cue(Sound.BLOCK_BONE_BLOCK_PLACE,.36f,.75f);
+    static final Cue RIICHI=new Cue(Sound.BLOCK_NOTE_BLOCK_CHIME,.3f,1.65f);
+    static final Cue MAHJONG_WIN=new Cue(Sound.BLOCK_NOTE_BLOCK_BELL,.36f,1.5f);
+
+    record MahjongState(Map<String,String> info,int exposedTiles) {}
+    static MahjongState mahjongState(HandGame game){
+        int exposed=0;for(int seat=0;seat<game.playerCount();seat++)for(var tile:game.exposed(seat))if(!tile.face().startsWith("f"))exposed++;
+        return new MahjongState(game.publicInfo(),exposed);
+    }
+    static List<Cue> mahjong(String action,MahjongState before,MahjongState after){
+        var cues=new ArrayList<Cue>();var previous=before.info();var current=after.info();
+        if(action.equals("next-hand"))return List.of(START);
+        boolean win=!current.get("lastWin").isEmpty()&&!current.get("lastWin").equals(previous.get("lastWin"));
+        boolean draw=current.get("phase").equals("TURN")&&Integer.parseInt(current.get("wall"))<Integer.parseInt(previous.get("wall"));
+        // A kong can finish on another player's pass after a rob-kong response.
+        boolean kong=after.exposedTiles()>before.exposedTiles()&&(action.startsWith("kan-")||previous.get("phase").equals("RON"));
+        if(action.startsWith("discard:")||action.startsWith("riichi:"))cues.add(TILE_DISCARD);
+        if(action.startsWith("riichi:"))cues.add(RIICHI);
+        if(kong)cues.add(TILE_KAN);
+        else if(action.startsWith("kan-"))cues.add(SELECT);
+        else if(action.startsWith("chi:"))cues.add(TILE_CHI);
+        else if(action.startsWith("pon:"))cues.add(TILE_PON);
+        else if(action.equals("pass")&&!win)cues.add(PASS);
+        else if(action.equals("ron")&&!win)cues.add(CONFIRM);
+        else if(action.startsWith("exchange:")||action.startsWith("missing:"))cues.add(TILE);
+        if(win)cues.add(MAHJONG_WIN);
+        if(!win&&(current.get("phase").equals("ROUND_END")||current.get("phase").equals("FINISHED"))&&!current.get("phase").equals(previous.get("phase")))cues.add(DRAW);
+        if(draw)cues.add(TILE_DRAW);
+        return List.copyOf(cues);
+    }
 
     static Cue move(String kind,int seat,String action,List<Cell> before,List<Cell> after){
         if(kind.equals("lastcard"))return action.equals("declare")?CONFIRM:CARD;
-        if(kind.equals("mahjong"))return Set.of("ron","tsumo","riichi").contains(action.split(":")[0])?CONFIRM:action.equals("pass")?PASS:TILE;
+        if(kind.equals("mahjong"))return action.startsWith("discard:")?TILE_DISCARD:action.equals("pass")?PASS:TILE;
         if(action.equals("roll"))return ROLL;
         if(action.equals("pass"))return PASS;
         if(action.startsWith("dead:")||action.startsWith("hold:"))return SELECT;

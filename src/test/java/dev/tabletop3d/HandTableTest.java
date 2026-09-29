@@ -138,7 +138,7 @@ class HandTableTest {
             for (int i=0;i<18;i++) tiles.add(tileBounds(HandTable.riverPose(seat,4,i)));
             for (int i=0;i<28;i++) {
                 var pose=HandTable.exposedPose(seat,4,i);
-                assertTrue(Math.max(Math.abs(pose.x()),Math.abs(pose.z()))<=.71+.00001);
+                assertTrue(Math.max(Math.abs(pose.x()),Math.abs(pose.z()))<=1.20+.00001);
                 tiles.add(tileBounds(pose));
             }
         }

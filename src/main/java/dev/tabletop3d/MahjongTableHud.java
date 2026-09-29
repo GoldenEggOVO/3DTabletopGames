@@ -26,6 +26,7 @@ final class MahjongTableHud implements AutoCloseable {
     private final NamespacedKey tag;
     final List<Entity> entities = new ArrayList<>();
     private final List<TextDisplay> counts = new ArrayList<>();
+    private final List<TextDisplay> winds = new ArrayList<>(), scores = new ArrayList<>();
     private final List<List<BlockDisplay>> sticks = new ArrayList<>();
     private final boolean[] declared = new boolean[4];
     private final Map<TextDisplay,Component> labels = new HashMap<>();
@@ -38,13 +39,13 @@ final class MahjongTableHud implements AutoCloseable {
 
     MahjongTableHud(Tabletop3D plugin,Room room,Location surfaceOrigin,NamespacedKey tag) {
         this.plugin=plugin;this.room=room;this.origin=surfaceOrigin.clone();this.tag=tag;
-        block(origin.clone().add(0,.015,0),Material.BLACK_CONCRETE,.30f,.012f,.30f);
+        block(origin.clone().add(0,.015,0),Material.BLACK_CONCRETE,.60f,.012f,.60f);
         for(int seat=0;seat<4;seat++) {
             double angle=seat*Math.PI/2;
-            Location number=origin.clone().add(.09*Math.sin(angle),.029,.09*Math.cos(angle));
+            Location number=origin.clone().add(.17*Math.sin(angle),.029,.17*Math.cos(angle));
             number.setYaw(-90*seat);
             counts.add(text(number,true));
-            Location stick=origin.clone().add(.18*Math.sin(angle),.021,.18*Math.cos(angle));
+            Location stick=origin.clone().add(.26*Math.sin(angle),.029,.26*Math.cos(angle));
             stick.setYaw(-90*seat);
             BlockDisplay body=block(stick,Material.WHITE_CONCRETE,.12f,.006f,.018f);
             BlockDisplay dot=block(stick.clone().add(0,.007,0),Material.RED_CONCRETE,.012f,.002f,.012f);
@@ -53,6 +54,14 @@ final class MahjongTableHud implements AutoCloseable {
         }
         status=text(origin.clone().add(0,.85,0),false);
         discard=text(origin.clone().add(0,.72,0),false);
+        for(int seat=0;seat<4;seat++) {
+            double angle=seat*Math.PI/2;
+            Location wind=origin.clone().add(.95*Math.cos(angle)+.82*Math.sin(angle),.02,
+                -.95*Math.sin(angle)+.82*Math.cos(angle));
+            wind.setYaw(-90*seat);winds.add(text(wind,true));
+            Location score=origin.clone().add(2.8*Math.sin(angle),1.4,2.8*Math.cos(angle));
+            score.setYaw(180-90*seat);scores.add(text(score,false,true));
+        }
         tick();
     }
 
@@ -65,7 +74,14 @@ final class MahjongTableHud implements AutoCloseable {
             rendered=game;revision=room.revision;info=Map.copyOf(game.publicInfo());
             remaining=game.deckSize();turn=game.currentPlayer();
         }
-        for(TextDisplay count:counts)label(count,Component.text(remaining,NamedTextColor.WHITE),.085f,.035f);
+        for(TextDisplay count:counts)label(count,Component.text(remaining,NamedTextColor.WHITE),.15f,.065f);
+        int dealer=Integer.parseInt(info.getOrDefault("dealer","0"));
+        for(int seat=0;seat<4;seat++) {
+            int wind=Math.floorMod(seat-dealer,4);
+            label(winds.get(seat),Component.text(List.of("東","南","西","北").get(wind),
+                wind==0?NamedTextColor.RED:NamedTextColor.WHITE),.24f,.22f);
+            label(scores.get(seat),Component.text(info.getOrDefault("score."+seat,""),NamedTextColor.WHITE),.8f,.18f);
+        }
         boolean lobby=room.phase==Room.Phase.LOBBY||room.phase==Room.Phase.STARTING;
         for(int seat=0;seat<4;seat++) {
             boolean next=!lobby&&Boolean.parseBoolean(info.getOrDefault("riichi."+seat,"false"));
@@ -128,8 +144,13 @@ final class MahjongTableHud implements AutoCloseable {
     }
 
     private TextDisplay text(Location at,boolean flat) {
+        return text(at,flat,flat);
+    }
+
+    private TextDisplay text(Location at,boolean flat,boolean fixed) {
         TextDisplay display=origin.getWorld().spawn(at,TextDisplay.class,d->{
-            configure(d);d.setBillboard(flat?Display.Billboard.FIXED:Display.Billboard.CENTER);
+            // Normal text uses native backface culling, so fixed upright scores face only the table.
+            configure(d);d.setBillboard(fixed?Display.Billboard.FIXED:Display.Billboard.CENTER);
             d.setRotation(at.getYaw(),flat?-90:0);d.setAlignment(TextDisplay.TextAlignment.CENTER);
             d.setLineWidth(Integer.MAX_VALUE);d.setDefaultBackground(false);
             d.setBackgroundColor(Color.fromARGB(0,0,0,0));d.setShadowed(!flat);d.setSeeThrough(false);

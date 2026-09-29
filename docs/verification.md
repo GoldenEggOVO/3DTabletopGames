@@ -1,5 +1,17 @@
 # Verification and acceptance
 
+## Local build: 1.7.4-SNAPSHOT
+
+- JDK 25 / Maven package: **448 tests passed**, zero failures, errors or skipped tests; Python: **four migration tests passed**. Removed-profile tests were removed with their rule implementations. New checks cover private matching glow, rightmost draws, four-seat layout, wind/score orientation, Shift invisibility restoration, menu removal, sound transitions and rejected legacy profiles without save corruption.
+- The exact JAR passed three clean Purpur **26.2-2622** boots in `target/standalone-smoke-20260929-140929/` (create, restart, legacy-folder migration). Native Display, HUD, private controls and four-profile menu paths passed; all **27 vanilla sound cues** were registered. Shift uses real events/world clearance with a stateful Player proxy; connected-client physics, equipment visibility and camera/audio feel remain acceptance items.
+- Three further boots in `target/standalone-smoke-20260929-141136/` restored **22 rooms / 1,896 saved events / 14 game identifiers**, including all four supported Mahjong profiles. Only fixture world UUIDs were remapped. Fuzhou/Qinhuangdao saves now fail explicitly and retain original data plus an unreadable backup; they are not converted.
+- The **60-second / 16-table** run in `target/soak-20260929-140929/` completed **337 actions**, 17 replay comparisons, peak **4,611** owned entities and **zero** after cleanup. No full round or undo completed in this short run; directed tests cover those paths. Entity accounting includes private matching bodies.
+- Initial probe failures came from a collection/list mismatch in the new entity inventory and the previous six-profile expectation. Correcting those probe checks retained exact inventory and menu reachability assertions. Product tests passed before and after the probe corrections. Deleted rule classes were confirmed absent from the rebuilt JAR.
+- Source-geometry preview checks caught and corrected reversed hand ordering and wind placement before delivery. The final preview uses production geometry with a synthetic state, approximate fonts/materials and simulated text backface culling; native glow is not drawn. Actual Minecraft visual/audio acceptance is pending. Existing table anchors and customized YAML are preserved; Mahjong tables expand to 3×3 and need surrounding clearance. No Release or production deployment.
+
+Verified JAR SHA-256: `2d0f4c953ebdbd9b4b27a16dadb6d23a418713a5ccdabe083a561b567973ec2a`. Exact passing receipts accompany the local package in `verification.json`.
+
+
 ## Local build: 1.7.3-SNAPSHOT
 
 - JDK 25 / Maven package: **452 tests passed**, zero failures, errors or skipped tests. Python: **four migration tests passed**. Added checks cover selected-tile lift/return without neighbor displacement, 17-tile four-seat layout, unseen-copy privacy/deduplication, graphical call combinations, HUD counts/deadlines/riichi sticks, and Shift entry/return/cleanup with cancelled or external teleports.

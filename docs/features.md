@@ -2,7 +2,7 @@
 
 | Area | Supported behavior | Verification |
 | --- | --- | --- |
-| Games | Xiangqi, Chess, Gomoku, Ludo, Chinese Checkers, Draughts, Reversi, Go 9/13/19, Connect Four, Last Card, six Mahjong profiles; legacy Aeroplane recovery | Rule test suites |
+| Games | Xiangqi, Chess, Gomoku, Ludo, Chinese Checkers, Draughts, Reversi, Go 9/13/19, Connect Four, Last Card, four Mahjong profiles; legacy Aeroplane recovery | Rule test suites |
 | Rooms | Paginated browsing, create, join, seats, readiness, bots, spectate, return, leave | Room, occupancy and menu tests |
 | Recovery | Seed/history replay, world anchors, offline seats, migration | Recovery tests and isolated three-boot probe |
 | Agreements | Undo negotiation and rematches | RoundActions tests |

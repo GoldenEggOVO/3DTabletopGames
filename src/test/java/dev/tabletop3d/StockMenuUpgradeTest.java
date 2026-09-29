@@ -47,6 +47,33 @@ class StockMenuUpgradeTest {
         assertEquals(3,result.config().getInt("Bottom.columns"));
         assertEquals(custom,Files.readString(data.resolve("menus/setup.yml")));
     }
+    @Test void oldCustomButtonsCannotRestoreRemovedEntriesAndTheFileStaysIntact() throws Exception {
+        String custom="""
+            Title: '@title@'
+            Bottom:
+              columns: 3
+              buttons:
+                rules:
+                  text: 'Rules & Help'
+                  actions: ['command: 3dtabletop rules']
+                details:
+                  text: 'Room Details'
+                public-table:
+                  text: 'Public Table Details'
+                leave:
+                  text: 'My Exit'
+                  width: 222
+            """;
+        var layouts=layouts(OLD_SETUP);Path file=data.resolve("menus/dialog.yml");Files.writeString(file,custom);
+        var f=new MenuFlowTest.Fixture();Room room=f.addRoom(0);room.join(f.player.getUniqueId(),"Owner");
+        room.phase=Room.Phase.PLAYING;f.menus.roomOptions(f.player,room);
+        var result=layouts.load("dialog",Component.text("Options"),Component.empty(),f.buttons,UUID.randomUUID());
+        assertEquals(List.of("leave","back","close"),result.buttons().stream().map(GameMenus.Button::id).toList());
+        assertEquals("My Exit",result.config().getString("Bottom.buttons.slot0.text"));
+        assertEquals(222,result.config().getInt("Bottom.buttons.slot0.width"));
+        assertEquals(3,result.config().getInt("Bottom.columns"));
+        assertEquals(custom,Files.readString(file));
+    }
     private GameMenuLayouts layouts(String template) throws Exception {
         Tabletop3D plugin=mock(Tabletop3D.class);when(plugin.getDataFolder()).thenReturn(data.toFile());
         when(plugin.getResource(anyString())).thenAnswer(i->getClass().getClassLoader().getResourceAsStream(i.getArgument(0)));

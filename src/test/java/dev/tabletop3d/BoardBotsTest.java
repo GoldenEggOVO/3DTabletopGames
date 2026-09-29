@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BoardBotsTest {
     @Test void winningActionsComeBeforeOtherChoicesWithoutReadingHands() {
-        for(String win:List.of("ron","tsumo","rob-gold")) {
+        for(String win:List.of("ron","tsumo")) {
             PrivateGame game=new PrivateGame(List.of(win,"pass"),"m1");
             for(int seed=0;seed<20;seed++)assertEquals(win,BoardBots.choose(game,2,new Random(seed)));
             assertEquals(0,game.reads);

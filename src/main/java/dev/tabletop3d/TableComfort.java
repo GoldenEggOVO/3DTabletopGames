@@ -12,7 +12,7 @@ import java.util.*;
 /** Owns table collision and the temporary, seat-relative Mahjong focus position. */
 final class TableComfort implements Listener,AutoCloseable {
     private final Tabletop3D plugin;private final Map<UUID,Boolean> previous=new HashMap<>();
-    private record Focus(Room room,int seat,Location original,Location anchor,boolean gravity) {}
+    private record Focus(Room room,int seat,Location original,Location anchor,boolean gravity,boolean invisible) {}
     private final Map<UUID,Focus> focus=new HashMap<>();
     private final Map<UUID,Location> internalTeleport=new HashMap<>();
     private final Set<UUID> held=new HashSet<>();
@@ -26,6 +26,7 @@ final class TableComfort implements Listener,AutoCloseable {
     private void sync(Player player){
         Focus current=focus.get(player.getUniqueId());
         if(current!=null&&(!valid(player,current)||!atAnchor(player,current)))finish(player,atAnchor(player,current));
+        if(focused(player))hideFocusedPlayer(player);
         if(!active(player)){restore(player);return;}
         if(!previous.containsKey(player.getUniqueId())){
             boolean collidable=player.isCollidable();previous.put(player.getUniqueId(),collidable);
@@ -46,12 +47,13 @@ final class TableComfort implements Listener,AutoCloseable {
         if(room==null||!room.kind.equals("mahjong")||room.seat(player.getUniqueId())<0||!active(player)
             ||player.isDead()||player.isInsideVehicle()||player.getGameMode()==GameMode.SPECTATOR)return;
         int seat=room.seat(player.getUniqueId());double angle=2*Math.PI*seat/room.capacity;
-        Location anchor=plugin.arena.center(room.table).clone().add(Math.sin(angle)*1.5,2,Math.cos(angle)*1.5);
+        Location anchor=plugin.arena.center(room.table).clone().add(Math.sin(angle)*1.45,1.35,Math.cos(angle)*1.45);
         // Shift lowers the eye to 1.27 blocks. Aim at the felt; players can still aim at individual tiles.
-        anchor.setDirection(new Vector(-Math.sin(angle)*1.5,TableGeometry.SURFACE+.05-2-1.27,-Math.cos(angle)*1.5));
+        anchor.setDirection(new Vector(-Math.sin(angle)*1.45,TableGeometry.SURFACE+.05-1.35-1.27,-Math.cos(angle)*1.45));
         if(!clear(anchor))return;
-        Focus state=new Focus(room,seat,player.getLocation().clone(),anchor,player.hasGravity());
-        sync(player);focus.put(player.getUniqueId(),state);player.setGravity(false);player.setVelocity(new Vector());player.setFallDistance(0);
+        Focus state=new Focus(room,seat,player.getLocation().clone(),anchor,player.hasGravity(),player.isInvisible());
+        sync(player);focus.put(player.getUniqueId(),state);player.setGravity(false);player.setInvisible(true);player.setVelocity(new Vector());player.setFallDistance(0);
+        hideFocusedPlayer(player);
         if(!teleport(player,anchor)||!atAnchor(player,state))finish(player,false);
     }
     private static boolean clear(Location target){
@@ -65,8 +67,12 @@ final class TableComfort implements Listener,AutoCloseable {
     }
     private void finish(Player player,boolean returnToSeat){
         Focus state=focus.remove(player.getUniqueId());if(state==null)return;
-        player.setGravity(state.gravity());player.setVelocity(new Vector());player.setFallDistance(0);
+        player.setGravity(state.gravity());player.setInvisible(state.invisible());player.setVelocity(new Vector());player.setFallDistance(0);
+        for(Player viewer:Bukkit.getOnlinePlayers())if(!viewer.getUniqueId().equals(player.getUniqueId()))viewer.showPlayer(plugin,player);
         if(returnToSeat&&!player.isDead()&&atAnchor(player,state)&&clear(state.original()))teleport(player,state.original());
+    }
+    private void hideFocusedPlayer(Player player){
+        for(Player viewer:Bukkit.getOnlinePlayers())if(!viewer.getUniqueId().equals(player.getUniqueId()))viewer.hidePlayer(plugin,player);
     }
     @EventHandler public void input(PlayerInputEvent event){
         Player player=event.getPlayer();UUID id=player.getUniqueId();

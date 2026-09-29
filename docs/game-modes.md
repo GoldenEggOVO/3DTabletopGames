@@ -2,20 +2,20 @@
 
 [English](game-modes.md) | [简体中文](game-modes.zh-CN.md)
 
-This page describes **1.7.3-SNAPSHOT**, an unpublished development build. It has not been deployed to production servers. Local artwork and model previews do not replace Minecraft client acceptance; see [verification](verification.md) for evidence and status.
+This page describes **1.7.4-SNAPSHOT**, an unpublished development build. It has not been deployed to production servers. Local artwork and model previews do not replace Minecraft client acceptance; see [verification](verification.md) for evidence and status.
 
-Mahjong hover highlights and raises only the selected tile; neighbors stay still. Its owner-only Remaining label counts unseen copies from your hand and public tiles, never opponents’ concealed hands. The table center shows the drawable wall count, while overhead labels show the round, turn, real countdown and last discard. Hold Shift near your own table for an elevated fixed position with free mouse aim; release to return. Private call buttons preview the tiles, with Chi/Pon/Kan combinations selectable on the table. Riichi declarations place white sticks with red dots. All text remains editable in language YAML. Optional self-turn Skip dismisses the current prompt without consuming a turn, while response Skip submits the legal pass. The rotating Last Card ring follows turn order and pauses with ended/paused rooms or undo. Its 6/9 artwork is underlined; the existing 1–8 deck is unchanged.
+Mahjong uses a 3×3 table. Hovering a hand or public tile privately highlights matching types across your hand and the table; only the aimed hand tile lifts. Newly drawn tiles stay rightmost, and melds sit at your lower-right corner. Remaining zero is red. The larger center counter is surrounded by seat wind inscriptions; East is red. Scores behind each player face the table and are invisible from behind. Its owner-only Remaining label counts unseen copies from your hand and public tiles, never opponents’ concealed hands. The table center shows the drawable wall count, while overhead labels show the round, turn, real countdown and last discard. Hold Shift near your own table for a close fixed position with free mouse aim and temporary player invisibility; release to return and restore prior visibility. Private call buttons preview the tiles, with Chi/Pon/Kan combinations selectable on the table. Riichi declarations place white sticks with red dots. UI labels remain editable in language YAML; seat wind inscriptions stay Chinese. Optional self-turn Skip dismisses the current prompt without consuming a turn, while response Skip submits the legal pass. The rotating Last Card ring follows turn order and pauses with ended/paused rooms or undo. Its 6/9 artwork is underlined; the existing 1–8 deck is unchanged.
 
 ## Set up a game
 
 1. Open `/3dtabletop` and choose a game from the catalog.
 2. On **Game Setup**, choose **With Friends** or **With Bots**, then the player count where available. Choose Mahjong's regional profile or Go's board size here as well.
-3. Open **Detailed Rules** when you want to change the defaults. Click settings to cycle their values and use next/previous for additional pages. **Back** retains your choices and returns to basic setup; **Rules** opens the game explanation.
+3. Open **Detailed Rules** when you want to change the defaults. Click settings to cycle their values and use next/previous for additional pages. **Back** retains your choices and returns to basic setup.
 4. Choose **Create Room** for friends, or **Start with Bots**. Friends join the room and ready up; the host can fill remaining seats with bots after the other humans are ready.
 
 **Rules lock when the room is created.** Joining players use those rules; undo and rematch retain them. To change rules, create another room. `/3dtabletop create <kind> [players]` creates a room with default rules; use Game Setup to customize them.
 
-The lobby puts readiness, the host's bot start and room details first. During play, return to the physical table or open the hand/board controls. Room options contain full details, rules, public hand information, undo requests and leaving. Private-hand controls show your cards, current state and legal actions. Returning from a room opens the game catalog; returning from the room browser opens your current room when seated, otherwise the catalog.
+The lobby puts readiness and the host's bot start first. During play, return to the physical table or open the hand/board controls. Room options retain undo requests and leaving. Rules & Help, Room Details and Public Table Details have been removed. Private-hand controls show your cards, current state and legal actions. Returning from a room opens the game catalog; returning from the room browser opens your current room when seated, otherwise the catalog.
 
 | Game | Players | Setup choices |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ The lobby puts readiness, the host's bot start and room details first. During pl
 | Ludo | 2–4 | First pawn, blocking, reaching home, finish condition |
 | Chinese Checkers | 2, 3, 4 or 6 | Jump own pieces, other camps, finish condition |
 | Last Card | 2–4 | First place or all places |
-| Mahjong | 4 | Six regional profiles and their room rules |
+| Mahjong | 4 | Four regional profiles and their room rules |
 
 Yacht and Aeroplane remain unavailable for creating new rooms. Existing supported historical room records can still be restored.
 
@@ -105,11 +105,11 @@ Under a draw penalty, only the matching draw type can be played; a Wild does not
 
 ## Mahjong setup
 
-All profiles use four seats and match points. The selector offers **Riichi, Guangdong, Fuzhou, Sichuan, Qinhuangdao and Taiwan**.
+All profiles use four seats and match points. The selector offers **Riichi, Guangdong, Sichuan and Taiwan**.
 
 | Common setting | Default | Choices |
 | --- | --- | --- |
-| Profile | Riichi | The six profiles above |
+| Profile | Riichi | The four profiles above |
 | Match length | Single hand for Guangdong; East round for other profiles | Single hand / East round / East–South match |
 | Starting points | 25,000 | 25,000 / 30,000 / 35,000 |
 
@@ -138,7 +138,7 @@ Saved older rooms retain their original world position and compact dice presenta
 - Recovery and undo replay the saved game with its saved options. Rematches keep the rules and host while using a fresh shuffle/dice sequence and a fresh random first-seat choice where selected.
 - Unknown rule options or unsupported rule versions are rejected instead of silently changing a saved game.
 - Existing language and menu customizations are preserved; missing text falls back to bundled English.
-- Original 1.7.0 stock setup, room and hand templates use the new layout in memory after content matching, without changing installed file bytes. Customized layouts keep their ordering and styles; back up and manually merge new templates when desired. This presentation update does not change schema 1 data or game rules.
+- Original 1.7.0 stock setup, room and hand templates use the new layout in memory after content matching, without changing installed file bytes. Customized layouts keep their ordering and styles; back up and manually merge new templates when desired. Schema 1 and the four remaining Mahjong profiles keep their rules; removed-profile saves are rejected as described in migration.
 
 See [migration](migration.md) for upgrades and older room imports. The [Nintendo game catalog](https://www.nintendo.com/jp/switch/as7ta/games/index.html) is a primary reference for the collection; the linked GameFAQs pages are independent play guides, not Nintendo's official rule specification. This plugin's documented rules and selectable values define its supported modes.
 
@@ -147,4 +147,4 @@ See [migration](migration.md) for upgrades and older room imports. The [Nintendo
 - A normal tile has four copies: own hand 2 / public 0 → Remaining 2; own 1 / public 1 → Remaining 2. Public rivers, melds, indicator tiles and offered tiles are counted once by physical ID. Red and normal fives share a type. The count is unseen copies, which can be in opponents’ hands or the dead wall; it is not a prediction of future draws. The central count is the rules engine’s actual drawable wall count.
 - Hands up to 17 tiles occupy one row. Call previews and unseen-copy labels are visible only to their owner; stale choices are rechecked against current legal actions.
 - The timer shares the actual human/bot/offline turn deadline and pauses for suspended play or pending undo. No second timer or rule change is introduced.
-- Shift focus requires a seat, permission and proximity. Position is held but mouse aim remains free. Release restores your entry position, yaw, pitch and gravity. Menus, leaving, death, external teleports and shutdown clear temporary focus. If the return space is blocked or another plugin cancels the return teleport, focus ends and normal gravity resumes without forcing a teleport. Test camera feel and anti-cheat compatibility on your isolated server.
+- Shift focus requires a seat, permission and proximity. Position is held but mouse aim remains free. Release restores your entry position, yaw, pitch, gravity and prior invisibility. Menus, leaving, death, external teleports and shutdown clear temporary focus. If the return space is blocked or another plugin cancels the return teleport, focus ends and normal gravity resumes without forcing a teleport. Test camera feel and anti-cheat compatibility on your isolated server.

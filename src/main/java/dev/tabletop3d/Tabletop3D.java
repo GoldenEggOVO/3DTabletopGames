@@ -198,13 +198,16 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         if(arena.rolling(r)){if(source!=null)tell(source,Language.component("hint.roll.wait"));return;}
         if(!ReplayBudget.allows(r.history,action)){finish(r,"本局达到休闲对局长度上限，按和局结束");save();return;}
 
-            try{List<Cell> before=r.board.cells();int previousTurn=r.turn();r.board.apply(seat,action.getAsString());r.event(seat,action);r.revision++;r.changed=System.currentTimeMillis();arena.render(r);
-                arena.sound(r,TableSounds.move(r.kind,seat,action.getAsString(),before,r.board.cells()));
-                if(r.board.finished())finish(r,r.board.outcome());else if(r.turn()!=previousTurn)arena.turnSound(r);save();if(source!=null&&source.isOnline())menus.room(source,r);
+            try{List<Cell> before=r.board.cells();var mahjongBefore=r.kind.equals("mahjong")?TableSounds.mahjongState((HandGame)r.board):null;int previousTurn=r.turn();r.board.apply(seat,action.getAsString());r.event(seat,action);r.revision++;r.changed=System.currentTimeMillis();arena.render(r);
+                if(!r.restoring){
+                    if(mahjongBefore!=null)for(var cue:TableSounds.mahjong(action.getAsString(),mahjongBefore,TableSounds.mahjongState((HandGame)r.board)))arena.sound(r,cue);
+                    else arena.sound(r,TableSounds.move(r.kind,seat,action.getAsString(),before,r.board.cells()));
+                }
+                if(r.board.finished())finish(r,r.board.outcome());else if(!r.restoring&&r.turn()!=previousTurn)arena.turnSound(r);save();if(source!=null&&source.isOnline())menus.room(source,r);
             }catch(IllegalArgumentException ex){if(source!=null)tell(source,ex.getMessage());}
         
     }
-    void finish(Room r,String result){boolean first=r.phase!=Room.Phase.FINISHED;r.phase=Room.Phase.FINISHED;r.completed=true;r.result=result;r.ready.clear();r.undo=null;r.changed=System.currentTimeMillis();if(first)arena.sound(r,result.startsWith("winner:")?TableSounds.WIN:TableSounds.DRAW);announce(r,Language.component("chat.finished","result",RoomText.outcome(r,result)));onMain(()->showRoomToHumans(r));}
+    void finish(Room r,String result){boolean first=r.phase!=Room.Phase.FINISHED;r.phase=Room.Phase.FINISHED;r.completed=true;r.result=result;r.ready.clear();r.undo=null;r.changed=System.currentTimeMillis();if(first&&!r.restoring&&!(r.kind.equals("mahjong")&&r.board.finished()))arena.sound(r,result.startsWith("winner:")?TableSounds.WIN:TableSounds.DRAW);announce(r,Language.component("chat.finished","result",RoomText.outcome(r,result)));onMain(()->showRoomToHumans(r));}
     void showRoomToHumans(Room r){if(!rooms.containsKey(r.id))return;for(Room.Seat s:r.seats){Player p=Bukkit.getPlayer(s.id());if(!s.bot()&&p!=null&&allowed(p)&&arena.atTableWorld(p,r))menus.room(p,r);}}
     void requestUndo(Player p,Room r){if(!allowed(p))return;requireLiveRoom(r);if(!arena.atTableWorld(p,r))return;if(arena.rolling(r)){tell(p,Language.component("hint.roll.wait"));return;}RoundActions.request(r,p.getUniqueId(),System.currentTimeMillis());if(r.undo.pending.isEmpty())completeUndo(r);else{announce(r,Language.component("chat.undo.requested","player",p.getName()));showRoomToHumans(r);}}
     void approveUndo(Player p,Room r){if(!allowed(p))return;requireLiveRoom(r);if(!arena.atTableWorld(p,r))return;if(RoundActions.approve(r,p.getUniqueId(),System.currentTimeMillis()))completeUndo(r);else showRoomToHumans(r);}

@@ -114,11 +114,12 @@ final class TableView implements AutoCloseable {
     }
     TableView(Tabletop3D plugin,Room room,Location center,NamespacedKey tag,TableMaps maps){
         this.plugin=plugin;this.room=room;this.tag=tag;geometry=new TableGeometry(room.kind,room.board.cells());origin=center.clone().add(0,TableGeometry.SURFACE,0);
-        furniture.add(block(origin,Material.DARK_OAK_PLANKS,0,-.19,0,2.25,.14,2.25,null));
-        for(double x:new double[]{-.99,.99})for(double z:new double[]{-.99,.99})furniture.add(block(origin,Material.STRIPPED_DARK_OAK_LOG,x,-TableGeometry.SURFACE,z,.15,TableGeometry.SURFACE-.13,.15,null));
-        for(double v:new double[]{-1.06,1.06}){furniture.add(block(origin,Material.STRIPPED_DARK_OAK_WOOD,v,-.05,0,.10,.11,2.22,null));furniture.add(block(origin,Material.STRIPPED_DARK_OAK_WOOD,0,-.05,v,2.22,.11,.10,null));}
+        double width=room.kind.equals("mahjong")?3:2.25,leg=width/2-.135,edge=width/2-.065;
+        furniture.add(block(origin,Material.DARK_OAK_PLANKS,0,-.19,0,width,.14,width,null));
+        for(double x:new double[]{-leg,leg})for(double z:new double[]{-leg,leg})furniture.add(block(origin,Material.STRIPPED_DARK_OAK_LOG,x,-TableGeometry.SURFACE,z,.15,TableGeometry.SURFACE-.13,.15,null));
+        for(double v:new double[]{-edge,edge}){furniture.add(block(origin,Material.STRIPPED_DARK_OAK_WOOD,v,-.05,0,.10,.11,width-.03,null));furniture.add(block(origin,Material.STRIPPED_DARK_OAK_WOOD,0,-.05,v,width-.03,.11,.10,null));}
         if(room.board instanceof dev.tabletop3d.rules.HandGame){
-            furniture.add(block(origin,Material.GREEN_CONCRETE,0,-.05,0,2.04,.05,2.04,null));
+            furniture.add(block(origin,Material.GREEN_CONCRETE,0,-.05,0,width-.21,.05,width-.21,null));
             title=text(origin.clone().add(0,1.8,0),"",.4,false,NamedTextColor.GOLD);title.setBillboard(Display.Billboard.CENTER);furniture.add(title);
             handTable=new HandTable(plugin,room,origin,tag);sync();return;
         }
@@ -274,7 +275,7 @@ final class TableView implements AutoCloseable {
         int col=(int)Math.floor(x/.28+3.5),row=(int)Math.floor((y-.02)/.28);return col>=0&&col<7&&row>=0&&row<6?col+","+row:null;
     }
     void cursor(Player p,GameWorld.Pick pick,String hover){
-        if(handTable!=null){handTable.hover(p,hover!=null&&hover.startsWith("@hand:")?hover.substring(6):null);return;}
+        if(handTable!=null){handTable.hover(p,hover!=null&&(hover.startsWith("@hand:")||hover.startsWith("@tile:"))?hover.substring(6):null);return;}
         boolean turn=room.phase==Room.Phase.PLAYING&&!room.busy&&room.undo==null&&room.seat(p.getUniqueId())>=0&&(room.seat(p.getUniqueId())==room.board.currentPlayer()||room.board instanceof dev.tabletop3d.rules.GoGame go&&go.scoring());
         String signature=room.revision+"/"+room.phase+"/"+room.busy+"/"+turn+"/"+rolling()+"/"+Language.generation()+"/"+(pick==null?"":pick.source());Overlay old=overlays.get(p.getUniqueId());
         boolean reset=old==null||!old.signature.equals(signature);

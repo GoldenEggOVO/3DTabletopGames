@@ -15,11 +15,13 @@ class HandMenuTest {
         assertTrue(text.contains("Blue"));assertTrue(text.contains("Counterclockwise"));assertTrue(text.contains("penalty: 6"));assertTrue(text.contains("Wild"));
         assertTrue(MessageText.plain(HandText.tableHint("lastcard",game)).contains("Blue"));verify(game,never()).hand(anyInt());
     }
-    @Test void publicDetailsNeverReadAnyConcealedHand()throws Exception{
+    @Test void spectatorMenuOmitsPublicTableDetailsAndNeverReadsConcealedHands()throws Exception{
         var fixture=new MenuFlowTest.Fixture();Room room=new Room(UUID.randomUUID(),"lastcard",2,0,0);
-        room.join(fixture.player.getUniqueId(),"Owner");room.fillBots();room.board=spy(new LastCardGame(2,0));room.phase=Room.Phase.PLAYING;fixture.plugin.rooms.put(room.id,room);
-        fixture.menus.publicHandTable(fixture.player,room,()->{});
-        verify((HandGame)room.board,never()).hand(anyInt());assertTrue(MessageText.plain(fixture.description).contains("concealed"));
+        room.join(UUID.randomUUID(),"Owner");room.fillBots();room.board=spy(new LastCardGame(2,0));room.phase=Room.Phase.PLAYING;fixture.plugin.rooms.put(room.id,room);
+        fixture.menus.observe(fixture.player,room);
+        verify((HandGame)room.board,never()).hand(anyInt());
+        assertTrue(fixture.buttons.stream().noneMatch(b->Set.of("public-table","rules","details").contains(b.id())));
+        assertTrue(MessageText.plain(fixture.description).contains("Owner"));
     }
     @Test void ownHandMenuReadsOnlyTheRequestingSeatAndStaleMoveIsRevisionBound()throws Exception{
         var fixture=new MenuFlowTest.Fixture();Room room=new Room(UUID.randomUUID(),"lastcard",2,0,0);room.board=spy(new LastCardGame(2,0));

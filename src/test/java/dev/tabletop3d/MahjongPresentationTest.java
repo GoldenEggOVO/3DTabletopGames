@@ -10,6 +10,22 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class MahjongPresentationTest {
+    @Test void newlyDrawnTileStaysAtRightEndUntilDiscardWhileOtherTilesRemainSorted(){
+        MahjongGame game=new MahjongGame(4,42L,Map.of());int checked=0;
+        for(int step=0;step<180&&!game.finished();step++){
+            List<List<HandGame.Piece>> before=java.util.stream.IntStream.range(0,4).mapToObj(game::hand).toList();
+            int seat=game.currentPlayer();var actions=game.legalActions(seat);
+            String action=actions.stream().filter(a->a.startsWith("discard:")).findFirst().orElse(actions.contains("pass")?"pass":actions.getFirst());
+            game.apply(seat,action);
+            if(!game.publicInfo().get("phase").equals("TURN"))continue;
+            int next=game.currentPlayer();var hand=game.hand(next);
+            var added=hand.stream().filter(tile->before.get(next).stream().noneMatch(old->old.id().equals(tile.id()))).toList();
+            if(added.size()!=1)continue;
+            assertEquals(added.getFirst(),hand.getLast());checked++;
+            for(int i=1;i<hand.size()-1;i++)assertTrue(Tiles.type(hand.get(i-1).face())<=Tiles.type(hand.get(i).face()));
+        }
+        assertTrue(checked>10,"Exercise successive real draws and hand sorting");
+    }
     @Test void remainingUsesOnlyOwnHandAndPublicTiles() {
         HandGame game=visible(Map.of("tileCount","136"),piece("a","m5"),piece("b","m0"));
         assertEquals(2,MahjongPresentation.remaining(game,0,"m5"));
@@ -31,10 +47,10 @@ class MahjongPresentationTest {
         assertEquals(3,MahjongPresentation.remaining(game,0,"m5"));
     }
 
-    @Test void maskedTilesAreNotInspectedAndRegionalIndicatorIsPublic() {
-        HandGame game=visible(Map.of("tileCount","144","indicator","z1","indicatorId","gold"));
+    @Test void maskedTilesAreNotInspectedAndFlowersArePublic() {
+        HandGame game=visible(Map.of("tileCount","144"));
         when(game.exposed(1)).thenReturn(List.of(piece("hidden","back"),piece("flower","f1")));
-        assertEquals(3,MahjongPresentation.remaining(game,0,"z1"));
+        assertEquals(4,MahjongPresentation.remaining(game,0,"z1"));
         assertEquals(0,MahjongPresentation.remaining(game,0,"f1"));
         assertEquals(1,MahjongPresentation.remaining(game,0,"f2"));
     }
@@ -92,14 +108,12 @@ class MahjongPresentationTest {
     }
 
     @Test void everyProfilePublishesItsActualTileCountAndIndicatorIds() {
-        for(String profile:List.of("guangdong","riichi","taiwan","fuzhou","sichuan","qinhuangdao")) {
+        for(String profile:List.of("guangdong","riichi","taiwan","sichuan")) {
             MahjongGame game=new MahjongGame(4,9,Map.of("profile",profile));
-            int count=switch(profile){case "taiwan","fuzhou"->144;case "sichuan"->108;case "qinhuangdao"->124;default->136;};
+            int count=switch(profile){case "taiwan"->144;case "sichuan"->108;default->136;};
             assertEquals(Integer.toString(count),game.publicInfo().get("tileCount"));
             if(profile.equals("riichi"))assertEquals(game.publicInfo().get("dora").split(",").length,game.publicInfo().get("doraIds").split(",").length);
-            if(profile.equals("fuzhou")||profile.equals("qinhuangdao"))assertNotNull(game.publicInfo().get("indicatorId"));
         }
-        for(String set:List.of("108","124","136"))assertEquals(set,new MahjongGame(4,9,Map.of("profile","qinhuangdao","tile-set",set)).publicInfo().get("tileCount"));
     }
 
     @Test void lastDiscardMetadataSurvivesResponsesAndClearsOnNewHand() {
