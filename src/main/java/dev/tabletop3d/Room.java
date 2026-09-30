@@ -33,7 +33,11 @@ final class Room {
         Seat seat=seats.remove(host);seats.add(target,seat);
     }
     static Map<String,String> readOptions(JsonObject record){
-        if(record.has("rulesVersion")&&record.get("rulesVersion").getAsInt()!=1)throw new IllegalArgumentException("Unsupported room rules version");
+        boolean cards=record.has("kind")&&record.get("kind").getAsString().equals("lastcard");
+        int version=record.has("rulesVersion")?record.get("rulesVersion").getAsInt():1;
+        if(version!=1&&!(cards&&version==2))throw new IllegalArgumentException("Unsupported room rules version");
+        if(legacyCards(record))
+            throw new IllegalArgumentException("Legacy Last Card history cannot replay as Color Eight; finish or remove that room before upgrading");
         if(!record.has("options"))return Map.of();
         Map<String,String> result=new LinkedHashMap<>();
         for(var entry:record.getAsJsonObject("options").entrySet()){
@@ -42,6 +46,11 @@ final class Room {
             result.put(entry.getKey(),entry.getValue().getAsString());
         }
         return result;
+    }
+    static boolean legacyCards(JsonObject record){
+        return record.has("kind")&&record.get("kind").getAsString().equals("lastcard")
+            &&(!record.has("rulesVersion")||record.get("rulesVersion").getAsInt()==1)
+            &&record.has("history")&&!record.getAsJsonArray("history").isEmpty();
     }
     int seat(UUID player) { for(int i=0;i<seats.size();i++) if(seats.get(i).id().equals(player)) return i; return -1; }
     boolean host(UUID player){return player.equals(owner!=null?owner:seats.isEmpty()?null:seats.getFirst().id());}

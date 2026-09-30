@@ -14,7 +14,7 @@ import static org.mockito.Mockito.*;
 class HandInteractionTest {
     @BeforeEach void setup(){MockBukkit.mock();}
     @AfterEach void cleanup(){MockBukkit.unmock();}
-    @Test void hoverRaisesCardSeparatesNeighborAndKeepsStableHit(){
+    @Test void hoverRaisesOnlySelectedCardAndKeepsStableHit(){
         var f=new HandTableTest.Fixture("lastcard");int start=f.entities.size();f.table.show(f.owner);
         Entity first=f.entities.get(start);Location before=first.getLocation();
         f.table.hover(f.owner,"a");for(int i=0;i<5;i++)f.table.tick();
@@ -61,8 +61,8 @@ class HandInteractionTest {
         when(f.game.handSize(0)).thenReturn(3);f.room.event(0,new JsonPrimitive("draw"));f.room.revision++;f.table.show(f.owner);
         Entity card=f.entities.get(start);f.table.hover(f.owner,"c");
         for(int i=0;i<20;i++)f.table.tick();
-        assertEquals(f.origin.getY()+.017+.105,card.getLocation().getY(),1e-6,"Hover during a draw must not be lost when the card arrives");
+        assertEquals(f.origin.getY()+.017+HandTable.CARD_LIFT,card.getLocation().getY(),1e-6,"Hover during a draw must not be lost when the card arrives");
         f.table.hover(f.owner,"c");for(int i=0;i<4;i++)f.table.tick();
-        assertEquals(f.origin.getY()+.017+.105,card.getLocation().getY(),1e-6);
+        assertEquals(f.origin.getY()+.017+HandTable.CARD_LIFT,card.getLocation().getY(),1e-6);
     }
 }

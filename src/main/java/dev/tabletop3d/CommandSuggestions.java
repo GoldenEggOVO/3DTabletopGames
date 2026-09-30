@@ -39,7 +39,8 @@ final class CommandSuggestions {
         if (args.length == 3 && args[0].equalsIgnoreCase("create")) {
             Stream<String> sizes = switch (args[1].toLowerCase(Locale.ROOT)) {
                 case "checkers" -> Stream.of("2", "3", "4", "6");
-                case "ludo", "lastcard" -> Stream.of("2", "3", "4");
+                case "ludo" -> Stream.of("2", "3", "4");
+                case "lastcard" -> Stream.of("2", "3", "4", "5");
                 case "mahjong" -> Stream.of("4");
                 case "gomoku", "xiangqi", "chess", "draughts", "reversi", "go", "go9", "go13", "connectfour" -> Stream.of("2");
                 default -> Stream.empty();

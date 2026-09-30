@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.8.0-SNAPSHOT
+
+- Replace Last Card rules with Color Eight: 54 cards, 2–5 players, Wild Eight, Draw One for every opponent, Skip, Reverse and Swap Hands; first empty hand wins before the last card effect.
+- Add original Concept B native card art, colored played Eights, owner-only color buttons, fixed-width overlapping hands and one-card hover lift.
+- Add a reusable native round card table with a three-block diameter; retain the rotating direction ring.
+- Use a fixed 30-second human turn, including offline turns; drawing/choosing color does not reset the clock.
+- Archive old Last Card histories with a full save backup before restoring other games. New card histories use rules version 2; command id remains `lastcard`.
+- New language keys avoid retired names and penalty text from old installed language files without overwriting edits.
+- Local acceptance build only; client visual/interaction acceptance pending.
+
+
 ## 1.7.5-SNAPSHOT — development build, no Release
 
 - Restore full-size public Mahjong tiles, enlarge wall digits and put dora indicators at the frame midpoint; keep wind inscriptions clear of melds.

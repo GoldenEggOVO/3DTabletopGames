@@ -101,7 +101,7 @@ final class GameWorld implements Listener, AutoCloseable {
     void anchor(Room r,Location location){
         Location snapped=TablePlacement.snap(location,2);UUID worldId=location.getWorld().getUID();
         for(Room existing:plugin.rooms.values())if(existing!=r&&worldId.equals(existing.anchorWorld)
-            &&TablePlacement.overlaps(snapped.getX(),snapped.getY(),snapped.getZ(),r.sideTray,r.kind.equals("mahjong")?1.5:1.125,existing.anchorX,existing.anchorY,existing.anchorZ,existing.sideTray,existing.kind.equals("mahjong")?1.5:1.125))
+            &&TablePlacement.overlaps(snapped.getX(),snapped.getY(),snapped.getZ(),r.sideTray,Set.of("mahjong","lastcard").contains(r.kind)?1.5:1.125,existing.anchorX,existing.anchorY,existing.anchorZ,existing.sideTray,Set.of("mahjong","lastcard").contains(existing.kind)?1.5:1.125))
             throw new IllegalArgumentException(dev.tabletop3d.ui.MessageText.plain(Language.component("error.table-overlap")));
         if(r.sideTray)for(int x=(int)Math.floor(snapped.getX()+1.30);x<=Math.floor(snapped.getX()+2.70);x++)
             for(int y=snapped.getBlockY();y<=Math.floor(snapped.getY()+1.8);y++)
@@ -177,7 +177,7 @@ final class GameWorld implements Listener, AutoCloseable {
             double distance=TableGeometry.intersection(eye.getY(),direction.getY(),view.origin.getY()+.03);
             if(distance<0||eye.getWorld().rayTraceBlocks(eye,direction,Math.max(.001,distance-.035),FluidCollisionMode.NEVER,true)!=null)return null;
             Vector point=eye.toVector().add(direction.clone().multiply(distance)).subtract(view.origin.toVector());
-            double half=view.room.kind.equals("mahjong")?1.5:1.125;
+            double half=Set.of("mahjong","lastcard").contains(view.room.kind)?1.5:1.125;
             return Math.abs(point.getX())<half&&Math.abs(point.getZ())<half?"@menu":null;
         }
         if(view.geometry.kind.equals("connectfour"))return view.verticalHit(eye,direction);
@@ -312,6 +312,9 @@ final class GameWorld implements Listener, AutoCloseable {
         pickCell(player,room,seat,cell);return true;
     }
     private void pickCell(Player player,Room room,int seat,String cell) {
+        if(cell.startsWith("@call:card:")&&room.kind.equals("lastcard")){
+            String action=cell.substring(11);if(room.board.legalActions(seat).contains(action))execute(player,room,List.of(action));return;
+        }
         if(cell.startsWith("@call:")&&room.kind.equals("mahjong")){
             String group=cell.substring(6);TableView view=views.get(room.id);
             if(view!=null&&view.expandHandCall(player,group))return;
@@ -338,8 +341,8 @@ final class GameWorld implements Listener, AutoCloseable {
                 else player.sendActionBar(Language.component("hint.unavailable").colorIfAbsent(NamedTextColor.GRAY));
                 return;
             }
-            List<String> choices=room.board.legalActions(seat).stream().filter(action->{String[] parts=action.split(":");return parts.length>1&&List.of(parts[1].split(",")).contains(id);}).toList();
-            if(!choices.isEmpty())execute(player,room,choices);else player.sendActionBar(Language.component("hint.unavailable").colorIfAbsent(NamedTextColor.GRAY));return;
+            TableView view=views.get(room.id);String action=view==null?null:view.cardHandAction(player,id);
+            if(action!=null)execute(player,room,List.of(action));else player.sendActionBar(Language.component("hint.unavailable").colorIfAbsent(NamedTextColor.GRAY));return;
         }
         if(cell.equals("@roll")) {
             if(room.board.legalActions(seat).contains("roll"))execute(player,room,List.of("roll"));else player.sendActionBar(Language.component("hint.roll.unavailable").colorIfAbsent(NamedTextColor.GOLD));

@@ -76,7 +76,7 @@ final class GameMenus implements AutoCloseable {
         }));
         buttons.add(new Button("mode",Language.component("setup.mode","mode",Language.component(draft.bots()?"setup.bots":"setup.friends")),
             ()->setup(p,new Setup(kind,draft.capacity(),!draft.bots(),draft.options()))));
-        int[] sizes=switch(kind){case "checkers"->new int[]{2,3,4,6};case "ludo","aeroplane","yacht","lastcard"->new int[]{2,3,4};default->new int[]{Tabletop3D.defaultCapacity(kind)};};
+        int[] sizes=switch(kind){case "checkers"->new int[]{2,3,4,6};case "lastcard"->new int[]{2,3,4,5};case "ludo","aeroplane","yacht"->new int[]{2,3,4};default->new int[]{Tabletop3D.defaultCapacity(kind)};};
         if(sizes.length>1)buttons.add(new Button("capacity",Language.component("setup.capacity","count",draft.capacity()),()->{
             int index=0;while(index<sizes.length&&sizes[index]!=draft.capacity())index++;
             setup(p,new Setup(kind,sizes[(index+1)%sizes.length],draft.bots(),draft.options()));
@@ -139,7 +139,7 @@ final class GameMenus implements AutoCloseable {
         if(r.phase==Room.Phase.PLAYING){
             b.add(new Button("play",Language.component("menu.play"),()->{forget(p);plugin.enterArena(p,r);}));
             if(r.board!=null&&!r.busy&&r.undo==null){
-                List<String> actions=Set.of("go","go9","go13").contains(r.kind)?List.of("pass","accept","resume"):r.kind.equals("lastcard")?List.of("declare"):List.of();
+                List<String> actions=Set.of("go","go9","go13").contains(r.kind)?List.of("pass","accept","resume"):List.of();
                 if(!actions.isEmpty()){
                     long revision=r.revision;List<String> legal=r.board.legalActions(seat);
                     for(String action:actions)if(legal.contains(action))b.add(new Button(action,r.kind.equals("lastcard")?HandText.action(r,seat,action):actionLabel(r,action),()->plugin.action(p,r,revision,new JsonPrimitive(action))));
@@ -272,7 +272,7 @@ final class GameMenus implements AutoCloseable {
     }
     private void rules(Player p,String kind,Runnable back){
         String key=Set.of("go9","go13").contains(kind)?"go":Tabletop3D.NAMES.containsKey(kind)||Set.of("yacht","aeroplane").contains(kind)?kind:"default";
-        Component text=Language.component("rules."+key);Room r=plugin.room(p);
+        Component text=Language.component("rules."+(key.equals("lastcard")?"color-eight":key));Room r=plugin.room(p);
         if(r!=null&&r.board!=null&&(r.kind.equals(kind)||kind.equals("go")&&Set.of("go","go9","go13").contains(r.kind))){var info=r.board.publicInfo();text=text.append(Component.newline()).append(Component.newline()).append(Language.legacy(info.getOrDefault("rules",""))).append(Component.newline()).append(Language.legacy(info.getOrDefault("rulesVariant","")));}
         text=text.append(Component.newline()).append(Component.newline()).append(Language.component("rules.footer","seconds",plugin.getConfig().getLong("reconnect-seconds",120)));
         show(p,Language.component("rules.title","game",RoomText.game(kind)),text,List.of(),back);

@@ -1,3 +1,7 @@
+## 升级到 1.8.0-SNAPSHOT
+
+Last Card 更换为彩八（Color Eight），保留 `lastcard` 标识，采用 54 张牌和 2～5 人规则。卡牌圆桌直径 3 格，需检查周边空间。旧 Last Card 的牌号和动作历史不能按新规则重放：恢复时先保存完整 `rooms.pre-color-eight-*.json` 备份，再归档这些有历史的旧卡牌房间；其他游戏和空卡牌等候室继续恢复。彩八使用 rulesVersion 2，旧 finish 选项忽略。保留备份即可用前一版本恢复旧对局。麻将、其他游戏、自定义菜单和语言文件不变。
+
 # 升级至 3dtabletop 1.7.5-SNAPSHOT
 
 ## 1.7.5 实时交互与可读性

@@ -49,7 +49,7 @@ final class TableLobby implements Listener, AutoCloseable {
         List<Entry> out=new ArrayList<>();
         for(Room r:plugin.rooms.values()){
             Location c=plugin.arena.center(r.table);
-            out.add(new Entry("board:"+r.id,c,1.1,TableGeometry.SURFACE+(r.kind.equals("connectfour")?1.85:0),Tabletop3D.gameName(r.kind),
+            out.add(new Entry("board:"+r.id,c,r.kind.equals("lastcard")?1.5:1.1,TableGeometry.SURFACE+(r.kind.equals("connectfour")?1.85:0),Tabletop3D.gameName(r.kind),
                     r.phase==Room.Phase.LOBBY?"等候":r.phase==Room.Phase.FINISHED?"已结束":"进行中",
                     r.seats.stream().map(Room.Seat::name).toList(),r.capacity,
                     new HashSet<>(r.seats.stream().map(Room.Seat::id).toList()),null,true,p->plugin.join(p,r),p->plugin.menus.room(p,r)));

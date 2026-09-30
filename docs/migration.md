@@ -1,3 +1,7 @@
+## Updating to 1.8.0-SNAPSHOT
+
+Last Card becomes Color Eight (`lastcard` identifier retained), with a new 54-card deck and 2–5 players. Card tables are round and 3 blocks across; check surrounding clearance. Legacy Last Card histories cannot replay under the new rules. Restore makes a complete `rooms.pre-color-eight-*.json` backup and archives only those old nonempty histories; other games and empty card lobbies restore normally. New card records use rulesVersion 2. Stored legacy finish options are ignored. Keep the backup to restore those games using the previous build. Other games, customized menus and language files are unchanged.
+
 ## Updating to 1.7.5-SNAPSHOT
 
 Saved rules, room schema, tile IDs, seeds and history are unchanged. Public tiles and center digits are larger; dora indicators and wind labels have new positions. Recheck surrounding clearance and Shift camera feel on a test server. Full hand/board action-menu entry points and chance/hand undo requests are removed. Necessary Go/Last Card state actions and Sichuan table preparation remain accessible. All Close buttons render with one style even for custom layouts; installed YAML remains untouched. New No Yaku and Riichi-selection language keys fall back to bundled English.

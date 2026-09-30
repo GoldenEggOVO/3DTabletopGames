@@ -21,7 +21,6 @@ public final class GameOptions {
             case "gomoku" -> List.of(option("first","host","host","opponent","random"),option("double-three","allow","allow","forbid"),
                 option("double-four","allow","allow","forbid"),option("overline","allow","allow","forbid"));
             case "checkers" -> List.of(option("jump-own","allow","allow","forbid"),option("other-camps","allow","allow","forbid"),option("finish","first","first","all"));
-            case "lastcard" -> List.of(option("finish","first","first","all"));
             default -> List.of();
         };
     }
@@ -29,6 +28,7 @@ public final class GameOptions {
         Objects.requireNonNull(supplied,"Room options");
         Map<String,String> result=new LinkedHashMap<>();
         for(var entry:supplied.entrySet()){
+            if(kind.equals("lastcard")&&entry.getKey().equals("finish")&&Set.of("first","all").contains(entry.getValue()))continue;
             Option option=forGame(kind,supplied).stream().filter(o->o.key().equals(entry.getKey())).findFirst()
                 .orElseThrow(()->new IllegalArgumentException("Unknown rule option for "+kind+": "+entry.getKey()));
             if(!option.values().contains(entry.getValue()))throw new IllegalArgumentException("Invalid rule option: "+entry.getKey()+"="+entry.getValue());

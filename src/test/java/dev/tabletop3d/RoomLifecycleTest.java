@@ -9,6 +9,22 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class RoomLifecycleTest {
+    @Test void archivedLegacyCardMatchDoesNotBlockOtherRooms(@org.junit.jupiter.api.io.TempDir java.nio.file.Path directory)throws Exception{
+        Tabletop3D plugin=mock(Tabletop3D.class,CALLS_REAL_METHODS);plugin.arena=mock(GameWorld.class);
+        TabletopTest.set(plugin,"rooms",new LinkedHashMap<UUID,Room>());TabletopTest.set(plugin,"returns",new HashMap<>());
+        doReturn(directory.toFile()).when(plugin).getDataFolder();doReturn(java.util.logging.Logger.getAnonymousLogger()).when(plugin).getLogger();
+        UUID old=UUID.randomUUID(),other=UUID.randomUUID();String data="""
+            {"returns":{},"rooms":[
+              {"id":"%s","kind":"lastcard","rulesVersion":1,"history":[{"seat":0,"action":"draw"}],"phase":"FINISHED"},
+              {"id":"%s","kind":"connectfour","capacity":2,"seed":1,"table":0,"phase":"LOBBY","revision":0,"seats":[],"history":[]} ]}
+            """.formatted(old,other);
+        java.nio.file.Files.writeString(directory.resolve("rooms.json"),data);plugin.restore();
+        assertEquals(Set.of(other),plugin.rooms.keySet());assertEquals(data,java.nio.file.Files.readString(directory.resolve("rooms.json")));
+        try(var files=java.nio.file.Files.list(directory)){
+            var backup=files.filter(p->p.getFileName().toString().startsWith("rooms.pre-color-eight-")).findFirst().orElseThrow();
+            assertEquals(data,java.nio.file.Files.readString(backup));
+        }
+    }
     @Test void removedRoomsRejectAllPlayerMutationsBeforeAnySideEffect() throws Exception {
         Tabletop3D plugin=mock(Tabletop3D.class,CALLS_REAL_METHODS);
         Player player=mock(Player.class);UUID id=UUID.randomUUID();when(player.getUniqueId()).thenReturn(id);

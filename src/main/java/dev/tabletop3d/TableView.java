@@ -114,6 +114,11 @@ final class TableView implements AutoCloseable {
     }
     TableView(Tabletop3D plugin,Room room,Location center,NamespacedKey tag,TableMaps maps){
         this.plugin=plugin;this.room=room;this.tag=tag;geometry=new TableGeometry(room.kind,room.board.cells());origin=center.clone().add(0,TableGeometry.SURFACE,0);
+        if(room.kind.equals("lastcard")){
+            for(var part:RoundCardTable.parts())furniture.add(block(origin,part.material(),part.x(),part.y(),part.z(),part.w(),part.h(),part.d(),null));
+            title=text(origin.clone().add(0,1.8,0),"",.4,false,NamedTextColor.GOLD);title.setBillboard(Display.Billboard.CENTER);furniture.add(title);
+            handTable=new HandTable(plugin,room,origin,tag);sync();return;
+        }
         double width=room.kind.equals("mahjong")?3:2.25,leg=width/2-.135,edge=width/2-.065;
         furniture.add(block(origin,Material.DARK_OAK_PLANKS,0,-.19,0,width,.14,width,null));
         for(double x:new double[]{-leg,leg})for(double z:new double[]{-leg,leg})furniture.add(block(origin,Material.STRIPPED_DARK_OAK_LOG,x,-TableGeometry.SURFACE,z,.15,TableGeometry.SURFACE-.13,.15,null));
@@ -257,6 +262,7 @@ final class TableView implements AutoCloseable {
     void dismissHandCalls(Player player){if(handTable!=null)handTable.dismissCalls(player);}
     boolean expandHandCall(Player player,String group){return handTable!=null&&handTable.expandCall(player,group);}
     String mahjongHandAction(Player player,String id){return handTable==null?null:handTable.handAction(player,id);}
+    String cardHandAction(Player player,String id){return handTable==null?null:handTable.cardAction(player,id);}
     void maintainMahjongPress(Player player){if(handTable!=null)handTable.keepHandPress(player);}
     record Hit(String cell,double distance){}
     Hit hitPiece(Location eye,org.bukkit.util.Vector direction){

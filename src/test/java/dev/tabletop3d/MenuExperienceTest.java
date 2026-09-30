@@ -116,21 +116,10 @@ class MenuExperienceTest {
             assertTrue(Collections.disjoint(ids(f),List.of("pass","accept","resume")),"Undo pauses state actions");
         }
     }
-    @Test void lastCardRoomKeepsDeclarationWithoutOfferingCardMovesOrAnInventedDrawPass() throws Exception {
-        var f=new MenuFlowTest.Fixture();Room r=playingRoom(f,"lastcard");var game=(LastCardGame)r.board;
-        TabletopTest.set(game,"hands",new ArrayList<>(List.of(new ArrayList<>(List.of(0,1)),new ArrayList<>(List.of(12,13)),new ArrayList<>(List.of(24,25)),new ArrayList<>(List.of(36,37)))));
-        List<Integer> deck=new ArrayList<>();for(int card=0;card<52;card++)if(!Set.of(0,1,12,13,24,25,36,37).contains(card))deck.add(card);
-        TabletopTest.set(game,"deck",deck);
-        TabletopTest.set(game,"current",0);r.revision=7;
-        assertTrue(game.legalActions(0).contains("declare"));f.menus.room(f.player,r);
-        assertEquals(List.of("play","declare","options","back","close"),ids(f));
-        click(f,"declare");verify(f.plugin).action(f.player,r,7,new com.google.gson.JsonPrimitive("declare"));
-        game.apply(0,"declare");r.revision++;f.menus.room(f.player,r);
-        assertEquals(List.of("play","options","back","close"),ids(f),"Declaration cannot repeat within a turn");
-        assertTrue(deck.remove(Integer.valueOf(26)));TabletopTest.set(game,"pile",new ArrayList<>(List.of(26)));TabletopTest.set(game,"activeColor","b");
-        assertEquals(List.of("draw"),game.legalActions(0));game.apply(0,"draw");r.revision++;f.menus.room(f.player,r);
-        assertTrue(game.legalActions(0).isEmpty());assertEquals(1,game.currentPlayer());
-        assertEquals(List.of("play","options","back","close"),ids(f),"Drawing already ends the turn");
+    @Test void colorEightRoomHasNoDeclarationOrHandMoveMenu() throws Exception {
+        var f=new MenuFlowTest.Fixture();Room r=playingRoom(f,"lastcard");f.menus.room(f.player,r);
+        assertEquals(List.of("play","options","back","close"),ids(f));
+        assertFalse(r.board.legalActions(0).contains("declare"));
     }
     private static Room playingRoom(MenuFlowTest.Fixture f,String kind){
         Room r=new Room(UUID.randomUUID(),kind,Tabletop3D.defaultCapacity(kind),0,0);

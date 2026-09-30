@@ -128,6 +128,19 @@ class LanguageTest {
             Language.load(plugin);
         }
     }
+    @Test void oldCardLanguageCannotRestoreTheRetiredNameOrPenaltyDisplay() throws Exception {
+        var plugin=mock(Tabletop3D.class);var config=new YamlConfiguration();config.set("language","en");
+        when(plugin.getConfig()).thenReturn(config);when(plugin.getDataFolder()).thenReturn(temp.toFile());
+        when(plugin.getResource("lang/en.yml")).thenAnswer(i->getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
+        Path english=temp.resolve("lang/en.yml");Files.createDirectories(english.getParent());
+        String previous="messages:\n  'game.lastcard': 'Last Card'\n  'hand.card-state': 'Draw Penalty: {penalty}'\n";
+        Files.writeString(english,previous);
+        try {
+            Language.load(plugin);assertEquals("Color Eight",plain(RoomText.game("lastcard")));
+            assertFalse(plain(HandText.status("lastcard",new dev.tabletop3d.rules.LastCardGame(2,10))).contains("Penalty"));
+            assertEquals(previous,Files.readString(english));
+        }finally{Files.delete(english);Language.load(plugin);}
+    }
     @Test void previousEnglishFileKeepsEditsAndReceivesNewBundledKeys() throws Exception {
         var plugin = mock(Tabletop3D.class);
         var config = new YamlConfiguration();

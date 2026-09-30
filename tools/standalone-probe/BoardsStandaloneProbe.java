@@ -180,7 +180,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         var roomConstructor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class,Map.class);roomConstructor.setAccessible(true);
         var constructor=viewType.getDeclaredConstructors()[0];constructor.setAccessible(true);
         for(String kind:List.of("lastcard","mahjong")){
-            int capacity=kind.equals("mahjong")?4:2;Map<String,String> options=kind.equals("mahjong")?Map.of("profile","taiwan"):Map.of();
+            int capacity=kind.equals("mahjong")?4:5;Map<String,String> options=kind.equals("mahjong")?Map.of("profile","taiwan"):Map.of();
             Object room=roomConstructor.newInstance(UUID.randomUUID(),kind,capacity,1L,0,options);
             Field board=roomType.getDeclaredField("board");board.setAccessible(true);board.set(room,GameFactory.create(kind,capacity,1L,options));
             Player owner=player(world,new AtomicInteger(),true),spectator=player(world,new AtomicInteger(),true,UUID.randomUUID());

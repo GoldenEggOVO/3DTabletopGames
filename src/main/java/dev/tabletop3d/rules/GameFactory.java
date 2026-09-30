@@ -14,7 +14,7 @@ public final class GameFactory {
         options=GameOptions.validate(game,options);
         return switch (game.toLowerCase(Locale.ROOT)) {
             case "mahjong" -> new MahjongGame(players,seed,options);
-            case "lastcard" -> new LastCardGame(players,seed,options.getOrDefault("finish","first").equals("all"));
+            case "lastcard" -> new LastCardGame(players,seed);
             case "ludo" -> new LudoGame(players,seed,GameOptions.ludo(options));
             case "connectfour" -> { requireTwo(players); yield new ConnectFourGame(); }
             case "gomoku" -> { requireTwo(players); yield new GomokuGame(new GomokuOptions(options.getOrDefault("double-three","allow").equals("forbid"),options.getOrDefault("double-four","allow").equals("forbid"),options.getOrDefault("overline","allow").equals("forbid"))); }

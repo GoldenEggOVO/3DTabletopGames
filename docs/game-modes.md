@@ -2,9 +2,9 @@
 
 [English](game-modes.md) | [简体中文](game-modes.zh-CN.md)
 
-This page describes **1.7.5-SNAPSHOT**, an unpublished development build. It has not been deployed to production servers. Local artwork and model previews do not replace Minecraft client acceptance; see [verification](verification.md) for evidence and status.
+This page describes **1.8.0-SNAPSHOT**, an unpublished development build. It has not been deployed to production servers. Local artwork and model previews do not replace Minecraft client acceptance; see [verification](verification.md) for evidence and status.
 
-Public Mahjong tiles now use the same width as hand tiles, and the central wall digits are larger again. Hover privately highlights matching own/public tiles; only the aimed hand tile rises. A draw leaves existing tiles in place and adds the new tile at the far right with a gap. Continuous clicks remain guarded across other seats’ turns, preventing a replacement tile at the same aim from being discarded. Unavailable discards are gray. A complete Riichi shape without yaku shows a red No Yaku hint on its actual draw or pending public discard. Choose Chi/Pon/Kan first, then a complete combination. Riichi arms eligible discards; Ron and Tsumo have their own buttons. Dora indicator tiles sit at the middle of the frame, melds remain lower-right, and corner wind inscriptions stay clear of melds. The lower Shift view preserves standing face visibility and temporary invisibility. Sichuan exchange selection/removal, exchange confirmation and missing-suit choice are available directly at the table. Last Card retains its rotating direction ring and underlined 6/9 artwork; its 1–8 deck is unchanged.
+Public Mahjong tiles now use the same width as hand tiles, and the central wall digits are larger again. Hover privately highlights matching own/public tiles; only the aimed hand tile rises. A draw leaves existing tiles in place and adds the new tile at the far right with a gap. Continuous clicks remain guarded across other seats’ turns, preventing a replacement tile at the same aim from being discarded. Unavailable discards are gray. A complete Riichi shape without yaku shows a red No Yaku hint on its actual draw or pending public discard. Choose Chi/Pon/Kan first, then a complete combination. Riichi arms eligible discards; Ron and Tsumo have their own buttons. Dora indicator tiles sit at the middle of the frame, melds remain lower-right, and corner wind inscriptions stay clear of melds. The lower Shift view preserves standing face visibility and temporary invisibility. Sichuan exchange selection/removal, exchange confirmation and missing-suit choice are available directly at the table. Color Eight retains its rotating direction ring and underlined 6/9 artwork, with a new 54-card deck.
 
 ## Set up a game
 
@@ -15,7 +15,7 @@ Public Mahjong tiles now use the same width as hand tiles, and the central wall 
 
 **Rules lock when the room is created.** Joining players use those rules; undo and rematch retain them. To change rules, create another room. `/3dtabletop create <kind> [players]` creates a room with default rules; use Game Setup to customize them.
 
-The lobby prioritizes readiness and starting. Playing rooms return to the physical table and do not offer full hand/board move selectors. Necessary Go pass/scoring actions and Last Card declaration remain separate legal-state buttons. Room options offer undo only for deterministic board games; leaving remains available. Help/Details entries are removed. All Close buttons share the same bottom exit, red bracketed caption and width, including customized layouts; installed YAML bytes are preserved.
+The lobby prioritizes readiness and starting. Playing rooms return to the physical table and do not offer full hand/board move selectors. Necessary Go pass/scoring actions remain separate legal-state buttons; Color Eight pass and wild-color controls are on the table. Room options offer undo only for deterministic board games; leaving remains available. Help/Details entries are removed. All Close buttons share the same bottom exit, red bracketed caption and width, including customized layouts; installed YAML bytes are preserved.
 
 | Game | Players | Setup choices |
 | --- | --- | --- |
@@ -25,7 +25,7 @@ The lobby prioritizes readiness and starting. Playing rooms return to the physic
 | Go | 2 | 9×9, 13×13 or 19×19 board |
 | Ludo | 2–4 | First pawn, blocking, reaching home, finish condition |
 | Chinese Checkers | 2, 3, 4 or 6 | Jump own pieces, other camps, finish condition |
-| Last Card | 2–4 | First place or all places |
+| Color Eight | 2–5 | First empty hand wins; fixed rules |
 | Mahjong | 4 | Four regional profiles and their room rules |
 
 Yacht and Aeroplane remain unavailable for creating new rooms. Existing supported historical room records can still be restored.
@@ -47,7 +47,6 @@ These defaults and available values match the current [room option definitions](
 | Chinese Checkers | Jump Own Pieces | Allowed | Allowed / Forbidden |
 | Chinese Checkers | Other Camps | Allowed | Allowed / Forbidden |
 | Chinese Checkers | Game Finish | First Place | First Place / All Places |
-| Last Card | Game Finish | First Place | First Place / All Places |
 
 ### First move and the host
 
@@ -79,29 +78,23 @@ This mode keeps the **121-hole star board, ten pieces per player and 2/3/4/6-pla
 - Pieces that enter their target camp cannot leave it.
 - **All Places** skips completed players while leaving their pieces on the board as possible jump bridges. The last remaining player gets the final place. Repetition and blocked-position draws still apply.
 
-## Last Card: the 52-card game
+## Color Eight (彩八): the 54-card game
 
-Last Card uses an original presentation without branded card artwork. Its deck and special actions differ from UNO. The variant is informed by the [Last Card play guide](https://gamefaqs.gamespot.com/switch/286602-clubhouse-games-51-worldwide-classics/faqs/78437/last-card); the following describes the implemented room rules.
+The stable room/command identifier is `lastcard`. The original native artwork uses red, blue, yellow and purple and needs no resource pack. Gameplay is informed by the [Blazing 8s FAQ](https://support-apps.discord.com/hc/en-us/articles/26501925147415-Blazing-8s-FAQ) and locally captured public client/game states. The palette and artwork are our own.
 
-| Cards | Contents |
-| --- | --- |
-| Red, yellow, blue and purple | Each color has one card of each number 1–8, plus Skip, Reverse, Draw Two and Draw Three: 12 cards per color |
-| Wild | Four cards that choose the next color |
-| Total | 52 cards; five dealt to each player |
+- 2–5 players; five cards each. The first seat opens. An initial colored card establishes color/rank without executing its special effect; wilds and swaps cannot open.
+- Each color has 1–7, 9 and 10, plus Draw One, Skip and Reverse (48 colored cards). Four colorless Wild Eights and two colorless Swaps make 54.
+- Match the active color or number/type. Wild Eight and Swap are unrestricted on your own turn. There are no interrupt plays, declaration penalties or draw stacks.
+- You may draw one voluntarily. If any card in your resulting hand is legal, you may play any legal card or pass; otherwise play passes automatically. Pass before drawing draws once; pass after drawing adds no card.
+- A human turn lasts 30 seconds. Timeout draws once and passes, or only passes if already drawn. Selecting a Wild Eight does not reset this clock; timeout chooses the most common colored suit in your hand.
+- Wild Eight opens four private color buttons above the selected card. It stays in your hand until color submission, then the discard becomes the selected color's 8.
+- Draw One gives every other player one card without skipping. Skip misses the next player. Reverse flips direction; in two-player games it is equivalent to Skip for effects and matching.
+- Swap trades your remaining hand with the next player in the current direction, preserving the active color and rank/type through consecutive swaps. Play then goes to that player.
+- First empty hand wins **before** resolving the final special effect. Discard recycling keeps the top card and recycles before attempting a draw.
 
-The first player is selected randomly. The discard pile starts empty, so the opening player may choose any card. Thereafter, play a matching color, matching number/symbol, or Wild. Playing Wild includes choosing its color.
+The table is a native circle of diameter 3 blocks. Hands overlap in one bounded-width fan; only the aimed card rises, without moving neighbors. Unplayable cards are gray during your turn. Private faces/buttons stay owner-only. Right-click the deck to draw and the table Pass button to end your turn.
 
-| Action | Effect |
-| --- | --- |
-| Skip | Skip the next active player; with two players, the same player acts again |
-| Reverse | Reverse direction; with two players, play passes to the other player |
-| Draw Two / Draw Three | The next player may stack the same draw type, regardless of color, or take the accumulated penalty; +2 and +3 cannot be mixed |
-| Draw | Without a penalty, draw one only when no card can be played. Drawing always ends the turn; the drawn card is not played immediately |
-| Declare Last Card | When holding two cards, declare before playing down to one; forgetting adds a five-card penalty |
-
-Under a draw penalty, only the matching draw type can be played; a Wild does not cancel it. When the deck empties, earlier discards are shuffled back into it while the top discard stays on the table.
-
-**First Place** ends when someone empties their hand. **All Places** removes finished players from the turn order, keeps their final card's applicable effects in play, and ends when the last remaining player can be assigned the final place. The first finisher remains the winner.
+New records use `rulesVersion: 2`. On upgrade, old Last Card records with nonempty history are omitted from active restoration after making a complete `rooms.pre-color-eight-*.json` backup. Other games and empty Last Card lobbies continue restoring. The offline replay verifier rejects old histories rather than interpreting changed card IDs.
 
 ## Mahjong setup
 
@@ -117,9 +110,9 @@ After selecting a profile in basic setup, open **Detailed Rules** for that regio
 
 ## Private hands and public information
 
-Last Card and Mahjong show hand faces only to their owner. Other players and spectators see backs/counts, public discards and exposed tiles. Choose cards and tiles directly on the table. Last Card also displays the current color, direction, draw penalty and top discard. Mahjong menus show each player's match points.
+Color Eight and Mahjong show hand faces only to their owner. Other players and spectators see backs/counts, public discards and exposed tiles. Choose cards and tiles directly on the table. Color Eight displays the current color, direction and top discard. Mahjong menus show each player's match points.
 
-Both games use original face artwork built from native block displays. Mahjong tiles show suit and honor patterns; Last Card uses larger upright cards. Aim at a Last Card card to lift it and move nearby cards aside; Mahjong raises only the selected tile. Use the physical hand and table buttons to choose legal actions. While seated in a Last Card game, right-click the central deck when drawing is legal. A rejected draw leaves the game unchanged. Newly drawn cards travel from the deck into your private hand; initial display, reconnecting and saved-room recovery show cards in place.
+Both games use original face artwork built from native block displays. Mahjong tiles show suit and honor patterns; Color Eight uses upright cards. Aim at a Color Eight card to raise only that card; Mahjong raises only the selected tile. Use the physical hand and table buttons to choose legal actions. While seated in a Color Eight game, right-click the central deck when drawing is legal. A rejected draw leaves the game unchanged. Newly drawn cards travel from the deck into your private hand; initial display, reconnecting and saved-room recovery show cards in place.
 
 In other games, Xiangqi keeps Chinese piece inscriptions, including 砲. Ludo pawns have no floating number labels; stacked-pawn choices still identify the pieces in the menu. The dice stand uses the die model without an extra artificial shadow mesh.
 

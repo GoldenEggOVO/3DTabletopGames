@@ -19,7 +19,7 @@ public final class GenerateModeSnapshot {
         add("gomoku",2,Map.of("double-three","forbid","double-four","forbid","overline","forbid"));
         add("checkers",3,Map.of("jump-own","forbid","other-camps","forbid","finish","all"));
         add("chess",2,Map.of("first","opponent"));
-        add("lastcard",4,Map.of());add("lastcard",3,Map.of("finish","all"));
+        add("lastcard",4,Map.of());add("lastcard",5,Map.of());
         for(String profile:List.of("riichi","guangdong","sichuan","taiwan")){
             Map<String,String> options=new LinkedHashMap<>(Map.of("profile",profile,"rounds","1"));
             options.putAll(switch(profile){
@@ -43,7 +43,7 @@ public final class GenerateModeSnapshot {
             game.apply(seat,action);JsonObject event=new JsonObject();event.addProperty("seat",seat);event.addProperty("action",action);history.add(event);
         }
         JsonObject room=new JsonObject();room.addProperty("id",id.toString());room.addProperty("kind",kind);room.addProperty("capacity",capacity);
-        room.addProperty("seed",seed);room.addProperty("table",index);room.addProperty("rulesVersion",1);room.add("options",new Gson().toJsonTree(options));
+        room.addProperty("seed",seed);room.addProperty("table",index);room.addProperty("rulesVersion",kind.equals("lastcard")?2:1);room.add("options",new Gson().toJsonTree(options));
         room.addProperty("sideTray",kind.equals("ludo"));room.addProperty("anchorWorld",rooms.get(0).getAsJsonObject().get("anchorWorld").getAsString());
         room.addProperty("anchorX",(index%4)*12);room.addProperty("anchorY",83);room.addProperty("anchorZ",(index/4)*12);
         room.addProperty("phase",game.finished()?"FINISHED":"PLAYING");room.addProperty("completed",game.finished());room.addProperty("result",game.finished()?game.outcome():"");

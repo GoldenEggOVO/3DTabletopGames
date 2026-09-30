@@ -11,7 +11,7 @@ final class HandText {
         if(kind.equals("lastcard")){
             Component top=game.cells().stream().filter(c->c.id().equals("discard")&&!c.piece().isEmpty()).findFirst()
                 .map(c->piece(kind,c.piece())).orElseGet(()->Language.component("hand.no-discard"));
-            return Language.component("hand.card-state","top",top,"color",color(info.getOrDefault("color","")),
+            return Language.component("hand.color-eight-state","top",top,"color",color(info.getOrDefault("color","")),
                 "direction",Language.component("hand.direction."+(info.getOrDefault("direction","").equals("Clockwise")?"clockwise":"counterclockwise")),
                 "penalty",info.getOrDefault("drawPenalty","0"),"remaining",game.deckSize());
         }
@@ -31,7 +31,7 @@ final class HandText {
     }
     static Component tableHint(String kind,HandGame game){
         var info=game.publicInfo();
-        if(kind.equals("lastcard"))return Language.component("hand.card-table","color",color(info.getOrDefault("color","")),"penalty",info.getOrDefault("drawPenalty","0"));
+        if(kind.equals("lastcard"))return Language.component("hand.color-eight-table","color",color(info.getOrDefault("color","")));
         return Language.component("hand.phase."+info.getOrDefault("phase","TURN"));
     }
     private static Component color(String color){return Language.component(color.isEmpty()?"card.color.any":"card.color."+color);}
@@ -44,6 +44,7 @@ final class HandText {
         if(face.equals("back"))return Language.component("tile.concealed");
         if(kind.equals("lastcard")){
             if(face.equals("wild"))return Language.component("card.wild");
+            if(face.equals("swap"))return Language.component("card.swap");
             return Language.component("card.face","color",Language.component("card.color."+face.charAt(0)),"rank",Language.component("card.rank."+face.substring(1)));
         }
         if(face.length()<2)return Component.text(face);

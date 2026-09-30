@@ -5,6 +5,17 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RoomReplayVerifierTest {
+    @Test void colorEightHistoryRequiresTheNewRulesVersion(){
+        var room=JsonParser.parseString("""
+            {"id":"cards","kind":"lastcard","capacity":5,"seed":1,"rulesVersion":1,
+            "options":{"finish":"all"},"history":[{"seat":0,"action":"pass"}]}
+            """).getAsJsonObject();
+        assertThrows(IllegalArgumentException.class,()->Room.readOptions(room));
+        room.addProperty("rulesVersion",2);assertTrue(Room.readOptions(room).containsKey("finish"));
+        var source=new com.google.gson.JsonObject();var array=new com.google.gson.JsonArray();array.add(room);source.add("rooms",array);
+        assertDoesNotThrow(()->RoomReplayVerifier.verify(source));
+        var options=dev.tabletop3d.rules.GameOptions.validate("lastcard",Room.readOptions(room));assertTrue(options.isEmpty());
+    }
     @Test void acceptsAValidConnectFourHistory() {
         var source = JsonParser.parseString("""
             {"rooms":[{"id":"a","kind":"connectfour","capacity":2,"seed":1,

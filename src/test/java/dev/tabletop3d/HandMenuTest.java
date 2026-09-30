@@ -8,11 +8,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class HandMenuTest {
-    @Test void wildColorAndStackedDrawPenaltyArePublicWithoutExposingAnyHand(){
+    @Test void wildColorAndDirectionArePublicWithoutExposingAnyHand(){
         HandGame game=mock(HandGame.class);when(game.publicInfo()).thenReturn(Map.of("color","b","direction","Counterclockwise","drawPenalty","6"));
         when(game.cells()).thenReturn(List.of(new Cell("discard",0,0,"wild",-1)));
         String text=MessageText.plain(HandText.status("lastcard",game));
-        assertTrue(text.contains("Blue"));assertTrue(text.contains("Counterclockwise"));assertTrue(text.contains("penalty: 6"));assertTrue(text.contains("Wild"));
+        assertTrue(text.contains("Blue"));assertTrue(text.contains("Counterclockwise"));assertFalse(text.contains("penalty"));assertTrue(text.contains("Wild"));
         assertTrue(MessageText.plain(HandText.tableHint("lastcard",game)).contains("Blue"));verify(game,never()).hand(anyInt());
     }
     @Test void spectatorMenuOmitsPublicTableDetailsAndNeverReadsConcealedHands()throws Exception{

@@ -1,5 +1,16 @@
 # Verification and acceptance
 
+## Local build: 1.8.0-SNAPSHOT — Color Eight
+
+- JDK 25 / Maven package: **467 tests passed**, zero failures, errors or skipped tests. New regressions cover the 54-card rules, 2–5 players, one voluntary draw, final-card effect ordering, swap matching, recycling, replay version 2, private four-color selection, offline/online 30-second turns and old language overrides.
+- Five-player dense-hand regression aims at all **54 cards at each of five seats**. It exposed rotated world AABB overlap; card hit detection now transforms the ray to the card's local coordinates. Mahjong retains its previous hit path.
+- The exact JAR passed three clean Purpur **26.2-2622** boots in `target/standalone-smoke-20260929-224445/` (create, restart, legacy-folder migration), including native five-player hand construction, privacy, display cleanup and existing menu/sound checks. No additional plugin dependency was installed.
+- Independent review caught old Last Card histories blocking unrelated room restoration and the offline 5-second card timer; both were repaired and covered by regressions. Old card histories are now fully backed up before being omitted, while other games continue restoring.
+- `native-model-preview.png` is generated from production HandArt, HandTable fan poses and RoundCardTable parts; it is a source preview, not a Minecraft screenshot. Client glow, exact fonts/materials, animation, five-player aim feel and frame rate still require the client checklist. No production deployment or public Release.
+
+Verified JAR SHA-256: `48c419b2c690fd6100bc99245660e30373934f6f53561f575605cceab96f9033`. Exact passing receipts accompany the local acceptance package.
+
+
 ## Local build: 1.7.5-SNAPSHOT
 
 - JDK 25 / Maven package: **467 tests passed**, zero failures, errors or skipped tests; Python: **four migration tests passed**. Regressions cover stable pre-draw tile positions, the separate rightmost draw, continuous-click protection through other turns and temporarily empty slots, illegal-tile gray/restoration, armed Riichi, two-stage calls, exact No Yaku boundaries, necessary Go/Last Card/Sichuan actions and standardized Close rendering/callbacks.

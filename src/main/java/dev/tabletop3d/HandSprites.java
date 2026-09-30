@@ -31,7 +31,7 @@ final class HandSprites {
     static List<Rect> of(boolean mahjong,String face) {
         String value=face.isEmpty()?"back":face;
         boolean legal=value.equals("back")||(mahjong?value.matches("[mps][0-9]|z[1-7]|f[1-8]")
-            :value.matches("[rbyp]([1-8]|Skip|Reverse|Draw2|Draw3)|wild"));
+            :value.matches("[rbyp]([1-9]|10|Skip|Reverse|Draw1)|wild|swap"));
         if(!legal)return rectangles(HandArt.draw(mahjong,value));
         return CACHE.computeIfAbsent(new Face(mahjong,value),key->rectangles(HandArt.draw(key.mahjong(),key.value())));
     }

@@ -21,13 +21,15 @@ class HandArtTest {
         }
         for (char color : new char[]{'r', 'b', 'y', 'p'}) {
             Set<String> pictures = new HashSet<>();
-            for (String value : new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Skip", "Reverse", "Draw2", "Draw3"}) {
+            for (String value : new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Skip", "Reverse", "Draw1"}) {
                 BufferedImage art = HandArt.draw(false, color + value);
                 checkCanvas(art);
                 assertTrue(pictures.add(pixels(art)), "Repeated card: " + color + value);
             }
         }
         checkCanvas(HandArt.draw(false, "wild"));
+        checkCanvas(HandArt.draw(false, "swap"));
+        assertNotEquals(pixels(HandArt.draw(false,"swap")),pixels(HandArt.draw(false,"wild")));
         checkCanvas(HandArt.draw(true, "back"));
         checkCanvas(HandArt.draw(false, "back"));
     }

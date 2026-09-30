@@ -34,7 +34,7 @@ final class HandArt {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         g.setColor(EDGE); g.fillRect(0, 0, 32, 48);
         g.setColor(CREAM); g.fillRoundRect(1, 1, 30, 46, 5, 5);
-        if (face.isEmpty() || face.equals("back")) back(g);
+        if (face.isEmpty() || face.equals("back")) {if(mahjong)back(g);else cardBack(g);}
         else if (mahjong) tile(g, face);
         else card(g, face);
         g.dispose();
@@ -53,27 +53,28 @@ final class HandArt {
     }
 
     private static void card(Graphics2D g, String face) {
-        boolean wild = face.equals("wild");
-        Color color = wild ? INK : switch (face.charAt(0)) {
+        boolean wild = face.equals("wild"), swap=face.equals("swap");
+        Color color = wild || swap ? INK : switch (face.charAt(0)) {
             case 'r' -> RED; case 'b' -> BLUE; case 'y' -> YELLOW; case 'p' -> PURPLE; default -> INK;
         };
         g.setColor(color); g.fillRoundRect(3, 3, 26, 42, 4, 4);
         g.setColor(CREAM); g.setStroke(new BasicStroke(1));
         if (wild) {
-            Color[] colors = {RED, BLUE, YELLOW, PURPLE};
-            for (int i = 0; i < 4; i++) {
-                g.setColor(colors[i]); g.fillArc(8, 14, 16, 20, i * 90, 90);
-            }
-            g.setColor(CREAM); g.drawOval(8, 14, 16, 20);
-            g.drawLine(16, 14, 16, 34); g.drawLine(8, 24, 24, 24);
-            g.fillRect(5, 6, 3, 3); g.fillRect(24, 39, 3, 3);
+            diamond(g);g.setColor(CREAM);bitmap(g,DIGITS[8],11,15,10,18);
+            bitmap(g,DIGITS[8],5,5,5,7);bitmap(g,DIGITS[8],22,36,5,7);
             return;
+        }
+        if(swap){
+            g.setColor(BLUE);g.fillRect(7,15,8,17);g.setColor(RED);g.fillRect(17,17,8,17);
+            g.setColor(CREAM);g.drawRect(7,15,8,17);g.drawRect(17,17,8,17);reverse(g,8,14);corner(g,"R");return;
         }
         String value = face.substring(1);
         g.setColor(CREAM);
-        if (value.length() == 1 && Character.isDigit(value.charAt(0))) {
+        if(value.equals("10")){
+            bitmap(g,DIGITS[1],6,15,9,18);bitmap(g,DIGITS[0],17,15,9,18);
+            for(int i=0;i<2;i++){Graphics2D c=(Graphics2D)g.create();if(i==1)c.rotate(Math.PI,16,24);bitmap(c,DIGITS[1],5,5,4,7);bitmap(c,DIGITS[0],10,5,4,7);c.dispose();}
+        } else if (value.length() == 1 && Character.isDigit(value.charAt(0))) {
             int number = value.charAt(0) - '0';
-            g.drawOval(6, 10, 20, 28);
             bitmap(g, DIGITS[number], 10, 15, 13, 18);
             bitmap(g, DIGITS[number], 5, 5, 5, 7);
             if (number == 6 || number == 9) {
@@ -92,8 +93,8 @@ final class HandArt {
             g.setStroke(new BasicStroke(3)); g.drawOval(10, 17, 12, 14);
             g.drawLine(10, 31, 23, 17);
             corner(g, "S");
-        } else if (value.equals("Draw2") || value.equals("Draw3")) {
-            int count = value.equals("Draw2") ? 2 : 3;
+        } else if (value.equals("Draw1")) {
+            int count = 1;
             g.fillRect(10, 14, 1, 5); g.fillRect(8, 16, 5, 1);
             bitmap(g, DIGITS[count], 16, 13, 5, 7);
             for (int i = count - 1; i >= 0; i--) {
@@ -103,6 +104,23 @@ final class HandArt {
             }
             corner(g, "+" + count);
         }
+        // Shape cues remain readable even when neighboring cards cover most of the face.
+        g.setColor(CREAM);
+        switch(face.charAt(0)){
+            case 'r' -> polygon(g,new int[]{6,9,6,3},new int[]{15,18,21,18});
+            case 'b' -> g.fillRect(4,15,5,5);
+            case 'y' -> polygon(g,new int[]{6,9,3},new int[]{15,21,21});
+            case 'p' -> {g.fillRect(5,15,2,7);g.fillRect(3,17,6,2);}
+        }
+    }
+
+    private static void diamond(Graphics2D g){
+        Color[] colors={RED,BLUE,YELLOW,PURPLE};int[][] xs={{16,27,16},{16,27,16},{16,5,16},{16,5,16}};
+        int[][] ys={{9,24,24},{24,24,39},{24,24,39},{9,24,24}};
+        for(int i=0;i<4;i++){g.setColor(colors[i]);polygon(g,xs[i],ys[i]);}
+    }
+    private static void cardBack(Graphics2D g){
+        g.setColor(INK);g.fillRoundRect(3,3,26,42,4,4);g.setColor(CREAM);g.drawRect(5,5,21,37);diamond(g);
     }
 
     private static void corner(Graphics2D g, String symbol) {

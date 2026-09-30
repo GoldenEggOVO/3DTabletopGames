@@ -17,7 +17,7 @@ import java.util.*;
 
 public final class Tabletop3D extends JavaPlugin implements Listener, CommandExecutor, TabCompleter {
     static final Map<String,String> NAMES=new LinkedHashMap<>();
-    static { for(String kind:List.of("xiangqi","gomoku","chess","ludo","checkers","draughts","reversi","go","go9","go13","connectfour","lastcard","mahjong")) NAMES.put(kind,switch(kind){case "xiangqi"->"中国象棋";case "gomoku"->"五子棋";case "chess"->"国际象棋";case "ludo"->"英国十字戏";case "checkers"->"中国跳棋";case "draughts"->"西洋跳棋";case "reversi"->"黑白棋";case "connectfour"->"四子棋";case "lastcard"->"Last Card";case "mahjong"->"Mahjong";default->"围棋";}); }
+    static { for(String kind:List.of("xiangqi","gomoku","chess","ludo","checkers","draughts","reversi","go","go9","go13","connectfour","lastcard","mahjong")) NAMES.put(kind,switch(kind){case "xiangqi"->"中国象棋";case "gomoku"->"五子棋";case "chess"->"国际象棋";case "ludo"->"英国十字戏";case "checkers"->"中国跳棋";case "draughts"->"西洋跳棋";case "reversi"->"黑白棋";case "connectfour"->"四子棋";case "lastcard"->"Color Eight";case "mahjong"->"Mahjong";default->"围棋";}); }
     static String gameName(String kind){return kind.equals("go9")?"围棋 · 9路":kind.equals("go13")?"围棋 · 13路":NAMES.getOrDefault(kind,kind);}
     final Map<UUID,Room> rooms=new LinkedHashMap<>();
     final Map<UUID,Location> returns=new HashMap<>();
@@ -93,7 +93,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     Room requireRoom(Player p){Room r=room(p);if(r==null)throw new IllegalArgumentException("你尚未加入房间");return r;}
     Room find(String text){return rooms.values().stream().filter(r->r.id.toString().startsWith(text)).findFirst().orElseThrow(()->new IllegalArgumentException("房间已关闭"));}
     static int defaultCapacity(String kind){return switch(kind){case"checkers"->6;case"ludo","aeroplane","lastcard","mahjong"->4;default->2;};}
-    static boolean capacityValid(String kind,int n){return switch(kind){case"mahjong"->n==4;case"checkers"->Set.of(2,3,4,6).contains(n);case"ludo","aeroplane","yacht","lastcard"->n>=2&&n<=4;case"gomoku","xiangqi","chess","draughts","reversi","go","go9","go13","connectfour"->n==2;default->false;};}
+    static boolean capacityValid(String kind,int n){return switch(kind){case"mahjong"->n==4;case"checkers"->Set.of(2,3,4,6).contains(n);case"lastcard"->n>=2&&n<=5;case"ludo","aeroplane","yacht"->n>=2&&n<=4;case"gomoku","xiangqi","chess","draughts","reversi","go","go9","go13","connectfour"->n==2;default->false;};}
     void create(Player p,String kind,int capacity){
         create(p,kind,capacity,Map.of());
     }
@@ -198,7 +198,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         if(arena.rolling(r)){if(source!=null)tell(source,Language.component("hint.roll.wait"));return;}
         if(!ReplayBudget.allows(r.history,action)){finish(r,"本局达到休闲对局长度上限，按和局结束");save();return;}
 
-            try{List<Cell> before=r.board.cells();var mahjongBefore=r.kind.equals("mahjong")?TableSounds.mahjongState((HandGame)r.board):null;int previousTurn=r.turn();r.board.apply(seat,action.getAsString());r.event(seat,action);r.revision++;r.changed=System.currentTimeMillis();arena.render(r);
+            try{List<Cell> before=r.board.cells();var mahjongBefore=r.kind.equals("mahjong")?TableSounds.mahjongState((HandGame)r.board):null;int previousTurn=r.turn();r.board.apply(seat,action.getAsString());r.event(seat,action);r.revision++;if(!r.kind.equals("lastcard")||!Set.of("draw","choose").contains(action.getAsString().split(":")[0])||r.turn()!=previousTurn)r.changed=System.currentTimeMillis();arena.render(r);
                 if(!r.restoring){
                     if(mahjongBefore!=null)for(var cue:TableSounds.mahjong(action.getAsString(),mahjongBefore,TableSounds.mahjongState((HandGame)r.board)))arena.sound(r,cue);
                     else arena.sound(r,TableSounds.move(r.kind,seat,action.getAsString(),before,r.board.cells()));
@@ -236,7 +236,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     long turnWaitMillis(Room room){
         int turn=room.turn();if(turn<0||turn>=room.seats.size())return 0;
         Room.Seat seat=room.seats.get(turn);
-        return seat.bot()?2000:room.offline.containsKey(seat.id())?5000:getConfig().getLong("turn-seconds",60)*1000L;
+        return seat.bot()?2000:room.kind.equals("lastcard")?30000:room.offline.containsKey(seat.id())?5000:getConfig().getLong("turn-seconds",60)*1000L;
     }
     void tick(){
         if(!loaded)return;if(comfort!=null)comfort.sync();long now=System.currentTimeMillis();pulse++;
@@ -255,7 +255,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
             Room.Seat s=r.seats.get(turn);long wait=turnWaitMillis(r);
             if(r.board instanceof GoGame go&&go.scoring()&&!s.bot())continue; // A timeout is not a human's agreement to dead stones.
             if(now-r.changed<wait)continue;
-    String choice=BoardBots.choose(r.board,turn,random);if(choice!=null)apply(r,turn,new JsonPrimitive(choice),null);
+    String choice=r.board instanceof LastCardGame cards&&!s.bot()?cards.timeoutAction():BoardBots.choose(r.board,turn,random);if(choice!=null)apply(r,turn,new JsonPrimitive(choice),null);
         }
         if(pulse%30==0)save();
     }
@@ -268,7 +268,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     void save(){
         if(!loaded||!getDataFolder().isDirectory())return;
         JsonObject root=new JsonObject();root.addProperty("schema",1);JsonArray array=new JsonArray();
-        for(Room r:rooms.values())if(r.phase!=Room.Phase.ABORTED){JsonObject j=new JsonObject();j.addProperty("id",r.id.toString());j.addProperty("kind",r.kind);j.addProperty("capacity",r.capacity);j.addProperty("seed",r.seed);j.addProperty("table",r.table);j.addProperty("rulesVersion",1);j.add("options",gson.toJsonTree(r.options));if(r.owner!=null)j.addProperty("owner",r.owner.toString());j.addProperty("sideTray",r.sideTray);if(r.anchorWorld!=null){j.addProperty("anchorWorld",r.anchorWorld.toString());j.addProperty("anchorX",r.anchorX);j.addProperty("anchorY",r.anchorY);j.addProperty("anchorZ",r.anchorZ);}j.addProperty("phase",r.phase.name());j.addProperty("completed",r.completed);j.addProperty("result",r.result);j.addProperty("revision",r.revision);j.add("seats",gson.toJsonTree(r.seats));j.add("history",r.history.deepCopy());array.add(j);}root.add("rooms",array);
+        for(Room r:rooms.values())if(r.phase!=Room.Phase.ABORTED){JsonObject j=new JsonObject();j.addProperty("id",r.id.toString());j.addProperty("kind",r.kind);j.addProperty("capacity",r.capacity);j.addProperty("seed",r.seed);j.addProperty("table",r.table);j.addProperty("rulesVersion",r.kind.equals("lastcard")?2:1);j.add("options",gson.toJsonTree(r.options));if(r.owner!=null)j.addProperty("owner",r.owner.toString());j.addProperty("sideTray",r.sideTray);if(r.anchorWorld!=null){j.addProperty("anchorWorld",r.anchorWorld.toString());j.addProperty("anchorX",r.anchorX);j.addProperty("anchorY",r.anchorY);j.addProperty("anchorZ",r.anchorZ);}j.addProperty("phase",r.phase.name());j.addProperty("completed",r.completed);j.addProperty("result",r.result);j.addProperty("revision",r.revision);j.add("seats",gson.toJsonTree(r.seats));j.add("history",r.history.deepCopy());array.add(j);}root.add("rooms",array);
         JsonObject backs=new JsonObject();returns.forEach((id,l)->{JsonObject v=new JsonObject();v.addProperty("world",l.getWorld().getName());v.addProperty("x",l.getX());v.addProperty("y",l.getY());v.addProperty("z",l.getZ());v.addProperty("yaw",l.getYaw());v.addProperty("pitch",l.getPitch());backs.add(id.toString(),v);});root.add("returns",backs);
         Path file=getDataFolder().toPath().resolve("rooms.json"),temp=file.resolveSibling("rooms.json.tmp");
         try{Files.writeString(temp,gson.toJson(root),StandardCharsets.UTF_8);try{Files.move(temp,file,StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);}catch(AtomicMoveNotSupportedException ex){Files.move(temp,file,StandardCopyOption.REPLACE_EXISTING);}}
@@ -277,8 +277,12 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     void restore(){
         Path file=getDataFolder().toPath().resolve("rooms.json");if(!Files.exists(file))return;
         try{JsonObject root=JsonParser.parseString(Files.readString(file,StandardCharsets.UTF_8)).getAsJsonObject();
+            if(java.util.stream.StreamSupport.stream(root.getAsJsonArray("rooms").spliterator(),false).anyMatch(e->Room.legacyCards(e.getAsJsonObject()))){
+                Path backup=file.resolveSibling("rooms.pre-color-eight-"+System.currentTimeMillis()+".json");Files.copy(file,backup);
+                getLogger().warning("Legacy Last Card matches archived before Color Eight upgrade: "+backup.getFileName());
+            }
             for(var entry:root.getAsJsonObject("returns").entrySet()){JsonObject j=entry.getValue().getAsJsonObject();World w=Bukkit.getWorld(j.get("world").getAsString());if(w!=null)returns.put(UUID.fromString(entry.getKey()),new Location(w,j.get("x").getAsDouble(),j.get("y").getAsDouble(),j.get("z").getAsDouble(),j.get("yaw").getAsFloat(),j.get("pitch").getAsFloat()));}
-            for(JsonElement e:root.getAsJsonArray("rooms")){JsonObject j=e.getAsJsonObject();Room r=new Room(UUID.fromString(j.get("id").getAsString()),j.get("kind").getAsString(),j.get("capacity").getAsInt(),j.get("seed").getAsLong(),j.get("table").getAsInt(),Room.readOptions(j));r.sideTray=j.has("sideTray")&&j.get("sideTray").getAsBoolean();r.owner=j.has("owner")?UUID.fromString(j.get("owner").getAsString()):null;
+            for(JsonElement e:root.getAsJsonArray("rooms")){JsonObject j=e.getAsJsonObject();if(Room.legacyCards(j))continue;Room r=new Room(UUID.fromString(j.get("id").getAsString()),j.get("kind").getAsString(),j.get("capacity").getAsInt(),j.get("seed").getAsLong(),j.get("table").getAsInt(),Room.readOptions(j));r.sideTray=j.has("sideTray")&&j.get("sideTray").getAsBoolean();r.owner=j.has("owner")?UUID.fromString(j.get("owner").getAsString()):null;
                 if(j.has("anchorWorld")){r.anchorWorld=UUID.fromString(j.get("anchorWorld").getAsString());r.anchorX=j.get("anchorX").getAsDouble();r.anchorY=j.get("anchorY").getAsDouble();r.anchorZ=j.get("anchorZ").getAsDouble();}
                 for(JsonElement s:j.getAsJsonArray("seats")){Room.Seat seat=gson.fromJson(s,Room.Seat.class);r.seats.add(seat);if(!seat.bot()&&!coordinator.restoreReservation(seat.id(),r.kind))throw new IllegalStateException("恢复座位与其他游戏冲突");if(!seat.bot())r.offline.put(seat.id(),System.currentTimeMillis());}
                 if(r.owner==null&&!r.seats.isEmpty())r.owner=r.seats.getFirst().id();
