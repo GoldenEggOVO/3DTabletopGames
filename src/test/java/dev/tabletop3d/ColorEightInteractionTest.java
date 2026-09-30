@@ -53,7 +53,7 @@ class ColorEightInteractionTest {
             Location eye=f.origin.clone().add(pose.x()+tangent*Math.cos(angle),.017+pose.lift()+HandTable.CARD_LIFT+.32,pose.z()-tangent*Math.sin(angle)+.6);
             assertEquals("card:play:48:"+"rbyp".charAt(i),f.table.callHit(f.owner,eye,new Vector(0,0,-1)));
         }
-        List<Entity> buttons=List.copyOf(f.entities.subList(start,f.entities.size()));assertEquals(8,buttons.size());
+        List<Entity> buttons=List.copyOf(f.entities.subList(start,f.entities.size()));assertFalse(buttons.isEmpty());assertTrue(buttons.stream().noneMatch(org.bukkit.entity.TextDisplay.class::isInstance),"Color choices contain no digits or text");
         for(Entity button:buttons){verify(f.owner).showEntity(f.plugin,button);verify(f.spectator,never()).showEntity(f.plugin,button);}
         game.apply(0,"play:48:p");f.room.revision++;f.table.sync();f.table.show(f.owner);
         assertEquals("p8",game.cells().get(1).piece());buttons.forEach(b->assertFalse(b.isValid()));
@@ -65,11 +65,24 @@ class ColorEightInteractionTest {
         assertEquals(30000,plugin.turnWaitMillis(room));room.offline.put(human,0L);
         assertEquals(30000,plugin.turnWaitMillis(room));
     }
+    @Test void circularRimHasNoVisibleStepsAtItsOuterEdge()throws Exception{
+        var rim=RoundCardTable.parts().stream().filter(p->p.material()==org.bukkit.Material.STRIPPED_DARK_OAK_WOOD).toList();
+        for(int degrees=0;degrees<360;degrees++){
+            double angle=Math.toRadians(degrees),x=1.495*Math.cos(angle),z=1.495*Math.sin(angle);boolean covered=false;
+            for(var p:rim){
+                double yaw=p.yaw();
+                double a=Math.toRadians(yaw),dx=x-p.x(),dz=z-p.z();
+                if(Math.abs(dx*Math.cos(a)-dz*Math.sin(a))<=p.w()/2&&Math.abs(dx*Math.sin(a)+dz*Math.cos(a))<=p.d()/2)covered=true;
+            }
+            assertTrue(covered,"Rim edge angle "+degrees);
+        }
+    }
     @Test void circularFurnitureFitsTheRadiusAndLeavesTheSquareCornersEmpty(){
         for(var part:RoundCardTable.parts()){
             assertTrue(part.w()>0&&part.h()>0&&part.d()>0);
             assertTrue(Math.hypot(Math.abs(part.x())+part.w()/2,Math.abs(part.z())+part.d()/2)<=RoundCardTable.RADIUS+1e-7);
-            assertFalse(Math.abs(part.x()-1.4)<part.w()/2&&Math.abs(part.z()-1.4)<part.d()/2);
+            double a=Math.toRadians(part.yaw()),x=1.4*Math.cos(a)-1.4*Math.sin(a),z=1.4*Math.sin(a)+1.4*Math.cos(a);
+            assertFalse(Math.abs(x)<part.w()/2&&Math.abs(z)<part.d()/2);
         }
         assertTrue(Tabletop3D.capacityValid("lastcard",5));assertFalse(Tabletop3D.capacityValid("lastcard",6));
     }

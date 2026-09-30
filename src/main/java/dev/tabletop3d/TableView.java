@@ -115,7 +115,10 @@ final class TableView implements AutoCloseable {
     TableView(Tabletop3D plugin,Room room,Location center,NamespacedKey tag,TableMaps maps){
         this.plugin=plugin;this.room=room;this.tag=tag;geometry=new TableGeometry(room.kind,room.board.cells());origin=center.clone().add(0,TableGeometry.SURFACE,0);
         if(room.kind.equals("lastcard")){
-            for(var part:RoundCardTable.parts())furniture.add(block(origin,part.material(),part.x(),part.y(),part.z(),part.w(),part.h(),part.d(),null));
+            for(var part:RoundCardTable.parts()){
+                Location at=origin.clone();at.setYaw(part.yaw());
+                furniture.add(block(at,part.material(),part.x(),part.y(),part.z(),part.w(),part.h(),part.d(),null));
+            }
             title=text(origin.clone().add(0,1.8,0),"",.4,false,NamedTextColor.GOLD);title.setBillboard(Display.Billboard.CENTER);furniture.add(title);
             handTable=new HandTable(plugin,room,origin,tag);sync();return;
         }

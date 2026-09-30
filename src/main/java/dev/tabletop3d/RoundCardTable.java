@@ -6,21 +6,20 @@ import org.bukkit.Material;
 /** Native circular card furniture, in block units relative to the playing surface. */
 final class RoundCardTable {
     static final double RADIUS=1.5;
-    static List<TableModels.Part> parts(){
-        List<TableModels.Part> parts=new ArrayList<>();
-        disc(parts,RADIUS,-.19,.19,Material.STRIPPED_DARK_OAK_WOOD,48);
-        disc(parts,1.41,.001,.01,Material.GREEN_TERRACOTTA,48);
-        disc(parts,.25,-TableGeometry.SURFACE,TableGeometry.SURFACE-.19,Material.STRIPPED_DARK_OAK_LOG,12);
-        disc(parts,.70,-TableGeometry.SURFACE,.08,Material.DARK_OAK_PLANKS,24);
+    record Part(double x,double y,double z,double w,double h,double d,Material material,float yaw) {}
+    static List<Part> parts(){
+        List<Part> parts=new ArrayList<>();
+        disc(parts,RADIUS,-.19,.19,Material.STRIPPED_DARK_OAK_WOOD,64);
+        disc(parts,1.41,.001,.01,Material.GREEN_TERRACOTTA,64);
+        disc(parts,.25,-TableGeometry.SURFACE,TableGeometry.SURFACE-.19,Material.STRIPPED_DARK_OAK_LOG,32);
+        disc(parts,.70,-TableGeometry.SURFACE,.08,Material.DARK_OAK_PLANKS,48);
         return List.copyOf(parts);
     }
-    private static void disc(List<TableModels.Part> parts,double radius,double y,double height,Material material,int rows){
-        double step=2*radius/rows;
-        for(int row=0;row<rows;row++){
-            double z=-radius+(row+.5)*step;
-            double width=2*Math.sqrt(radius*radius-Math.pow(Math.abs(z)+step/2,2));
-            if(width>0)parts.add(new TableModels.Part(0,y,z,width,height,step,material));
-        }
+    private static void disc(List<Part> parts,double radius,double y,double height,Material material,int sides){
+        // Centered rotated bars form a regular polygon; all corners stay on the radius.
+        // Separate textured top planes very slightly to avoid coplanar depth flicker.
+        double width=2*radius*Math.cos(Math.PI/sides),depth=2*radius*Math.sin(Math.PI/sides);
+        for(int i=0;i<sides/2;i++)parts.add(new Part(0,y+i*.00004,0,width,height,depth,material,360f*i/sides));
     }
     private RoundCardTable(){}
 }

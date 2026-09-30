@@ -41,6 +41,7 @@ final class HandTable implements AutoCloseable {
         final List<Vector> offsets = new ArrayList<>();
         final List<Material> materials = new ArrayList<>();
         boolean disabled;
+        int bodyParts=1;
         PieceView(Spec spec, Player viewer) { this.spec = spec; build(viewer); }
         void add(Entity entity, Vector offset,Material material) { parts.add(entity); offsets.add(offset); materials.add(material); }
         Vector displacement=new Vector(), start=new Vector(), target=new Vector();
@@ -53,25 +54,15 @@ final class HandTable implements AutoCloseable {
             Location at=at(spec.pose());String id=viewer==null?"@board":"@hand:"+spec.id();
             double scale=1;
             double w=width()*scale,h=height()*scale,d=depth()*scale;
-            add(block(at,Material.SMOOTH_QUARTZ,w,h,d,id,viewer),new Vector(),Material.SMOOTH_QUARTZ);
+            if(mahjong)add(block(at,Material.SMOOTH_QUARTZ,w,h,d,id,viewer),new Vector(),Material.SMOOTH_QUARTZ);
+            else{
+                for(var part:HandModels.cardBody())modelPart(part,true,id,viewer);
+                bodyParts=parts.size();
+            }
             if(spec.back()&&mahjong){
                 Vector panel=spec.standing()?rotated(0,.012,d/2+.002,spec.pose()):new Vector(0,.014*scale,0);
                 add(block(at.clone().add(panel),Material.GREEN_CONCRETE,w*.84,spec.standing()?h-.024:.002,spec.standing()?.002:d*.86,id,viewer),panel,Material.GREEN_CONCRETE);
-            }else{
-                var sprite=HandSprites.of(mahjong,spec.back()?"back":spec.face());
-                Map<Material,Integer> area=new EnumMap<>(Material.class);
-                for(var rect:sprite)area.merge(rect.material(),rect.width()*rect.height(),Integer::sum);
-                Material background=area.entrySet().stream().max(Map.Entry.comparingByValue()).orElseThrow().getKey();
-                List<HandSprites.Rect> layers=new ArrayList<>();layers.add(new HandSprites.Rect(0,0,32,48,background));
-                sprite.stream().filter(rect->rect.material()!=background).forEach(layers::add);
-                for(var rect:layers){
-                    double rw=rect.width()/32.0*w,rh=rect.height()/48.0*(spec.standing()?h:d);
-                    double x=((rect.x()+rect.width()/2.0)/32-.5)*w;
-                    Vector offset=spec.standing()?rotated(x,h-(rect.y()+rect.height())/48.0*h,d/2+.003+(rect==layers.getFirst()?0:.0008),spec.pose()):
-                        rotated(x,.014*scale+(rect==layers.getFirst()?0:.0008),((rect.y()+rect.height()/2.0)/48-.5)*d,spec.pose());
-                    add(block(at.clone().add(offset),rect.material(),rw,spec.standing()?rh:.002,spec.standing()?.001:rh,id,viewer),offset,rect.material());
-                }
-            }
+            }else for(var part:HandModels.of(mahjong,spec.back()?"back":spec.face()))modelPart(part,false,id,viewer);
             if(spec.standing()){
                 Vector back=rotated(0,.012,-d/2-.002,spec.pose());
                 Material backMaterial=mahjong?Material.GREEN_CONCRETE:Material.BLACK_CONCRETE;
@@ -84,6 +75,22 @@ final class HandTable implements AutoCloseable {
                     }
                 }
             }
+        }
+        void modelPart(HandModels.Part part,boolean body,String id,Player viewer){
+            double w=width(),h=height(),d=depth(),pw=part.w()/32*w,ph=part.h()/48*(spec.standing()?h:d);
+            double x=(part.x()/32-.5)*w,y,z;Quaternionf rotation;
+            double sy,sz;
+            if(spec.standing()){
+                y=h-part.y()/48*h;z=body?0:d/2+.003+part.layer()*.0008;
+                sy=ph;sz=body?d:.001;rotation=new Quaternionf().rotateZ((float)-part.roll());
+            }else{
+                y=body?h/2:.014+part.layer()*.0008;z=(part.y()/48-.5)*d;
+                sy=body?h:.002;sz=ph;rotation=new Quaternionf().rotateY((float)-part.roll());
+            }
+            // Rotate about the cuboid center, then place it in the card's local plane.
+            Vector offset=mahjong?rotated(x,y,z,spec.pose()):new Vector();
+            Vector3f center=mahjong?new Vector3f():new Vector3f((float)x,(float)y,(float)z);
+            add(modelBlock(at(spec.pose()).add(offset),part.material(),center,pw,sy,sz,rotation,id,viewer),offset,part.material());
         }
         void move(Spec next) {
             if(!spec.pose().equals(next.pose())){
@@ -117,8 +124,9 @@ final class HandTable implements AutoCloseable {
         boolean valid() { return parts.stream().allMatch(Entity::isValid); }
         void remove() { parts.forEach(Entity::remove); }
         void highlight(boolean selected) {
-            ((Display)parts.getFirst()).setGlowColorOverride(Color.YELLOW);
-            parts.getFirst().setGlowing(selected);
+            for(int i=0;i<bodyParts;i++){
+                ((Display)parts.get(i)).setGlowColorOverride(Color.YELLOW);parts.get(i).setGlowing(selected);
+            }
         }
         void playable(boolean allowed){
             if(disabled==!allowed)return;disabled=!allowed;
@@ -181,9 +189,14 @@ final class HandTable implements AutoCloseable {
         final BoundingBox bounds;
         CardButton(String action,Pose pose,Material material,Component caption,Player player,double width){
             Location at=at(pose);String id="@call:card:"+action;
-            BlockDisplay plate=block(at,material,width,.085,.014,id,player);
-            TextDisplay label=text(at.clone().add(rotated(0,.035,.011,pose)),caption,.15f,pose.yaw(),false,id,player);
-            parts=List.of(plate,label);
+            parts=new ArrayList<>();
+            if(caption.equals(Component.empty())){
+                double radius=width/2;
+                for(int i=0;i<8;i++)parts.add(modelBlock(at,material,new Vector3f(0,.0425f,0),2*radius*Math.cos(Math.PI/16),2*radius*Math.sin(Math.PI/16),.014,new Quaternionf().rotateZ((float)(i*Math.PI/8)),id,player));
+            }else{
+                parts.add(block(at,material,width,.085,.014,id,player));
+                parts.add(text(at.clone().add(rotated(0,.035,.011,pose)),caption,.15f,pose.yaw(),false,id,player));
+            }
             double angle=Math.toRadians(pose.yaw()),x=Math.abs(Math.cos(angle))*width/2+Math.abs(Math.sin(angle))*.02,
                 z=Math.abs(Math.sin(angle))*width/2+Math.abs(Math.cos(angle))*.02;
             bounds=new BoundingBox(at.getX()-x,at.getY(),at.getZ()-z,at.getX()+x,at.getY()+.085,at.getZ()+z);
@@ -278,6 +291,15 @@ final class HandTable implements AutoCloseable {
             d.setTransformation(new Transformation(new Vector3f((float)-width/2,0,(float)-depth/2),new Quaternionf(),new Vector3f((float)width,(float)height,(float)depth),new Quaternionf()));
         });
         if (viewer!=null) viewer.showEntity(plugin,entity);
+        return entity;
+    }
+    private BlockDisplay modelBlock(Location at,Material material,Vector3f center,double width,double height,double depth,Quaternionf rotation,String id,Player viewer){
+        BlockDisplay entity=origin.getWorld().spawn(at,BlockDisplay.class,d->{
+            configure(d,id,viewer);d.setBlock(material.createBlockData());
+            Vector3f translation=rotation.transform(new Vector3f((float)-width/2,(float)-height/2,(float)-depth/2)).add(center);
+            d.setTransformation(new Transformation(translation,rotation,new Vector3f((float)width,(float)height,(float)depth),new Quaternionf()));
+        });
+        if(viewer!=null)viewer.showEntity(plugin,entity);
         return entity;
     }
     private TextDisplay text(Location at,Component value,float scale,float yaw,boolean flat,String id,Player viewer) {
@@ -390,7 +412,7 @@ final class HandTable implements AutoCloseable {
             for(int i=0;i<4;i++){
                 Vector delta=rotated((i-1.5)*.10,0,0,piece.spec.pose());Pose base=piece.spec.pose();
                 String action="play:"+pending+":"+colors[i];
-                if(legal.contains(action))view.cardButtons.put(action,new CardButton(action,new Pose(base.x()+delta.getX(),base.z()+delta.getZ(),base.yaw(),base.lift()+CARD_LIFT+.28),materials[i],Component.text("8",NamedTextColor.WHITE),view.player,.085));
+                if(legal.contains(action))view.cardButtons.put(action,new CardButton(action,new Pose(base.x()+delta.getX(),base.z()+delta.getZ(),base.yaw(),base.lift()+CARD_LIFT+.28),materials[i],Component.empty(),view.player,.085));
             }
         }else if(legal.contains("pass"))view.cardButtons.put("pass",new CardButton("pass",seatPose(view.seat,room.board.playerCount(),0,.65),Material.GRAY_CONCRETE,Language.component("table.card.pass"),view.player,.25));
     }

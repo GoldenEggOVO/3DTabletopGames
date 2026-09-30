@@ -199,7 +199,7 @@ final class HandArt {
         }
     }
 
-    private static int[][] positions(int number) {
+    static int[][] positions(int number) {
         return switch (number) {
             case 2 -> new int[][]{{11, 14}, {21, 34}};
             case 3 -> new int[][]{{9, 12}, {16, 24}, {23, 36}};

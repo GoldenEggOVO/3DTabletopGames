@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.8.1-SNAPSHOT
+
+- Round the card table with 64 sides made from centered, rotated native cuboids, retaining its three-block diameter.
+- Replace card pixels with original native stroke digits and icons, rounded card edges and separated 6/9 underlines.
+- Show four pure-color round buttons above Wild Eight; the selected color still becomes the played Eight background.
+- Refine Mahjong circle rings, bamboo joints, one-bamboo bird, white-dragon frame and flowers; retain tile dimensions, red fives and honor/character ink.
+- Preserve owner-only controls, dense-hand aiming, hover lift, gray disabled pieces and game rules. Local acceptance build; Minecraft client visuals pending.
+
 ## 1.8.0-SNAPSHOT
 
 - Replace Last Card rules with Color Eight: 54 cards, 2–5 players, Wild Eight, Draw One for every opponent, Skip, Reverse and Swap Hands; first empty hand wins before the last card effect.

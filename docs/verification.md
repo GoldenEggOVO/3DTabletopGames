@@ -1,5 +1,16 @@
 # Verification and acceptance
 
+## Local build: 1.8.1-SNAPSHOT — Native shape refinement
+
+- JDK 25 / Maven package: **472 tests passed**, zero failures, errors or skipped tests. Added regressions check circular rim coverage, text-free private color buttons, native tile bounds/red fives/retained glyph ink, 6/9 underlines and actual rotated-polygon overlap between different colors at the same depth.
+- Existing regressions still aim at all 54 cards at each of five seats, validate owner-only controls and exercise unchanged rules and replay behavior.
+- Independent review caught coplanar multi-color intersections in Swap, the bird and flowers. Their depths were separated and the overlap regression passes. Textured round-table bars have slightly different top heights to avoid coplanar faces.
+- The exact shaded JAR passed three clean Purpur **26.2-2622** boots (create, restart and legacy-folder migration) in `target/standalone-smoke-20260930-121738/`, including private native hand/tile models, display cleanup and existing menu/sound checks.
+- `native-shapes-preview.png` renders production HandModels, HandTable poses and RoundCardTable parts. It is a source geometry preview with approximate material colors, not a Minecraft screenshot. Client material/glow appearance, dense-hand frame rate and camera/interaction feel remain pending. No production deployment or public Release.
+
+Verified JAR SHA-256: `f3ca28c969423b067ec16f30be1b30914305128f4c9b9f5f1916a0ecdcbcc66e`. Exact receipts accompany the local acceptance package.
+
+
 ## Local build: 1.8.0-SNAPSHOT — Color Eight
 
 - JDK 25 / Maven package: **467 tests passed**, zero failures, errors or skipped tests. New regressions cover the 54-card rules, 2–5 players, one voluntary draw, final-card effect ordering, swap matching, recycling, replay version 2, private four-color selection, offline/online 30-second turns and old language overrides.
