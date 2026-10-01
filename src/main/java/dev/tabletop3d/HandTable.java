@@ -138,9 +138,9 @@ final class HandTable implements AutoCloseable {
                 return;
             }
             if(glint!=null)return;
-            var item=new org.bukkit.inventory.ItemStack(Material.WHITE_STAINED_GLASS);
+            var item=new org.bukkit.inventory.ItemStack(Material.SMOOTH_QUARTZ);
             var meta=item.getItemMeta();meta.setEnchantmentGlintOverride(true);item.setItemMeta(meta);
-            // Place a translucent item face behind the strokes: its full alpha coverage supplies depth for native glint.
+            // Use the opaque tile material for native foil, outside the body but behind its strokes.
             Vector offset=spec.standing()?rotated(0,height()/2,depth()/2+.001,spec.pose()):new Vector(0,.0128,0);
             Vector3f scale=spec.standing()?new Vector3f((float)(width()*.96),(float)(height()*.96),.001f)
                 :new Vector3f((float)(width()*.96),.001f,(float)(depth()*.96));
@@ -178,6 +178,7 @@ final class HandTable implements AutoCloseable {
     private static final class PrivateView {
         final Player player;
         final Map<String,PieceView> pieces = new LinkedHashMap<>();
+        final Map<String,PieceView> indicators = new LinkedHashMap<>();
         final Map<String,CallView> calls = new LinkedHashMap<>();
         final Map<String,CardButton> cardButtons = new LinkedHashMap<>();
         final Map<String,Entity> matches = new LinkedHashMap<>();
@@ -193,7 +194,7 @@ final class HandTable implements AutoCloseable {
         boolean callsEnabled;
         long dismissedRevision=-1;
         PrivateView(Player player) { this.player=player; }
-        void remove() { pieces.values().forEach(PieceView::remove); pieces.clear(); clearCalls(); if(remaining!=null){remaining.remove();remaining=null;} }
+        void remove() { pieces.values().forEach(PieceView::remove); pieces.clear(); indicators.values().forEach(PieceView::remove); indicators.clear(); clearCalls(); if(remaining!=null){remaining.remove();remaining=null;} }
         void clearCalls(){calls.values().forEach(CallView::remove);calls.clear();cardButtons.values().forEach(CardButton::remove);cardButtons.clear();}
     }
 
@@ -340,23 +341,12 @@ final class HandTable implements AutoCloseable {
                 publicRow(wanted,game.exposed(seat),"exposed:"+seat,seat,game.playerCount(),true);
             }
         }
-        if(mahjong){
-            Map<String,String> info=game.publicInfo();String[] faces=info.getOrDefault("dora","").split(","),ids=info.getOrDefault("doraIds","").split(",");
-            for(int i=0;i<faces.length;i++)if(!faces[i].isEmpty()){
-                String id=i<ids.length&&!ids[i].isEmpty()?ids[i]:Integer.toString(i);
-                // Repeat public indicators on each apron: the tile body is inset, the face clears the wood.
-                for(int seat=0;seat<4;seat++){
-                    Pose frame=seatPose(seat,4,(i-(faces.length-1)/2.0)*.101,1.477);
-                    wanted.add(new Spec("dora:"+seat+":"+id,faces[i],new Pose(frame.x(),frame.z(),frame.yaw(),-.197),false,true,-1));
-                }
-            }
-        }
         if (!mahjong) game.cells().stream().filter(cell -> cell.id().equals("discard") && !cell.piece().isEmpty())
                 .findFirst().ifPresent(cell -> wanted.add(new Spec("discard",cell.piece(),new Pose(.16,0,0),false,false,-1)));
         reconcile(publicPieces,wanted,null);
         if(mahjong){
             Map<String,String> info=game.publicInfo();
-            for(PieceView piece:publicPieces.values())piece.bonus(!piece.spec.back()&&!piece.spec.id().startsWith("dora:")&&MahjongPresentation.bonus(info,piece.spec.face()),null);
+            for(PieceView piece:publicPieces.values())piece.bonus(!piece.spec.back()&&MahjongPresentation.bonus(info,piece.spec.face()),null);
         }
         if(deckLabel!=null)deckLabel.text(Language.component("table.hand.deck","count",game.deckSize()).append(Component.newline()).append(HandText.tableHint(room.kind,game)));
         if(turnRing!=null)turnRing.direction(game.publicInfo().getOrDefault("direction","Clockwise").equals("Counterclockwise")?-1:1);
@@ -393,7 +383,7 @@ final class HandTable implements AutoCloseable {
         PrivateView view=privateViews.computeIfAbsent(player.getUniqueId(),id -> new PrivateView(player));
         boolean callsEnabled=mahjong&&room.phase==Room.Phase.PLAYING&&room.undo==null;
         if (view.board==game && view.revision==room.revision && view.language==Language.generation() && view.seat==seat && view.callsEnabled==callsEnabled
-                && view.pieces.values().stream().allMatch(PieceView::valid)&&view.calls.values().stream().allMatch(CallView::valid)&&view.cardButtons.values().stream().allMatch(CardButton::valid)) return;
+                && view.pieces.values().stream().allMatch(PieceView::valid)&&view.indicators.values().stream().allMatch(PieceView::valid)&&view.calls.values().stream().allMatch(CallView::valid)&&view.cardButtons.values().stream().allMatch(CardButton::valid)) return;
         if ((view.seat!=seat || view.board!=game) && view.seat>=0) { restoreBacks(player,view.seat); view.remove();view.dismissedRevision=-1; }
         List<HandGame.Piece> hand=game.hand(seat); List<Spec> wanted=new ArrayList<>();
         for (int i=0;i<Math.min(54,hand.size());i++) {
@@ -406,6 +396,15 @@ final class HandTable implements AutoCloseable {
         if(mahjong){
             Map<String,String> info=game.publicInfo();
             for(PieceView piece:view.pieces.values())piece.bonus(MahjongPresentation.bonus(info,piece.spec.face()),player);
+            String[] faces=info.getOrDefault("dora","").split(","),ids=info.getOrDefault("doraIds","").split(",");
+            List<Spec> indicators=new ArrayList<>();
+            for(int i=0;i<faces.length;i++)if(!faces[i].isEmpty()){
+                String id=i<ids.length&&!ids[i].isEmpty()?ids[i]:Integer.toString(i);
+                Pose frame=seatPose(seat,4,(i-(faces.length-1)/2.0)*.101,1.477);
+                indicators.add(new Spec("dora:"+seat+":"+id,faces[i],new Pose(frame.x(),frame.z(),frame.yaw(),-.197),false,true,seat));
+            }
+            reconcile(view.indicators,indicators,player);
+            for(PieceView piece:view.indicators.values())piece.highlight(false);
         }
         clearMatches(view);view.hover=null;view.callGroup=null;int drawn=0;
         if(mahjong){
@@ -505,6 +504,7 @@ final class HandTable implements AutoCloseable {
     void hover(Player player,String selected){
         show(player);PrivateView view=privateViews.get(player.getUniqueId());if(view==null)return;
         PieceView target=selected!=null&&selected.startsWith("public:")?publicPieces.get(selected.substring(7)):view.pieces.get(selected);
+        if(target==null&&selected!=null&&selected.startsWith("public:"))target=view.indicators.get(selected.substring(7));
         if(target==null||target.spec.back())selected=null;
         if(Objects.equals(view.hover,selected))return;view.hover=selected;
         List<PieceView> pieces=new ArrayList<>(view.pieces.values());int chosen=-1;
@@ -516,6 +516,7 @@ final class HandTable implements AutoCloseable {
             piece.highlight(raised);piece.shift(new Vector(0,raised?CARD_LIFT:0,0));
         }
         if(mahjong&&view.remaining!=null){
+            for(PieceView piece:view.indicators.values())piece.highlight(selected!=null&&MahjongPresentation.sameType(piece.spec.face(),target.spec.face()));
             clearMatches(view);
             if(selected==null)view.remaining.text(Component.empty());
             else{
@@ -600,6 +601,10 @@ final class HandTable implements AutoCloseable {
         }
         if(mahjong)for(PieceView piece:publicPieces.values()){
             if(piece.spec.back())continue;
+            var hit=piece.bounds(false).rayTrace(eye.toVector(),ray,nearest);
+            if(hit!=null){nearest=hit.getHitPosition().distance(eye.toVector());selected="public:"+piece.spec.id();}
+        }
+        if(mahjong)for(PieceView piece:view.indicators.values()){
             var hit=piece.bounds(false).rayTrace(eye.toVector(),ray,nearest);
             if(hit!=null){nearest=hit.getHitPosition().distance(eye.toVector());selected="public:"+piece.spec.id();}
         }

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.4-SNAPSHOT
+
+- Render each inset Dora indicator group only for its seated owner; keep indicator updates and cleanup independent from hand selection.
+- Replace the transparent native foil substrate with an opaque smooth-quartz face behind the original strokes. Native glint metadata remains enabled; the reported missing client glint still requires an in-game check of this build.
+
 ## 1.8.3-SNAPSHOT
 
 - Refine native stroke artwork for character, wind, dragon and flower tile inscriptions.

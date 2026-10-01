@@ -272,11 +272,18 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                         require(!part.isVisibleByDefault(),"Riichi bonus face remains owner-only");
                         if(part instanceof org.bukkit.entity.ItemDisplay display){
                             require(Boolean.TRUE.equals(display.getItemStack().getItemMeta().getEnchantmentGlintOverride()),"real ItemDisplay preserves native enchanted glint override");
-                            require(display.getItemStack().getType()==org.bukkit.Material.WHITE_STAINED_GLASS,"glint uses a transparent face overlay");glints++;
+                            require(display.getItemStack().getType()==org.bukkit.Material.SMOOTH_QUARTZ,"glint uses an opaque tile face substrate");glints++;
                         }
                     }
                     require(glints>0,"live owner bonus tile has an ItemDisplay glint");
-                    getLogger().info("BOARDS_DORA_GLINT_PASS owner_only=true native_item_metadata=true client_visual_test=false");
+                    var indicators=(Map<?,?>)field(own,"indicators");require(indicators.size()==1,"owner gets one initial inset Dora indicator");
+                    require(((Map<?,?>)field(hand,"publicPieces")).keySet().stream().noneMatch(key->key.toString().startsWith("dora:")),"Dora indicator models are not public");
+                    for(Object piece:indicators.values())for(Object item:(List<?>)field(piece,"parts")){
+                        var part=(org.bukkit.entity.Entity)item;privateParts.add(part);
+                        require(part.isValid()&&!part.isVisibleByDefault()&&!part.isPersistent(),"inset Dora indicator is private and temporary");
+                    }
+                    call(hand,"show",new Class<?>[]{Player.class},spectator);require(privateViews.size()==1,"spectator cannot request Dora indicators");
+                    getLogger().info("BOARDS_DORA_GLINT_PASS owner_only=true private_indicators=true opaque_foil=true native_item_metadata=true client_visual_test=false");
                 }
                 call(view,"clear",new Class<?>[]{Player.class},owner);
                 require(privateViews.isEmpty()&&privateParts.stream().noneMatch(org.bukkit.entity.Entity::isValid),"private hand removed when view ends");

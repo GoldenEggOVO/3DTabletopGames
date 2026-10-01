@@ -149,25 +149,81 @@ class MahjongTableControlsTest {
         assertEquals(List.of("missing:p"),MahjongControls.groups(f.game.legalActions(0)).get("missing-p"));
         f.table.close();
     }
-    @Test void doraIndicatorsAreEmbeddedFacingEverySeatAtTheCenterOfItsFrontEdge() throws Exception {
+    @Test void doraIndicatorsAreEmbeddedOnlyOnTheirOwnersFrontEdge() throws Exception {
         var f=new HandTableTest.Fixture("mahjong");
         when(f.game.publicInfo()).thenReturn(Map.of("dora","m1,p2,s3","doraIds","d1,d2,d3"));f.room.revision++;f.table.sync();
-        Map<?,?> pieces=(Map<?,?>)TableViewTest.field(f.table,"publicPieces");
-        for(int seat=0;seat<4;seat++)for(int i=0;i<3;i++){
-            Object tile=pieces.get("dora:"+seat+":d"+(i+1));assertNotNull(tile);
-            Entity body=(Entity)((List<?>)TableViewTest.field(tile,"parts")).getFirst();
-            var spec=TableViewTest.field(tile,"spec");var pose=(HandTable.Pose)TableViewTest.field(spec,"pose");
-            double angle=seat*Math.PI/2,radial=pose.x()*Math.sin(angle)+pose.z()*Math.cos(angle);
-            assertTrue(radial>1.47&&radial<1.50,"Tile body must be partly inside the wooden apron");
-            assertEquals(-90*seat,pose.yaw(),.00001);
-            assertEquals(f.origin.getY()-.18,body.getLocation().getY(),.00001);
-            var transforms=org.mockito.ArgumentCaptor.forClass(org.bukkit.util.Transformation.class);
-            verify((org.bukkit.entity.BlockDisplay)body).setTransformation(transforms.capture());
-            assertEquals(.094,transforms.getValue().getScale().x,.00001);assertEquals(.14,transforms.getValue().getScale().y,.00001);
-            assertTrue(radial+transforms.getValue().getScale().z/2>1.5,"Face must clear the wood instead of being hidden inside it");
-            verify(body,never()).setVisibleByDefault(false);
+        Map<?,?> publicPieces=(Map<?,?>)TableViewTest.field(f.table,"publicPieces");
+        assertTrue(publicPieces.keySet().stream().noneMatch(id->id.toString().startsWith("dora:")));
+        f.table.show(f.spectator);assertTrue(((Map<?,?>)TableViewTest.field(f.table,"privateViews")).isEmpty());
+        when(f.game.playerCount()).thenReturn(4);
+        for(int seat=0;seat<4;seat++){
+            while(f.room.seats.size()<4)f.room.seats.add(new Room.Seat(UUID.randomUUID(),"Bot",true));
+            f.room.seats.set(seat,new Room.Seat(f.owner.getUniqueId(),"Owner",false));
+            when(f.game.hand(seat)).thenReturn(List.of());f.room.revision++;f.table.show(f.owner);
+            Object own=((Map<?,?>)TableViewTest.field(f.table,"privateViews")).get(f.owner.getUniqueId());
+            Map<?,?> pieces=(Map<?,?>)TableViewTest.field(own,"indicators");assertEquals(3,pieces.size());
+            for(int i=0;i<3;i++){
+                Object tile=pieces.get("dora:"+seat+":d"+(i+1));assertNotNull(tile);
+                Entity body=(Entity)((List<?>)TableViewTest.field(tile,"parts")).getFirst();
+                var spec=TableViewTest.field(tile,"spec");var pose=(HandTable.Pose)TableViewTest.field(spec,"pose");
+                double angle=seat*Math.PI/2,radial=pose.x()*Math.sin(angle)+pose.z()*Math.cos(angle);
+                assertTrue(radial>1.47&&radial<1.50,"Tile body must be partly inside the wooden apron");
+                assertEquals(-90*seat,pose.yaw(),.00001);
+                assertEquals(f.origin.getY()-.18,body.getLocation().getY(),.00001);
+                var transforms=org.mockito.ArgumentCaptor.forClass(org.bukkit.util.Transformation.class);
+                verify((org.bukkit.entity.BlockDisplay)body).setTransformation(transforms.capture());
+                assertEquals(.094,transforms.getValue().getScale().x,.00001);assertEquals(.14,transforms.getValue().getScale().y,.00001);
+                assertTrue(radial+transforms.getValue().getScale().z/2>1.5,"Face must clear the wood instead of being hidden inside it");
+                for(Object part:(List<?>)TableViewTest.field(tile,"parts")){
+                    verify((Entity)part).setVisibleByDefault(false);verify(f.owner).showEntity(f.plugin,(Entity)part);
+                    verify(f.spectator,never()).showEntity(f.plugin,(Entity)part);
+                }
+            }
+            List<Entity> oldParts=new ArrayList<>();
+            for(Object tile:pieces.values())oldParts.addAll((List<Entity>)TableViewTest.field(tile,"parts"));
+            int count=f.entities.size();f.table.show(f.owner);assertEquals(count,f.entities.size());
+            f.table.clear(f.owner);for(Entity part:oldParts)verify(part).remove();
+            f.room.seats.set(seat,new Room.Seat(UUID.randomUUID(),"Bot",true));
         }
         f.table.close();
+    }
+    @Test void privateIndicatorsRefreshIndependentlyAndCleanUpWithTheirOwner()throws Exception{
+        var f=new HandTableTest.Fixture("mahjong");
+        f.room.seats.set(1,new Room.Seat(f.spectator.getUniqueId(),"Peer",false));when(f.game.hand(1)).thenReturn(List.of());
+        when(f.game.publicInfo()).thenReturn(Map.of("dora","m9","doraIds","d1"));
+        f.room.revision++;f.table.sync();f.table.show(f.owner);f.table.show(f.spectator);
+        Map<?,?> views=(Map<?,?>)TableViewTest.field(f.table,"privateViews");
+        Map<?,?> own=(Map<?,?>)TableViewTest.field(views.get(f.owner.getUniqueId()),"indicators"),peer=(Map<?,?>)TableViewTest.field(views.get(f.spectator.getUniqueId()),"indicators");
+        Object original=own.get("dora:0:d1");Entity originalBody=(Entity)((List<?>)TableViewTest.field(original,"parts")).getFirst();
+        for(Object tile:peer.values())for(Object part:(List<?>)TableViewTest.field(tile,"parts")){
+            verify(f.owner,never()).showEntity(f.plugin,(Entity)part);verify(f.spectator).showEntity(f.plugin,(Entity)part);
+        }
+        when(f.game.publicInfo()).thenReturn(Map.of("dora","m9,p1","doraIds","d1,d2"));f.room.revision++;
+        f.table.sync();f.table.show(f.owner);assertEquals(2,own.size());assertEquals(1,peer.size());assertSame(original,own.get("dora:0:d1"));
+        f.table.show(f.spectator);assertEquals(2,peer.size());
+        originalBody.remove();f.table.show(f.owner);assertNotSame(original,own.get("dora:0:d1"));
+        f.table.clear(f.owner);assertTrue(own.isEmpty());
+        for(Object tile:peer.values())for(Object part:(List<?>)TableViewTest.field(tile,"parts"))assertTrue(((Entity)part).isValid());
+        f.table.close();assertTrue(peer.isEmpty());
+    }
+    @Test void onlyOwnerCanAimAtAndHighlightTheirInsetIndicator()throws Exception{
+        for(int seat=0;seat<4;seat++){
+            var f=new HandTableTest.Fixture("mahjong");when(f.game.playerCount()).thenReturn(4);
+            while(f.room.seats.size()<4)f.room.seats.add(new Room.Seat(UUID.randomUUID(),"Bot",true));
+            f.room.seats.set(0,new Room.Seat(UUID.randomUUID(),"Bot",true));f.room.seats.set(seat,new Room.Seat(f.owner.getUniqueId(),"Owner",false));
+            int other=(seat+1)%4;f.room.seats.set(other,new Room.Seat(f.spectator.getUniqueId(),"Peer",false));
+            when(f.game.hand(seat)).thenReturn(List.of(new dev.tabletop3d.rules.HandGame.Piece("a","m9")));when(f.game.hand(other)).thenReturn(List.of());
+            when(f.game.publicInfo()).thenReturn(Map.of("dora","m9","doraIds","d1"));f.room.revision++;f.table.sync();f.table.show(f.owner);f.table.show(f.spectator);
+            Object view=((Map<?,?>)TableViewTest.field(f.table,"privateViews")).get(f.owner.getUniqueId());
+            String id="dora:"+seat+":d1";Object indicator=((Map<?,?>)TableViewTest.field(view,"indicators")).get(id);
+            Entity body=(Entity)((List<?>)TableViewTest.field(indicator,"parts")).getFirst();
+            double angle=seat*Math.PI/2;Vector outward=new Vector(Math.sin(angle),0,Math.cos(angle));
+            Location eye=body.getLocation().add(outward.clone().multiply(.5)).add(0,.07,0);Vector ray=outward.clone().multiply(-1);
+            assertEquals("public:"+id,f.table.hit(f.owner,eye,ray));assertNull(f.table.hit(f.spectator,eye,ray));
+            f.table.hover(f.owner,"public:"+id);assertEquals("public:"+id,TableViewTest.field(view,"hover"));verify(body).setGlowing(true);
+            Entity ownBody=(Entity)((List<?>)TableViewTest.field(((Map<?,?>)TableViewTest.field(view,"pieces")).get("a"),"parts")).getFirst();verify(ownBody).setGlowing(true);
+            f.table.hover(f.owner,null);verify(body,atLeastOnce()).setGlowing(false);f.table.close();
+        }
     }
     @Test void riversFillLeftToRightThenTowardTheirOwnerFromTheCenter(){
         for(int seat=0;seat<4;seat++){
@@ -192,14 +248,18 @@ class MahjongTableControlsTest {
             var parts=(List<Entity>)TableViewTest.field(hand.get(id),"parts");
             var item=parts.stream().filter(org.bukkit.entity.ItemDisplay.class::isInstance).map(org.bukkit.entity.ItemDisplay.class::cast).findFirst().orElseThrow();privateGlints.add(item);
             var stack=org.mockito.ArgumentCaptor.forClass(org.bukkit.inventory.ItemStack.class);verify(item).setItemStack(stack.capture());
-            assertTrue(stack.getValue().getItemMeta().getEnchantmentGlintOverride());assertEquals(org.bukkit.Material.WHITE_STAINED_GLASS,stack.getValue().getType());
+            assertTrue(stack.getValue().getItemMeta().getEnchantmentGlintOverride());assertEquals(org.bukkit.Material.SMOOTH_QUARTZ,stack.getValue().getType());
+            var transform=org.mockito.ArgumentCaptor.forClass(org.bukkit.util.Transformation.class);verify(item).setTransformation(transform.capture());
+            assertEquals(.001,transform.getValue().getScale().z,.000001);
+            double faceZ=item.getLocation().getZ()+transform.getValue().getScale().z/2;
+            Entity body=parts.getFirst();assertTrue(faceZ>body.getLocation().getZ()+.052/2,"Foil substrate clears the opaque tile body");
             verify(item).setVisibleByDefault(false);verify(f.owner).showEntity(f.plugin,item);verify(f.spectator,never()).showEntity(f.plugin,item);
         }
         var publicParts=(List<Entity>)TableViewTest.field(pub.get("discard:1:c"),"parts");
         assertTrue(publicParts.stream().anyMatch(org.bukkit.entity.ItemDisplay.class::isInstance));
         for(Object tile:pub.values()){
             String id=(String)TableViewTest.field(TableViewTest.field(tile,"spec"),"id");
-            if(id.startsWith("back:")||id.startsWith("dora:"))assertTrue(((List<Entity>)TableViewTest.field(tile,"parts")).stream().noneMatch(org.bukkit.entity.ItemDisplay.class::isInstance));
+            if(id.startsWith("back:"))assertTrue(((List<Entity>)TableViewTest.field(tile,"parts")).stream().noneMatch(org.bukkit.entity.ItemDisplay.class::isInstance));
         }
         when(f.game.publicInfo()).thenReturn(Map.of("profile","riichi","dora","p8","doraIds","d1"));f.room.revision++;f.table.sync();f.table.show(f.owner);
         verify(privateGlints.get(0)).remove();assertFalse(((List<Entity>)TableViewTest.field(hand.get("a"),"parts")).contains(privateGlints.get(0)));

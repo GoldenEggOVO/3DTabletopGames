@@ -1,5 +1,16 @@
 # Verification and acceptance
 
+## Local build: 1.8.4-SNAPSHOT — Private inset Dora indicators and opaque foil substrate
+
+- JDK 25 / Maven package: **485 tests passed**, zero failures, errors or skipped tests. Privacy and opaque substrate regressions were first observed failing against the old behavior.
+- Dora panels now belong to each seated player's private view, with no public indicator entities. Regressions cover all four apron poses, spectator exclusion, independent owner updates after another indicator is added, missing-entity repair and removal without affecting another player's panel.
+- Preserve indicator aiming, matching tile highlights and remaining-count hints for the owner. Independent review identified and corrected the lost hover path; a four-seat ray regression rejects other players aiming at the same private panel.
+- The user reports that 1.8.3's native glint is not visible, while ordinary enchanted items are visible. The earlier metadata/alpha investigation did not establish successful client rendering. Inspection of the local 26.2 client renderer confirms foil submission and UV preservation but does not prove the reported missing-glint cause.
+- Change only the foil substrate from translucent white stained glass to opaque smooth quartz, keeping the thin face outside the original body and behind the original strokes. This bypasses the translucent item path without adding a resource pack. This is a correction candidate; **actual client glint visibility remains unverified**.
+- The exact shaded JAR passed three isolated Purpur **26.2-2622** boots (create, restart and legacy migration) in `target/standalone-smoke-20261001-161839/`. All three check live private indicator entities, opaque enchanted ItemDisplay metadata and cleanup with proxy players. These checks do not render the client glint. No production deployment or public Release.
+
+Verified JAR SHA-256: `020b7158784064e6073b21916cd1257208eec376a379eb5967b73b5fde1d216e`.
+
 ## Local build: 1.8.3-SNAPSHOT — Mahjong artwork and bonus glint; Color Eight interaction
 
 - JDK 25 / Maven package: **483 tests passed**, zero failures, errors or skipped tests.
