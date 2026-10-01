@@ -1,5 +1,15 @@
 # Verification and acceptance
 
+## Local build: 1.8.2-SNAPSHOT — Mahjong kuikae brightness
+
+- JDK 25 / Maven package: **474 tests passed**, zero failures, errors or skipped tests.
+- The new table regression uses a real Riichi game to perform Chi, checks both kuikae-forbidden tile types at brightness 7/7 with every original model material retained, then confirms brightness 15/15 returns after a legal discard. Rule assertions also cover Pon, other seats and consumed physical tile IDs.
+- Waiting turns and Riichi selection stay normally lit; ineligible actions are still rejected. Existing Color Eight gray-material behavior is unchanged. Independent code review found no blocking issues.
+- The exact shaded JAR passed three clean Purpur **26.2-2622** boots (create, restart, legacy-folder migration) in `target/standalone-smoke-20261001-142814/`. No production deployment or public Release.
+- Minecraft client appearance of the chosen dim brightness remains pending; automated Display API checks do not confirm client visuals.
+
+Verified JAR SHA-256: `239363df8ca0630530117ecffb83a2e53b4e42754fd52d7d0596e34210e0597c`.
+
 ## Local build: 1.8.1-SNAPSHOT — Native shape refinement
 
 - JDK 25 / Maven package: **472 tests passed**, zero failures, errors or skipped tests. Added regressions check circular rim coverage, text-free private color buttons, native tile bounds/red fives/retained glyph ink, 6/9 underlines and actual rotated-polygon overlap between different colors at the same depth.

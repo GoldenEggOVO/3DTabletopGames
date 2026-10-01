@@ -120,9 +120,10 @@ class RiichiGameTest {
     }
     @Test void chiAndPonCannotSwapTheClaimedTileOrTheOtherSequenceEnd()throws Exception {
         var game=game();setHand(game,0,"m2");setHand(game,1,"m2 m3 m4 m5 p1 p3 p5 p7 s1 s3 s5 z1 z2");setHand(game,2,"");setHand(game,3,"");game.apply(0,"discard:s0_0");
-        game.apply(1,"chi:s1_1,s1_2");assertFalse(game.legalActions(1).contains("discard:s1_0"));assertFalse(game.legalActions(1).contains("discard:s1_3"));assertTrue(game.legalActions(1).contains("discard:s1_4"));
+        assertFalse(game.kuikaeForbidden(1,"s1_0"));game.apply(1,"chi:s1_1,s1_2");assertTrue(game.kuikaeForbidden(1,"s1_0"));assertTrue(game.kuikaeForbidden(1,"s1_3"));assertFalse(game.kuikaeForbidden(1,"s1_4"));assertFalse(game.kuikaeForbidden(0,"s1_0"));assertFalse(game.kuikaeForbidden(1,"s1_1"));assertFalse(game.legalActions(1).contains("discard:s1_0"));assertFalse(game.legalActions(1).contains("discard:s1_3"));assertTrue(game.legalActions(1).contains("discard:s1_4"));
+        game.apply(1,"discard:s1_4");assertFalse(game.kuikaeForbidden(1,"s1_0"));assertFalse(game.kuikaeForbidden(1,"s1_3"));
         game=game();setHand(game,0,"m5");setHand(game,1,"m5 m5 m5 p1 p3 p5 p7 s1 s3 s5 z1 z2 z3");setHand(game,2,"");setHand(game,3,"");game.apply(0,"discard:s0_0");game.apply(1,"pon:s1_0,s1_1");
-        assertFalse(game.legalActions(1).contains("discard:s1_2"));assertTrue(game.legalActions(1).stream().noneMatch(a->a.startsWith("kan-")));assertTrue(game.legalActions(1).contains("discard:s1_3"));
+        assertTrue(game.kuikaeForbidden(1,"s1_2"));assertFalse(game.kuikaeForbidden(1,"s1_3"));assertFalse(game.legalActions(1).contains("discard:s1_2"));assertTrue(game.legalActions(1).stream().noneMatch(a->a.startsWith("kan-")));assertTrue(game.legalActions(1).contains("discard:s1_3"));
     }
     private static MahjongGame game()throws Exception{var game=new MahjongGame(4,0,Map.of("profile","riichi","rounds","1"));set(game,"anyCalls",true);set(game,"discardCount",8);return game;}
     private static MahjongGame discardNoYakuGame()throws Exception {

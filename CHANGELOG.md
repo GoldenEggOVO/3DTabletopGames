@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.2-SNAPSHOT
+
+- Dim Mahjong tiles only when Chi/Pon kuikae forbids discarding them, using native Display brightness (15 to 7) without replacing materials or artwork.
+- Restore normal brightness after the discard; waiting turns, Riichi selection and other action restrictions retain normal brightness and legal-action enforcement.
+
 ## 1.8.1-SNAPSHOT
 
 - Round the card table with 64 sides made from centered, rotated native cuboids, retaining its three-block diameter.

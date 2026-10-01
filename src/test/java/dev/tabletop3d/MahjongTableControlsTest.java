@@ -66,20 +66,57 @@ class MahjongTableControlsTest {
         assertTrue(((List<?>)TableViewTest.field(calls.get("choice:pon:a,b"),"parts")).size()>5);
         f.table.close();
     }
-    @Test void illegalTilesAreGrayAndRiichiIsArmedByItsButton() throws Exception {
+    @Test void riichiChoiceKeepsTileArtworkBrightAndStillRejectsIneligibleDiscards() throws Exception {
         var f=new HandTableTest.Fixture("mahjong");
         when(f.game.legalActions(0)).thenReturn(List.of("riichi:b","discard:a","discard:b"));f.table.show(f.owner);
         Object own=((Map<?,?>)TableViewTest.field(f.table,"privateViews")).get(f.owner.getUniqueId());
         Map<?,?> pieces=(Map<?,?>)TableViewTest.field(own,"pieces");
         assertTrue(f.table.expandCall(f.owner,"riichi"));
         Entity disabled=(Entity)((List<?>)TableViewTest.field(pieces.get("a"),"parts")).getFirst();
-        verify((org.bukkit.entity.BlockDisplay)disabled).setBlock(org.bukkit.Material.GRAY_CONCRETE.createBlockData());
+        verify((org.bukkit.entity.BlockDisplay)disabled,times(1)).setBlock(org.bukkit.Material.SMOOTH_QUARTZ.createBlockData());
         assertNull(f.table.handAction(f.owner,"a"));
         assertEquals("riichi:b",f.table.handAction(f.owner,"b"));
         assertTrue(f.table.expandCall(f.owner,"back"));
-        verify((org.bukkit.entity.BlockDisplay)disabled,atLeastOnce()).setBlock(org.bukkit.Material.SMOOTH_QUARTZ.createBlockData());
+        verify((org.bukkit.entity.BlockDisplay)disabled,times(1)).setBlock(any());
         when(f.game.legalActions(0)).thenReturn(List.of("discard:b"));f.room.revision++;f.table.show(f.owner);
-        verify((org.bukkit.entity.BlockDisplay)disabled,atLeast(2)).setBlock(org.bukkit.Material.GRAY_CONCRETE.createBlockData());
+        verify((org.bukkit.entity.BlockDisplay)disabled,times(1)).setBlock(any());
+        verify((org.bukkit.entity.Display)disabled,never()).setBrightness(new org.bukkit.entity.Display.Brightness(7,7));
+        f.table.close();
+    }
+    @Test void waitingForAnotherTurnKeepsEveryTileAtNormalBrightness()throws Exception{
+        var f=new HandTableTest.Fixture("mahjong");when(f.game.currentPlayer()).thenReturn(1);
+        when(f.game.legalActions(0)).thenReturn(List.of());f.table.show(f.owner);
+        Object own=((Map<?,?>)TableViewTest.field(f.table,"privateViews")).get(f.owner.getUniqueId());
+        for(Object piece:((Map<?,?>)TableViewTest.field(own,"pieces")).values())for(Entity part:(List<Entity>)TableViewTest.field(piece,"parts")){
+            verify((org.bukkit.entity.BlockDisplay)part,times(1)).setBlock(any());
+            verify((org.bukkit.entity.Display)part,times(1)).setBrightness(new org.bukkit.entity.Display.Brightness(15,15));
+        }
+        f.table.close();
+    }
+    @Test void onlyKuikaeTilesDimWithoutReplacingAnyMaterialAndRecoverAfterDiscard()throws Exception{
+        var f=new HandTableTest.Fixture("mahjong");
+        var game=new dev.tabletop3d.rules.MahjongGame(4,0,Map.of("profile","riichi","rounds","1"));
+        List<List<dev.tabletop3d.rules.mahjong.Tiles.Tile>> hands=new ArrayList<>();
+        String[] faces={"m2","m2 m3 m4 m5 p1 p3 p5 p7 s1 s3 s5 z1 z2","",""};
+        for(int seat=0;seat<4;seat++){
+            List<dev.tabletop3d.rules.mahjong.Tiles.Tile> hand=new ArrayList<>();int index=0;
+            for(String face:faces[seat].split(" "))if(!face.isEmpty())hand.add(new dev.tabletop3d.rules.mahjong.Tiles.Tile("t"+seat+"_"+index++,dev.tabletop3d.rules.mahjong.Tiles.type(face),false));
+            hands.add(hand);
+        }
+        TabletopTest.set(game,"hands",hands);TabletopTest.set(game,"anyCalls",true);
+        game.apply(0,"discard:t0_0");game.apply(1,"chi:t1_1,t1_2");
+        f.room.seats.clear();for(int seat=0;seat<4;seat++)f.room.seats.add(new Room.Seat(seat==1?f.owner.getUniqueId():UUID.randomUUID(),"Seat "+seat,seat!=1));
+        f.room.board=game;f.room.revision++;f.table.sync();f.table.show(f.owner);
+        Object own=((Map<?,?>)TableViewTest.field(f.table,"privateViews")).get(f.owner.getUniqueId());
+        Map<?,?> pieces=(Map<?,?>)TableViewTest.field(own,"pieces");List<Entity> dimmed=new ArrayList<>();
+        for(var entry:pieces.entrySet())for(Entity part:(List<Entity>)TableViewTest.field(entry.getValue(),"parts")){
+            verify((org.bukkit.entity.BlockDisplay)part,times(1)).setBlock(any());
+            if(Set.of("t1_0","t1_3").contains(entry.getKey())){verify((org.bukkit.entity.Display)part).setBrightness(new org.bukkit.entity.Display.Brightness(7,7));dimmed.add(part);}
+            else verify((org.bukkit.entity.Display)part,times(1)).setBrightness(any());
+        }
+        assertNull(f.table.handAction(f.owner,"t1_0"));assertNull(f.table.handAction(f.owner,"t1_3"));
+        game.apply(1,"discard:t1_4");f.room.revision++;f.table.sync();f.table.show(f.owner);
+        for(Entity part:dimmed){verify((org.bukkit.entity.Display)part,times(2)).setBrightness(new org.bukkit.entity.Display.Brightness(15,15));verify((org.bukkit.entity.BlockDisplay)part,times(1)).setBlock(any());}
         f.table.close();
     }
     @Test void repeatedDiscardPressCannotHitAReplacementTileUntilAimChangesOrClicksStop(){

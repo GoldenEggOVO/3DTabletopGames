@@ -130,6 +130,10 @@ final class HandTable implements AutoCloseable {
         }
         void playable(boolean allowed){
             if(disabled==!allowed)return;disabled=!allowed;
+            if(mahjong){
+                for(Entity part:parts)((Display)part).setBrightness(new Display.Brightness(allowed?15:7,allowed?15:7));
+                return;
+            }
             for(int i=0;i<parts.size();i++){
                 Material original=materials.get(i),gray=switch(original){
                     case WHITE_CONCRETE,SMOOTH_QUARTZ -> Material.LIGHT_GRAY_CONCRETE;
@@ -458,10 +462,10 @@ final class HandTable implements AutoCloseable {
             for(PieceView piece:view.pieces.values())piece.playable(view.seat!=room.board.currentPlayer()||room.phase!=Room.Phase.PLAYING||legal.stream().anyMatch(a->a.equals("play:"+piece.spec.id())||a.startsWith("play:"+piece.spec.id()+":")));
             return;
         }
-        String prefix="riichi".equals(view.callGroup)?"riichi:":"discard:";
         for(PieceView piece:view.pieces.values()){
             String id=piece.spec.id();boolean selected=legal.contains("exchange-remove:"+id);
-            piece.playable(room.phase==Room.Phase.PLAYING&&(legal.contains(prefix+id)||legal.contains("exchange-add:"+id)||selected));
+            boolean kuikae=room.phase==Room.Phase.PLAYING&&room.board instanceof dev.tabletop3d.rules.MahjongGame game&&game.kuikaeForbidden(view.seat,id);
+            piece.playable(!kuikae);
             if(selected){piece.highlight(true);piece.shift(new Vector(0,.035,0));}
         }
     }
