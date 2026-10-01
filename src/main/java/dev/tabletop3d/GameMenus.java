@@ -59,10 +59,12 @@ final class GameMenus implements AutoCloseable {
             sessions.remove(p.getUniqueId());if(plugin.allowed(p))s.buttons().get(index).action().run();
         }catch(IllegalArgumentException ex){plugin.tell(p,ex.getMessage()==null?Language.component("error.page-changed"):Language.legacy(ex.getMessage()));}
     }
-    void forget(Player p){sessions.remove(p.getUniqueId());}
+    void forget(Player p){sessions.remove(p.getUniqueId());if(plugin.comfort!=null)plugin.comfort.menuClosed(p);}
+    boolean active(Player p){Session s=sessions.get(p.getUniqueId());return s!=null&&s.world().equals(p.getWorld().getUID())&&System.currentTimeMillis()<s.expires();}
     void main(Player p){
         List<Button> b=new ArrayList<>();Room current=plugin.room(p);
         if(current!=null)b.add(new Button("resume",Language.component("menu.resume"),()->plugin.resume(p,current)));
+        if(!plugin.rooms.isEmpty())b.add(new Button("rooms",Language.component("setup.rooms"),()->rooms(p)));
         for(String kind:Tabletop3D.NAMES.keySet())if(!Set.of("go9","go13").contains(kind))b.add(new Button(kind,RoomText.game(kind),()->setup(p,kind)));
         show(p,Language.component("menu.title"),Component.empty(),b,null,"catalog");
     }
@@ -86,7 +88,6 @@ final class GameMenus implements AutoCloseable {
         for(var option:settings)if(option.key().equals("profile"))buttons.add(new Button("rule-profile",RoomText.option(kind,option,draft.options()),
             ()->setup(p,new Setup(kind,draft.capacity(),draft.bots(),GameOptions.change(kind,draft.options(),option)))));
         if(settings.stream().anyMatch(option->!option.key().equals("profile")))buttons.add(new Button("details",Language.component("setup.details"),()->setupRules(p,draft,0)));
-        buttons.add(new Button("rooms",Language.component("setup.rooms"),()->games(p,kind)));
         Component description=Language.component("setup.summary","mode",Language.component(draft.bots()?"setup.bots":"setup.friends"),"count",draft.capacity())
             .append(Component.newline()).append(Language.component("setup.basic-hint"));
         show(p,Language.component("setup.title","game",RoomText.game(kind)),description,buttons,()->main(p),"setup");
@@ -104,11 +105,12 @@ final class GameMenus implements AutoCloseable {
         show(p,Language.component("setup.details-title","game",RoomText.game(kind)),description,buttons,()->setup(p,draft),"setup");
     }
     void games(Player p,String kind){games(p,kind,0);}
+    void rooms(Player p){games(p,null,0);}
     private void games(Player p,String kind,int requestedPage){
-        List<Room> rooms=plugin.rooms.values().stream().filter(r->r.kind.equals(kind)||kind.equals("go")&&Set.of("go9","go13").contains(r.kind))
+        List<Room> rooms=plugin.rooms.values().stream().filter(r->kind==null||r.kind.equals(kind)||kind.equals("go")&&Set.of("go9","go13").contains(r.kind))
             .sorted(Comparator.comparingInt(r->r.seat(p.getUniqueId())>=0?0:r.phase==Room.Phase.LOBBY&&r.seats.size()<r.capacity?1:2)).toList();
         int pages=Math.max(1,(rooms.size()+ROOM_PAGE_SIZE-1)/ROOM_PAGE_SIZE),page=Math.max(0,Math.min(requestedPage,pages-1));
-        List<Button>b=new ArrayList<>();b.add(new Button("entry",Language.component("menu.create"),()->setup(p,kind)));
+        List<Button>b=new ArrayList<>();if(kind!=null)b.add(new Button("entry",Language.component("menu.create"),()->setup(p,kind)));
         for(Room r:rooms.subList(page*ROOM_PAGE_SIZE,Math.min((page+1)*ROOM_PAGE_SIZE,rooms.size()))){
             String action=r.seat(p.getUniqueId())>=0?"menu.rooms.resume":r.phase==Room.Phase.LOBBY&&r.seats.size()<r.capacity?"menu.rooms.join":"menu.rooms.view";
             Component label=Language.component("room.list","room",RoomText.name(r),"occupied",r.seats.size(),"capacity",r.capacity,"phase",RoomText.phase(r));
@@ -120,7 +122,7 @@ final class GameMenus implements AutoCloseable {
         if(page>0)b.add(new Button("previous",Language.component("menu.previous"),()->games(p,kind,page-1)));
         if(page+1<pages)b.add(new Button("next",Language.component("menu.next"),()->games(p,kind,page+1)));
         Component description=rooms.isEmpty()?Language.component("menu.rooms.empty"):Language.component("menu.rooms.page","count",rooms.size(),"page",page+1,"pages",pages);
-        show(p,RoomText.game(kind),description,b,()->{Room current=plugin.room(p);if(current!=null)room(p,current);else main(p);});
+        show(p,kind==null?Language.component("setup.rooms"):RoomText.game(kind),description,b,()->{Room current=plugin.room(p);if(kind!=null&&current!=null)room(p,current);else main(p);});
     }
     void sizes(Player p,String kind){if(kind.equals("go")){show(p,Language.component("menu.go.title"),Language.component("menu.go.description"),List.of(new Button(Language.component("menu.go.small"),()->plugin.create(p,"go9",2)),new Button(Language.component("menu.go.medium"),()->plugin.create(p,"go13",2)),new Button(Language.component("menu.go.full"),()->plugin.create(p,"go",2))),()->games(p,kind));return;}int[] sizes=switch(kind){case"uno"->new int[]{2,3,4,6,8,10};case"checkers"->new int[]{2,3,4,6};case"ludo","aeroplane","yacht"->new int[]{2,3,4};default->new int[]{Tabletop3D.defaultCapacity(kind)};};
         if(sizes.length==1){plugin.create(p,kind,sizes[0]);return;}List<Button>b=new ArrayList<>();for(int size:sizes)b.add(new Button(Language.component("menu.capacity.option","count",size),()->plugin.create(p,kind,size)));show(p,Language.component("menu.capacity.title"),Language.component("menu.capacity.description"),b,()->games(p,kind));}

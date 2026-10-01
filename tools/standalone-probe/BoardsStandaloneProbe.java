@@ -362,8 +362,23 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 if(!clickMenu(menus,player,"id","next"))break;
             }
             require(seen.size()==25,"every room reachable through native pagination");
+            UUID cardRoom=UUID.randomUUID();rooms.put(cardRoom,constructor.newInstance(cardRoom,"lastcard",5,1L,26));added.add(cardRoom);
             call(menus,"main",new Class<?>[]{Player.class},player);
+            require(clickMenu(menus,player,"id","rooms"),"catalog opens the shared room browser");
+            Set<String> globalSeen=new HashSet<>();
+            for(int page=0;page<4;page++){
+                Object session=((Map<?,?>)field(menus,"sessions")).get(player.getUniqueId());
+                for(Object button:(List<?>)call(session,"buttons",new Class<?>[0])){
+                    String id=(String)call(button,"id",new Class<?>[0]);require(!id.equals("entry"),"global browser has no game-specific create button");
+                    if(id.startsWith("room-")){globalSeen.add(id);if(id.equals("room-"+cardRoom))require(((String)call(button,"label",new Class<?>[0])).contains("Color Eight")&&((String)call(button,"label",new Class<?>[0])).contains(cardRoom.toString().substring(0,6)),"room name contains game and code");}
+                }
+                if(!clickMenu(menus,player,"id","next"))break;
+            }
+            for(UUID id:added)require(globalSeen.contains("room-"+id),"mixed-game room reachable through shared browser");
+            require(clickMenu(menus,player,"id","back"),"shared browser returns to catalog");
             require(clickMenu(menus,player,"id","ludo"),"catalog selects game setup");
+            Object setupSession=((Map<?,?>)field(menus,"sessions")).get(player.getUniqueId());
+            for(Object button:(List<?>)call(setupSession,"buttons",new Class<?>[0]))require(!"rooms".equals(call(button,"id",new Class<?>[0])),"game setup omits duplicate browser");
             require(clickMenu(menus,player,"id","details"),"detailed Ludo rules reachable");
             require(clickMenu(menus,player,"id","rule-blocking"),"Ludo blocking setting cycles");
             require(menuLabel(menus,player,"rule-blocking").contains("Any Pawn Blocks"),"blocking change retained in setup");
@@ -374,7 +389,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             Set<String> profiles=new HashSet<>();
             for(int i=0;i<4;i++){profiles.add(menuLabel(menus,player,"rule-profile"));require(clickMenu(menus,player,"id","rule-profile"),"regional profile cycles");}
             require(profiles.size()==4,"all four regional profiles reachable");
-            getLogger().info("BOARDS_MENU_FLOW_PASS rooms=25 pagination=4 setup-rules=reachable");
+            getLogger().info("BOARDS_MENU_FLOW_PASS rooms=26 pagination=4 shared-browser=mixed-games setup-browser=absent setup-rules=reachable");
         } finally {added.forEach(rooms::remove);call(menus,"forget",new Class<?>[]{Player.class},player);}
     }
     private String menuLabel(Object menus,Player player,String id) throws Exception {

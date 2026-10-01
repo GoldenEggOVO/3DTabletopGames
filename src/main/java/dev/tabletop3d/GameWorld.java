@@ -281,12 +281,12 @@ final class GameWorld implements Listener, AutoCloseable {
     }
     @EventHandler(priority=EventPriority.HIGH) public void click(PlayerInteractEntityEvent event) {
         if(event.getHand()!=EquipmentSlot.HAND)return;
-        if(event.getRightClicked().getPersistentDataContainer().has(tag)){event.setCancelled(true);worldClick(event.getPlayer());}
+        if(event.getRightClicked().getPersistentDataContainer().has(tag)){event.setCancelled(true);worldClick(event.getPlayer(),true);}
     }
     @EventHandler(priority=EventPriority.HIGH) public void use(PlayerInteractEvent event) {
         if(event.getHand()!=EquipmentSlot.HAND)return;
         if(event.getAction()==Action.RIGHT_CLICK_AIR||event.getAction()==Action.RIGHT_CLICK_BLOCK||event.getAction()==Action.LEFT_CLICK_BLOCK)
-            if(worldClick(event.getPlayer()))event.setCancelled(true);
+            if(worldClick(event.getPlayer(),event.getAction().isRightClick()))event.setCancelled(true);
     }
     @EventHandler public void swing(PlayerAnimationEvent event){if(event.getAnimationType()==PlayerAnimationType.ARM_SWING)worldClick(event.getPlayer());}
     @EventHandler(priority=EventPriority.HIGH) public void attack(EntityDamageByEntityEvent event){
@@ -294,6 +294,9 @@ final class GameWorld implements Listener, AutoCloseable {
     }
     @EventHandler public void hanging(org.bukkit.event.hanging.HangingBreakEvent event){if(event.getEntity().getPersistentDataContainer().has(tag))event.setCancelled(true);}
     private boolean worldClick(Player player) {
+        return worldClick(player,false);
+    }
+    private boolean worldClick(Player player,boolean rightClick) {
         if(!plugin.allowed(player))return false;
         boolean focused=plugin.comfort!=null&&plugin.comfort.focused(player);
         if(player.isSneaking()&&!focused&&plugin.tableLobby!=null)return false;
@@ -302,6 +305,13 @@ final class GameWorld implements Listener, AutoCloseable {
         if(room.kind.equals("mahjong")&&room.phase==Room.Phase.PLAYING&&(cell==null||!cell.startsWith("@hand:")||room.seat(player.getUniqueId())!=room.board.currentPlayer()))view.maintainMahjongPress(player);
         if(cell==null)return false;
         long now=System.nanoTime(),last=clicks.getOrDefault(player.getUniqueId(),0L);if(now-last<180_000_000L)return true;clicks.put(player.getUniqueId(),now);
+        if(room.kind.equals("lastcard")||room.kind.equals("mahjong")){
+            if(player.isSneaking()&&rightClick){
+                if(room.kind.equals("mahjong")&&plugin.comfort!=null)plugin.comfort.release(player);
+                plugin.menus.room(player,room);return true;
+            }
+            if(cell.equals("@menu")||player.isSneaking()&&(room.kind.equals("lastcard")||!focused))return true;
+        }
         if(cell.startsWith("@tile:")||focused&&cell.equals("@menu"))return true;
         if(player.isSneaking()&&!focused||cell.equals("@menu")){plugin.menus.room(player,room);return true;}
         if(room.phase!=Room.Phase.PLAYING)return true;

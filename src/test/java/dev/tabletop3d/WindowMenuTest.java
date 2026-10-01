@@ -90,8 +90,9 @@ class WindowMenuTest {
             .serialize(BoardWindow.text(rendered.config().getString("Bottom.buttons.slot0.text")));
         assertEquals("Confirm Leave", label);
     }
-    @Test void mainCatalogUsesBrandedTitle() {
+    @Test void mainCatalogUsesBrandedTitle() throws Exception {
         var plugin = mock(Tabletop3D.class);
+        TabletopTest.set(plugin,"rooms",new java.util.LinkedHashMap<UUID,Room>());
         when(plugin.allowed(any())).thenReturn(true);
         var player = mock(Player.class);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());

@@ -94,7 +94,6 @@ final class TableLobby implements Listener, AutoCloseable {
         if(e.getHand()==EquipmentSlot.HAND&&request(e.getPlayer()))e.setCancelled(true);
     }
     boolean request(Player p){
-        if(plugin.comfort!=null&&plugin.comfort.focused(p))return false;
         if(!p.isSneaking()||!plugin.allowed(p))return false;
         if(!readEntries())return false;
         Location eye=p.getEyeLocation();Vector dir=eye.getDirection();Entry target=null;double nearest=Double.POSITIVE_INFINITY;
@@ -103,6 +102,7 @@ final class TableLobby implements Listener, AutoCloseable {
         var block=p.getWorld().rayTraceBlocks(eye,dir,Math.max(.001,nearest-.05),FluidCollisionMode.NEVER,true);
         if(block!=null)return false;
         long now=System.nanoTime();if(now-clicks.getOrDefault(p.getUniqueId(),0L)<250_000_000L)return true;clicks.put(p.getUniqueId(),now);
+        if(plugin.comfort!=null&&plugin.comfort.focused(p))plugin.comfort.release(p);
         String id=target.id;
         // Defer so this joining click cannot also select a card in the newly joined provider.
         Bukkit.getScheduler().runTask(plugin,()->{

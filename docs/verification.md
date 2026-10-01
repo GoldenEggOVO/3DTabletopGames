@@ -1,5 +1,14 @@
 # Verification and acceptance
 
+## Local build: 1.8.5-SNAPSHOT — Shared room browser and table menu gestures
+
+- JDK 25 / Maven package: **498 tests passed**, zero failures, errors or skipped tests. Missing shared browsing, duplicate setup browsing, ordinary Color Eight menu clicks and focused Mahjong menu release were observed failing before the changes.
+- Regressions cover a conditional catalog entry, mixed game/code labels, game setup pages without duplicate browsing, right-click event routing, Mahjong focused left-click tile play, waiting-room menus and release before menu opening. Dialog input reset cannot rearm held Shift; closing synchronizes restored client input without entering focus, including releasing Shift inside the menu. Automatic menus still restore gravity, visibility and the entry pose. Existing per-game pagination, stale callbacks and room gates continue passing.
+- Independent review identified and corrected the waiting-room route and the client's Dialog key reset sequence. No remaining important review findings.
+- The exact shaded JAR passed three isolated Purpur **26.2-2622** boots (create, restart and legacy migration) in `target/standalone-smoke-20261001-164936/`. Each boot exercises the shared mixed-game browser, pagination, game/code labels and setup pages without duplicate browsing through native Dialog callbacks. Existing model, privacy, sound and focus checks also pass. Minecraft client gesture feel and existing Mahjong glint appearance remain client acceptance items. No production deployment or public Release.
+
+Verified JAR SHA-256: `82feec55c3f70935db606128cd3545d2c5759e19268bdbe59a33aa24ff1d1ac6`.
+
 ## Local build: 1.8.4-SNAPSHOT — Private inset Dora indicators and opaque foil substrate
 
 - JDK 25 / Maven package: **485 tests passed**, zero failures, errors or skipped tests. Privacy and opaque substrate regressions were first observed failing against the old behavior.

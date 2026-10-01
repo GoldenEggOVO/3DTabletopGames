@@ -53,6 +53,37 @@ class TableComfortFocusTest {
         assertTrue(f.player.teleport(external));f.input(true);f.input(false);
         assertEquals(external,f.location.get());assertFalse(f.comfort.focused(f.player));verify(f.player).setGravity(true);
     }
+    @Test void menuReleaseRequiresReleasingAndPressingShiftBeforeFocusReturns(){
+        Fixture f=new Fixture(0);Location original=f.location.get().clone();f.input(true);
+        f.comfort.release(f.player);assertFalse(f.comfort.focused(f.player));assertEquals(original,f.location.get());
+        f.input(true);f.sync();assertFalse(f.comfort.focused(f.player));assertEquals(original,f.location.get());
+        f.input(false);f.input(true);assertTrue(f.comfort.focused(f.player));f.input(false);assertEquals(original,f.location.get());
+    }
+    @Test void dialogInputResetDoesNotRearmFocusWhenShiftIsStillPhysicallyHeld(){
+        Fixture f=new Fixture(0);Location original=f.location.get().clone();f.input(true);f.comfort.release(f.player);
+        f.plugin.menus=mock(GameMenus.class);when(f.plugin.menus.active(f.player)).thenReturn(true);
+        f.input(false);when(f.plugin.menus.active(f.player)).thenReturn(false);f.input(true);
+        assertFalse(f.comfort.focused(f.player));assertEquals(original,f.location.get());
+        f.input(false);f.input(true);assertTrue(f.comfort.focused(f.player));f.input(false);
+    }
+    @Test void dialogCloseUsesRestoredClientInputWithoutEnteringFocus(){
+        for(boolean stillHeld:List.of(false,true)){
+            Fixture f=new Fixture(0);f.input(true);f.comfort.release(f.player);f.plugin.menus=mock(GameMenus.class);
+            when(f.plugin.menus.active(f.player)).thenReturn(true);f.input(false);f.comfort.menuClosed(f.player);
+            when(f.plugin.menus.active(f.player)).thenReturn(false);
+            Input restored=mock(Input.class);when(restored.isSneak()).thenReturn(stillHeld);when(f.player.getCurrentInput()).thenReturn(restored);
+            if(stillHeld)f.input(true);
+            MockBukkit.getMock().getPluginManager().callEvent(new io.papermc.paper.event.packet.ClientTickEndEvent(f.player));
+            assertFalse(f.comfort.focused(f.player));
+            if(stillHeld){f.input(true);assertFalse(f.comfort.focused(f.player));f.input(false);}
+            f.input(true);assertTrue(f.comfort.focused(f.player));f.input(false);
+        }
+    }
+    @Test void automaticallyOpenedMenuStillReleasesFocusOnTheDialogInputReset(){
+        Fixture f=new Fixture(0);Location original=f.location.get().clone();f.input(true);
+        f.plugin.menus=mock(GameMenus.class);when(f.plugin.menus.active(f.player)).thenReturn(true);f.input(false);
+        assertFalse(f.comfort.focused(f.player));assertEquals(original,f.location.get());verify(f.player).setGravity(true);verify(f.player).setInvisible(false);
+    }
     @Test void cancelledExternalTeleportLeavesFocusUntilRelease(){
         Fixture f=new Fixture(0);Location original=f.location.get().clone();f.input(true);
         PlayerTeleportEvent event=new PlayerTeleportEvent(f.player,f.location.get(),new Location(f.world,20,85,20));event.setCancelled(true);

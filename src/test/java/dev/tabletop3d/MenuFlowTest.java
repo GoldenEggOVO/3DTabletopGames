@@ -12,6 +12,27 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class MenuFlowTest {
+    @Test void closeCallbackEndsTheSessionAndSynchronizesFocusInput()throws Exception{
+        Fixture f=new Fixture();f.plugin.comfort=mock(TableComfort.class);f.menus.main(f.player);assertTrue(f.menus.active(f.player));
+        f.buttons.stream().filter(b->b.id().equals("close")).findFirst().orElseThrow().action().run();
+        assertFalse(f.menus.active(f.player));verify(f.plugin.comfort).menuClosed(f.player);
+    }
+    @Test void catalogShowsOneGlobalBrowserOnlyWhenAnyRoomExists()throws Exception{
+        Fixture f=new Fixture();f.menus.main(f.player);assertFalse(f.buttons.stream().anyMatch(b->b.id().equals("rooms")));
+        Room chess=f.addRoom(0),cards=new Room(UUID.randomUUID(),"lastcard",5,1,1);f.plugin.rooms.put(cards.id,cards);
+        f.menus.main(f.player);var browse=f.buttons.stream().filter(b->b.id().equals("rooms")).toList();assertEquals(1,browse.size());
+        browse.getFirst().action().run();
+        for(Room room:List.of(chess,cards))assertTrue(f.buttons.stream().anyMatch(b->b.id().equals("room-"+room.id)&&b.label().contains(MessageText.plain(RoomText.game(room.kind)))&&b.label().contains(room.id.toString().substring(0,6))));
+        assertFalse(f.buttons.stream().anyMatch(b->b.id().equals("entry")));
+        f.buttons.stream().filter(b->b.id().equals("back")).findFirst().orElseThrow().action().run();assertTrue(f.buttons.stream().anyMatch(b->b.id().equals("chess")));
+        f.plugin.rooms.clear();f.menus.main(f.player);assertFalse(f.buttons.stream().anyMatch(b->b.id().equals("rooms")));
+    }
+    @Test void everyGameSetupOmitsItsOwnRoomBrowser()throws Exception{
+        Fixture f=new Fixture();f.addRoom(0);
+        for(String kind:Tabletop3D.NAMES.keySet()){
+            f.menus.setup(f.player,kind);assertFalse(f.buttons.stream().anyMatch(b->b.id().equals("rooms")),kind);
+        }
+    }
     @Test void catalogOpensSetupAndRulesReachCreationWithoutChangingTheDefaultDraft() throws Exception {
         Fixture f=new Fixture();f.menus.main(f.player);
         f.buttons.stream().filter(b->b.id().equals("ludo")).findFirst().orElseThrow().action().run();

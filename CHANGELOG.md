@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.8.5-SNAPSHOT
+
+- Show one shared Browse Rooms entry in the main catalog whenever any room exists; list rooms from every game with their game name and short code. Remove the duplicate browser from each game setup.
+- Require Shift + right-click to open Color Eight and Mahjong table menus. Mahjong exits its close table view before opening the menu; releasing and pressing Shift again restores the view. Focused left-click tile play remains available.
+- Support the same gesture while waiting for a Mahjong round. Ignore Dialog key resets when tracking held Shift, restore focus state when a menu opens, and synchronize restored input after closing without moving the camera.
+- Preserve custom menu styles, room callbacks, privacy, rules and existing layouts. Local acceptance build only; no production deployment or public Release.
+
 ## 1.8.4-SNAPSHOT
 
 - Render each inset Dora indicator group only for its seated owner; keep indicator updates and cleanup independent from hand selection.

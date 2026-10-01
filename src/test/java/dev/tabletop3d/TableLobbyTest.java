@@ -113,6 +113,15 @@ class TableLobbyTest {
         Player stranger=player(world);assertTrue(lobby.request(stranger));MockBukkit.getMock().getScheduler().performOneTick();
         assertEquals(0,joined.get());verify(plugin).tell(stranger,Language.component("chat.table.started"));
     }
+    @Test void focusedSeatedPlayerCanOpenWaitingTableMenuOnceAfterReleasingFocus()throws Exception{
+        var plugin=plugin();World world=mock(World.class);Player p=player(world);var lobby=spy(new TableLobby(plugin));
+        plugin.comfort=mock(TableComfort.class);when(plugin.comfort.focused(p)).thenReturn(true);
+        var opened=new java.util.concurrent.atomic.AtomicInteger();
+        var target=new TableLobby.Entry("focus-lobby",new Location(world,0,80,0),1.5,1.03,"麻将","等候",List.of("A"),4,Set.of(p.getUniqueId()),null,true,x->fail("Seated player must not join again"),x->{verify(plugin.comfort).release(p);opened.incrementAndGet();});
+        entries(lobby,List.of(target));
+        assertTrue(lobby.request(p));assertTrue(lobby.request(p));verify(plugin.comfort,times(1)).release(p);assertEquals(0,opened.get());
+        MockBukkit.getMock().getScheduler().performOneTick();assertEquals(1,opened.get());
+    }
     @Test void ordinaryClickAndSolidObstructionDoNotJoin()throws Exception{
         var plugin=plugin();World world=mock(World.class);Player p=player(world);var lobby=spy(new TableLobby(plugin));
         entries(lobby,List.of(entry(new Location(world,0,80,0),List.of(),4)));

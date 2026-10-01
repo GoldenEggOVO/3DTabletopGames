@@ -82,6 +82,55 @@ class TabletopTest {
         when(f.plugin.room(f.player)).thenReturn(f.room);f.room.board.apply(0,"place:7,7");f.clicks.clear();assertTrue(f.click());
         verify(f.plugin,times(1)).apply(any(),anyInt(),any(),any());
     }
+    @Test void colorEightFeltMenuRequiresSneakingAndRightClick()throws Exception{
+        Fixture f=new Fixture();set(f.room,"kind","lastcard");f.plugin.menus=mock(GameMenus.class);
+        f.room.board=mock(HandGame.class);
+        TableView view=((Map<UUID,TableView>)TableViewTest.field(f.arena,"views")).get(f.room.id);set(view,"geometry",new TableGeometry("lastcard",List.of()));
+        when(f.player.getEyeLocation()).thenAnswer(a->new Location(f.world,0,1.62,2.25).setDirection(new Vector(0,-.74,-2.25)));
+        assertTrue(f.click());verify(f.plugin.menus,never()).room(any(),any());
+        f.clicks.clear();when(f.player.isSneaking()).thenReturn(true);assertTrue(f.click());verify(f.plugin.menus,never()).room(any(),any());
+        f.clicks.clear();Method method=GameWorld.class.getDeclaredMethod("worldClick",Player.class,boolean.class);method.setAccessible(true);
+        assertTrue((boolean)method.invoke(f.arena,f.player,true));verify(f.plugin.menus).room(f.player,f.room);
+        verify(f.plugin,never()).apply(any(),anyInt(),any(),any());
+    }
+    @Test void focusedMahjongRightClickOpensMenuAndReleasesFocusBeforeTileActions()throws Exception{
+        for(boolean tile:new boolean[]{false,true}){
+            Fixture f=new Fixture();set(f.room,"kind","mahjong");f.room.board=mock(HandGame.class);f.plugin.menus=mock(GameMenus.class);
+            f.plugin.comfort=mock(TableComfort.class);when(f.plugin.comfort.focused(f.player)).thenReturn(true);when(f.player.isSneaking()).thenReturn(true);
+            TableView view=((Map<UUID,TableView>)TableViewTest.field(f.arena,"views")).get(f.room.id);
+            if(tile)when(view.handHit(eq(f.player),any(),any())).thenReturn("public:discard:1:a");
+            Method method=GameWorld.class.getDeclaredMethod("worldClick",Player.class,boolean.class);method.setAccessible(true);
+            assertTrue((boolean)method.invoke(f.arena,f.player,true));
+            var order=inOrder(f.plugin.comfort,f.plugin.menus);order.verify(f.plugin.comfort).release(f.player);order.verify(f.plugin.menus).room(f.player,f.room);
+            verify(f.plugin,never()).apply(any(),anyInt(),any(),any());
+        }
+    }
+    @Test void mahjongOrdinaryFeltClicksDoNotOpenMenu()throws Exception{
+        Fixture f=new Fixture();set(f.room,"kind","mahjong");f.room.board=mock(HandGame.class);f.plugin.menus=mock(GameMenus.class);
+        for(boolean rightClick:new boolean[]{false,true}){
+            f.clicks.clear();Method method=GameWorld.class.getDeclaredMethod("worldClick",Player.class,boolean.class);method.setAccessible(true);
+            assertTrue((boolean)method.invoke(f.arena,f.player,rightClick));
+        }
+        verify(f.plugin.menus,never()).room(any(),any());verify(f.plugin,never()).apply(any(),anyInt(),any(),any());
+    }
+    @Test void focusedMahjongLeftClickStillPlaysTheAimedHandTile()throws Exception{
+        Fixture f=new Fixture();set(f.room,"kind","mahjong");HandGame game=mock(HandGame.class);f.room.board=game;
+        when(game.hand(0)).thenReturn(List.of(new HandGame.Piece("a","1m")));when(game.legalActions(0)).thenReturn(List.of("discard:a"));
+        f.plugin.menus=mock(GameMenus.class);f.plugin.comfort=mock(TableComfort.class);
+        when(f.plugin.comfort.focused(f.player)).thenReturn(true);when(f.player.isSneaking()).thenReturn(true);
+        TableView view=((Map<UUID,TableView>)TableViewTest.field(f.arena,"views")).get(f.room.id);
+        when(view.handHit(eq(f.player),any(),any())).thenReturn("a");when(view.mahjongHandAction(f.player,"a")).thenReturn("discard:a");
+        assertTrue(f.click());verify(f.plugin).apply(eq(f.room),eq(0),eq(new JsonPrimitive("discard:a")),isNull());
+        verify(f.plugin.comfort,never()).release(any());verify(f.plugin.menus,never()).room(any(),any());
+    }
+    @Test void blockInteractionRoutesRightClickToTheColorEightMenuButNotLeftClick()throws Exception{
+        Fixture f=new Fixture();set(f.room,"kind","lastcard");f.room.board=mock(HandGame.class);f.plugin.menus=mock(GameMenus.class);when(f.player.isSneaking()).thenReturn(true);
+        for(var action:List.of(org.bukkit.event.block.Action.LEFT_CLICK_BLOCK,org.bukkit.event.block.Action.RIGHT_CLICK_AIR)){
+            f.clicks.clear();var event=new org.bukkit.event.player.PlayerInteractEvent(f.player,action,null,null,org.bukkit.block.BlockFace.SELF,org.bukkit.inventory.EquipmentSlot.HAND);
+            f.arena.use(event);assertTrue(event.isCancelled());
+            verify(f.plugin.menus,times(action.isRightClick()?1:0)).room(f.player,f.room);
+        }
+    }
     @Test void anOccupiedPlacementReportsTheCellProblemWithoutChatSpam() throws Exception {
         Fixture f=new Fixture();f.room.board.apply(0,"place:7,7");f.room.board.apply(1,"place:8,7");
         assertTrue(f.click());verify(f.plugin,never()).tell(any(),any(net.kyori.adventure.text.Component.class));

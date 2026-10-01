@@ -16,6 +16,7 @@ final class TableComfort implements Listener,AutoCloseable {
     private final Map<UUID,Focus> focus=new HashMap<>();
     private final Map<UUID,Location> internalTeleport=new HashMap<>();
     private final Set<UUID> held=new HashSet<>();
+    private final Set<UUID> menuClosing=new HashSet<>();
     TableComfort(Tabletop3D plugin){this.plugin=plugin;Bukkit.getPluginManager().registerEvents(this,plugin);}
     private boolean active(Player player){
         Room room=plugin.room(player);
@@ -35,6 +36,7 @@ final class TableComfort implements Listener,AutoCloseable {
     }
     boolean focused(Player player){return focus.containsKey(player.getUniqueId());}
     void release(Player player){finish(player,true);}
+    void menuClosed(Player player){if(held.contains(player.getUniqueId()))menuClosing.add(player.getUniqueId());}
     private boolean valid(Player player,Focus state){
         return !player.isDead()&&!player.isInsideVehicle()&&player.getGameMode()!=GameMode.SPECTATOR
             &&plugin.room(player)==state.room()&&state.room().seat(player.getUniqueId())==state.seat()&&active(player);
@@ -76,8 +78,15 @@ final class TableComfort implements Listener,AutoCloseable {
     }
     @EventHandler public void input(PlayerInputEvent event){
         Player player=event.getPlayer();UUID id=player.getUniqueId();
+        // Dialogs reset client key bindings; keep the physical Shift latch until the menu closes.
+        if(plugin.menus!=null&&plugin.menus.active(player)){release(player);return;}
         if(event.getInput().isSneak()){if(held.add(id))begin(player);}
         else{held.remove(id);release(player);}
+    }
+    @EventHandler public void clientTick(io.papermc.paper.event.packet.ClientTickEndEvent event){
+        Player player=event.getPlayer();UUID id=player.getUniqueId();
+        if(!menuClosing.remove(id)||plugin.menus!=null&&plugin.menus.active(player))return;
+        if(!player.getCurrentInput().isSneak())held.remove(id);
     }
     @EventHandler(priority=EventPriority.HIGHEST,ignoreCancelled=true) public void move(PlayerMoveEvent event){
         if(event instanceof PlayerTeleportEvent)return;
@@ -94,7 +103,7 @@ final class TableComfort implements Listener,AutoCloseable {
     private void restore(Player p){Boolean value=previous.remove(p.getUniqueId());if(value!=null)p.setCollidable(value);}
     @EventHandler public void hunger(FoodLevelChangeEvent event){if(event.getEntity() instanceof Player p&&active(p))event.setCancelled(true);}
     @EventHandler public void world(PlayerChangedWorldEvent event){finish(event.getPlayer(),false);restore(event.getPlayer());sync(event.getPlayer());}
-    @EventHandler public void quit(PlayerQuitEvent event){release(event.getPlayer());restore(event.getPlayer());held.remove(event.getPlayer().getUniqueId());}
+    @EventHandler public void quit(PlayerQuitEvent event){release(event.getPlayer());restore(event.getPlayer());held.remove(event.getPlayer().getUniqueId());menuClosing.remove(event.getPlayer().getUniqueId());}
     @EventHandler public void death(PlayerDeathEvent event){finish(event.getEntity(),false);restore(event.getEntity());held.remove(event.getEntity().getUniqueId());}
-    public void close(){for(Player p:Bukkit.getOnlinePlayers()){release(p);restore(p);}focus.clear();held.clear();previous.clear();}
+    public void close(){for(Player p:Bukkit.getOnlinePlayers()){release(p);restore(p);}focus.clear();held.clear();menuClosing.clear();previous.clear();}
 }
