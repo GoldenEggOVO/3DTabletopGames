@@ -42,7 +42,9 @@ paper_api = args.maven_repo / "io/papermc/paper/paper-api/26.2.build.111-stable/
 kyori = args.maven_repo / "net/kyori"
 classpath = os.pathsep.join(map(str, (jar, paper_api,
     kyori / "adventure-key/5.2.0/adventure-key-5.2.0.jar",
-    kyori / "adventure-api/5.2.0/adventure-api-5.2.0.jar")))
+    kyori / "adventure-api/5.2.0/adventure-api-5.2.0.jar",
+    args.maven_repo / "org/jetbrains/annotations/26.1.0/annotations-26.1.0.jar",
+    args.maven_repo / "com/google/guava/guava/33.6.0-jre/guava-33.6.0-jre.jar")))
 classes = runtime / "probe-classes"
 classes.mkdir()
 subprocess.run([shutil.which("javac"), "-encoding", "UTF-8", "-cp", classpath,

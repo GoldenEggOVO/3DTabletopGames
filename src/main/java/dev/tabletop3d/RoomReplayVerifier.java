@@ -26,7 +26,7 @@ public final class RoomReplayVerifier {
                 for (JsonElement event : room.getAsJsonArray("history")) {
                     JsonObject move = event.getAsJsonObject();
                     try {
-                        game.apply(move.get("seat").getAsInt(), move.get("action").getAsString());
+                        game.applyRecorded(move.get("seat").getAsInt(), move.get("action").getAsString());
                     } catch (RuntimeException ex) {
                         throw new IllegalArgumentException("Room " + id + " event " + index +
                             " cannot replay: " + move, ex);

@@ -18,7 +18,7 @@ class HandInteractionTest {
         var f=new HandTableTest.Fixture("lastcard");int start=f.entities.size();f.table.show(f.owner);
         Entity first=f.entities.get(start);Location before=first.getLocation();
         f.table.hover(f.owner,"a");for(int i=0;i<5;i++)f.table.tick();
-        assertTrue(first.getLocation().getY()>before.getY()+.08);
+        assertEquals(.085,first.getLocation().getY()-before.getY(),1e-6);
         var pose=HandTable.handPose(0,2,0,2,false);
         Location eye=f.origin.clone().add(pose.x(),.12,pose.z()+1);
         assertEquals("a",f.table.hit(f.owner,eye,new Vector(0,0,-1)));

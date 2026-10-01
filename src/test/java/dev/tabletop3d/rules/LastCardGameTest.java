@@ -65,6 +65,28 @@ class LastCardGameTest {
         var g=position(0,new int[]{13},new int[]{24});List<Integer> pile=cards(g,"pile"),deck=cards(g,"deck");pile.addAll(0,deck);deck.clear();
         g.apply(0,"draw");assertEquals(2,g.handSize(0));assertEquals(List.of(0),pile);
     }
+    @Test void exhaustedDrawSupplyRequiresAPlayableHandCardAndTimeoutPlaysIt()throws Exception{
+        var g=position(0,new int[]{1,13},new int[]{24});hands(g).get(1).addAll(cards(g,"deck"));cards(g,"deck").clear();
+        assertEquals(List.of("play:1"),g.legalActions(0));
+        assertThrows(IllegalArgumentException.class,()->g.apply(0,"pass"));assertThrows(IllegalArgumentException.class,()->g.apply(0,"draw"));
+        assertEquals("play:1",g.timeoutAction());g.apply(0,g.timeoutAction());assertEquals(1,g.currentPlayer());
+    }
+    @Test void exhaustedDrawSupplyStillLetsAnUnplayableHandPassWithoutDrawing()throws Exception{
+        var g=position(0,new int[]{13},new int[]{24});hands(g).get(1).addAll(cards(g,"deck"));cards(g,"deck").clear();
+        assertEquals(List.of("pass"),g.legalActions(0));assertEquals("pass",g.timeoutAction());g.apply(0,"pass");
+        assertEquals(1,g.currentPlayer());assertEquals(1,g.handSize(0));
+    }
+    @Test void drawingTheLastAvailableCardRequiresPlayingIfTheHandCanPlay()throws Exception{
+        var g=position(0,new int[]{1,13},new int[]{24});List<Integer> deck=cards(g,"deck");deck.remove(Integer.valueOf(25));hands(g).get(1).addAll(deck);deck.clear();deck.add(25);
+        g.apply(0,"draw");assertEquals(List.of("play:1"),g.legalActions(0));assertEquals("play:1",g.timeoutAction());
+    }
+    @Test void previouslyRecordedExhaustedPassesReplayButLivePassesAreRejected()throws Exception{
+        var g=position(0,new int[]{1,13},new int[]{24});hands(g).get(1).addAll(cards(g,"deck"));cards(g,"deck").clear();
+        assertThrows(IllegalArgumentException.class,()->g.apply(0,"pass"));
+        assertThrows(IllegalArgumentException.class,()->g.applyRecorded(1,"pass"));
+        g.applyRecorded(0,"draw");assertEquals(0,g.currentPlayer());assertFalse(g.legalActions(0).contains("pass"));
+        g.applyRecorded(0,"pass");assertEquals(1,g.currentPlayer());assertEquals(2,g.handSize(0));
+    }
     @Test void colorSelectionIsPrivateReplayableAndTimeoutUsesHandColor()throws Exception{
         var g=position(0,new int[]{48,24,25},new int[]{12});g.apply(0,"choose:48");
         assertEquals("48",g.pendingCard(0));assertNull(g.pendingCard(1));assertEquals(3,g.handSize(0));

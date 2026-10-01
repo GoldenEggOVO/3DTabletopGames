@@ -13,6 +13,8 @@ public interface BoardGame {
     List<Cell> cells();
     List<String> legalActions(int seat);
     void apply(int seat, String action);
+    /** Replay a previously accepted event, preserving supported historical transitions. */
+    default void applyRecorded(int seat,String action){apply(seat,action);}
     Map<String, String> publicInfo();
 
     /** Related source/destination actions for a world cell click. Empty means no valid action. */

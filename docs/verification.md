@@ -1,5 +1,17 @@
 # Verification and acceptance
 
+## Local build: 1.8.3-SNAPSHOT — Mahjong artwork and bonus glint; Color Eight interaction
+
+- JDK 25 / Maven package: **483 tests passed**, zero failures, errors or skipped tests.
+- Regressions cover four outward-facing inset indicator groups, six-tile river rows from the center toward each owner, native rotated character/honor/flower strokes and a focus camera outside the indicator faces. Only kuikae dims Mahjong tiles; glyph colors remain intact.
+- Bonus hints use only public Dora indicators and red fives in Riichi. Owner-only enchanted ItemDisplays do not reveal other hands or hidden Ura Dora. Indicator changes remove obsolete overlays; concealed backs and indicator views remain unmarked. White stained glass sits between the tile body and original strokes to provide complete alpha coverage for the client's native glint.
+- Color Eight regressions check parallel diagonal overlap at every seat for 2–5 players, all 54 cards individually aimable, the 0.085-block lift, original artwork retained at brightness 7/7, four private color buttons, exhausted draw supply, timeout legal plays and historical exhaustion-pass replay.
+- Independent review caught ordinary glass alpha holes that prevented full-face glint and a Shift camera inside the new indicator faces; both were corrected. No remaining important review findings.
+- The exact shaded JAR passed three clean Purpur **26.2-2622** boots (create, restart, legacy-folder migration) in `target/standalone-smoke-20261001-153306/`. All boots also passed `BOARDS_DORA_GLINT_PASS`, checking live owner-only ItemDisplay metadata and cleanup with proxy players. No connected Minecraft client is implied.
+- `mahjong-layout-preview.png` uses production stroke geometry and river poses with a schematic apron example; `color-eight-layout-preview.png` uses production artwork and parallel hand poses with approximate projection. Neither is a Minecraft screenshot. Actual glint/material appearance, Shift camera feel and dense-hand aiming remain client acceptance items. No production deployment or public Release.
+
+Verified JAR SHA-256: `288eb361ec152c834c16fe70dc10e34e4e2292ae66a1166743a8ed3f193ac5e5`.
+
 ## Local build: 1.8.2-SNAPSHOT — Mahjong kuikae brightness
 
 - JDK 25 / Maven package: **474 tests passed**, zero failures, errors or skipped tests.

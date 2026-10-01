@@ -207,7 +207,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     String id=String.valueOf(pieces.keySet().iterator().next());
                     call(hand,"hover",new Class<?>[]{Player.class,String.class},owner,id);
                     for(int tick=0;tick<4;tick++)call(hand,"tick",new Class<?>[0]);
-                    require(body.getLocation().getY()>y+.09,"live native private card lifts on hover");
+                    require(Math.abs(body.getLocation().getY()-y-.085)<.0001,"live native private card has a small hover lift");
                     call(hand,"hover",new Class<?>[]{Player.class,String.class},owner,null);
                     for(int tick=0;tick<4;tick++)call(hand,"tick",new Class<?>[0]);
                     require(Math.abs(body.getLocation().getY()-y)<.0001,"hover exit restores the same card entity");
@@ -257,12 +257,32 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                         var part=(org.bukkit.entity.Entity)item;privateParts.add(part);
                         require(part.isValid()&&!part.isPersistent()&&!part.isVisibleByDefault(),"Mahjong button is private and temporary");
                     }
+                    HandGame riichi=null;
+                    for(long seed=0;seed<50;seed++){
+                        HandGame candidate=(HandGame)GameFactory.create("mahjong",4,seed,Map.of("profile","riichi"));
+                        int indicator=dev.tabletop3d.rules.mahjong.Tiles.type(candidate.publicInfo().get("dora"));
+                        int dora=dev.tabletop3d.rules.mahjong.Tiles.next(indicator);
+                        if(candidate.hand(0).stream().anyMatch(tile->tile.face().endsWith("0")||dev.tabletop3d.rules.mahjong.Tiles.type(tile.face())==dora)){riichi=candidate;break;}
+                    }
+                    require(riichi!=null,"Riichi fixture has an owner bonus tile");board.set(room,riichi);
+                    revision.setLong(room,revision.getLong(room)+1);call(hand,"sync",new Class<?>[0]);call(hand,"show",new Class<?>[]{Player.class},owner);
+                    int glints=0;
+                    for(Object piece:((Map<?,?>)field(own,"pieces")).values())for(Object item:(List<?>)field(piece,"parts")){
+                        var part=(org.bukkit.entity.Entity)item;privateParts.add(part);
+                        require(!part.isVisibleByDefault(),"Riichi bonus face remains owner-only");
+                        if(part instanceof org.bukkit.entity.ItemDisplay display){
+                            require(Boolean.TRUE.equals(display.getItemStack().getItemMeta().getEnchantmentGlintOverride()),"real ItemDisplay preserves native enchanted glint override");
+                            require(display.getItemStack().getType()==org.bukkit.Material.WHITE_STAINED_GLASS,"glint uses a transparent face overlay");glints++;
+                        }
+                    }
+                    require(glints>0,"live owner bonus tile has an ItemDisplay glint");
+                    getLogger().info("BOARDS_DORA_GLINT_PASS owner_only=true native_item_metadata=true client_visual_test=false");
                 }
                 call(view,"clear",new Class<?>[]{Player.class},owner);
                 require(privateViews.isEmpty()&&privateParts.stream().noneMatch(org.bukkit.entity.Entity::isValid),"private hand removed when view ends");
             } finally {call(view,"close",new Class<?>[0]);}
         }
-        getLogger().info("BOARDS_HAND_MODELS_PASS games=lastcard,taiwan private_by_default=true spectator_faces=0 client_visual_test=false");
+        getLogger().info("BOARDS_HAND_MODELS_PASS games=lastcard,taiwan,riichi private_by_default=true spectator_faces=0 client_visual_test=false");
     }
 
     /** Resolve native sounds against the real server registry and exercise their dispatch. */

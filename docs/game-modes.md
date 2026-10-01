@@ -86,13 +86,14 @@ The stable room/command identifier is `lastcard`. The original native artwork us
 - Each color has 1–7, 9 and 10, plus Draw One, Skip and Reverse (48 colored cards). Four colorless Wild Eights and two colorless Swaps make 54.
 - Match the active color or number/type. Wild Eight and Swap are unrestricted on your own turn. There are no interrupt plays, declaration penalties or draw stacks.
 - You may draw one voluntarily. If any card in your resulting hand is legal, you may play any legal card or pass; otherwise play passes automatically. Pass before drawing draws once; pass after drawing adds no card.
-- A human turn lasts 30 seconds. Timeout draws once and passes, or only passes if already drawn. Selecting a Wild Eight does not reset this clock; timeout chooses the most common colored suit in your hand.
+- A human turn lasts 30 seconds. Normally timeout draws once and passes, or only passes if already drawn. When no draw supply remains, timeout plays a legal hand card instead. Selecting a Wild Eight does not reset this clock; timeout chooses the most common colored suit in your hand.
 - Wild Eight opens four private color buttons above the selected card. It stays in your hand until color submission, then the discard becomes the selected color's 8.
+- If neither the deck nor discard recycling can provide another draw, a hand with legal plays must play: Draw and Pass are unavailable. An entirely unplayable hand may pass without drawing. Previously recorded exhaustion draws/passes still replay their original transitions; resumed live play uses this restriction.
 - Draw One gives every other player one card without skipping. Skip misses the next player. Reverse flips direction; in two-player games it is equivalent to Skip for effects and matching.
 - Swap trades your remaining hand with the next player in the current direction, preserving the active color and rank/type through consecutive swaps. Play then goes to that player.
 - First empty hand wins **before** resolving the final special effect. Discard recycling keeps the top card and recycles before attempting a draw.
 
-The table is a native circle of diameter 3 blocks. Hands overlap in one bounded-width fan; only the aimed card rises, without moving neighbors. Unplayable cards are gray during your turn. Private faces/buttons stay owner-only. Right-click the deck to draw and the table Pass button to end your turn.
+The table is a native circle of diameter 3 blocks. Hands overlap in one bounded-width parallel diagonal, with each later card slightly in front; only the aimed card rises, without moving neighbors. Unplayable cards retain their artwork at brightness 7/7 during your turn, returning to 15/15 when allowed. Hover lifts a card 0.085 blocks. Private faces/buttons stay owner-only. Right-click the deck to draw and the table Pass button to end your turn.
 
 New records use `rulesVersion: 2`. On upgrade, old Last Card records with nonempty history are omitted from active restoration after making a complete `rooms.pre-color-eight-*.json` backup. Other games and empty Last Card lobbies continue restoring. The offline replay verifier rejects old histories rather than interpreting changed card IDs.
 
@@ -141,3 +142,9 @@ See [migration](migration.md) for upgrades and older room imports. The [Nintendo
 - Hands up to 17 tiles occupy one row. Call previews and unseen-copy labels are visible only to their owner; stale choices are rechecked against current legal actions.
 - The timer shares the actual human/bot/offline turn deadline and pauses for suspended play or pending undo. No second timer or rule change is introduced.
 - Shift focus requires a seat, permission and proximity. Position is held but mouse aim remains free. Release restores your entry position, yaw, pitch, gravity and prior invisibility. Menus, leaving, death, external teleports and shutdown clear temporary focus. If the return space is blocked or another plugin cancels the return teleport, focus ends and normal gravity resumes without forcing a teleport. Test camera feel and anti-cheat compatibility on your isolated server.
+
+### Mahjong artwork, indicators and bonus hints
+
+Public Dora indicator tiles are inset into the center of all four wooden front aprons and face outward toward each owner. These are repeated views of the same physical indicators, not extra tiles in the wall. Each river starts with six tiles left-to-right near the center, then fills rows toward its owner. Character, wind, dragon and flower inscriptions use native stroke models.
+
+In Riichi, Dora and red fives have a native enchanted ItemDisplay overlay over the original artwork. Own hand overlays remain owner-only; public rivers and exposed melds show them to everyone. Indicators update these hints after Kan. Indicator tiles themselves are not automatically Dora, concealed backs stay unmarked, and hidden Ura Dora is not hinted before disclosure. This presentation adds no scoring or yaku changes: Dora contributes bonus han but cannot supply the required yaku. Minecraft client glint appearance remains a visual acceptance item.

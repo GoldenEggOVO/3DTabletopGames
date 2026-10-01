@@ -24,8 +24,38 @@ class ColorEightInteractionTest {
         }
         List<Entity> cards=f.entities.subList(start,f.entities.size()).stream().filter(e->Math.abs(e.getLocation().getY()-f.origin.getY()-.017-HandTable.handPose(0,2,27,54,false).lift())<.000001).toList();
         f.table.hover(f.owner,"c27");for(int i=0;i<5;i++)f.table.tick();
-        assertTrue(cards.stream().anyMatch(e->e.getLocation().getY()>f.origin.getY()+.27));
+        assertTrue(cards.stream().anyMatch(e->Math.abs(e.getLocation().getY()-f.origin.getY()-.017-HandTable.handPose(0,2,27,54,false).lift()-.085)<1e-6));
         var first=HandTable.handPose(0,2,0,54,false);assertEquals(f.origin.getY()+.017+first.lift(),f.entities.get(start).getLocation().getY(),1e-6);
+    }
+    @Test void cardsFormOneParallelDiagonalWithEachLaterCardInFront(){
+        for(int players=2;players<=5;players++)for(int seat=0;seat<players;seat++)for(int count:new int[]{2,8,54}){
+            double angle=2*Math.PI*seat/players;
+            Vector right=new Vector(Math.cos(angle),0,-Math.sin(angle)),outward=new Vector(Math.sin(angle),0,Math.cos(angle));
+            for(int i=0;i<count;i++){
+                var pose=HandTable.handPose(seat,players,i,count,false);
+                assertEquals(-Math.toDegrees(angle),pose.yaw(),.0001);assertEquals(0,pose.lift());
+                if(i>0){var previous=HandTable.handPose(seat,players,i-1,count,false);Vector delta=new Vector(pose.x()-previous.x(),0,pose.z()-previous.z());
+                    assertTrue(delta.dot(right)>0);assertEquals(.0025,delta.dot(outward),.00001);
+                }
+            }
+        }
+    }
+    @Test void unplayableCardsDimWithoutReplacingTheirColoredModelsAndRecover()throws Exception{
+        var f=new HandTableTest.Fixture("lastcard");
+        when(f.game.legalActions(0)).thenReturn(List.of("play:a"));f.table.show(f.owner);
+        Object own=((Map<?,?>)TableViewTest.field(f.table,"privateViews")).get(f.owner.getUniqueId());
+        Map<?,?> hand=(Map<?,?>)TableViewTest.field(own,"pieces");
+        for(String id:List.of("a","b"))for(Entity part:(List<Entity>)TableViewTest.field(hand.get(id),"parts")){
+            verify((org.bukkit.entity.BlockDisplay)part,times(1)).setBlock(any());
+            verify((org.bukkit.entity.Display)part,times(id.equals("a")?0:1)).setBrightness(new org.bukkit.entity.Display.Brightness(7,7));
+        }
+        assertNull(f.table.cardAction(f.owner,"b"));
+        when(f.game.currentPlayer()).thenReturn(1);f.room.revision++;f.table.show(f.owner);
+        for(Entity part:(List<Entity>)TableViewTest.field(hand.get("b"),"parts")){
+            verify((org.bukkit.entity.BlockDisplay)part,times(1)).setBlock(any());
+            verify((org.bukkit.entity.Display)part,times(2)).setBrightness(new org.bukkit.entity.Display.Brightness(15,15));
+        }
+        f.table.close();
     }
     @Test void denseHandsRemainAimableAtEverySeatOfTheFivePlayerTable(){
         for(int seat=0;seat<5;seat++){

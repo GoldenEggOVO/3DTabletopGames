@@ -31,7 +31,7 @@ public final class LastCardGame implements HandGame {
     public List<Integer> placements(){return List.copyOf(placements);}
     public String pendingCard(int seat){return seat==current&&pendingColor>=0?String.valueOf(pendingColor):null;}
     public String timeoutAction(){
-        if(pendingColor<0)return "pass";
+        if(pendingColor<0){List<String> legal=legalActions(current);return legal.contains("pass")?"pass":legal.stream().filter(a->a.startsWith("play:")).findFirst().orElse(null);}
         String color=COLORS.stream().max(Comparator.comparingLong(c->hand(current).stream().filter(p->p.face().startsWith(c)).count())).orElse("r");
         return "play:"+pendingColor+":"+color;
     }
@@ -51,13 +51,19 @@ public final class LastCardGame implements HandGame {
             if(card>=48&&card<52){for(String color:COLORS)actions.add("play:"+card+":"+color);actions.add("choose:"+card);}
             else actions.add("play:"+card);
         }
-        if(!drawn)actions.add("draw");actions.add("pass");return List.copyOf(actions);
+        boolean available=!deck.isEmpty()||pile.size()>1;
+        if(!drawn&&available)actions.add("draw");
+        if(available||actions.isEmpty())actions.add("pass");return List.copyOf(actions);
     }
     @Override public List<String> actionsForCell(int seat,String id){return "deck".equals(id)&&legalActions(seat).contains("draw")?List.of("draw"):List.of();}
     private int matchingRank(int rank){return playerCount()==2&&rank==11?10:rank;}
     private boolean playable(int card){return card>=48||COLORS.get(card/12).equals(activeColor)||matchingRank(rank(card))==matchingRank(activeRank);}
-    @Override public void apply(int seat,String action){
-        if(action==null||!legalActions(seat).contains(action))throw new IllegalArgumentException("Invalid Color Eight action");
+    @Override public void apply(int seat,String action){apply(seat,action,false);}
+    @Override public void applyRecorded(int seat,String action){apply(seat,action,true);}
+    private void apply(int seat,String action,boolean recorded){
+        // Older Color Eight histories allowed draw/pass after exhaustion; replay their unchanged state transition.
+        boolean oldDraw=recorded&&!finished()&&seat==current&&pendingColor<0&&("pass".equals(action)||"draw".equals(action)&&!drawn);
+        if(!oldDraw&&(action==null||!legalActions(seat).contains(action)))throw new IllegalArgumentException("Invalid Color Eight action");
         if(action.startsWith("choose:")){pendingColor=Integer.parseInt(action.substring(7));return;}
         if(action.equals("draw")||action.equals("pass")){
             int count=drawn?0:drawCards(seat,1);drawn=true;lastAction="Player "+(seat+1)+" drew "+count+" cards";

@@ -25,7 +25,7 @@ final class RoundActions {
     static void apply(Room r){
         if(r.undo==null||!r.undo.pending.isEmpty())throw new IllegalArgumentException("需等待其他真人玩家同意");
         var restored=r.newBoard();
-        for(int i=0;i<r.undo.cut;i++){var event=r.history.get(i).getAsJsonObject();restored.apply(event.get("seat").getAsInt(),event.get("action").getAsString());}
+        for(int i=0;i<r.undo.cut;i++){var event=r.history.get(i).getAsJsonObject();restored.applyRecorded(event.get("seat").getAsInt(),event.get("action").getAsString());}
         while(r.history.size()>r.undo.cut)r.history.remove(r.history.size()-1);
         r.board=restored;r.undo=null;r.phase=restored.finished()?Room.Phase.FINISHED:Room.Phase.PLAYING;r.completed=restored.finished();r.result=restored.finished()?restored.outcome():"";r.ready.clear();r.revision++;r.changed=System.currentTimeMillis();
     }

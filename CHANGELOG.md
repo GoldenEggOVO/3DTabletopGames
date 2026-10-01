@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.8.3-SNAPSHOT
+
+- Refine native stroke artwork for character, wind, dragon and flower tile inscriptions.
+- Inset public Dora indicators into the center of each wooden front apron, facing that seat; preserve physical indicator IDs and rules.
+- Fill each six-tile river row left-to-right, starting near the center and progressing toward its owner.
+- Add native enchanted ItemDisplay overlays to Riichi Dora and red fives in the owner hand and public rivers/melds; update when indicators change and never reveal hidden Ura Dora or opponents’ hands.
+- Keep the Mahjong Shift camera outside the inset indicator faces while preserving readable standing hands and temporary invisibility.
+- Dim unplayable Color Eight cards through brightness without changing their artwork; reduce hover lift from 0.27 to 0.085 blocks.
+- Arrange Color Eight hands in a parallel diagonal overlap from left to right, each later card slightly in front, retaining bounded hand width.
+- Require a legal hand play when no draw supply remains, including timeout; allow pass only for unplayable hands. Retain discard recycling and replay of already recorded exhaustion passes.
+
 ## 1.8.2-SNAPSHOT
 
 - Dim Mahjong tiles only when Chi/Pon kuikae forbids discarding them, using native Display brightness (15 to 7) without replacing materials or artwork.

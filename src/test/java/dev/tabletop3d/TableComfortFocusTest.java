@@ -22,12 +22,14 @@ class TableComfortFocusTest {
             f.input(true);assertTrue(f.comfort.focused(f.player));Location focus=f.location.get();
             assertTrue(focus.getY()>original.getY());
             double angle=2*Math.PI*seat/4;
-            assertEquals(Math.sin(angle)*1.50,focus.getX(),.0001);
-            assertEquals(Math.cos(angle)*1.50,focus.getZ(),.0001);
+            assertEquals(Math.sin(angle)*1.65,focus.getX(),.0001);
+            assertEquals(Math.cos(angle)*1.65,focus.getZ(),.0001);
+            double doraFace=1.477+.026+.003+3*.0008;
+            assertTrue(Math.hypot(focus.getX(),focus.getZ())>doraFace+.1,"Focused camera must stay outside the inset dora face with a readable frontal angle");
             var hand=HandTable.handPose(seat,4,8,17,true);
             assertTrue(Math.hypot(focus.getX(),focus.getZ())>Math.hypot(hand.x(),hand.z())+.026,"Camera stays on the front side of the standing hand");
             double eyeAboveFelt=focus.getY()+1.27-original.getY()-TableGeometry.SURFACE;
-            assertTrue(Math.hypot(Math.hypot(focus.getX(),focus.getZ()),eyeAboveFelt)<2.02,"Focus brings the eye closer to the table center");
+            assertTrue(Math.hypot(Math.hypot(focus.getX(),focus.getZ()),eyeAboveFelt)<Math.hypot(Math.hypot(original.getX(),original.getZ()),1.62-TableGeometry.SURFACE),"Focus brings the eye closer to the table center");
             double faceDistance=Math.hypot(focus.getX(),focus.getZ())-1.299;
             double eyeAboveFace=eyeAboveFelt-.087;
             assertTrue(faceDistance/Math.hypot(faceDistance,eyeAboveFace)>.15,"Standing faces retain enough frontal projection to read");

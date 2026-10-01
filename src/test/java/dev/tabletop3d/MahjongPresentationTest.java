@@ -10,6 +10,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class MahjongPresentationTest {
+    @Test void bonusHintsFollowPublicIndicatorsAndRedFivesOnly(){
+        Map<String,String> info=Map.of("profile","riichi","dora","m9,z4,z7,p0","ura","s1");
+        for(String face:List.of("m1","z1","z5","p6","m0","p0","s0"))assertTrue(MahjongPresentation.bonus(info,face),face);
+        for(String face:List.of("m9","z4","z7","p5","s2","back","f1"))assertFalse(MahjongPresentation.bonus(info,face),face);
+        assertFalse(MahjongPresentation.bonus(Map.of("profile","taiwan","dora","m9"),"m1"));
+        assertFalse(MahjongPresentation.bonus(Map.of("profile","sichuan"),"m0"));
+    }
     @Test void newlyDrawnTileStaysAtRightEndUntilDiscardWhileOtherTilesRemainSorted(){
         MahjongGame game=new MahjongGame(4,42L,Map.of());int checked=0;
         for(int step=0;step<180&&!game.finished();step++){

@@ -93,7 +93,7 @@ class LanguageTest {
         try (var files = Files.walk(source)) {
             for (Path file : files.filter(Files::isRegularFile).toList()) {
                 String name = file.toString();
-                if (file.getFileName().toString().equals("HandArt.java") || name.contains("upstream") || !(name.endsWith(".java") || name.contains("resources\\menus") && name.endsWith(".yml"))) continue;
+                if (java.util.Set.of("HandArt.java","HandModels.java").contains(file.getFileName().toString()) || name.contains("upstream") || !(name.endsWith(".java") || name.contains("resources\\menus") && name.endsWith(".yml"))) continue;
                 var match = literal.matcher(Files.readString(file));
                 while (match.find()) {
                     String phrase = match.group(1);

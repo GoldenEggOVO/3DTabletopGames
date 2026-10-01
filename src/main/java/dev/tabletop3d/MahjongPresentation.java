@@ -11,6 +11,15 @@ import java.util.Map;
 /** Presentation uses only the seated owner's hand and public information. */
 final class MahjongPresentation {
     private MahjongPresentation() {}
+    static boolean bonus(Map<String,String> info,String face){
+        if(!info.getOrDefault("profile","").equals("riichi"))return false;
+        int target=type(face);if(target<0||target>=34)return false;
+        if(face.charAt(1)=='0')return true;
+        for(String indicator:info.getOrDefault("dora","").split(",")){
+            int value=type(indicator);if(value>=0&&value<34&&Tiles.next(value)==target)return true;
+        }
+        return false;
+    }
     static boolean sameType(String first,String second){int value=type(first);return value>=0&&value==type(second);}
     static int remaining(HandGame game,int seat,String face) {
         int type=type(face);if(type<0)return 0;

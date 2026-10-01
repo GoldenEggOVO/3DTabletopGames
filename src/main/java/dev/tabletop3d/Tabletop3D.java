@@ -162,7 +162,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         if(!prepareSeats(r))return;
         r.phase=Room.Phase.STARTING;r.busy=true;r.changed=System.currentTimeMillis();
 
-            try{r.board=r.newBoard();for(JsonElement e:r.history){JsonObject j=e.getAsJsonObject();r.board.apply(j.get("seat").getAsInt(),j.get("action").getAsString());}
+            try{r.board=r.newBoard();for(JsonElement e:r.history){JsonObject j=e.getAsJsonObject();r.board.applyRecorded(j.get("seat").getAsInt(),j.get("action").getAsString());}
                 r.phase=r.completed||r.board.finished()?Room.Phase.FINISHED:Room.Phase.PLAYING;r.busy=false;arena.render(r);save();announce(r,Language.component("chat.start"));
                 if(!r.restoring&&r.phase==Room.Phase.PLAYING){arena.sound(r,TableSounds.START);arena.turnSound(r);}}
             catch(RuntimeException ex){r.busy=false;if(r.restoring)throw ex;pause(r,"规则初始化失败，房间记录已保留");getLogger().log(java.util.logging.Level.WARNING,"Board start failed",ex);}

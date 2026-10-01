@@ -43,8 +43,10 @@ class HandModelsTest {
             assertNotEquals(HandModels.of(true,face),HandModels.of(true,face.charAt(0)+"5"));
         }
         for(String face:List.of("m1","m9","z1","z2","z3","z4","z6","z7")){
-            long before=HandSprites.of(true,face).stream().filter(p->p.material()!=Material.SMOOTH_QUARTZ).mapToLong(p->p.width()*p.height()).sum();
-            double after=HandModels.of(true,face).stream().mapToDouble(p->p.w()*p.h()).sum();assertEquals(before,after,face);
+            var parts=HandModels.of(true,face);
+            if(!face.equals("z7"))assertTrue(parts.stream().anyMatch(p->Math.abs(Math.sin(p.roll()*2))>.1),face+" needs angled character strokes");
+            assertTrue(parts.stream().anyMatch(p->p.material()==(face.equals("z6")?Material.GREEN_CONCRETE:face.equals("z7")?Material.RED_CONCRETE:Material.BLACK_CONCRETE)),face);
+            if(face.charAt(0)=='m')assertTrue(parts.stream().anyMatch(p->p.material()==Material.RED_CONCRETE),"Wan glyph stays red");
         }
     }
     @Test void sixAndNineHaveAnUnderlineInBothCornersAndTheCenter(){
