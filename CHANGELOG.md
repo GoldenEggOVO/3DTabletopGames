@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.8.9-SNAPSHOT
+
+- Use Casino-style independent language keys in `languages/en_US.yml` and `languages/zh_CN.yml`; migrate legacy translations without overwriting custom files, and add transactional `/3dtabletop reload-language`.
+- Correct resource-pack Mahjong faces, Color Eight card faces and direction arrows; restore Concept B pixel artwork and round furniture with exterior polygon faces.
+- Place Mahjong winds at central panel corners, move scores inward and use green turn bars with separate outer Riichi stick slots.
+- Hold the sprint key (default Ctrl) for the fixed Mahjong camera; retain Shift + right-click menus and show the pack toggle only on the main catalog page.
+- Verify 537 Java tests, seven asset checks and exact-JAR native recovery/CraftEngine registration. Minecraft client visual acceptance remains separate.
+
 ## 1.8.8-SNAPSHOT
 
 - Add optional CraftEngine item rendering and an isolated Mahjong/Color Eight resource pack, with vanilla, resource-pack and mixed per-player modes.

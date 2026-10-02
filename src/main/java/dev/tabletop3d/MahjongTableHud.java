@@ -58,7 +58,7 @@ final class MahjongTableHud implements AutoCloseable {
             Location number=origin.clone().add(.075*Math.sin(angle),.029,.075*Math.cos(angle));
             number.setYaw(-90*seat);
             privateText=true;counts.add(text(number,true));privateText=false;
-            Location stick=origin.clone().add(.37*Math.cos(angle)+.28*Math.sin(angle),.029,-.37*Math.sin(angle)+.28*Math.cos(angle));
+            Location stick=origin.clone().add(.49*Math.sin(angle),.029,.49*Math.cos(angle));
             stick.setYaw(-90*seat);
             BlockDisplay body=block(stick,Material.WHITE_CONCRETE,.24f,.006f,.018f);
             BlockDisplay dot=block(stick.clone().add(0,.007,0),Material.RED_CONCRETE,.012f,.002f,.012f);
@@ -69,10 +69,10 @@ final class MahjongTableHud implements AutoCloseable {
         discard=text(origin.clone().add(0,1.12,0),false);
         for(int seat=0;seat<4;seat++) {
             double angle=seat*Math.PI/2;
-            Location wind=origin.clone().add(1.24*Math.cos(angle)+1.30*Math.sin(angle),.02,
-                -1.24*Math.sin(angle)+1.30*Math.cos(angle));
+            Location wind=origin.clone().add(.46*Math.cos(angle)+.46*Math.sin(angle),.029,
+                -.46*Math.sin(angle)+.46*Math.cos(angle));
             wind.setYaw(-90*seat);winds.add(text(wind,true));
-            Location score=origin.clone().add(.41*Math.sin(angle),.029,.41*Math.cos(angle));
+            Location score=origin.clone().add(.34*Math.sin(angle),.029,.34*Math.cos(angle));
             score.setYaw(-90*seat);scores.add(text(score,true));
         }
         for(int seat=0;seat<4;seat++){
@@ -80,7 +80,7 @@ final class MahjongTableHud implements AutoCloseable {
             Location round=origin.clone().add(-.15*Math.sin(angle),.029,-.15*Math.cos(angle));
             round.setYaw(-90*seat);privateText=true;rounds.add(text(round,true));privateText=false;
         }
-        turnEdge=block(origin.clone().add(0,.033,0),Material.CYAN_CONCRETE,.34f,.003f,.014f);
+        turnEdge=block(origin.clone().add(0,.033,0),Material.LIME_CONCRETE,.34f,.003f,.014f);
         tick();
     }
 
@@ -99,7 +99,7 @@ final class MahjongTableHud implements AutoCloseable {
         for(int seat=0;seat<4;seat++) {
             int wind=Math.floorMod(seat-dealer,4);
             label(winds.get(seat),Component.text(List.of("東","南","西","北").get(wind),
-                wind==0?NamedTextColor.RED:NamedTextColor.WHITE),.24f,.22f);
+                wind==0?NamedTextColor.RED:NamedTextColor.WHITE),.12f,.12f);
             label(scores.get(seat),Component.text(info.getOrDefault("score."+seat,""),NamedTextColor.GOLD),.30f,.075f);
         }
         boolean lobby=room.phase==Room.Phase.LOBBY||room.phase==Room.Phase.STARTING;
@@ -108,7 +108,7 @@ final class MahjongTableHud implements AutoCloseable {
             highlightedTurn=active;
             if(active>=0){
                 double angle=active*Math.PI/2;
-                Location edge=origin.clone().add(.49*Math.sin(angle),.033,.49*Math.cos(angle));edge.setYaw(-90*active);
+                Location edge=origin.clone().add(.39*Math.sin(angle),.033,.39*Math.cos(angle));edge.setYaw(-90*active);
                 turnEdge.teleport(edge);
             }
             visible(turnEdge,active>=0,.34f,.003f,.014f);

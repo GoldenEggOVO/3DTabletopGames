@@ -21,18 +21,22 @@ import java.util.regex.Pattern;
 final class Language {
     private static final String MESSAGE = "message:";
     private static final Map<String,String> ALIASES = aliases();
-    private static volatile Language current = bundledEnglish();
+    private static final Map<String,String> SOURCES = compatibility("sources");
+    private static final Language ENGLISH = bundledEnglish();
+    private static volatile Language current = ENGLISH;
     private static long generation;
     private final Map<String, String> entries;
     private final Map<String, String> messages;
     private final Pattern pattern;
 
     private Language(Map<String, String> entries) {
-        this.entries = Map.copyOf(entries);
+        var adapted = new LinkedHashMap<>(entries);
+        SOURCES.forEach((key,source)->{String value=entries.get(MESSAGE+key);if(value!=null)adapted.put(source,value);});
+        this.entries = Map.copyOf(adapted);
         var named = new LinkedHashMap<String,String>();
         entries.forEach((key,value)->{if(key.startsWith(MESSAGE))named.put(key.substring(MESSAGE.length()),value);});
         messages = Map.copyOf(named);
-        pattern = Pattern.compile(entries.keySet().stream()
+        pattern = Pattern.compile(this.entries.keySet().stream()
             .filter(key -> key.length() > 1 && !key.startsWith(MESSAGE))
             .sorted((a, b) -> Integer.compare(b.length(), a.length()))
             .map(key -> key.length() == 2 ? "(?<!\\p{IsHan})" + Pattern.quote(key) : Pattern.quote(key))
@@ -69,38 +73,96 @@ final class Language {
     }
 
     static void load(Tabletop3D plugin) {
-        String code = plugin.getConfig().getString("language", "en");
-        if (code == null || !code.matches("[a-z][a-z0-9_-]*"))
-            throw new IllegalArgumentException("Invalid language code: " + code);
-        Path directory = plugin.getDataFolder().toPath().resolve("lang");
-        try {
-            Files.createDirectories(directory);
-            Path english = directory.resolve("en.yml");
-            if (!Files.exists(english)) copy(plugin, "lang/en.yml", english);
-            Map<String, String> merged = new LinkedHashMap<>(bundledEnglish().entries);
-            merged.putAll(read(english,merged,false));
-            if (!code.equals("en")) {
-                Path selected = directory.resolve(code + ".yml");
-                if (!Files.isRegularFile(selected))
-                    throw new IllegalArgumentException("Language file missing: " + selected);
-                merged.putAll(read(selected,merged,true));
+        Path data=plugin.getDataFolder().toPath();
+        try { migrate(data); }
+        catch(IOException ex){plugin.getLogger().warning("Cannot migrate legacy languages: "+ex.getMessage());}
+        current=load(data.resolve("languages"),plugin.getConfig().getString("language","en_US"),plugin.getLogger()::warning);
+        generation++;
+    }
+
+    /** Copy legacy files once; preserve originals and prefer any existing destination. */
+    static void migrate(Path data) throws IOException {
+        Path old=data.resolve("lang"),folder=data.resolve("languages");
+        if(!Files.isDirectory(old))return;
+        Files.createDirectories(folder);
+        try(var files=Files.list(old)) {
+            for(Path file:files.filter(Files::isRegularFile).toList()) {
+                String name=file.getFileName().toString();
+                if(!name.endsWith(".yml")||name.equals("legacy.yml"))continue;
+                Path target=folder.resolve(name.equals("en.yml")?"en_US.yml":name);
+                if(!Files.exists(target)){
+                    var merged=new LinkedHashMap<>(ENGLISH.entries);
+                    var warnings=new java.util.ArrayList<String>();
+                    readFile(file,merged,warnings::add,!name.equals("en.yml"));
+                    if(!warnings.isEmpty()){Files.copy(file,target);continue;} // Preserve malformed/custom files for diagnosis.
+                    var converted=yaml();
+                    merged.forEach((key,value)->{
+                        if(key.startsWith(MESSAGE))converted.set(key.substring(MESSAGE.length()),value);
+                        else if(!SOURCES.containsValue(key))converted.set("translations"+'\u001f'+key,value);
+                    });
+                    Files.writeString(target,converted.saveToString(),StandardCharsets.UTF_8,java.nio.file.StandardOpenOption.CREATE_NEW);
+                }
             }
-            current = new Language(merged);
-            generation++;
-        } catch (IOException ex) {
-            throw new IllegalStateException("Cannot load language files", ex);
         }
     }
 
-    private static void copy(Tabletop3D plugin, String resource, Path destination) throws IOException {
-        try (InputStream input = plugin.getResource(resource)) {
-            if (input == null) throw new IOException("Missing bundled resource: " + resource);
-            Files.copy(input, destination);
+    static Language load(Path folder,String locale,java.util.function.Consumer<String> warning) {
+        Language english=ENGLISH;
+        try {
+            Files.createDirectories(folder);
+            for(String builtIn:java.util.List.of("en_US","zh_CN")) {
+                Path file=folder.resolve(builtIn+".yml");
+                if(!Files.exists(file))try(InputStream input=Language.class.getResourceAsStream("/languages/"+builtIn+".yml")) {
+                    if(input==null)throw new IOException("Missing bundled language: "+builtIn);
+                    Files.copy(input,file);
+                }
+            }
+        }catch(IOException ex){warning.accept("Cannot initialize languages at "+folder+": "+ex.getMessage());return english;}
+        if(locale==null||!locale.matches("[A-Za-z][A-Za-z0-9_-]{0,63}")) {
+            warning.accept("Invalid language filename; using en_US.");locale="en_US";
         }
+        if(locale.equals("en"))locale="en_US";
+        Map<String,String> merged=new LinkedHashMap<>(english.entries);
+        readFile(folder.resolve("en_US.yml"),merged,warning,false);
+        if(!locale.equals("en_US"))readFile(folder.resolve(locale+".yml"),merged,warning,true);
+        return new Language(merged);
+    }
+
+    static boolean reload(Path folder,String locale,java.util.function.Consumer<String> warning) {
+        var problems=new java.util.ArrayList<String>();Language candidate=load(folder,locale,problems::add);
+        problems.forEach(warning);if(!problems.isEmpty())return false;
+        current=candidate;generation++;return true;
+    }
+
+    private static void readFile(Path file,Map<String,String> merged,java.util.function.Consumer<String> warning,boolean selected) {
+        try {
+            YamlConfiguration config=yaml();config.loadFromString(Files.readString(file,StandardCharsets.UTF_8));
+            if(config.isConfigurationSection("translations")||config.isConfigurationSection("messages")) {
+                // Old installations keep their phrase overrides, including template adaptation.
+                Map<String,String> legacy=values(config,merged,selected);
+                legacy.forEach((key,value)->{if(!key.startsWith(MESSAGE))merged.put(key,value);});
+                legacy.forEach((key,value)->{if(key.startsWith(MESSAGE))accept(file,key.substring(MESSAGE.length()),value,merged,warning);});
+                SOURCES.forEach((key,source)->{if(legacy.containsKey(source))merged.put(MESSAGE+key,legacy.get(source));});
+            }
+            flatValues(config,"").forEach((key,value)->{
+                if(!key.startsWith("translations.")&&!key.startsWith("messages."))accept(file,key,value,merged,warning);
+            });
+        }catch(Exception ex){warning.accept("Cannot load language "+file.getFileName()+"; using English fallback: "+ex.getMessage());}
+    }
+
+    private static void accept(Path file,String key,Object value,Map<String,String> merged,java.util.function.Consumer<String> warning) {
+        try {
+            String baseline=ENGLISH.messages.get(key);
+            if(baseline==null)throw new IllegalArgumentException("Unknown message key");
+            if(!(value instanceof String text))throw new IllegalArgumentException("Expected a string");
+            if(!MessageText.placeholders(baseline).containsAll(MessageText.placeholders(text)))
+                throw new IllegalArgumentException("Unknown placeholder; expected "+MessageText.placeholders(baseline));
+            MessageText.validate(text);merged.put(MESSAGE+key,text);
+        }catch(IllegalArgumentException ex){warning.accept(file.getFileName()+" ["+key+"]: "+ex.getMessage());}
     }
 
     static Map<String, String> read(Path file) throws IOException {
-        return read(file,bundledEnglish().entries,false);
+        return read(file,ENGLISH.entries,false);
     }
 
     private static Map<String, String> read(Path file,Map<String,String> baseline,boolean selected) throws IOException {
@@ -124,6 +186,7 @@ final class Language {
             if (entry.getKey().contains("\\n"))
                 values.put(entry.getKey().replace("\\n", "\n"), value.replace("\\n", "\n"));
         }
+        SOURCES.forEach((key,source)->{if(values.containsKey(source))values.put(MESSAGE+key,values.get(source));});
         // Translate old templates once when loading, before inserting any player names or values.
         var translations=new LinkedHashMap<>(baseline);translations.putAll(values);
         var translator=new Language(translations);
@@ -142,14 +205,13 @@ final class Language {
     }
 
     private static Language bundledEnglish() {
-        try (InputStream input = Language.class.getClassLoader().getResourceAsStream("lang/en.yml")) {
-            if (input == null) throw new IllegalStateException("Missing bundled English language file");
-            YamlConfiguration config = yaml();
-            config.load(new InputStreamReader(input, StandardCharsets.UTF_8));
-            return new Language(values(config,Map.of(),false));
-        } catch (Exception ex) {
-            throw new IllegalStateException("Cannot read bundled English language file", ex);
-        }
+        try(InputStream input=Language.class.getResourceAsStream("/languages/en_US.yml")) {
+            if(input==null)throw new IOException("Missing bundled English language file");
+            var config=yaml();config.load(new InputStreamReader(input,StandardCharsets.UTF_8));
+            var values=new LinkedHashMap<String,String>();
+            flatValues(config,"").forEach((key,value)->{if(value instanceof String text)values.put(MESSAGE+key,text);});
+            return new Language(values);
+        }catch(Exception ex){throw new IllegalStateException("Cannot read bundled English language file",ex);}
     }
 
     private String translate(String input) {
@@ -159,12 +221,14 @@ final class Language {
         matcher.appendTail(result);return result.toString();
     }
 
-    private static Map<String,String> aliases() {
-        try(InputStream input=Language.class.getClassLoader().getResourceAsStream("lang/legacy.yml")) {
+    private static Map<String,String> aliases() { return compatibility("messages"); }
+
+    private static Map<String,String> compatibility(String section) {
+        try(InputStream input=Language.class.getResourceAsStream("/language-compatibility.yml")) {
             if(input==null)throw new IOException("Missing language compatibility mappings");
             var config=yaml();config.load(new InputStreamReader(input,StandardCharsets.UTF_8));
             var result=new LinkedHashMap<String,String>();
-            config.getConfigurationSection("messages").getValues(false).forEach((key,value)->result.put(key,((String)value).replace("\\n","\n")));
+            config.getConfigurationSection(section).getValues(false).forEach((key,value)->result.put(key,(String)value));
             return Map.copyOf(result);
         }catch(Exception ex){throw new IllegalStateException("Cannot load language compatibility mappings",ex);}
     }
@@ -173,5 +237,14 @@ final class Language {
         YamlConfiguration config = new YamlConfiguration();
         config.options().pathSeparator('\u001f');
         return config;
+    }
+
+    private static Map<String,Object> flatValues(org.bukkit.configuration.ConfigurationSection section,String prefix) {
+        var result=new LinkedHashMap<String,Object>();
+        section.getValues(false).forEach((key,value)->{
+            if(value instanceof org.bukkit.configuration.ConfigurationSection child)result.putAll(flatValues(child,prefix+key+"."));
+            else result.put(prefix+key,value);
+        });
+        return result;
     }
 }

@@ -22,7 +22,7 @@ class MahjongTableHudTest {
         BlockDisplay marker=(BlockDisplay)f.spawned.getLast();
         assertEquals(.34f,f.transforms.get(marker).getScale().x,1e-6);
         when(f.game.currentPlayer()).thenReturn(2);f.room.revision++;f.hud.tick(1_000);
-        assertEquals(-.49,f.locations.get(marker).getZ(),1e-6);
+        assertEquals(-.39,f.locations.get(marker).getZ(),1e-6);
         clearInvocations(marker);f.hud.tick(1_100);verify(marker,never()).teleport(any(Location.class));
         for(Room.Phase phase:List.of(Room.Phase.PAUSED,Room.Phase.FINISHED)){
             f.room.phase=phase;f.hud.tick(2_000);assertEquals(0,f.transforms.get(marker).getScale().length());
@@ -73,7 +73,7 @@ class MahjongTableHudTest {
         assertEquals(.13,f.locations.get(f.statusEntity()).getY()-f.locations.get(f.discard()).getY(),1e-6);
         for(int seat=0;seat<4;seat++){
             assertEquals(81+.029,f.locations.get(f.count(seat)).getY(),1e-6);
-            assertEquals(81+.02,f.locations.get(f.wind(seat)).getY(),1e-6);
+            assertEquals(81+.029,f.locations.get(f.wind(seat)).getY(),1e-6);
         }
     }
 
@@ -147,13 +147,13 @@ class MahjongTableHudTest {
                 assertTrue(stickRadius+.009<pad/2,"Riichi stick remains within the center pad");
             }
         }
-        double[][] corners={{1.24,1.30},{1.30,-1.24},{-1.24,-1.30},{-1.30,1.24}};
+        double[][] corners={{.46,.46},{.46,-.46},{-.46,-.46},{-.46,.46}};
         for(int seat=0;seat<4;seat++) {
             Location at=f.locations.get(f.wind(seat));
             assertEquals(corners[seat][0],at.getX(),1e-6);
             assertEquals(corners[seat][1],at.getZ(),1e-6);
             verify(f.wind(seat)).setRotation((float)(-90*seat),-90f);
-            var inscription=new org.bukkit.util.BoundingBox(at.getX()-.12,0,at.getZ()-.12,at.getX()+.12,.02,at.getZ()+.12);
+            var inscription=new org.bukkit.util.BoundingBox(at.getX()-.06,0,at.getZ()-.06,at.getX()+.06,.02,at.getZ()+.06);
             for(int tile=0;tile<28;tile++){
                 var pose=HandTable.exposedPose(seat,4,tile);
                 double x=seat%2==0?.047:.073,z=seat%2==0?.073:.047;
@@ -187,9 +187,21 @@ class MahjongTableHudTest {
             verify(f.score(seat)).setRotation((float)(-90*seat),-90f);
             verify(f.score(seat)).setSeeThrough(false);
             Location at=f.locations.get(f.score(seat));
-            assertEquals(.41,Math.hypot(at.getX(),at.getZ()),1e-6);
+            assertEquals(.34,Math.hypot(at.getX(),at.getZ()),1e-6);
             assertEquals(81.029,at.getY(),1e-6);
 
+        }
+    }
+
+    @Test void centerScoresAndTurnBarLeaveTheOuterSlotClearForRiichiSticks(){
+        Fixture f=new Fixture();
+        for(int seat=0;seat<4;seat++){
+            Location stick=f.locations.get(f.stick(seat));
+            assertEquals(.49,Math.hypot(stick.getX(),stick.getZ()),1e-6);
+            double scoreRadius=Math.hypot(f.locations.get(f.score(seat)).getX(),f.locations.get(f.score(seat)).getZ());
+            assertTrue(scoreRadius+.075/2 < .39-.014/2);
+            assertTrue(.39+.014/2 < .49-.018/2);
+            assertTrue(.49+.018/2 < .55);
         }
     }
 

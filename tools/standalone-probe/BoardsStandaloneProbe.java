@@ -160,7 +160,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         });
         java.util.function.Consumer<Boolean> input=held->{
             org.bukkit.Input keys=(org.bukkit.Input)Proxy.newProxyInstance(org.bukkit.Input.class.getClassLoader(),new Class<?>[]{org.bukkit.Input.class},
-                (proxy,method,args)->method.getName().equals("isSneak")&&held);
+                (proxy,method,args)->method.getName().equals("isSprint")&&held);
             Bukkit.getPluginManager().callEvent(new org.bukkit.event.player.PlayerInputEvent(player,keys));
         };
         try {
@@ -175,7 +175,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             var remote=new org.bukkit.event.player.PlayerTeleportEvent(player,anchor,anchor.clone().add(100,0,100),org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.SPECTATE);
             Bukkit.getPluginManager().callEvent(remote);require(remote.isCancelled()&&(boolean)call(comfort,"focused",new Class<?>[]{Player.class},player),"spectator menu cannot grant remote teleport");
             var detach=new com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent(player,target);Bukkit.getPluginManager().callEvent(detach);
-            require(detach.isCancelled(),"held Shift cannot detach the camera");
+            require(detach.isCancelled(),"held sprint cannot detach the camera");
             input.accept(false);require(location.get().equals(original)&&gravity[0]&&!invisible[0]&&mode.get()==org.bukkit.GameMode.SURVIVAL&&camera.get()==null&&!target.isValid(),"input release restores mode, pose, gravity, visibility and removes camera");
             input.accept(true);Location external=new Location(world,50,83,0);player.teleport(external);input.accept(true);input.accept(false);
             require(location.get().equals(external)&&gravity[0]&&collision[0],"external teleport wins without focus reentry");

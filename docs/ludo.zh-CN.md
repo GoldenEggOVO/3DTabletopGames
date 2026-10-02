@@ -34,7 +34,7 @@
 
 飞行棋的当前位置与 Ludo 的进度、规则不同，因此不自动转换进行中对局。要改用 Ludo，请先结束旧房间，再通过原有退出流程关闭它，创建新的 Ludo 桌。升级前备份 `plugins/3dtabletop/`；需要回退时，使用升级前 JAR 和整份备份，旧版本无法理解新的 `ludo` 房间。
 
-新增文字位于 `lang/en.yml` 的 `messages` 与 `translations`。已有语言和菜单文件不覆盖，缺失项从内置英文补齐。旧 `translations: '飞行棋': ...` 自定义译名仍可用，Legacy 标记由 `game.legacy` 单独控制。
+新增文字位于 `languages/en_US.yml` 的 `messages` 与 `translations`。已有语言和菜单文件不覆盖，缺失项从内置英文补齐。旧 `translations: '飞行棋': ...` 自定义译名仍可用，Legacy 标记由 `game.legacy` 单独控制。
 
 ## 客户端验收
 

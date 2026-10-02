@@ -14,14 +14,71 @@ import static org.mockito.Mockito.*;
 class LanguageTest {
     @TempDir(factory = WorkspaceTempFactory.class) Path temp;
 
+    @Test void bundledLanguagesExposeEveryMessageIndividuallyWithMatchingPlaceholders() throws Exception {
+        var catalogs=new java.util.ArrayList<YamlConfiguration>();
+        for(String locale:java.util.List.of("en_US","zh_CN")) {
+            var yaml=new YamlConfiguration();yaml.options().pathSeparator('\u001f');
+            try(var reader=new java.io.InputStreamReader(getClass().getResourceAsStream("/languages/"+locale+".yml"),java.nio.charset.StandardCharsets.UTF_8)){yaml.load(reader);}
+            assertFalse(yaml.contains("messages"));assertFalse(yaml.contains("translations"));catalogs.add(yaml);
+        }
+        assertEquals(catalogs.getFirst().getKeys(false),catalogs.getLast().getKeys(false));
+        for(String key:catalogs.getFirst().getKeys(false)) {
+            String english=catalogs.getFirst().getString(key),chinese=catalogs.getLast().getString(key);
+            assertNotNull(english,key);assertNotNull(chinese,key);
+            assertEquals(dev.tabletop3d.ui.MessageText.placeholders(english),dev.tabletop3d.ui.MessageText.placeholders(chinese),key);
+            dev.tabletop3d.ui.MessageText.validate(english);dev.tabletop3d.ui.MessageText.validate(chinese);
+        }
+        assertTrue(Language.reload(temp,"zh_CN",w->fail(w)));
+        assertEquals("创建房间",plain(Language.component("menu.create")));
+        Language.reload(temp,"en_US",w->fail(w));
+    }
+
+    @Test void casinoStyleLanguagesAllowFlatAndNestedKeysAndKeepLastGoodReload() throws Exception {
+        var warnings=new java.util.ArrayList<String>();
+        Language.load(temp,"en_US",warnings::add);
+        assertTrue(warnings.isEmpty(),warnings.toString());
+        assertTrue(Files.isRegularFile(temp.resolve("en_US.yml")));
+        assertTrue(Files.isRegularFile(temp.resolve("zh_CN.yml")));
+        Files.writeString(temp.resolve("custom.yml"),"menu:\n  create: 'Custom Create'\nchat.joined: '{player} arrived'\n");
+        try {
+            assertTrue(Language.reload(temp,"custom",warnings::add));
+            assertEquals("Custom Create",plain(Language.component("menu.create")));
+            assertEquals("<red>name arrived",plain(Language.component("chat.joined","player","<red>name")));
+            long generation=Language.generation();
+            Files.writeString(temp.resolve("custom.yml"),"menu.create: 'BAD'\nchat.joined: '{unexpected}'\n");
+            assertFalse(Language.reload(temp,"custom",warnings::add));
+            assertEquals(generation,Language.generation());
+            assertEquals("Custom Create",plain(Language.component("menu.create")));
+            assertTrue(warnings.stream().anyMatch(w->w.contains("custom.yml")&&w.contains("chat.joined")));
+        }finally{Language.reload(temp,"en_US",w->fail(w));}
+    }
+
+    @Test void migrationRetainsOriginalCustomFilesAndNeverOverwritesNewLanguages() throws Exception {
+        Path data=temp.resolve("plugin");Files.createDirectories(data.resolve("lang"));
+        Files.writeString(data.resolve("lang/en.yml"),"translations:\n  '创建房间': 'Old Custom Create'\n");
+        Files.writeString(data.resolve("lang/My_Locale.yml"),"messages:\n  'menu.close': 'Old Close'\n");
+        Language.migrate(data);
+        assertTrue(Files.isRegularFile(data.resolve("lang/en.yml")));
+        var migrated=new YamlConfiguration();migrated.options().pathSeparator('\u001f');migrated.load(data.resolve("languages/en_US.yml").toFile());
+        assertEquals("Old Custom Create",migrated.getString("menu.create"));
+        assertFalse(migrated.contains("messages"));assertFalse(migrated.contains("translations"));
+        assertTrue(Language.reload(data.resolve("languages"),"en",w->fail(w)));
+        assertEquals("Old Custom Create",plain(Language.component("menu.create")));
+        Files.writeString(data.resolve("languages/en_US.yml"),"menu.create: 'New Edit'\n");
+        Language.migrate(data);
+        assertEquals("menu.create: 'New Edit'\n",Files.readString(data.resolve("languages/en_US.yml")));
+        assertTrue(Files.isRegularFile(data.resolve("languages/My_Locale.yml")));
+        Language.reload(temp,"en_US",w->fail(w));
+    }
+
     @Test void legacyDynamicOverridesAreAppliedBeforeLiteralParametersAndNamedOverridesWin() throws Exception {
-        var plugin=mock(Tabletop3D.class);var config=new YamlConfiguration();config.set("language","test");
+        var plugin=mock(Tabletop3D.class);when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("LanguageTest"));var config=new YamlConfiguration();config.set("language","test");
         when(plugin.getConfig()).thenReturn(config);when(plugin.getDataFolder()).thenReturn(temp.toFile());
-        when(plugin.getResource("lang/en.yml")).thenAnswer(i->getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
-        Files.createDirectories(temp.resolve("lang"));
+
+        Files.createDirectories(temp.resolve("languages"));
         String english="translations:\n  '创建房间': 'Local Create'\n  '加入了房间': 'joined locally'\n";
-        Files.writeString(temp.resolve("lang/en.yml"),english);
-        Path selected=temp.resolve("lang/test.yml");
+        Files.writeString(temp.resolve("languages/en_US.yml"),english);
+        Path selected=temp.resolve("languages/test.yml");
         Files.writeString(selected,"translations:\n  '加入了房间': 'joined custom'\n  '中国象棋': 'Custom Xiangqi'\n  '飞行棋': 'Custom Flight'\n  '§6[日暮棋牌] §f': '&6[Custom] &f'\n");
         String player="<red>加入了房间&c";
         try {
@@ -35,16 +92,16 @@ class LanguageTest {
             Files.writeString(selected,"translations:\n  '加入了房间': 'unused'\nmessages:\n  'chat.joined': '<green>{player} arrived</green>'\n");
             Language.load(plugin);
             assertEquals(player+" arrived",plain(Language.component("chat.joined","player",player)));
-            assertEquals(english,Files.readString(temp.resolve("lang/en.yml")));
-        }finally{Files.delete(temp.resolve("lang/en.yml"));config.set("language","en");Language.load(plugin);}
+            assertEquals(english,Files.readString(temp.resolve("languages/en_US.yml")));
+        }finally{Files.delete(temp.resolve("languages/en_US.yml"));config.set("language","en");Language.load(plugin);}
     }
 
     @Test void menusOutcomesAndRosterUseNamedTranslationsWithoutChangingStoredNames() throws Exception {
-        var plugin=mock(Tabletop3D.class);var config=new YamlConfiguration();config.set("language","test");
+        var plugin=mock(Tabletop3D.class);when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("LanguageTest"));var config=new YamlConfiguration();config.set("language","test");
         when(plugin.getConfig()).thenReturn(config);when(plugin.getDataFolder()).thenReturn(temp.toFile());
-        when(plugin.getResource("lang/en.yml")).thenAnswer(i->getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
-        Files.createDirectories(temp.resolve("lang"));
-        Files.writeString(temp.resolve("lang/test.yml"),"messages:\n  'room.bot': 'Practice {number}'\n  'room.roster': '{players} | {empty}/{capacity}'\n  'result.winner': 'Winner: {player}'\n  'status.finished': 'Done'\n  'promotion.q': 'Regina'\n");
+
+        Files.createDirectories(temp.resolve("languages"));
+        Files.writeString(temp.resolve("languages/test.yml"),"messages:\n  'room.bot': 'Practice {number}'\n  'room.roster': '{players} | {empty}/{capacity}'\n  'result.winner': 'Winner: {player}'\n  'status.finished': 'Done'\n  'promotion.q': 'Regina'\n");
         String name="<red>准备&c陪练99";var room=new Room(java.util.UUID.randomUUID(),"chess",2,0,0);
         room.join(java.util.UUID.randomUUID(),name);room.fillBots();room.phase=Room.Phase.FINISHED;room.result="winner:0";
         try {
@@ -60,23 +117,23 @@ class LanguageTest {
     private static String plain(net.kyori.adventure.text.Component text){return dev.tabletop3d.ui.MessageText.plain(text);}
 
     @Test void selectedLegacyValueOverridesALocalNamedValueEvenWhenItEqualsBundledEnglish() throws Exception {
-        var plugin=mock(Tabletop3D.class);var config=new YamlConfiguration();config.set("language","test");
+        var plugin=mock(Tabletop3D.class);when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("LanguageTest"));var config=new YamlConfiguration();config.set("language","test");
         when(plugin.getConfig()).thenReturn(config);when(plugin.getDataFolder()).thenReturn(temp.toFile());
-        when(plugin.getResource("lang/en.yml")).thenAnswer(i->getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
-        Files.createDirectories(temp.resolve("lang"));
-        Files.writeString(temp.resolve("lang/en.yml"),"messages:\n  'menu.create': 'LOCAL OVERRIDE'\n");
-        Files.writeString(temp.resolve("lang/test.yml"),"translations:\n  '创建房间': 'Create Room'\n");
+
+        Files.createDirectories(temp.resolve("languages"));
+        Files.writeString(temp.resolve("languages/en_US.yml"),"messages:\n  'menu.create': 'LOCAL OVERRIDE'\n");
+        Files.writeString(temp.resolve("languages/test.yml"),"translations:\n  '创建房间': 'Create Room'\n");
         try{Language.load(plugin);assertEquals("Create Room",plain(Language.component("menu.create")));}
-        finally{Files.delete(temp.resolve("lang/en.yml"));config.set("language","en");Language.load(plugin);}
+        finally{Files.delete(temp.resolve("languages/en_US.yml"));config.set("language","en");Language.load(plugin);}
     }
 
     @Test void namedMessagesProtectDynamicNamesAndKeepLegacyOverrides() throws Exception {
-        var plugin=mock(Tabletop3D.class);var config=new YamlConfiguration();
+        var plugin=mock(Tabletop3D.class);when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("LanguageTest"));var config=new YamlConfiguration();
         config.set("language","test");when(plugin.getConfig()).thenReturn(config);
         when(plugin.getDataFolder()).thenReturn(temp.toFile());
-        when(plugin.getResource("lang/en.yml")).thenAnswer(i->getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
-        Files.createDirectories(temp.resolve("lang"));
-        Files.writeString(temp.resolve("lang/test.yml"),"translations:\n  '确认离开': 'Leave now'\nmessages:\n  'table.turn': '<gold>Next: {player}</gold>'\n");
+
+        Files.createDirectories(temp.resolve("languages"));
+        Files.writeString(temp.resolve("languages/test.yml"),"translations:\n  '确认离开': 'Leave now'\nmessages:\n  'table.turn': '<gold>Next: {player}</gold>'\n");
         try {
             Language.load(plugin);
             assertEquals("Leave now",dev.tabletop3d.ui.MessageText.plain(Language.component("menu.leave.confirm")));
@@ -109,30 +166,30 @@ class LanguageTest {
     }
 
     @Test void customLanguageOverridesEnglishAndMissingKeysFallBack() throws Exception {
-        var plugin = mock(Tabletop3D.class);
+        var plugin = mock(Tabletop3D.class);when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("LanguageTest"));
         var config = new YamlConfiguration();
         config.set("language", "test");
         when(plugin.getConfig()).thenReturn(config);
         when(plugin.getDataFolder()).thenReturn(temp.toFile());
-        when(plugin.getResource("lang/en.yml")).thenAnswer(inv ->
-            getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
-        Files.createDirectories(temp.resolve("lang"));
-        Files.writeString(temp.resolve("lang/test.yml"), "translations:\n  '棋盘游戏': 'Custom Boards'\n");
+        when(plugin.getResource("languages/en_US.yml")).thenAnswer(inv ->
+            getClass().getClassLoader().getResourceAsStream("languages/en_US.yml"));
+        Files.createDirectories(temp.resolve("languages"));
+        Files.writeString(temp.resolve("languages/test.yml"), "translations:\n  '棋盘游戏': 'Custom Boards'\n");
         try {
             Language.load(plugin);
             assertEquals("Custom Boards", Language.text("棋盘游戏"));
             assertEquals("Create Room", Language.text("创建房间"));
-            assertTrue(Files.isRegularFile(temp.resolve("lang/en.yml")));
+            assertTrue(Files.isRegularFile(temp.resolve("languages/en_US.yml")));
         } finally {
             config.set("language", "en");
             Language.load(plugin);
         }
     }
     @Test void oldCardLanguageCannotRestoreTheRetiredNameOrPenaltyDisplay() throws Exception {
-        var plugin=mock(Tabletop3D.class);var config=new YamlConfiguration();config.set("language","en");
+        var plugin=mock(Tabletop3D.class);when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("LanguageTest"));var config=new YamlConfiguration();config.set("language","en");
         when(plugin.getConfig()).thenReturn(config);when(plugin.getDataFolder()).thenReturn(temp.toFile());
-        when(plugin.getResource("lang/en.yml")).thenAnswer(i->getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
-        Path english=temp.resolve("lang/en.yml");Files.createDirectories(english.getParent());
+
+        Path english=temp.resolve("languages/en_US.yml");Files.createDirectories(english.getParent());
         String previous="messages:\n  'game.lastcard': 'Last Card'\n  'hand.card-state': 'Draw Penalty: {penalty}'\n";
         Files.writeString(english,previous);
         try {
@@ -142,14 +199,14 @@ class LanguageTest {
         }finally{Files.delete(english);Language.load(plugin);}
     }
     @Test void previousEnglishFileKeepsEditsAndReceivesNewBundledKeys() throws Exception {
-        var plugin = mock(Tabletop3D.class);
+        var plugin = mock(Tabletop3D.class);when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("LanguageTest"));
         var config = new YamlConfiguration();
         config.set("language", "en");
         when(plugin.getConfig()).thenReturn(config);
         when(plugin.getDataFolder()).thenReturn(temp.toFile());
-        when(plugin.getResource("lang/en.yml")).thenAnswer(inv ->
-            getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
-        Path english = temp.resolve("lang/en.yml");
+        when(plugin.getResource("languages/en_US.yml")).thenAnswer(inv ->
+            getClass().getClassLoader().getResourceAsStream("languages/en_US.yml"));
+        Path english = temp.resolve("languages/en_US.yml");
         Files.createDirectories(english.getParent());
         String previous = "translations:\n  '棋牌游戏': 'Board Games'\n";
         Files.writeString(english, previous);

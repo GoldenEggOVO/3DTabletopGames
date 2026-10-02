@@ -37,7 +37,7 @@ class TabletopPackTest {
         for(Status terminal:List.of(Status.SUCCESSFULLY_LOADED,Status.FAILED_DOWNLOAD)){
             pack=new TabletopPack(plugin,()->available,id->new ItemStack(Material.PAPER));plugin.pack=pack;
             pack.toggle(player);UUID request=pack.requestId(player);
-            plugin.menus.show(player,"Test","",List.of(),null);
+            plugin.menus.show(player,"Test","",List.of(),null,"catalog");
             var loading=sessions.get(player.getUniqueId());
             pack.status(player,request,terminal);var updated=sessions.get(player.getUniqueId());
             assertNotEquals(loading.token(),updated.token(),"Terminal status must redraw an active menu");
@@ -46,6 +46,18 @@ class TabletopPackTest {
             assertEquals(request,pack.requestId(player),"Old loading-menu action must be invalid");
             plugin.menus.forget(player);pack.status(player,request,terminal);
             assertFalse(plugin.menus.active(player),"A closed menu must stay closed");
+        }
+    }
+    @Test void toggleAppearsFirstOnlyOnMainCatalog() throws Exception {
+        when(player.getWorld()).thenReturn(Bukkit.getWorlds().getFirst());when(plugin.allowed(player)).thenReturn(true);
+        plugin.pack=pack;plugin.menus=new GameMenus(plugin);
+        var field=GameMenus.class.getDeclaredField("sessions");field.setAccessible(true);
+        @SuppressWarnings("unchecked") Map<UUID,GameMenus.Session> sessions=(Map<UUID,GameMenus.Session>)field.get(plugin.menus);
+        for(String page:GameMenuLayouts.PAGES){
+            plugin.menus.show(player,"Test","",List.of(new GameMenus.Button("entry","Entry",()->{})),null,page);
+            var buttons=sessions.get(player.getUniqueId()).buttons();
+            assertEquals(page.equals("catalog"),buttons.stream().anyMatch(b->b.id().equals("resource-pack")),page);
+            if(page.equals("catalog"))assertEquals("resource-pack",buttons.getFirst().id());
         }
     }
     @Test void onlySuccessfulOwnedPackLoadsModels(){

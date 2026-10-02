@@ -1,4 +1,4 @@
-language: en
+language: en_US_US
 rendering:
   # vanilla, resource-pack, mixed. Restart to apply a mode change.
   mode: vanilla

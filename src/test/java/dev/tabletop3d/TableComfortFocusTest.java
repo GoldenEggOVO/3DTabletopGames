@@ -17,6 +17,15 @@ class TableComfortFocusTest {
     @BeforeEach void setup(){MockBukkit.mock();}
     @AfterEach void cleanup(){MockBukkit.unmock();}
 
+    @Test void sneakLeavesPlayerAvailableForTableMenuAndSprintEntersCamera(){
+        Fixture f=new Fixture(0);Location original=f.location.get().clone();
+        Input sneak=mock(Input.class);when(sneak.isSneak()).thenReturn(true);
+        MockBukkit.getMock().getPluginManager().callEvent(new PlayerInputEvent(f.player,sneak));
+        assertFalse(f.comfort.focused(f.player));assertEquals(original,f.location.get());
+        f.input(true);assertTrue(f.comfort.focused(f.player));
+        f.input(false);assertFalse(f.comfort.focused(f.player));assertEquals(original,f.location.get());
+    }
+
     @Test void everySeatLooksTowardTableAndReleaseRestoresExactPose(){
         for(int seat=0;seat<4;seat++){
             Fixture f=new Fixture(seat);Location original=f.location.get().clone();
@@ -43,18 +52,18 @@ class TableComfortFocusTest {
         assertTrue(f.comfort.focused(f.player));assertEquals(anchor,f.location.get());
         assertEquals(anchor,f.cameraLocation.get());verify(f.player,times(1)).teleport(any(Location.class));
     }
-    @Test void externalTeleportWinsAndHoldingShiftDoesNotReenter(){
+    @Test void externalTeleportWinsAndHoldingSprintDoesNotReenter(){
         Fixture f=new Fixture(0);f.input(true);Location external=new Location(f.world,20,85,20);
         assertTrue(f.player.teleport(external));f.input(true);f.input(false);
         assertEquals(external,f.location.get());assertFalse(f.comfort.focused(f.player));verify(f.player).setGravity(true);
     }
-    @Test void menuReleaseRequiresReleasingAndPressingShiftBeforeFocusReturns(){
+    @Test void menuReleaseRequiresReleasingAndPressingSprintBeforeFocusReturns(){
         Fixture f=new Fixture(0);Location original=f.location.get().clone();f.input(true);
         f.comfort.release(f.player);assertFalse(f.comfort.focused(f.player));assertEquals(original,f.location.get());
         f.input(true);f.sync();assertFalse(f.comfort.focused(f.player));assertEquals(original,f.location.get());
         f.input(false);f.input(true);assertTrue(f.comfort.focused(f.player));f.input(false);assertEquals(original,f.location.get());
     }
-    @Test void dialogInputResetDoesNotRearmFocusWhenShiftIsStillPhysicallyHeld(){
+    @Test void dialogInputResetDoesNotRearmFocusWhenSprintIsStillPhysicallyHeld(){
         Fixture f=new Fixture(0);Location original=f.location.get().clone();f.input(true);f.comfort.release(f.player);
         f.plugin.menus=mock(GameMenus.class);when(f.plugin.menus.active(f.player)).thenReturn(true);
         f.input(false);when(f.plugin.menus.active(f.player)).thenReturn(false);f.input(true);
@@ -66,7 +75,7 @@ class TableComfortFocusTest {
             Fixture f=new Fixture(0);f.input(true);f.comfort.release(f.player);f.plugin.menus=mock(GameMenus.class);
             when(f.plugin.menus.active(f.player)).thenReturn(true);f.input(false);f.comfort.menuClosed(f.player);
             when(f.plugin.menus.active(f.player)).thenReturn(false);
-            Input restored=mock(Input.class);when(restored.isSneak()).thenReturn(stillHeld);when(f.player.getCurrentInput()).thenReturn(restored);
+            Input restored=mock(Input.class);when(restored.isSprint()).thenReturn(stillHeld);when(f.player.getCurrentInput()).thenReturn(restored);
             if(stillHeld)f.input(true);
             MockBukkit.getMock().getPluginManager().callEvent(new io.papermc.paper.event.packet.ClientTickEndEvent(f.player));
             assertFalse(f.comfort.focused(f.player));
@@ -257,7 +266,7 @@ class TableComfortFocusTest {
             when(player.teleport(any(Location.class))).thenAnswer(inv->{Location target=((Location)inv.getArgument(0)).clone();PlayerTeleportEvent event=new PlayerTeleportEvent(player,location.get().clone(),target,PlayerTeleportEvent.TeleportCause.PLUGIN);MockBukkit.getMock().getPluginManager().callEvent(event);if(event.isCancelled())return false;location.set(event.getTo().clone());return true;});
             comfort=new TableComfort(plugin);
         }
-        void input(boolean held){Input input=mock(Input.class);when(input.isSneak()).thenReturn(held);MockBukkit.getMock().getPluginManager().callEvent(new PlayerInputEvent(player,input));}
+        void input(boolean held){Input input=mock(Input.class);when(input.isSprint()).thenReturn(held);MockBukkit.getMock().getPluginManager().callEvent(new PlayerInputEvent(player,input));}
         void sync(){try(var bukkit=mockStatic(Bukkit.class,CALLS_REAL_METHODS)){bukkit.when(Bukkit::getOnlinePlayers).thenReturn(List.of(player));comfort.sync();}}
     }
 }

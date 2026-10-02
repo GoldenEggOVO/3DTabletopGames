@@ -23,7 +23,7 @@ New dice stands also require clear space on the table's +X side. Keep at least f
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `language` | `en` | Language file name under `lang/`, without `.yml` |
+| `language` | `en_US` | Language file name under `languages/`, without `.yml` |
 | `max-rooms` | `12` | Maximum rooms |
 | `reconnect-seconds` | `120` | Offline return grace period |
 | `idle-room-minutes` | `30` | Idle room timeout |

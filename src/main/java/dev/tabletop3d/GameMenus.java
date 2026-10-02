@@ -38,7 +38,7 @@ final class GameMenus implements AutoCloseable {
     void show(Player p,Component title,Component description,List<Button> buttons,Runnable back,String page){
         if(!plugin.allowed(p))return;
         List<Button> entries=new ArrayList<>(buttons);
-        if(plugin.pack!=null&&plugin.pack.hasToggle())entries.addFirst(new Button("resource-pack",plugin.pack.button(p),()->{
+        if(page.equals("catalog")&&plugin.pack!=null&&plugin.pack.hasToggle())entries.addFirst(new Button("resource-pack",plugin.pack.button(p),()->{
             plugin.pack.toggle(p);show(p,title,description,buttons,back,page);
         }));
         if(back!=null)entries.add(new Button("back",Language.component("menu.back"),back));
@@ -288,5 +288,9 @@ final class GameMenus implements AutoCloseable {
     static String roomLabel(String game,String id,int occupied,int capacity,String state){return game+" · "+id+"  "+occupied+"/"+capacity+" · "+roomState(state);}
 
 
+    void languageChanged(){
+        for(UUID id:List.copyOf(sessions.keySet())){Player player=Bukkit.getPlayer(id);if(player!=null){player.closeDialog();forget(player);}}
+        sessions.clear();
+    }
     @Override public void close(){sessions.clear();}
 }

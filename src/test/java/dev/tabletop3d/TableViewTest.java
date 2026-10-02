@@ -153,10 +153,10 @@ class TableViewTest {
     @Test void loadingAnotherLanguageInvalidatesTheTitleWithoutAStateRevision() throws Exception {
         Fixture f=new Fixture("chess");long revision=f.room.revision;
         var config=new org.bukkit.configuration.file.YamlConfiguration();config.set("language","test");
-        when(f.plugin.getConfig()).thenReturn(config);when(f.plugin.getDataFolder()).thenReturn(temp.toFile());
-        when(f.plugin.getResource("lang/en.yml")).thenAnswer(i->getClass().getClassLoader().getResourceAsStream("lang/en.yml"));
-        java.nio.file.Files.createDirectories(temp.resolve("lang"));
-        java.nio.file.Files.writeString(temp.resolve("lang/test.yml"),"messages:\n  'table.title': '<gold>Custom table {number}</gold>'\n");
+        when(f.plugin.getConfig()).thenReturn(config);when(f.plugin.getDataFolder()).thenReturn(temp.toFile());when(f.plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("LanguageTest"));
+        when(f.plugin.getResource("languages/en_US.yml")).thenAnswer(i->getClass().getClassLoader().getResourceAsStream("languages/en_US.yml"));
+        java.nio.file.Files.createDirectories(temp.resolve("languages"));
+        java.nio.file.Files.writeString(temp.resolve("languages/test.yml"),"messages:\n  'table.title': '<gold>Custom table {number}</gold>'\n");
         try {
             Language.load(f.plugin);f.view.tick();
             var capture=org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);

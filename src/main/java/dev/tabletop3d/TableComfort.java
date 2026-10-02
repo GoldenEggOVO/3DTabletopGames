@@ -156,15 +156,15 @@ final class TableComfort implements Listener,AutoCloseable {
     }
     @EventHandler public void input(PlayerInputEvent event){
         Player player=event.getPlayer();UUID id=player.getUniqueId();
-        // Dialogs reset client key bindings; keep the physical Shift latch until the menu closes.
+        // Dialogs reset client key bindings; keep the sprint latch until the menu closes.
         if(plugin.menus!=null&&plugin.menus.active(player)){release(player);return;}
-        if(event.getInput().isSneak()){if(held.add(id))begin(player);}
+        if(event.getInput().isSprint()){if(held.add(id))begin(player);}
         else{held.remove(id);release(player);}
     }
     @EventHandler public void clientTick(io.papermc.paper.event.packet.ClientTickEndEvent event){
         Player player=event.getPlayer();UUID id=player.getUniqueId();
         if(!menuClosing.remove(id)||plugin.menus!=null&&plugin.menus.active(player))return;
-        if(!player.getCurrentInput().isSneak())held.remove(id);
+        if(!player.getCurrentInput().isSprint())held.remove(id);
     }
     @EventHandler(priority=EventPriority.HIGHEST,ignoreCancelled=true) public void move(PlayerMoveEvent event){
         if(event instanceof PlayerTeleportEvent)return;

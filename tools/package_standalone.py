@@ -63,7 +63,7 @@ with zipfile.ZipFile(jar) as artifact:
                      "dev/tabletop3d/ui/LabelLayout.class", "dev/tabletop3d/RoomText.class",
                      "dev/tabletop3d/rules/MahjongGame.class", "dev/tabletop3d/rules/LastCardGame.class",
                      "dev/tabletop3d/HandTable.class", "dev/tabletop3d/DiceTray.class",
-                     "lang/en.yml", "lang/legacy.yml", "menus/catalog.yml", "menus/setup.yml", "menus/hand.yml"):
+                     "languages/en_US.yml", "languages/zh_CN.yml", "language-compatibility.yml", "menus/catalog.yml", "menus/setup.yml", "menus/hand.yml"):
         if required not in names:
             raise SystemExit(f"Missing {required}")
 

@@ -1,8 +1,11 @@
 """Asset contract tests; run after build-resource-pack.py."""
 import json
+import math
+import io
 import unittest
 import zipfile
 from pathlib import Path
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -46,6 +49,43 @@ class ResourcePackTest(unittest.TestCase):
             path = "assets/" + name.replace(":", "/sounds/") + ".ogg"
             self.assertIn(path, self.names)
             self.assertTrue(self.archive.read(path).startswith(b"OggS"))
+
+    def test_tile_and_card_faces_point_to_owner_and_up_when_flat(self):
+        # ItemDisplay adds a Y half-turn after the model's display transform.
+        # The Java renderer's -90 X rotation then lays this outward face flat.
+        for name in ("mahjong_m1", "mahjong_z1", "card_r3", "card_wild", "button_b"):
+            model = json.loads(self.archive.read(f"assets/tabletop3d/models/item/{name}.json"))
+            rotation = model.get("display", {}).get("none", {}).get("rotation", [0, 0, 0])
+            self.assertEqual(0, rotation[0])
+            self.assertEqual(0, rotation[2])
+            effective_y = math.radians(rotation[1] + 180)
+            front_z = math.cos(effective_y)
+            self.assertGreater(front_z, .999, name + " must face the owner, not the back")
+            flat_y = -math.sin(-math.pi / 2) * front_z
+            self.assertGreater(flat_y, .999, name + " must face upward after laying flat")
+
+    def test_forward_ring_arrowheads_follow_increasing_seat_order(self):
+        # Seats advance from +Z toward +X: counterclockwise in a +X/+Z UV plane.
+        # These samples lie on arrowhead wings, outside the circular arc itself.
+        for direction, name in ((1, "ring_1"), (-1, "ring_-1")):
+            image = Image.open(io.BytesIO(self.archive.read(
+                f"assets/tabletop3d/textures/item/surface/{name}.png"))).convert("RGBA")
+            point = (484, 159) if direction == 1 else (484, 353)
+            self.assertGreater(image.getpixel(point)[3], 0, name + " arrowhead is reversed")
+
+    def test_card_art_is_crisp_pixel_art(self):
+        for name in ("card_r3", "card_b6", "card_y9", "card_p4", "card_wild", "card_rdraw", "card_breverse", "card_yskip"):
+            image = Image.open(io.BytesIO(self.archive.read(
+                f"assets/tabletop3d/textures/item/face/{name}.png"))).convert("RGB")
+            self.assertLessEqual(len(image.getcolors(image.width * image.height)), 20, name)
+
+    def test_round_table_has_a_continuous_polygon_wall_instead_of_parallel_strips(self):
+        model = json.loads(self.archive.read("assets/tabletop3d/models/item/card_table.json"))
+        rotations = {round(element.get("rotation", {}).get("angle", 0), 4)
+                     for element in model["elements"] if "south" in element["faces"]}
+        self.assertGreaterEqual(len(rotations), 64, "Round perimeter must have enough distinct side normals")
+        self.assertLessEqual(sum(len(e["faces"]) for e in model["elements"]), 400,
+                             "A smoother silhouette must not multiply hidden interior faces")
 
 
 if __name__ == "__main__":

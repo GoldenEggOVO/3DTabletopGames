@@ -61,6 +61,17 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     void tell(Player p,Component message){p.sendMessage(Language.component("chat.prefix","message",message));}
     void announce(Room r,Component message){for(Room.Seat s:r.seats){Player p=Bukkit.getPlayer(s.id());if(p!=null&&!s.bot())tell(p,message);}}
     @Override public boolean onCommand(CommandSender sender,Command command,String label,String[] args){
+        if(args.length>0&&args[0].equalsIgnoreCase("reload-language")){
+            if(sender instanceof Player player&&(!allowed(player)||!player.hasPermission("3dtabletop.admin"))){tell(player,Language.component("chat.permission"));return true;}
+            try{
+                var config=new org.bukkit.configuration.file.YamlConfiguration();config.load(new File(getDataFolder(),"config.yml"));
+                Language.migrate(getDataFolder().toPath());
+                boolean changed=Language.reload(getDataFolder().toPath().resolve("languages"),config.getString("language","en_US"),getLogger()::warning);
+                if(changed&&menus!=null)menus.languageChanged();
+                sender.sendMessage(Language.component(changed?"language.reloaded":"language.failed"));
+            }catch(Exception ex){getLogger().warning("Cannot reload languages: "+ex.getMessage());sender.sendMessage(Language.component("language.failed"));}
+            return true;
+        }
         if(!(sender instanceof Player p)){sender.sendMessage(Language.component("chat.console"));if(args.length>0&&args[0].equals("status"))sender.sendMessage(Language.component("chat.status","rooms",rooms.size(),"world",arena.world!=null));return true;}
         if(!allowed(p)){tell(p,Language.component("chat.permission"));return true;}
         try{
@@ -84,6 +95,10 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         return true;
     }
     @Override public List<String> onTabComplete(CommandSender sender,Command cmd,String alias,String[] args){
+        if(args.length==1&&"reload-language".startsWith(args[0].toLowerCase(Locale.ROOT))&&(!(sender instanceof Player player)||allowed(player)&&player.hasPermission("3dtabletop.admin"))){
+            var suggestions=new ArrayList<>(sender instanceof Player player?CommandSuggestions.complete(args,rooms.values(),room(player),false,true):CommandSuggestions.complete(args,rooms.values(),null,true,true));
+            suggestions.add("reload-language");return suggestions;
+        }
         if(sender instanceof Player player){Room own=room(player);if(args.length==2&&args[0].equalsIgnoreCase("move")&&own!=null&&own.board instanceof HandGame&&own.seat(player.getUniqueId())!=own.turn())return List.of();return CommandSuggestions.complete(args,rooms.values(),own,false,allowed(player));}
         return CommandSuggestions.complete(args,rooms.values(),null,true,true);
     }

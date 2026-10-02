@@ -11,7 +11,7 @@
 | 协商悔棋、再来一局、历史重放 | `RoundActions`、`history` | 规则与恢复测试 |
 | Paper 原生 Dialog、可编辑菜单、单次回调校验 | `BoardWindow`、`GameMenuLayouts`、`menus/*.yml` | `WindowMenuTest`、`NativeMenuTest`、干净服回调 |
 | 3D 实体棋盘、模型、射线点击、指针、桌边显示 | `GameWorld`、`TableView`、`TableLobby` | 对应单测、干净服实体生成；画面由用户验收 |
-| 英文默认与 YAML 语言切换 | `config.yml`、`lang/en.yml` | `LanguageTest`，菜单与桌面文字测试 |
+| 英文默认与 YAML 语言切换 | `config.yml`、`languages/en_US.yml` | `LanguageTest`，菜单与桌面文字测试 |
 | 权限及 AuthMe 登录门禁 | `3dtabletop.use`、`allowed` | 权限测试、干净服拒绝无权限操作 |
 | 配置、房间与棋盘持久化 | `config.yml`、`rooms.json`、旧目录复制 | 数据迁移测试、干净服重启恢复 |
 | Tab 补全 | `CommandSuggestions` | `CommandSuggestionsTest` |
