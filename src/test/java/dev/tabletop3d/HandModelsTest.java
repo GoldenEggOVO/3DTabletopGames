@@ -7,6 +7,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class HandModelsTest {
+    @Test void detailedPatternsUseFewerNativeEntitiesWithoutShrinkingFaces(){
+        assertTrue(HandModels.cardBody().size()<=18);
+        assertTrue(HandModels.of(true,"p9").size()<=140);
+        assertTrue(RoundCardTable.parts().size()<=72);
+        assertTrue(HandModels.of(false,"r1").size()+HandModels.cardBody().size()<=60);
+    }
     @Test void overlappingColorsHaveDifferentDepths(){
         for(String face:List.of("swap","wild","s1","p1","f1","f2","f3","f4","f5","f6","f7","f8")){
             var parts=HandModels.of(!Set.of("swap","wild").contains(face),face);

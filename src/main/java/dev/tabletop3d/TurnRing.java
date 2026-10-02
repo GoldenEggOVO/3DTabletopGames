@@ -32,8 +32,8 @@ final class TurnRing implements AutoCloseable {
         this.room=room;this.origin=origin.clone();
         for(int arrow=0;arrow<4;arrow++){
             double center=arrow*Math.PI/2;
-            for(int segment=0;segment<7;segment++){
-                double start=center-Math.PI/6+segment*Math.PI/21,end=start+Math.PI/21;
+            for(int segment=0;segment<4;segment++){
+                double start=center-Math.PI/6+segment*Math.PI/12,end=start+Math.PI/12;
                 Pose pose=line(.40*Math.sin(start),.40*Math.cos(start),.40*Math.sin(end),.40*Math.cos(end));
                 add(pose,pose,tag);
             }

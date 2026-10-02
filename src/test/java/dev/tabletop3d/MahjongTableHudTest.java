@@ -17,6 +17,15 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class MahjongTableHudTest {
+    @Test void scoresMoveToPanelAndEmptyWallTurnsRed(){
+        Fixture f=new Fixture();when(f.game.deckSize()).thenReturn(0);f.room.revision++;f.hud.tick(1_000);
+        assertEquals(NamedTextColor.RED,f.texts.get(f.count(0)).color());
+        for(int seat=0;seat<4;seat++){
+            Location score=f.locations.get(f.score(seat));
+            assertTrue(Math.hypot(score.getX(),score.getZ())<.51);
+            assertTrue(score.getY()<81.1);
+        }
+    }
     @BeforeEach void setup(){MockBukkit.mock();}
     @AfterEach void cleanup(){MockBukkit.unmock();}
 
@@ -31,7 +40,7 @@ class MahjongTableHudTest {
         assertEquals("Player 2 discarded 9 Characters",MessageText.plain(f.texts.get(f.discard())));
         verify(f.game,never()).hand(anyInt());verify(f.game,never()).handSize(anyInt());
         verify(f.game,never()).legalActions(anyInt());
-        assertEquals(23,f.spawned.size());
+        assertEquals(27,f.spawned.size());
     }
 
     @Test void countdownUsesElapsedTimeCeilingAndReusesDisplays() {
@@ -42,7 +51,7 @@ class MahjongTableHudTest {
         f.hud.tick(2_100);verify(f.statusEntity(),never()).text(any(Component.class));
         f.hud.tick(5_001);assertTrue(f.status().contains("1s"));
         f.hud.tick(9_000);assertTrue(f.status().contains("0s"));
-        assertEquals(23,f.spawned.size());
+        assertEquals(27,f.spawned.size());
     }
     @Test void floatingRoundClockAndDiscardInformationAreRaisedTogether() {
         Fixture f=new Fixture();
@@ -84,7 +93,7 @@ class MahjongTableHudTest {
     @Test void cleanupRemovesEveryEntityOnceAndTickAfterCloseDoesNothing() {
         Fixture f=new Fixture();
         for(Entity entity:f.spawned) {
-            verify(entity,never()).setVisibleByDefault(false);
+            if(!f.spawned.subList(23,27).contains(entity)&&!List.of(f.count(0),f.count(1),f.count(2),f.count(3)).contains(entity))verify(entity,never()).setVisibleByDefault(false);
             verify(entity.getPersistentDataContainer()).set(any(),eq(org.bukkit.persistence.PersistentDataType.STRING),eq(f.room.id+"|@board"));
         }
         f.hud.close();f.hud.close();clearInvocations(f.game);f.hud.tick(1_000);
@@ -102,7 +111,7 @@ class MahjongTableHudTest {
         f.room.phase=Room.Phase.PLAYING;f.hud.tick(1_000);
         assertTrue(f.status().contains("East 1"));
         assertFalse(MessageText.plain(f.texts.get(f.discard())).isEmpty());
-        assertEquals(23,f.spawned.size());
+        assertEquals(27,f.spawned.size());
     }
 
     @Test void enlargedCountsFitCenterPadAndWindsSitToEachSeatsRight() {
@@ -116,10 +125,10 @@ class MahjongTableHudTest {
                 float scale=f.transforms.get(f.count(seat)).getScale().x;
                 double height=.2*scale,width=Integer.toString(remaining).length()*.15*scale;
                 assertTrue(height>=.125,"Wall count is readable at the table center");
-                assertTrue(width<=.301,"Three-digit count retains its allotted width");
+                assertTrue(width<=.461,"Three-digit count retains its allotted width");
                 double radius=Math.hypot(at.getX(),at.getZ());
                 assertTrue(radius+height/2<pad/2,"Count remains within its pad");
-                assertTrue(width/2<radius-height/2,"Neighboring seat counts do not overlap");
+                // Only the viewer-facing count is shown; the four orientations share the center.
                 double stickRadius=Math.hypot(f.locations.get(f.stick(seat)).getX(),f.locations.get(f.stick(seat)).getZ());
                 assertTrue(stickRadius-.009>radius+height/2,"Riichi stick clears the larger count");
                 assertTrue(stickRadius+.009<pad/2,"Riichi stick remains within the center pad");
@@ -158,18 +167,30 @@ class MahjongTableHudTest {
         verifyNoInteractions(f.game);
     }
 
-    @Test void fixedScoresFaceTableFromBehindEachSeatWithNativeBackfaceCulling() {
+    @Test void scoresLieOnFourEdgesOfCenterPanel() {
         Fixture f=new Fixture();
         for(int seat=0;seat<4;seat++) {
             verify(f.score(seat)).setBillboard(Display.Billboard.FIXED);
-            verify(f.score(seat)).setRotation(180f-90f*seat,0f);
+            verify(f.score(seat)).setRotation((float)(-90*seat),-90f);
             verify(f.score(seat)).setSeeThrough(false);
             Location at=f.locations.get(f.score(seat));
-            assertEquals(2.8,Math.hypot(at.getX(),at.getZ()),1e-6);
-            assertEquals(82.4,at.getY(),1e-6);
-            double yaw=Math.toRadians(at.getYaw());
-            assertTrue(Math.sin(yaw)*at.getX()-Math.cos(yaw)*at.getZ()>0);
+            assertEquals(.41,Math.hypot(at.getX(),at.getZ()),1e-6);
+            assertEquals(81.029,at.getY(),1e-6);
+
         }
+    }
+
+    @Test void centerTextOnlyShowsTheViewersOwnOrientation(){
+        Fixture f=new Fixture();Player player=mock(Player.class);
+        when(player.isOnline()).thenReturn(true);when(f.plugin.allowed(player)).thenReturn(true);
+        when(player.getUniqueId()).thenReturn(f.room.seats.getFirst().id());
+        when(player.getLocation()).thenReturn(new Location(f.world,0,82,2));
+        when(f.world.getPlayers()).thenReturn(List.of(player));f.hud.tick(1_000);
+        verify(player).showEntity(f.plugin,f.count(0));
+        for(int seat=1;seat<4;seat++)verify(player).hideEntity(f.plugin,f.count(seat));
+        clearInvocations(player);f.hud.tick(1_001);verify(player,never()).showEntity(any(),any());
+        when(f.world.getPlayers()).thenReturn(List.of());f.hud.tick(1_002);
+        for(int seat=0;seat<4;seat++)verify(player).hideEntity(f.plugin,f.count(seat));
     }
 
     @Test void regionalProfilesUseRoundNumberAndFinishedRiichiDoesNotShowNextWind() {

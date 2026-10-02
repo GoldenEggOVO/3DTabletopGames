@@ -12,6 +12,8 @@ import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.TextDisplay;
+import org.bukkit.entity.ItemDisplay;
+import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Transformation;
 import org.joml.Quaternionf;
@@ -25,7 +27,12 @@ final class MahjongTableHud implements AutoCloseable {
     private final Location origin;
     private final NamespacedKey tag;
     final List<Entity> entities = new ArrayList<>();
-    private final List<TextDisplay> counts = new ArrayList<>();
+    private final List<TextDisplay> counts = new ArrayList<>(), rounds = new ArrayList<>();
+    private final Map<Player,Integer> orientations = new HashMap<>();
+    private final TableAudience audience;
+    private BlockDisplay panel;
+    private ItemDisplay packedPanel;
+    private boolean privateText, buildingPanel;
     private final List<TextDisplay> winds = new ArrayList<>(), scores = new ArrayList<>();
     private final List<List<BlockDisplay>> sticks = new ArrayList<>();
     private final boolean[] declared = new boolean[4];
@@ -38,14 +45,18 @@ final class MahjongTableHud implements AutoCloseable {
     private boolean closed;
 
     MahjongTableHud(Tabletop3D plugin,Room room,Location surfaceOrigin,NamespacedKey tag) {
-        this.plugin=plugin;this.room=room;this.origin=surfaceOrigin.clone();this.tag=tag;
-        block(origin.clone().add(0,.015,0),Material.BLACK_CONCRETE,.90f,.012f,.90f);
+        this(plugin,room,surfaceOrigin,tag,new TableAudience(plugin,surfaceOrigin));
+    }
+
+    MahjongTableHud(Tabletop3D plugin,Room room,Location surfaceOrigin,NamespacedKey tag,TableAudience audience) {
+        this.plugin=plugin;this.room=room;this.origin=surfaceOrigin.clone();this.tag=tag;this.audience=audience;
+        syncPanel();
         for(int seat=0;seat<4;seat++) {
             double angle=seat*Math.PI/2;
-            Location number=origin.clone().add(.24*Math.sin(angle),.029,.24*Math.cos(angle));
+            Location number=origin.clone().add(.075*Math.sin(angle),.029,.075*Math.cos(angle));
             number.setYaw(-90*seat);
-            counts.add(text(number,true));
-            Location stick=origin.clone().add(.38*Math.sin(angle),.029,.38*Math.cos(angle));
+            privateText=true;counts.add(text(number,true));privateText=false;
+            Location stick=origin.clone().add(.37*Math.cos(angle)+.28*Math.sin(angle),.029,-.37*Math.sin(angle)+.28*Math.cos(angle));
             stick.setYaw(-90*seat);
             BlockDisplay body=block(stick,Material.WHITE_CONCRETE,.24f,.006f,.018f);
             BlockDisplay dot=block(stick.clone().add(0,.007,0),Material.RED_CONCRETE,.012f,.002f,.012f);
@@ -59,8 +70,13 @@ final class MahjongTableHud implements AutoCloseable {
             Location wind=origin.clone().add(1.24*Math.cos(angle)+1.30*Math.sin(angle),.02,
                 -1.24*Math.sin(angle)+1.30*Math.cos(angle));
             wind.setYaw(-90*seat);winds.add(text(wind,true));
-            Location score=origin.clone().add(2.8*Math.sin(angle),1.4,2.8*Math.cos(angle));
-            score.setYaw(180-90*seat);scores.add(text(score,false,true));
+            Location score=origin.clone().add(.41*Math.sin(angle),.029,.41*Math.cos(angle));
+            score.setYaw(-90*seat);scores.add(text(score,true));
+        }
+        for(int seat=0;seat<4;seat++){
+            double angle=seat*Math.PI/2;
+            Location round=origin.clone().add(-.15*Math.sin(angle),.029,-.15*Math.cos(angle));
+            round.setYaw(-90*seat);privateText=true;rounds.add(text(round,true));privateText=false;
         }
         tick();
     }
@@ -69,18 +85,19 @@ final class MahjongTableHud implements AutoCloseable {
 
     void tick(long now) {
         if(closed)return;
+        syncPanel();syncOrientation();
         // Rules mutate on the room executor. Keep the last public snapshot while it runs.
         if(!room.busy&&room.board instanceof HandGame game&&(rendered!=game||revision!=room.revision)) {
             rendered=game;revision=room.revision;info=Map.copyOf(game.publicInfo());
             remaining=game.deckSize();turn=game.currentPlayer();
         }
-        for(TextDisplay count:counts)label(count,Component.text(remaining,NamedTextColor.WHITE),.30f,.13f);
+        for(TextDisplay count:counts)label(count,Component.text(remaining,remaining==0?NamedTextColor.RED:NamedTextColor.AQUA),.46f,.20f);
         int dealer=Integer.parseInt(info.getOrDefault("dealer","0"));
         for(int seat=0;seat<4;seat++) {
             int wind=Math.floorMod(seat-dealer,4);
             label(winds.get(seat),Component.text(List.of("東","南","西","北").get(wind),
                 wind==0?NamedTextColor.RED:NamedTextColor.WHITE),.24f,.22f);
-            label(scores.get(seat),Component.text(info.getOrDefault("score."+seat,""),NamedTextColor.WHITE),.8f,.18f);
+            label(scores.get(seat),Component.text(info.getOrDefault("score."+seat,""),NamedTextColor.GOLD),.30f,.075f);
         }
         boolean lobby=room.phase==Room.Phase.LOBBY||room.phase==Room.Phase.STARTING;
         for(int seat=0;seat<4;seat++) {
@@ -101,6 +118,7 @@ final class MahjongTableHud implements AutoCloseable {
             Language.component("table.mahjong.round",
                 "wind",Language.component("table.mahjong.wind."+Math.floorMod((round-1)/4,4)),"hand",Math.floorMod(round-1,4)+1):
             Language.component("table.mahjong.round-number","round",round)).colorIfAbsent(NamedTextColor.GOLD);
+        for(TextDisplay roundDisplay:rounds)label(roundDisplay,heading,.46f,.075f);
         Component clock;
         if(room.phase==Room.Phase.FINISHED)clock=Language.component("table.mahjong.finished");
         else if(room.phase!=Room.Phase.PLAYING||room.busy||room.undo!=null)clock=Language.component("table.mahjong.paused");
@@ -123,6 +141,35 @@ final class MahjongTableHud implements AutoCloseable {
         label(discard,last.colorIfAbsent(NamedTextColor.WHITE),.95f,.042f);
     }
 
+    private void syncPanel(){
+        if(audience.needed(false)&&panel==null){
+            buildingPanel=true;panel=block(origin.clone().add(0,.015,0),Material.BLACK_CONCRETE,1.10f,.012f,1.10f);
+            buildingPanel=false;
+        }else if(!audience.needed(false)&&panel!=null){entities.remove(panel);audience.remove(panel);panel=null;}
+        if(audience.needed(true)&&packedPanel==null){
+            packedPanel=PackedDisplay.spawn(plugin,room,audience,origin.clone().add(0,.015,0),tag,
+                "mahjong_panel",new Vector3f(1),new Quaternionf());entities.add(packedPanel);
+        }else if(!audience.needed(true)&&packedPanel!=null){entities.remove(packedPanel);audience.remove(packedPanel);packedPanel=null;}
+    }
+
+    private void syncOrientation(){
+        Set<Player> viewers=audience.managed()?audience.all():new HashSet<>(origin.getWorld().getPlayers());
+        Map<Player,Integer> next=new HashMap<>();
+        for(Player player:viewers)if(player.isOnline()&&plugin.allowed(player)&&player.getLocation().distanceSquared(origin)<=24*24){
+            int seat=room.seat(player.getUniqueId());
+            if(seat<0){Location at=player.getLocation();seat=Math.floorMod((int)Math.round(Math.atan2(at.getX()-origin.getX(),at.getZ()-origin.getZ())/(Math.PI/2)),4);}
+            next.put(player,seat);
+            if(!Objects.equals(orientations.get(player),seat))for(int i=0;i<4;i++){
+                if(i==seat){player.showEntity(plugin,counts.get(i));player.showEntity(plugin,rounds.get(i));}
+                else{player.hideEntity(plugin,counts.get(i));player.hideEntity(plugin,rounds.get(i));}
+            }
+        }
+        for(Player player:orientations.keySet())if(!next.containsKey(player))for(int i=0;i<4;i++){
+            player.hideEntity(plugin,counts.get(i));player.hideEntity(plugin,rounds.get(i));
+        }
+        orientations.clear();orientations.putAll(next);
+    }
+
     private String seatName(int seat){return seat>=0&&seat<room.seats.size()?Language.text(room.seats.get(seat).name()):"—";}
 
     private void configure(Display display) {
@@ -133,9 +180,10 @@ final class MahjongTableHud implements AutoCloseable {
 
     private BlockDisplay block(Location at,Material material,float width,float height,float depth) {
         BlockDisplay display=origin.getWorld().spawn(at,BlockDisplay.class,d->{
+            if(audience.managed())d.setVisibleByDefault(false);
             configure(d);d.setBlock(material.createBlockData());visible(d,true,width,height,depth);
         });
-        entities.add(display);return display;
+        entities.add(display);if(buildingPanel)audience.add(display,false);else audience.common(display);return display;
     }
 
     private static void visible(BlockDisplay display,boolean visible,float width,float height,float depth) {
@@ -149,8 +197,9 @@ final class MahjongTableHud implements AutoCloseable {
 
     private TextDisplay text(Location at,boolean flat,boolean fixed) {
         TextDisplay display=origin.getWorld().spawn(at,TextDisplay.class,d->{
-            // Normal text uses native backface culling, so fixed upright scores face only the table.
-            configure(d);d.setBillboard(fixed?Display.Billboard.FIXED:Display.Billboard.CENTER);
+            if(privateText||audience.managed())d.setVisibleByDefault(false);
+            configure(d);
+            if(!privateText)audience.common(d);d.setBillboard(fixed?Display.Billboard.FIXED:Display.Billboard.CENTER);
             d.setRotation(at.getYaw(),flat?-90:0);d.setAlignment(TextDisplay.TextAlignment.CENTER);
             d.setLineWidth(Integer.MAX_VALUE);d.setDefaultBackground(false);
             d.setBackgroundColor(Color.fromARGB(0,0,0,0));d.setShadowed(!flat);d.setSeeThrough(false);
@@ -169,6 +218,6 @@ final class MahjongTableHud implements AutoCloseable {
 
     @Override public void close() {
         if(closed)return;closed=true;
-        entities.forEach(Entity::remove);entities.clear();labels.clear();
+        entities.forEach(audience::remove);entities.clear();labels.clear();orientations.clear();
     }
 }

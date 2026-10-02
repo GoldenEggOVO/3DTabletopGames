@@ -20,7 +20,7 @@ class TurnRingTest {
 
     @Test void nativeSegmentsLeaveSpaceForBothCentralPiles(){
         Fixture f=new Fixture();
-        assertTrue(f.parts.size()>=28&&f.parts.size()<=40);
+        assertTrue(f.parts.size()==24);
         for(Entity entity:f.parts){
             assertInstanceOf(BlockDisplay.class,entity);
             Location at=entity.getLocation();

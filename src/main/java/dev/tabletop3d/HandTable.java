@@ -240,7 +240,7 @@ final class HandTable implements AutoCloseable {
                 if(!caption.equals(Component.empty()))parts.add(text(at.clone().add(rotated(0,.035,.011,pose)),caption,.15f,pose.yaw(),false,id,player));
             }else if(caption.equals(Component.empty())){
                 double radius=width/2;
-                for(int i=0;i<8;i++)parts.add(modelBlock(at,material,new Vector3f(0,.0425f,0),2*radius*Math.cos(Math.PI/16),2*radius*Math.sin(Math.PI/16),.014,new Quaternionf().rotateZ((float)(i*Math.PI/8)),id,player));
+                for(int i=0;i<4;i++)parts.add(modelBlock(at,material,new Vector3f(0,.0425f,0),2*radius*Math.cos(Math.PI/8),2*radius*Math.sin(Math.PI/8),.014,new Quaternionf().rotateZ((float)(i*Math.PI/4)),id,player));
             }else{
                 parts.add(block(at,material,width,.085,.014,id,player));
                 parts.add(text(at.clone().add(rotated(0,.035,.011,pose)),caption,.15f,pose.yaw(),false,id,player));
@@ -281,7 +281,7 @@ final class HandTable implements AutoCloseable {
         this.plugin=plugin; this.room=room; this.origin=surfaceOrigin.clone(); this.tag=tag; mahjong=room.kind.equals("mahjong");
         audience=new TableAudience(plugin,origin);
         syncFurniture();
-        mahjongHud=mahjong?new MahjongTableHud(plugin,room,origin,tag):null;
+        mahjongHud=mahjong?new MahjongTableHud(plugin,room,origin,tag,audience):null;
         sync();
     }
     static Pose handPose(int seat,int players,int index,int count,boolean mahjong) {

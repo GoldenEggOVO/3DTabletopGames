@@ -32,7 +32,7 @@ final class HandModels {
         for(int i=2;i<points.length;i+=2)line(p,x+points[i-2]*w,y+points[i-1]*h,x+points[i]*w,y+points[i+1]*h,thickness,layer,m);
     }
     private static void circle(List<Part> p,double x,double y,double r,int layer,Material m){
-        for(int i=0;i<8;i++)box(p,x,y,2*r*Math.cos(Math.PI/16),2*r*Math.sin(Math.PI/16),i*Math.PI/8,layer,m);
+        for(int i=0;i<4;i++)box(p,x,y,2*r*Math.cos(Math.PI/8),2*r*Math.sin(Math.PI/8),i*Math.PI/4,layer,m);
     }
     private static void ring(List<Part> p,double x,double y,double rx,double ry,double thickness,int layer,Material m,int segments){
         for(int i=0;i<segments;i++){
@@ -139,8 +139,8 @@ final class HandModels {
         for(double[] stroke:strokes)path(p,x,y,w/10,h/10,t,1,m,stroke);
     }
     private static void pip(List<Part> p,double x,double y,double radius,Material m,int layer){
-        ring(p,x,y,radius,radius,.85,layer,m,12);
-        ring(p,x,y,radius*.56,radius*.56,.55,layer,m,8);box(p,x,y,.9,.9,Math.PI/4,layer,m);
+        ring(p,x,y,radius,radius,.85,layer,m,8);
+        ring(p,x,y,radius*.56,radius*.56,.55,layer,m,6);box(p,x,y,.9,.9,Math.PI/4,layer,m);
     }
     private static void bamboo(List<Part> p,double x,double y,Material m){
         line(p,x-.4,y-4,x+.4,y+4,1.9,1,m);
