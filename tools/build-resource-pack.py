@@ -348,12 +348,16 @@ def main():
     texture("surface/ivory",Image.new("RGB",(16,16),"#fff9eb"))
     texture("surface/dark",Image.new("RGB",(16,16),"#25252d"))
     back=texture("surface/card-back",card_image("back"))
+    tile_back_image=Image.new("RGB",(128,192),"#176a53")
+    tile_back_draw=ImageDraw.Draw(tile_back_image)
+    tile_back_draw.rectangle((5,5,122,186),outline="#319878",width=4)
+    tile_back=texture("surface/mahjong-back",tile_back_image)
     atlas=Image.open(ROOT/"resource-pack/source/mahjong/hand_ui.png").convert("RGB")
     for suit,row in (("s",0),("m",1),("p",2)):
-        for n in range(10):face_model(f"mahjong_{suit}{n}",atlas.crop((n*80+5,row*129+15,n*80+75,row*129+124)))
-    for n in range(1,8):face_model(f"mahjong_z{n}",atlas.crop(((n-1)*80+5,402,(n-1)*80+75,511)))
-    for n in range(1,9):face_model(f"mahjong_f{n}",flower_image(n))
-    face_model("mahjong_back",Image.new("RGB",(128,192),"#edb036"))
+        for n in range(10):face_model(f"mahjong_{suit}{n}",atlas.crop((n*80+5,row*129+15,n*80+75,row*129+124)),back=tile_back)
+    for n in range(1,8):face_model(f"mahjong_z{n}",atlas.crop(((n-1)*80+5,402,(n-1)*80+75,511)),back=tile_back)
+    for n in range(1,9):face_model(f"mahjong_f{n}",flower_image(n),back=tile_back)
+    face_model("mahjong_back",tile_back_image,back=tile_back)
     for color in COLORS:
         for rank in RANKS:face_model(f"card_{color}{rank}",card_image(rank,color),True,back)
     for rank in ("wild","swap","back"):face_model("card_"+rank,card_image(rank),True,back)
@@ -365,7 +369,7 @@ def main():
     write_json(BUILD/"pack.mcmeta",{"pack":{"pack_format":88,"min_format":88,"max_format":88,"description":"Tabletop 3D · Mahjong & Color Eight"}})
     config=ROOT/"craftengine/resources/tabletop3d/configuration/items.yml";config.parent.mkdir(parents=True,exist_ok=True)
     config.write_text("items:\n"+"".join(f"  tabletop3d:{name}:\n    material: paper\n    item_model: tabletop3d:{name}\n" for name in sorted(CATALOG)),encoding="utf-8")
-    (config.parent.parent/"pack.yml").write_text("name: Tabletop 3D\nauthor: Tabletop3D\nversion: 1.8.10-SNAPSHOT\n",encoding="utf-8")
+    (config.parent.parent/"pack.yml").write_text("name: Tabletop 3D\nauthor: Tabletop3D\nversion: 1.9.0-SNAPSHOT\n",encoding="utf-8")
     target=ROOT/"target/tabletop-resource-pack.zip"
     with zipfile.ZipFile(target,"w",zipfile.ZIP_DEFLATED) as z:
         for path in sorted(BUILD.rglob("*")):

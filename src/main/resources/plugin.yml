@@ -1,8 +1,8 @@
 name: 3dtabletop
-version: 1.8.10-SNAPSHOT
+version: 1.9.0-SNAPSHOT
 main: dev.tabletop3d.Tabletop3D
 api-version: '26.2'
-softdepend: [AuthMe, CraftEngine]
+softdepend: [CraftEngine]
 commands:
   3dtabletop:
     description: 3D tabletop games and rooms

@@ -26,6 +26,17 @@ class ResourcePackTest(unittest.TestCase):
         self.assertFalse(any(n.startswith("assets/") and not n.startswith("assets/tabletop3d/") for n in self.names))
         self.assertEqual(88, json.loads(self.archive.read("pack.mcmeta"))["pack"]["pack_format"])
 
+    def test_mahjong_has_colored_backs_on_every_physical_tile(self):
+        for name in ("mahjong_m1", "mahjong_p0", "mahjong_s1", "mahjong_z1", "mahjong_f1", "mahjong_back"):
+            model = json.loads(self.archive.read(f"assets/tabletop3d/models/item/{name}.json"))
+            self.assertIn("back", model["textures"], name)
+            for element in model["elements"]:
+                self.assertEqual("#back", element["faces"]["north"]["texture"])
+            if name == "mahjong_back":
+                front = "assets/" + model["textures"]["face"].replace(":", "/textures/") + ".png"
+                back = "assets/" + model["textures"]["back"].replace(":", "/textures/") + ".png"
+                self.assertEqual(self.archive.read(front), self.archive.read(back))
+
     def test_geometry_and_all_texture_references(self):
         for path in self.names:
             if not path.startswith("assets/tabletop3d/models/"):

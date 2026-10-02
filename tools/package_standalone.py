@@ -20,7 +20,7 @@ jar = project / "target" / f"3dtabletop-{version}.jar"
 digest = hashlib.sha256(jar.read_bytes()).hexdigest()
 receipt = json.loads(args.receipt.read_text(encoding="utf-8"))
 if not receipt.get("pass") or len(receipt.get("boots", [])) != 3 or not all(b.get("pass") for b in receipt["boots"]):
-    raise SystemExit("Passing clean create/restart/migration receipt required")
+    raise SystemExit("Passing clean create/restart/converted-data receipt required")
 if receipt.get("jar_sha256") != digest or receipt.get("version") != version:
     raise SystemExit("Runtime receipt must match this exact JAR")
 soak = None
@@ -61,9 +61,9 @@ with zipfile.ZipFile(jar) as artifact:
         raise SystemExit("Legacy package was bundled")
     for required in ("dev/tabletop3d/BoardWindow.class", "dev/tabletop3d/ui/MessageText.class",
                      "dev/tabletop3d/ui/LabelLayout.class", "dev/tabletop3d/RoomText.class",
-                     "dev/tabletop3d/rules/MahjongGame.class", "dev/tabletop3d/rules/LastCardGame.class",
+                     "dev/tabletop3d/rules/MahjongGame.class", "dev/tabletop3d/rules/ColorEightGame.class",
                      "dev/tabletop3d/HandTable.class", "dev/tabletop3d/DiceTray.class",
-                     "languages/en_US.yml", "languages/zh_CN.yml", "language-compatibility.yml", "menus/catalog.yml", "menus/setup.yml", "menus/hand.yml"):
+                     "languages/en_US.yml", "languages/zh_CN.yml", "menus/catalog.yml", "menus/setup.yml", "menus/hand.yml"):
         if required not in names:
             raise SystemExit(f"Missing {required}")
 

@@ -12,9 +12,9 @@ Each message has an independent stable key, without a `messages:` wrapper:
 "chat.joined": "<green>{player} joined the room</green>"
 ```
 
-Equivalent nested YAML is supported. Flat keys also preserve a parent message and child messages simultaneously, such as `room.roster` and `room.roster.empty`. `rules.*` includes individually editable rule text and compatibility phrases; keep the keys and suffixes unchanged.
+Equivalent nested YAML is supported. Flat keys also preserve a parent message and child messages simultaneously, such as `room.roster` and `room.roster.empty`. Every entry has a descriptive key and complete template. `rules.*` contains rule descriptions; `board.*` contains complete game events with named parameters.
 
-Copy a generated file to `languages/my_language.yml`, edit its values, then set `language: my_language`. Existing files are never overwritten. Run `/3dtabletop reload-language`: console may always run it; players need `3dtabletop.use`, `3dtabletop.admin` and any configured authentication check. The command reads only the language selection from disk; other configuration changes require a restart.
+Copy a generated file to `languages/my_language.yml`, edit its values, then set `language: my_language`. Existing files are never overwritten. Run `/3dtabletop reload-language`: console may always run it; players need `3dtabletop.use` and `3dtabletop.admin`. The command reads only the language selection from disk; other configuration changes require a restart.
 
 Successful reload closes and invalidates old menu sessions. Labels and private hand hints refresh at the next display update without ending a game. Any warning rejects a reload and keeps the previous language. Console diagnostics identify the filename and message key.
 
@@ -24,9 +24,9 @@ Layers are bundled English, editable `en_US.yml`, then the selected file. Missin
 
 Keep placeholder names such as `{player}`, `{game}`, `{number}`. Translations may omit a parameter but cannot invent one. Player names and ordinary parameter values remain literal text. Colors, decorations, gradients, rainbow, reset and newline use the same renderer as Casino. Legacy `&a`, `§a` and hex colors remain supported. Language files cannot define callbacks, clicks or hover commands.
 
-## Upgrade from lang
+## Upgrade existing files
 
-Old `plugins/3dtabletop/lang/*.yml` files migrate once to `languages/`; `en.yml` becomes `en_US.yml`. Valid files are converted to independent flat keys while retaining custom translations. Files with validation warnings are copied unchanged for diagnosis and compatibility. Originals remain intact. Existing destinations win and are never overwritten. `language: en` remains an alias for `en_US`. Legacy `messages:` and `translations:` sections remain readable. The JAR's `language-compatibility.yml` is internal and is not a selectable language.
+Use the offline [upgrade tool](migration.md) before replacing an older build. It converts `lang`, `en`, wrapped `messages` and phrase translations into the current directory and named templates. Unmatched custom text is retained in its report. Runtime code performs no phrase matching, key-hash translation or legacy directory migration.
 
 ## Menu layouts
 

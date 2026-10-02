@@ -80,7 +80,7 @@ This mode keeps the **121-hole star board, ten pieces per player and 2/3/4/6-pla
 
 ## Color Eight (彩八): the 54-card game
 
-The stable room/command identifier is `lastcard`. The original native artwork uses red, blue, yellow and purple and needs no resource pack. Gameplay is informed by the [Blazing 8s FAQ](https://support-apps.discord.com/hc/en-us/articles/26501925147415-Blazing-8s-FAQ) and locally captured public client/game states. The palette and artwork are our own.
+The stable room/command identifier is `color-eight`. The original native artwork uses red, blue, yellow and purple and needs no resource pack. Gameplay is informed by the [Blazing 8s FAQ](https://support-apps.discord.com/hc/en-us/articles/26501925147415-Blazing-8s-FAQ) and locally captured public client/game states. The palette and artwork are our own.
 
 - 2–5 players; five cards each. The first seat opens. An initial colored card establishes color/rank without executing its special effect; wilds and swaps cannot open.
 - Each color has 1–7, 9 and 10, plus Draw One, Skip and Reverse (48 colored cards). Four colorless Wild Eights and two colorless Swaps make 54.

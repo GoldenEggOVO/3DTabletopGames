@@ -32,18 +32,6 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
     private void runProbe() {
         try {
             require(Bukkit.getIp().equals("127.0.0.1") && Bukkit.getPort() == 25617, "loopback fixture");
-            if (Boolean.getBoolean("boards.probe.migration")) {
-                migrationProbe();
-                return;
-            }
-            if (Boolean.getBoolean("boards.probe.menu")) {
-                menuProbe();
-                return;
-            }
-            if (Boolean.getBoolean("boards.probe.sgmenu")) {
-                sgMenuProbe();
-                return;
-            }
             for (String absent : List.of("ServerGames", "ServerMenu", "ServerCasino", "KaMenu"))
                 require(Bukkit.getPluginManager().getPlugin(absent) == null, "unexpected " + absent);
             Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("3dtabletop"));
@@ -53,7 +41,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 return;
             }
             World world = Bukkit.getWorlds().getFirst();
-            if(Boolean.getBoolean("boards.probe.craftengine")){craftEngineProbe(boards,world);return;}
+            if(Boolean.getBoolean("boards.probe.craftengine")){craftEngineProbe(boards,world);}
             soundProbe(boards, world);
             modelProbe(boards, world);
             focusProbe(boards, world);
@@ -98,8 +86,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 require(field(room, "board") != null, "board replay restored");
                 require(Files.readString(boards.getDataFolder().toPath().resolve("rooms.json")).contains("drop:3"), "move history retained");
                 require(!world.getEntitiesByClass(TextDisplay.class).isEmpty(), "board entities rendered");
-                String markerName = Files.exists(boards.getDataFolder().toPath().resolve("migration-from-serverboards.txt"))
-                    ? "BOARDS_STANDALONE_MIGRATION_PASS" : "BOARDS_STANDALONE_RESTORE_PASS";
+                String markerName = "BOARDS_STANDALONE_RESTORE_PASS";
                 getLogger().info(markerName + " rooms=1 dialogs=" + dialogs.get());
             } else {
                 require(rooms.isEmpty(), "fresh fixture");
@@ -194,7 +181,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         Class<?> viewType=Class.forName("dev.tabletop3d.TableView",true,loader),pickType=Class.forName("dev.tabletop3d.GameWorld$Pick",true,loader);
         var roomConstructor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class,Map.class);roomConstructor.setAccessible(true);
         var constructor=viewType.getDeclaredConstructors()[0];constructor.setAccessible(true);
-        for(String kind:List.of("lastcard","mahjong")){
+        for(String kind:List.of("color-eight","mahjong")){
             int capacity=kind.equals("mahjong")?4:5;Map<String,String> options=kind.equals("mahjong")?Map.of("profile","taiwan"):Map.of();
             Object room=roomConstructor.newInstance(UUID.randomUUID(),kind,capacity,1L,0,options);
             Field board=roomType.getDeclaredField("board");board.setAccessible(true);board.set(room,GameFactory.create(kind,capacity,1L,options));
@@ -216,7 +203,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     var part=(org.bukkit.entity.Entity)item;privateParts.add(part);
                     require(part.isValid()&&!part.isPersistent()&&!part.isVisibleByDefault(),"private face is live, temporary and hidden by default");
                 }
-                if(kind.equals("lastcard")){
+                if(kind.equals("color-eight")){
                     var pieces=(Map<?,?>)field(own,"pieces");Object first=pieces.values().iterator().next();
                     var body=(org.bukkit.entity.Entity)((List<?>)field(first,"parts")).getFirst();double y=body.getLocation().getY();
                     String id=String.valueOf(pieces.keySet().iterator().next());
@@ -304,7 +291,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 require(privateViews.isEmpty()&&privateParts.stream().noneMatch(org.bukkit.entity.Entity::isValid),"private hand removed when view ends");
             } finally {call(view,"close",new Class<?>[0]);}
         }
-        getLogger().info("BOARDS_HAND_MODELS_PASS games=lastcard,taiwan,riichi private_by_default=true spectator_faces=0 client_visual_test=false");
+        getLogger().info("BOARDS_HAND_MODELS_PASS games=color-eight,taiwan,riichi private_by_default=true spectator_faces=0 client_visual_test=false");
     }
 
     private void craftEngineProbe(Plugin plugin,World world)throws Exception{
@@ -399,7 +386,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 if(!clickMenu(menus,player,"id","next"))break;
             }
             require(seen.size()==25,"every room reachable through native pagination");
-            UUID cardRoom=UUID.randomUUID();rooms.put(cardRoom,constructor.newInstance(cardRoom,"lastcard",5,1L,26));added.add(cardRoom);
+            UUID cardRoom=UUID.randomUUID();rooms.put(cardRoom,constructor.newInstance(cardRoom,"color-eight",5,1L,26));added.add(cardRoom);
             call(menus,"main",new Class<?>[]{Player.class},player);
             require(clickMenu(menus,player,"id","rooms"),"catalog opens the shared room browser");
             Set<String> globalSeen=new HashSet<>();
@@ -536,80 +523,6 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private void sgMenuProbe() throws Exception {
-        Plugin games = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerGames"));
-        Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("Tabletop3D"));
-        require(games.isEnabled() && boards.isEnabled(), "optional plugins enabled");
-        ClassLoader loader = games.getClass().getClassLoader();
-        Class<?> api = Class.forName("dev.server.games.api.GameCoordinator", true, loader);
-        Object service = Bukkit.getServicesManager().load((Class) api);
-        require(service != null, "optional coordinator exists");
-        Collection<?> providers = (Collection<?>) api.getMethod("providers").invoke(service);
-        Class<?> providerType = Class.forName("dev.server.games.api.GameProvider", true, loader);
-        Set<String> kinds = new HashSet<>();
-        for (Object provider : providers) kinds.add((String) providerType.getMethod("id").invoke(provider));
-        require(Collections.disjoint(kinds, List.of("connectfour", "chess", "xiangqi", "go9")), "Boards has no ServerGames providers");
-        UUID playerId = UUID.fromString("00d14a82-6b6c-46ce-b7f8-ecc56a133420");
-        require(((Map<?, ?>) field(field(boards, "coordinator"), "seats")).containsKey(playerId), "restored seat owned by Boards");
-        Optional<?> occupied = (Optional<?>) api.getMethod("occupiedBy", UUID.class).invoke(service, playerId);
-        require(occupied.isEmpty(), "ServerGames does not own Boards seat");
-        AtomicInteger dialogs = new AtomicInteger();
-        Player player = player(Bukkit.getWorlds().getFirst(), dialogs, true);
-        Objects.requireNonNull(Bukkit.getPluginCommand("servergames:servergames"))
-            .execute(player, "sg", new String[]{"menu"});
-        require(dialogs.get() == 1, "/sg menu opens Boards Dialog");
-        getLogger().info("BOARDS_SG_MENU_PASS providers=" + kinds.size() + " dialogs=" + dialogs.get());
-    }
-
-    @SuppressWarnings("unchecked")
-    private void menuProbe() throws Exception {
-        Plugin menu = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerMenu"));
-        Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("Tabletop3D"));
-        require(menu.isEnabled() && boards.isEnabled(), "optional menu enabled");
-        AtomicInteger dialogs = new AtomicInteger();
-        Player player = player(Bukkit.getWorlds().getFirst(), dialogs, true);
-        ClassLoader loader = menu.getClass().getClassLoader();
-        Class<?> view = Class.forName("dev.server.menu.DialogView", true, loader);
-        Class<?> daily = Class.forName("dev.server.menu.DailyMenus", true, loader);
-        var constructor = daily.getDeclaredConstructor(menu.getClass(), view);
-        constructor.setAccessible(true);
-        Object model = constructor.newInstance(menu, field(menu, "dialogs"));
-        Object page = call(model, "build", new Class<?>[]{Player.class, String.class, int.class}, player, "main", 0);
-        List<?> entries = (List<?>) call(page, "entries", new Class<?>[0]);
-        int before = dialogs.get();
-        boolean found = false;
-        for (Object entry : entries) {
-            if (!"games".equals(call(entry, "id", new Class<?>[0]))) continue;
-            ((java.util.function.Consumer<Map<String, String>>) call(entry, "action", new Class<?>[0])).accept(Map.of());
-            found = true;
-            break;
-        }
-        require(found && dialogs.get() == before + 1, "ServerMenu games entry opens Boards Dialog");
-        getLogger().info("BOARDS_MENU_PASS dialogs=" + dialogs.get());
-    }
-
-    private void migrationProbe() throws Exception {
-        for (String absent : List.of("ServerGames", "ServerMenu", "ServerCasino", "KaMenu"))
-            require(Bukkit.getPluginManager().getPlugin(absent) == null, "unexpected " + absent);
-        Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("Tabletop3D"));
-        require(boards.isEnabled(), "Boards restored legacy rooms");
-        Map<?, ?> rooms = (Map<?, ?>) field(boards, "rooms");
-        require(rooms.size() == 4, "four replayable legacy chess rooms restored");
-        Set<String> kinds = new HashSet<>();
-        int history = 0;
-        for (Object room : rooms.values()) {
-            kinds.add((String) field(room, "kind"));
-            require(field(room, "board") != null, "rules replayed");
-            require(field(room, "anchorWorld").equals(Bukkit.getWorlds().getFirst().getUID()), "explicit anchor used");
-            Object moves = field(room, "history");
-            history += (int) moves.getClass().getMethod("size").invoke(moves);
-        }
-        require(kinds.containsAll(List.of("gomoku", "xiangqi", "chess", "checkers")), "legacy kinds");
-        require(history >= 21, "legacy history kept: " + history);
-        require(!Bukkit.getWorlds().getFirst().getEntitiesByClass(TextDisplay.class).isEmpty(), "legacy boards rendered");
-        getLogger().info("BOARDS_MIGRATION_PASS rooms=4 history=" + history);
-    }
-
     private Player player(World world, AtomicInteger dialogs, boolean allowed) {
         UUID id = allowed ? UUID.fromString("00d14a82-6b6c-46ce-b7f8-ecc56a133420") : UUID.randomUUID();
         return player(world,dialogs,allowed,id);

@@ -3,6 +3,7 @@ package dev.tabletop3d;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import dev.tabletop3d.rules.GameFactory;
 
 import java.nio.charset.StandardCharsets;
@@ -11,7 +12,7 @@ import java.nio.file.Path;
 
 /** Offline check that a migration candidate can be replayed by this exact rules build. */
 public final class RoomReplayVerifier {
-    private RoomReplayVerifier() { }
+    private RoomReplayVerifier() {}
 
     static void verify(JsonObject root) {
         if (!root.has("rooms") || !root.get("rooms").isJsonArray())
@@ -20,29 +21,40 @@ public final class RoomReplayVerifier {
             JsonObject room = element.getAsJsonObject();
             String id = room.get("id").getAsString();
             try {
-                var game = GameFactory.create(room.get("kind").getAsString(),
-                    room.get("capacity").getAsInt(), room.get("seed").getAsLong(),Room.readOptions(room));
+                var game =
+                        GameFactory.create(
+                                room.get("kind").getAsString(),
+                                room.get("capacity").getAsInt(),
+                                room.get("seed").getAsLong(),
+                                Room.readOptions(room));
                 int index = 0;
                 for (JsonElement event : room.getAsJsonArray("history")) {
                     JsonObject move = event.getAsJsonObject();
                     try {
-                        game.applyRecorded(move.get("seat").getAsInt(), move.get("action").getAsString());
+                        game.applyRecorded(
+                                move.get("seat").getAsInt(), move.get("action").getAsString());
                     } catch (RuntimeException ex) {
-                        throw new IllegalArgumentException("Room " + id + " event " + index +
-                            " cannot replay: " + move, ex);
+                        throw new IllegalArgumentException(
+                                "Room " + id + " event " + index + " cannot replay: " + move, ex);
                     }
                     index++;
                 }
             } catch (RuntimeException ex) {
-                if (ex.getMessage() != null && ex.getMessage().startsWith("Room " + id + " event ")) throw ex;
-                throw new IllegalArgumentException("Room " + id + " cannot replay: " + ex.getMessage(), ex);
+                if (ex.getMessage() != null && ex.getMessage().startsWith("Room " + id + " event "))
+                    throw ex;
+                throw new IllegalArgumentException(
+                        "Room " + id + " cannot replay: " + ex.getMessage(), ex);
             }
         }
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 1) throw new IllegalArgumentException("Usage: java -cp server-boards.jar dev.tabletop3d.RoomReplayVerifier rooms.json");
-        JsonObject root = JsonParser.parseString(Files.readString(Path.of(args[0]), StandardCharsets.UTF_8)).getAsJsonObject();
+        if (args.length != 1)
+            throw new IllegalArgumentException(
+                    "Usage: java -cp 3dtabletop.jar dev.tabletop3d.RoomReplayVerifier rooms.json");
+        JsonObject root =
+                JsonParser.parseString(Files.readString(Path.of(args[0]), StandardCharsets.UTF_8))
+                        .getAsJsonObject();
         verify(root);
         System.out.println("Replay verified: " + root.getAsJsonArray("rooms").size() + " rooms");
     }

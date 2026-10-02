@@ -29,10 +29,10 @@ public final class BoardsSoakProbe extends JavaPlugin {
             roundType=Class.forName("dev.tabletop3d.RoundActions",true,boards.getClass().getClassLoader());
             Map<UUID,Object> registry=(Map<UUID,Object>)field(boards,"rooms");require(registry.isEmpty(),"fresh fixture required");
             var ctor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class,Map.class);ctor.setAccessible(true);
-            List<String> kinds=List.of("chess","xiangqi","gomoku","ludo","checkers","draughts","reversi","go9","go13","go","connectfour","lastcard",
+            List<String> kinds=List.of("chess","xiangqi","gomoku","ludo","checkers","draughts","reversi","go9","go13","go","connectfour","color-eight",
                 "mahjong:riichi","mahjong:guangdong","mahjong:sichuan","mahjong:taiwan");
             for(int i=0;i<kinds.size();i++){
-                String label=kinds.get(i),kind=label.split(":")[0];int capacity=kind.equals("checkers")?6:Set.of("ludo","lastcard","mahjong").contains(kind)?4:2;
+                String label=kinds.get(i),kind=label.split(":")[0];int capacity=kind.equals("checkers")?6:Set.of("ludo","color-eight","mahjong").contains(kind)?4:2;
                 Map<String,String> options=kind.equals("mahjong")?Map.of("profile",label.split(":")[1],"rounds","1"):kind.equals("ludo")?Map.of("blocking","on"):Map.of();
                 Object room=ctor.newInstance(UUID.randomUUID(),kind,capacity,1000L+i,i,options);
                 if(kind.equals("ludo")){Field tray=roomType.getDeclaredField("sideTray");tray.setAccessible(true);tray.setBoolean(room,true);}

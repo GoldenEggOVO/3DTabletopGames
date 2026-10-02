@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.9.0-SNAPSHOT
+
+- Automatically discard the newly drawn Riichi tile after declaration; stop for ron/tsumo and resume after declining a win.
+- Add a green Color Eight active-seat bar and name in both rendering modes.
+- Add jade Mahjong backs, sideways declaration/called tiles, concealed-kan end backs and added-kan stacking with shared native/pack placement.
+- Replace hashed/phrase translations with complete semantic templates; canonicalize `ColorEightGame` and `color-eight`.
+- Extract room storage and automatic turn policy, remove AuthMe/Geyser, startup migration and obsolete foreign-provider code, and expand dense control flow for readability.
+- Provide a separate offline data converter preserving current history and custom text, with explicit replay validation before installation.
+
 ## 1.8.10-SNAPSHOT
 
 - Correct resource-pack facing through the supported FIXED item display context; Minecraft ignores the previous model `display.none` rotation.

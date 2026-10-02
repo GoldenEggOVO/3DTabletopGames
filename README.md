@@ -1,6 +1,6 @@
 # 3DTabletopGames
 
-1.8.8-SNAPSHOT adds optional CraftEngine rendering for Mahjong and Color Eight: vanilla, resource-pack, or mixed per-player display. Vanilla remains the default. See [installation](docs/craftengine.zh-CN.md) and [model counts](docs/model-counts.zh-CN.md).
+Optional CraftEngine rendering for Mahjong and Color Eight: vanilla, resource-pack, or mixed per-player display. Vanilla remains the default. See [installation](docs/craftengine.zh-CN.md) and [model counts](docs/model-counts.zh-CN.md).
 
 [![Build](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml/badge.svg)](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml)
 
@@ -8,7 +8,7 @@
 
 **Playable 3D board games for Minecraft, with physical pieces, multiplayer rooms and native Dialog menus.**
 
-Run independently on **Paper / Purpur 26.2 with Java 25**. No resource pack, client mod, ServerGames, ServerMenu, Casino or KaMenu is required. AuthMe is optional.
+Run independently on **Paper / Purpur 26.2 with Java 25**. No resource pack, client mod, ServerGames, ServerMenu, Casino or KaMenu is required.
 
 ## Install
 
@@ -16,9 +16,9 @@ Run independently on **Paper / Purpur 26.2 with Java 25**. No resource pack, cli
 2. Stop your server and back up plugin data and worlds. Keep one plugin JAR in `plugins/`; never install `original-*.jar`.
 3. Start the server and run `/3dtabletop`. Create a room, invite players or fill seats with bots, then play on the physical table.
 
-The current source is **1.8.7-SNAPSHOT**, a development build with original card and Mahjong artwork made from native block displays, Color Eight on a native round table for 2–5 players, hover and draw animations, and simpler setup and room menus. Other games retain their rules and positions. Legacy Last Card matches with move history are archived to a complete pre-upgrade room backup; they are not replayed under Color Eight rules. It has **not been published as a Release**, and this update does not deploy to production servers. Local model previews do not replace Minecraft client acceptance. See [game modes](docs/game-modes.md), [Mahjong rules](docs/mahjong.md) and [verification](docs/verification.md) for scope and acceptance status.
+The current source is **1.9.0-SNAPSHOT**, a development build with original card and Mahjong artwork made from native block displays, Color Eight on a native round table for 2–5 players, hover and draw animations, and simpler setup and room menus. Other games retain their rules and positions. Legacy Last Card matches with move history are archived to a complete pre-upgrade room backup; they are not replayed under Color Eight rules. It has **not been published as a Release**, and this update does not deploy to production servers. Local model previews do not replace Minecraft client acceptance. See [game modes](docs/game-modes.md), [Mahjong rules](docs/mahjong.md) and [verification](docs/verification.md) for scope and acceptance status.
 
-Upgrading from ServerBoards? Read [migration](docs/migration.md) first. Existing `3dtabletop` configurations, menu layouts and schema 1 room files remain usable.
+Upgrading from 1.8.10? Read [migration](docs/migration.md) first. Existing `3dtabletop` configurations, menu layouts and schema 1 room files remain usable.
 
 Public Mahjong tiles now use the same width as hand tiles, and the central wall digits are larger again. Hover privately highlights matching own/public tiles; only the aimed hand tile rises. A draw leaves existing tiles in place and adds the new tile at the far right with a gap. Continuous clicks remain guarded across other seats’ turns, preventing a replacement tile at the same aim from being discarded. Only Mahjong tiles forbidden by kuikae after Chi/Pon dim through display brightness, preserving their materials and patterns; waiting and Riichi selection retain normal brightness. A complete Riichi shape without yaku shows a red No Yaku hint on its actual draw or pending public discard. Choose Chi/Pon/Kan first, then a complete combination. Riichi arms eligible discards; Ron and Tsumo have their own buttons. Dora indicator tiles are inset into the center of each wooden front apron, facing its seat. Rivers fill six tiles left-to-right from the inner row toward the owner. Riichi Dora and red fives receive native enchanted item overlays in owner-only hands and public rivers/melds; hidden Ura Dora stays unmarked. Melds remain lower-right, and corner wind inscriptions stay clear of melds. Holding Shift temporarily enters Spectator mode with a private fixed camera. Position and orientation stay fixed, and the player and equipment do not enter the view. This view is read-only; release restores the entry game mode, pose, flight, gravity and invisibility before playing. The eye position keeps the previous 1-block inward and 0.2-block downward adjustment; standing hands and inset indicators may lie behind the camera. Floating round, turn, countdown and last-discard information is raised by 0.4 blocks. Sichuan exchange selection/removal, exchange confirmation and missing-suit choice are available directly at the table. Color Eight uses a 54-card deck, bounded-width parallel hands overlapping along one diagonal, a rotating direction ring and underlined 6/9. Rounded card edges, digits and symbols use rotated native cuboids; Wild Eight choices are four pure-color round buttons. The round table has a smooth 64-sided edge. Mahjong circles, bamboo joints, the one-bamboo bird, flowers, character tiles and honor inscriptions use native outlines and angled strokes. Unplayable Color Eight cards retain their colors at lower brightness, and hovering lifts the selected card only 0.085 blocks. When neither the deck nor recycling can supply a draw, a playable hand must play rather than pass; an entirely unplayable hand may pass, and timeout selects a legal play.
 
@@ -47,7 +47,7 @@ Public Mahjong tiles now use the same width as hand tiles, and the central wall 
 - Native Paper Dialog with editable YAML layouts and English by default.
 - MiniMessage styling, legacy color compatibility and editable language files.
 
-Rules and variant details: [feature inventory](docs/features.md). Historical Yacht sources remain disabled. Color Eight follows the documented 54-card shedding rules with original art; the command identifier remains `lastcard`. Regional Mahjong follows documented house rules and is not a drop-in replacement for MahjongCraft.
+Rules and variant details: [feature inventory](docs/features.md). Historical Yacht sources remain disabled. Color Eight follows the documented 54-card shedding rules with original art; the command identifier remains `color-eight`. Regional Mahjong follows documented house rules and is not a drop-in replacement for MahjongCraft.
 
 ## Commands and permissions
 
@@ -63,17 +63,17 @@ Rules and variant details: [feature inventory](docs/features.md). Historical Yac
 | `/3dtabletop rules [kind]` | Show rules |
 | `3dtabletop status` | Inspect room count from the console |
 
-Tab completion provides subcommands, games, player counts, room prefixes and legal actions. `3dtabletop.use` defaults to everyone. `3dtabletop.admin` defaults to operators and controls protected-world administration; it is not a bypass for game rules. With AuthMe installed, players must also be logged in.
+Tab completion provides subcommands, games, player counts, room prefixes and legal actions. `3dtabletop.use` defaults to everyone. `3dtabletop.admin` defaults to operators and controls protected-world administration; it is not a bypass for game rules.
 
 Game IDs, configuration and integration details: [installation](docs/installation.md).
 
 ## Languages and menus
 
-Edit `plugins/3dtabletop/lang/en.yml`, or copy it to `lang/<code>.yml` and set `language: <code>` in `config.yml`. Restart after editing. Existing files are preserved and missing entries fall back to bundled English.
+Edit `plugins/3dtabletop/languages/en_US.yml` or another complete named catalogue. Select it with `language: <code>` and run `/3dtabletop reload-language`. See [languages](docs/languages.md).
 
 Menus, chat, action hints and room presentation use named keys and literal parameters. Legacy `translations` remain supported for rule text and existing menu customizations. Menu layouts live in `menus/*.yml`. See [languages and text styling](docs/languages.md).
 
-Unmodified 1.7.0 stock `setup.yml`, `room.yml` and `hand.yml` use the new layout in memory when their content fingerprint matches. Installed files remain byte-for-byte unchanged. Customized layouts retain their ordering and styles; back them up before manually merging the new bundled templates. See [migration](docs/migration.md).
+Custom layouts retain ordering, captions and styles. The offline [upgrade tool](docs/migration.md) prepares old stock templates and language files before installing this build.
 
 ## Build and documentation
 

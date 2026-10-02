@@ -9,7 +9,7 @@ Stop the server before replacing the plugin. Back up worlds and `plugins/3dtable
 ## Commands and games
 
 See the [command table](../README.md#commands-and-permissions). Game IDs:
-`xiangqi`, `gomoku`, `chess`, `ludo`, `checkers`, `draughts`, `reversi`, `go`, `go9`, `go13`, `connectfour`, `lastcard`, `mahjong`.
+`xiangqi`, `gomoku`, `chess`, `ludo`, `checkers`, `draughts`, `reversi`, `go`, `go9`, `go13`, `connectfour`, `color-eight`, `mahjong`.
 
 `go` is 19×19. Example: `/3dtabletop create connectfour` followed by `/3dtabletop bots` to fill empty seats. A move such as `drop:3` uses zero-based column indices. Menu actions recheck player permissions, room state, turn and revision.
 
