@@ -56,7 +56,7 @@ final class GameMenuLayouts {
         var section=config.getConfigurationSection("Bottom.buttons");List<String> order=section==null?List.of():new ArrayList<>(section.getKeys(false));
         Map<String,Map<String,Object>> styles=new HashMap<>();if(section!=null)for(String id:order){var node=section.getConfigurationSection(id);if(node!=null)styles.put(id,new LinkedHashMap<>(node.getValues(false)));}
         styles.put("close",Map.of("text","<dark_gray>[ <red>@label@ <dark_gray>]","width",230));
-        List<GameMenus.Button> entries=new ArrayList<>(supplied);entries.sort(Comparator.comparingInt(b->b.id().equals("resume")?-1:b.id().equals("close")?order.size()+3:b.id().equals("main")?order.size()+2:b.id().equals("back")?order.size()+1:order.contains(b.id())?order.indexOf(b.id()):order.size()));
+        List<GameMenus.Button> entries=new ArrayList<>(supplied);entries.sort(Comparator.comparingInt(b->b.id().equals("resource-pack")?-2:b.id().equals("resume")?-1:b.id().equals("close")?order.size()+3:b.id().equals("main")?order.size()+2:b.id().equals("back")?order.size()+1:order.contains(b.id())?order.indexOf(b.id()):order.size()));
         String titleTemplate=config.getString("Title","@title@");
         config.set("Title",titleTemplate.replace("@title@",MessageText.plain(title)));
         config.set("Title-component",MessageText.render(Language.text(titleTemplate).replace("@title@","{title}"),"title",title));

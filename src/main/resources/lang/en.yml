@@ -380,6 +380,14 @@ translations:
 
 # Named display messages. Parameters are literal text or Components, never parsed as markup.
 messages:
+  'pack.enable': 'Enable tabletop resource pack'
+  'pack.disable': 'Disable tabletop resource pack'
+  'pack.loading': 'Loading tabletop pack (click to cancel)'
+  'pack.prompt': 'Tabletop cards, Mahjong artwork and sounds'
+  'pack.ready': 'Tabletop resource pack loaded.'
+  'pack.failed': 'Tabletop pack failed or was declined. Reopen the menu to retry.'
+  'pack.unavailable': 'CraftEngine tabletop models are not ready. Contact the server administrator.'
+  'pack.configuration': 'The tabletop resource-pack URL or SHA-1 is not configured correctly.'
   'table.hand.deck': 'Deck: {count}'
   'error.tray-space': 'Leave clear space on the east side of the table for the dice stand.'
   'menu.title': '3D Tabletop Games'

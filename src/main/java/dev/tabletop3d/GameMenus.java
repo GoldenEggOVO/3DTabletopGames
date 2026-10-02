@@ -38,6 +38,9 @@ final class GameMenus implements AutoCloseable {
     void show(Player p,Component title,Component description,List<Button> buttons,Runnable back,String page){
         if(!plugin.allowed(p))return;
         List<Button> entries=new ArrayList<>(buttons);
+        if(plugin.pack!=null&&plugin.pack.hasToggle())entries.addFirst(new Button("resource-pack",plugin.pack.button(p),()->{
+            plugin.pack.toggle(p);show(p,title,description,buttons,back,page);
+        }));
         if(back!=null)entries.add(new Button("back",Language.component("menu.back"),back));
         else if(plugin.mainMenuAvailable())entries.add(new Button("main",Language.component("menu.main"),()->{forget(p);Bukkit.dispatchCommand(p,"servermenu:servermenu main");}));
         entries.add(new Button("close",Language.component("menu.close"),()->forget(p)));

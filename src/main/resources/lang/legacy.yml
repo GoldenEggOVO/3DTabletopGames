@@ -1,6 +1,14 @@
 # Internal mappings for older translations sections. Not a selectable language.
 # Dynamic values are inserted only after the legacy template has been translated.
 messages:
+  'pack.enable': '启用桌游资源包'
+  'pack.disable': '关闭桌游资源包'
+  'pack.loading': '桌游包加载中（点击取消）'
+  'pack.prompt': '桌游牌面、麻将桌布与音效'
+  'pack.ready': '桌游资源包已加载。'
+  'pack.failed': '桌游包加载失败或被拒绝，重新打开菜单可以重试。'
+  'pack.unavailable': 'CraftEngine 桌游模型尚未就绪，请联系服务器管理员。'
+  'pack.configuration': '桌游资源包 URL 或 SHA-1 配置有误。'
   'menu.title': '3D Tabletop Games'
   'menu.back': '返回上一页'
   'menu.main': '返回主菜单'

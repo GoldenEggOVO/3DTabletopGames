@@ -22,7 +22,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     final Map<UUID,Room> rooms=new LinkedHashMap<>();
     final Map<UUID,Location> returns=new HashMap<>();
     final SecureRandom random=new SecureRandom();
-    GameMenus menus; GameWorld arena; TableComfort comfort; TableLobby tableLobby;
+    GameMenus menus; GameWorld arena; TableComfort comfort; TableLobby tableLobby; TabletopPack pack;
     BoardOccupancy coordinator;
     boolean stopping=false; private boolean loaded=false; private boolean authWarned=false; private int pulse=0;
     private final Gson gson=new GsonBuilder().setPrettyPrinting().create();
@@ -32,6 +32,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
             DataMigration.copyLegacy(getDataFolder().toPath().resolveSibling("ServerBoards"), getDataFolder().toPath());
             saveDefaultConfig();
             Language.load(this);
+            pack=new TabletopPack(this);Bukkit.getPluginManager().registerEvents(pack,this);
             menus=new GameMenus(this,new BoardWindow(this)); arena=new GameWorld(this);
             coordinator=new BoardOccupancy();
             comfort=new TableComfort(this); tableLobby=new TableLobby(this);tableLobby.start();
@@ -42,7 +43,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
             getLogger().info("3dtabletop enabled.");
         } catch(Exception|LinkageError ex){getLogger().log(java.util.logging.Level.SEVERE,"Could not initialize table rooms",ex);Bukkit.getPluginManager().disablePlugin(this);}
     }
-    @Override public void onDisable(){stopping=true;save();if(tableLobby!=null)tableLobby.close();if(coordinator!=null)coordinator.close();if(comfort!=null)comfort.close();if(menus!=null)menus.close();if(arena!=null)arena.close();}
+    @Override public void onDisable(){stopping=true;save();if(tableLobby!=null)tableLobby.close();if(coordinator!=null)coordinator.close();if(comfort!=null)comfort.close();if(menus!=null)menus.close();if(arena!=null)arena.close();if(pack!=null)pack.close();}
     public void suspendView(Player player){if(comfort!=null)comfort.release(player);if(menus!=null)menus.forget(player);if(arena!=null)arena.clearSelection(player);}
     public boolean hasActiveGame(Player player){return room(player)!=null;}
     boolean mainMenuAvailable(){return Bukkit.getPluginCommand("servermenu:servermenu")!=null;}
@@ -106,6 +107,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         createReserved(p,kind,capacity,Map.of());
     }
     void createReserved(Player p,String kind,int capacity,Map<String,String> options){
+        if(pack!=null)pack.require(p,kind);
         if(Set.of("uno","doudizhu","yacht","aeroplane","flying").contains(kind))throw new IllegalArgumentException("这个游戏暂时停用，请在菜单选择其他游戏。");
         if(!capacityValid(kind,capacity))throw new IllegalArgumentException("不支持的游戏或人数");
         if(room(p)!=null)throw new IllegalArgumentException("请先离开当前对局");
@@ -125,6 +127,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     }
     void joinReserved(Player p,Room r){
         if(!allowed(p))return;requireLiveRoom(r);
+        if(pack!=null)pack.require(p,r.kind);
         Room old=room(p);if(old!=null&&old!=r)throw new IllegalArgumentException("请先离开当前对局");
         boolean already=r.seat(p.getUniqueId())>=0;r.join(p.getUniqueId(),p.getName());
         if(!enterArena(p,r)){if(!already){r.seats.removeIf(s->s.id().equals(p.getUniqueId()));r.offline.remove(p.getUniqueId());r.revision++;returns.remove(p.getUniqueId());save();}throw new IllegalArgumentException("传送被取消，无法入座。请解除限制后再试。");}
@@ -132,6 +135,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     }
     boolean enterArena(Player p,Room r){
         if(!allowed(p))return false;requireLiveRoom(r);
+        if(pack!=null)pack.require(p,r.kind);
         if(r.seat(p.getUniqueId())<0)throw new IllegalArgumentException("你尚未加入房间");
         if(!arena.atTableWorld(p,r))returns.putIfAbsent(p.getUniqueId(),p.getLocation().clone());
         if(!p.teleport(arena.seatLocation(r,r.seat(p.getUniqueId())))){r.offline.putIfAbsent(p.getUniqueId(),System.currentTimeMillis());return false;}
@@ -147,6 +151,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     }
     void ready(Player p,Room r){
         if(!allowed(p))return;requireLiveRoom(r);
+        if(pack!=null)pack.require(p,r.kind);
         if(r.phase!=Room.Phase.LOBBY||r.seat(p.getUniqueId())<0)return;
         if(!r.ready.add(p.getUniqueId()))r.ready.remove(p.getUniqueId());r.revision++;
         if(r.seats.size()==r.capacity&&r.seats.stream().allMatch(s->s.bot()||r.ready.contains(s.id())))start(r);
@@ -154,11 +159,15 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
     }
     void startWithBots(Player p,Room r){
         if(!allowed(p))return;requireLiveRoom(r);
+        if(pack!=null)pack.require(p,r.kind);
         if(r.phase!=Room.Phase.LOBBY||!r.host(p.getUniqueId()))throw new IllegalArgumentException("仅房主可以添加陪练");
         if(r.seats.stream().filter(s->!s.bot()&&!s.id().equals(p.getUniqueId())).anyMatch(s->!r.ready.contains(s.id())))throw new IllegalArgumentException("请等待其他玩家准备");
         r.fillBots();start(r);
     }
     void start(Room r){
+        if(!r.restoring&&pack!=null)for(Room.Seat seat:r.seats)if(!seat.bot()){
+            Player player=Bukkit.getPlayer(seat.id());if(player!=null)pack.require(player,r.kind);
+        }
         if(!prepareSeats(r))return;
         r.phase=Room.Phase.STARTING;r.busy=true;r.changed=System.currentTimeMillis();
 
@@ -190,7 +199,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
         }
     }
     void action(Player p,Room r,long revision,JsonElement action){
-        if(!allowed(p))return;requireLiveRoom(r);if(!arena.atTableWorld(p,r))throw new IllegalArgumentException("请先用 /3dtabletop resume 回到棋桌所在世界");r.requireAction(p.getUniqueId(),revision);apply(r,r.seat(p.getUniqueId()),action,p);
+        if(!allowed(p))return;requireLiveRoom(r);if(pack!=null)pack.require(p,r.kind);if(!arena.atTableWorld(p,r))throw new IllegalArgumentException("请先用 /3dtabletop resume 回到棋桌所在世界");r.requireAction(p.getUniqueId(),revision);apply(r,r.seat(p.getUniqueId()),action,p);
     }
     void apply(Room r,int seat,JsonElement action,Player source){
         requireLiveRoom(r);
@@ -244,7 +253,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
             if(r.undo!=null){if(now>=r.undo.expires){r.undo=null;r.revision++;r.changed=now;announce(r,Language.component("chat.undo.expired"));showRoomToHumans(r);}else continue;}
             if(r.phase==Room.Phase.PAUSED)continue;
             for(Room.Seat s:r.seats)if(!s.bot()){
-                Player p=Bukkit.getPlayer(s.id());boolean present=p!=null&&allowed(p)&&arena.atTableWorld(p,r);
+                Player p=Bukkit.getPlayer(s.id());boolean present=p!=null&&allowed(p)&&arena.atTableWorld(p,r)&&(pack==null||pack.canPlay(p,r.kind));
                 if(present)r.offline.remove(s.id());else r.offline.putIfAbsent(s.id(),now);
             }
             if(r.offline.values().stream().anyMatch(t->now-t>getConfig().getLong("reconnect-seconds",120)*1000L)){abort(r,"玩家离线或离开棋牌世界超过保留时间，对局已结束");continue;}
@@ -253,6 +262,9 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
             if(r.phase!=Room.Phase.PLAYING||r.busy)continue;
             int turn=r.turn();if(turn<0||turn>=r.seats.size())continue;
             Room.Seat s=r.seats.get(turn);long wait=turnWaitMillis(r);
+            if(!s.bot()&&pack!=null&&pack.mode==TabletopPack.Mode.RESOURCE_PACK&&TabletopPack.supported(r.kind)){
+                Player player=Bukkit.getPlayer(s.id());if(player==null||!pack.canPlay(player,r.kind))continue;
+            }
             if(r.board instanceof GoGame go&&go.scoring()&&!s.bot())continue; // A timeout is not a human's agreement to dead stones.
             if(now-r.changed<wait)continue;
     String choice=r.board instanceof LastCardGame cards&&!s.bot()?cards.timeoutAction():BoardBots.choose(r.board,turn,random);if(choice!=null)apply(r,turn,new JsonPrimitive(choice),null);

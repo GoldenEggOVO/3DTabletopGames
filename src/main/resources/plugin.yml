@@ -2,7 +2,7 @@ name: 3dtabletop
 version: 1.8.7-SNAPSHOT
 main: dev.tabletop3d.Tabletop3D
 api-version: '26.2'
-softdepend: [AuthMe]
+softdepend: [AuthMe, CraftEngine]
 commands:
   3dtabletop:
     description: 3D tabletop games and rooms
