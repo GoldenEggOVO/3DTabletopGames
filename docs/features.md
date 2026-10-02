@@ -5,7 +5,7 @@
 | Games | Xiangqi, Chess, Gomoku, Ludo, Chinese Checkers, Draughts, Reversi, Go 9/13/19, Connect Four, Color Eight (2–5 players), four Mahjong profiles; legacy Aeroplane recovery | Rule test suites |
 | Rooms | Paginated browsing, create, join, seats, readiness, bots, spectate, return, leave | Room, occupancy and menu tests |
 | Recovery | Seed/history replay, world anchors, offline seats, migration | Recovery tests and isolated three-boot probe |
-| Agreements | Undo negotiation and rematches | RoundActions tests |
+| New rounds | Rematch readiness and fresh rounds | RoundActions tests |
 | Menus | Native Dialog, rules/help, move controls, YAML layouts, one-use world/player-bound callbacks | Window/NativeMenu tests and runtime probe |
 | Input | Ray targeting, legal-move pointers, private landing previews, direct board/menu moves | Geometry and input tests; client acceptance required |
 | Models | Connect Four drops, Reversi flips, reusable Go dead marks, opposing knight headings | TableView tests and real Display probe |

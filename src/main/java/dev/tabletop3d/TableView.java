@@ -1004,6 +1004,14 @@ final class TableView implements AutoCloseable {
         if (handTable != null) handTable.dismissCalls(player);
     }
 
+    boolean toggleMahjongAssistance(Player player, String option) {
+        return handTable != null && handTable.toggleAssistance(player, option);
+    }
+
+    MahjongAssist mahjongAssistance(int seat) {
+        return handTable == null ? null : handTable.assistance(seat);
+    }
+
     boolean expandHandCall(Player player, String group) {
         return handTable != null && handTable.expandCall(player, group);
     }
@@ -1074,12 +1082,12 @@ final class TableView implements AutoCloseable {
                     hover != null && (hover.startsWith("@hand:") || hover.startsWith("@tile:"))
                             ? hover.substring(6)
                             : null);
+            handTable.assistanceHint(p, hover);
             return;
         }
         boolean turn =
                 room.phase == Room.Phase.PLAYING
                         && !room.busy
-                        && room.undo == null
                         && room.seat(p.getUniqueId()) >= 0
                         && (room.seat(p.getUniqueId()) == room.board.currentPlayer()
                                 || room.board instanceof dev.tabletop3d.rules.GoGame go
@@ -1222,7 +1230,6 @@ final class TableView implements AutoCloseable {
     }
 
     private String blockedHint() {
-        if (room.undo != null) return "hint.undo";
         return switch (room.phase) {
             case LOBBY -> "hint.lobby";
             case STARTING -> "hint.starting";

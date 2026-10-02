@@ -28,7 +28,6 @@ final class TableSounds {
     static final Cue PASS = new Cue(Sound.BLOCK_NOTE_BLOCK_BASS, .2f, 1.2f);
     static final Cue CONFIRM = new Cue(Sound.BLOCK_NOTE_BLOCK_CHIME, .2f, 1.2f);
     static final Cue START = new Cue(Sound.BLOCK_NOTE_BLOCK_CHIME, .3f, 1.5f);
-    static final Cue UNDO = new Cue(Sound.BLOCK_NOTE_BLOCK_FLUTE, .25f, .8f);
     static final Cue WIN = new Cue(Sound.ENTITY_PLAYER_LEVELUP, .3f, 1.3f);
     static final Cue DRAW = new Cue(Sound.BLOCK_NOTE_BLOCK_CHIME, .25f, .8f);
     static final Cue TURN = new Cue(Sound.BLOCK_NOTE_BLOCK_PLING, .15f, 1.2f);
@@ -186,8 +185,7 @@ final class TableSounds {
         if (!room.kind.equals("mahjong")
                 || room.restoring
                 || room.phase != Room.Phase.PLAYING
-                || room.busy
-                || room.undo != null) return;
+                || room.busy) return;
         int turn = room.turn();
         if (turn < 0 || turn >= room.seats.size()) return;
         Room.Seat seat = room.seats.get(turn);

@@ -32,7 +32,6 @@ final class Room {
     boolean sideTray;
     UUID anchorWorld;
     double anchorX, anchorY, anchorZ;
-    RoundActions.Undo undo;
     final List<Seat> seats = new ArrayList<>();
     final Set<UUID> ready = new HashSet<>();
     final Map<UUID, Long> offline = new HashMap<>();
@@ -132,11 +131,10 @@ final class Room {
     void requireAction(UUID player, long expected) {
         if (phase != Phase.PLAYING
                 || busy
-                || undo != null
                 || revision != expected
                 || seat(player) < 0)
             throw new RuleViolation(
-                    "error.game-changed-or-an-undo-is-pending", "Game changed or an undo is pending; reopen the table");
+                    "error.game-changed", "Game changed; reopen the table");
     }
 
     int turn() {

@@ -13,6 +13,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class WindowMenuTest {
     @Test
+    void roomBrowserUsesAnOwnedFullWidthTextLinkAboveTheGameGrid() throws Exception {
+        var config = new YamlConfiguration();
+        try (var input = WindowMenuTest.class.getResourceAsStream("/menus/catalog.yml")) {
+            config.loadFromString(new String(input.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8));
+        }
+        UUID token = UUID.randomUUID();
+        var rendered = GameMenuLayouts.render(config, "Games", "", List.of(
+                new GameMenus.Button("resource-pack", "Enable pack", () -> {}),
+                new GameMenus.Button("rooms", "Browse Rooms", () -> {}),
+                new GameMenus.Button("chess", "Chess", () -> {})), token);
+        int index = rendered.buttons().stream().map(GameMenus.Button::id).toList().indexOf("rooms");
+        assertEquals(350, rendered.config().getInt("Body.rooms.width"));
+        var link = (net.kyori.adventure.text.Component) rendered.config().get("Body.rooms.component");
+        assertEquals(net.kyori.adventure.text.event.ClickEvent.runCommand("/3dtabletop click 3dtabletop:" + token + " " + index), link.clickEvent());
+        assertFalse(rendered.config().contains("Bottom.buttons.slot" + index));
+    }
+    @Test
     void catalogKeepsFullWidthHeaderLinksAndFillsGamesAcrossEachRow() throws Exception {
         var config = new YamlConfiguration();
         try (var input = WindowMenuTest.class.getResourceAsStream("/menus/catalog.yml")) {

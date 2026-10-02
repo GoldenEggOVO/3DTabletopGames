@@ -77,7 +77,7 @@ final class TurnRing implements AutoCloseable {
         this.direction=next;position();
     }
     void tick(){
-        if(closed||room.phase!=Room.Phase.PLAYING||room.undo!=null)return;
+        if(closed||room.phase!=Room.Phase.PLAYING)return;
         // HandTable is updated every two server ticks: about 26 seconds per revolution.
         angle=(angle+direction*.024)%(2*Math.PI);position();
     }

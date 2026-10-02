@@ -37,7 +37,7 @@ Public Mahjong tiles now use the same width as hand tiles, and the central wall 
 | Color Eight | 2–5 | Native round table, overlapping private hands, wild-color buttons, draw/discard piles |
 | Mahjong | 4 | Original tile patterns, standing private hands, public rivers and exposed melds |
 
-- Rooms, seats, ready checks, bots, spectating, undo agreements and rematches.
+- Rooms, seats, ready checks, bots, spectating and rematches.
 - Saved world anchors, seeds and move history; room recovery after restarting.
 - Direct board interaction, legal-move pointers and private hover/Connect Four landing previews.
 - Game → basic setup → optional detailed rules → create/start; lobby, playing and private-hand pages.
@@ -58,7 +58,7 @@ Rules and variant details: [feature inventory](docs/features.md). Historical Yac
 | `/3dtabletop join <room-prefix>` | Join an open room |
 | `/3dtabletop ready` / `bots` | Toggle readiness / fill bot seats as host |
 | `/3dtabletop resume` / `leave` | Return to your table / leave the room |
-| `/3dtabletop undo` / `rematch` | Request an undo / ready for a rematch |
+| `/3dtabletop rematch` | Ready for a rematch |
 | `/3dtabletop move <action>` | Play a legal rule action, e.g. `drop:3` |
 | `/3dtabletop rules [kind]` | Show rules |
 | `3dtabletop status` | Inspect room count from the console |

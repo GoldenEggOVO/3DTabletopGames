@@ -370,6 +370,39 @@ class RiichiGameTest {
         assertTrue(game.legalActions(1).contains("discard:s1_3"));
     }
 
+    @Test
+    void settledMultipleRonHandsIncludeTheWinningTileWithoutRevealingPendingClaims() throws Exception {
+        var game = game();
+        setHand(game, 0, "z1");
+        for (int seat : List.of(1, 2)) setHand(game, seat, "m1 m2 m3 p1 p2 p3 s1 s2 s3 z5 z5 z5 z1");
+        setHand(game, 3, "");
+        assertTrue(game.revealedHand(1).isEmpty());
+        game.apply(0, "discard:s0_0");
+        assertTrue(game.legalActions(1).contains("ron"));
+        game.apply(1, "ron");
+        assertTrue(game.revealedHand(1).isEmpty());
+        game.apply(2, "ron");
+        for (int seat : List.of(1, 2)) {
+            assertEquals(13, game.hand(seat).size());
+            assertEquals(14, game.revealedHand(seat).size());
+            assertEquals("s0_0", game.revealedHand(seat).getLast().id());
+        }
+        assertTrue(game.revealedHand(0).isEmpty());
+    }
+
+    @Test
+    void selfDrawRevealsExactlyFourteenTilesEvenWhenThePreviousDiscardHasTheSameFace() throws Exception {
+        var game = game();
+        setHand(game, 0, "m1 m2 m3 p1 p2 p3 s1 s2 s3 z5 z5 z5 z1 z1");
+        List<List<Tiles.Tile>> hands = get(game, "hands");
+        set(game, "drawnTile", hands.get(0).getLast());
+        set(game, "offered", new Tiles.Tile("old-discard", Tiles.type("z1"), false));
+        assertEquals("discard:s0_13", game.drawDiscard(0));
+        game.apply(0, "tsumo");
+        assertEquals(14, game.revealedHand(0).size());
+        assertTrue(game.revealedHand(0).stream().noneMatch(tile -> tile.id().equals("old-discard")));
+    }
+
     private static MahjongGame game() throws Exception {
         var game = new MahjongGame(4, 0, Map.of("profile", "riichi", "rounds", "1"));
         set(game, "anyCalls", true);

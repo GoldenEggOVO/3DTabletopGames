@@ -25,6 +25,7 @@ class CommandSuggestionsTest {
         assertEquals(List.of("2", "3", "4", "6"), CommandSuggestions.complete(new String[]{"create", "checkers", ""}, List.of(room), null, false, true));
         assertEquals(List.of(room.id.toString()), CommandSuggestions.complete(new String[]{"join", room.id.toString().substring(0, 4)}, List.of(room), null, false, true));
         room.phase = Room.Phase.PLAYING;
+        assertFalse(CommandSuggestions.complete(new String[]{""}, List.of(room), room, false, true).contains("undo"));
         room.board = new ConnectFourGame();
         assertEquals(List.of("drop:3"), CommandSuggestions.complete(new String[]{"move", "drop:3"}, List.of(room), room, false, true));
         assertTrue(CommandSuggestions.complete(new String[]{"join", ""}, List.of(room), null, false, true).isEmpty());

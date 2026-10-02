@@ -345,6 +345,11 @@ final class GameWorld implements Listener, AutoCloseable {
         if (view != null) view.turnSound();
     }
 
+    MahjongAssist mahjongAssistance(Room room, int seat) {
+        TableView view = views.get(room.id);
+        return view == null ? null : view.mahjongAssistance(seat);
+    }
+
     private String aimed(Player player, TableView view) {
         Location eye = player.getEyeLocation();
         Vector direction = eye.getDirection();
@@ -689,8 +694,8 @@ final class GameWorld implements Listener, AutoCloseable {
             return true;
         }
         if (room.phase != Room.Phase.PLAYING) return true;
-        if (room.undo != null) {
-            plugin.menus.room(player, room);
+        if (cell.startsWith("@call:assist:")) {
+            view.toggleMahjongAssistance(player, cell.substring("@call:assist:".length()));
             return true;
         }
         int seat = room.seat(player.getUniqueId());
@@ -723,15 +728,18 @@ final class GameWorld implements Listener, AutoCloseable {
         if (cell.startsWith("@call:") && room.kind.equals("mahjong")) {
             String group = cell.substring(6);
             TableView view = views.get(room.id);
+            MahjongAssist assistance = view == null ? null : view.mahjongAssistance(seat);
+            List<String> legal = room.board.legalActions(seat);
+            if (assistance != null) legal = assistance.visibleActions(legal);
             if (view != null && view.expandHandCall(player, group)) return;
             if (group.startsWith("choice:")) {
                 String action = group.substring(7);
-                if (room.board.legalActions(seat).contains(action))
+                if (legal.contains(action))
                     execute(player, room, List.of(action));
                 return;
             }
             List<String> choices =
-                    MahjongControls.groups(room.board.legalActions(seat))
+                    MahjongControls.groups(legal)
                             .getOrDefault(group, List.of());
             if (!choices.isEmpty()) execute(player, room, choices);
             return;

@@ -104,15 +104,13 @@ class MahjongTableHudTest {
         }
     }
 
-    @Test void pauseBusyAndUndoSuppressCountdownAndBusyKeepsSafeSnapshot() {
+    @Test void pauseAndBusySuppressCountdownAndBusyKeepsSafeSnapshot() {
         Fixture f=new Fixture();f.room.changed=1_000;
         f.room.phase=Room.Phase.PAUSED;f.hud.tick(2_000);assertTrue(f.status().contains("Paused"));
         f.room.phase=Room.Phase.PLAYING;f.room.busy=true;f.room.revision++;
         clearInvocations(f.game);f.hud.tick(2_000);
         assertTrue(f.status().contains("Paused"));verifyNoInteractions(f.game);
-        f.room.busy=false;f.room.undo=new RoundActions.Undo(UUID.randomUUID(),0,10_000,Set.of());
-        f.hud.tick(2_000);assertTrue(f.status().contains("Paused"));
-        f.room.undo=null;f.hud.tick(2_000);assertTrue(f.status().contains("4s"));
+        f.room.busy=false;f.hud.tick(2_000);assertTrue(f.status().contains("4s"));
         f.room.phase=Room.Phase.FINISHED;f.hud.tick(2_000);assertTrue(f.status().contains("Round finished"));
     }
 

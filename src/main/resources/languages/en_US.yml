@@ -97,18 +97,14 @@
 "chat.table.removed": "This table was removed."
 "chat.table.started": "This table has started and cannot be joined now."
 "chat.table.unavailable": "Table seat interface is temporarily unavailable."
-"chat.undo.cancelled": "Undo request cancelled; play continues."
-"chat.undo.complete": "The previous turn and later responses were undone. Dice keep the original random sequence."
-"chat.undo.expired": "Undo request timed out; play continues."
-"chat.undo.requested": "{player} requested an undo. Approve or reject it in the room menu within 30 seconds."
 
 # color-eight
 "color-eight.turn": "{player}'s turn"
 
 # error
+"error.game-changed": "Game changed; reopen the table"
 "error.aeroplane-chess-supports-2-4-players": "Aeroplane Chess supports 2–4 players"
 "error.board-world-ownership-marker-is-invalid-world": "Board world ownership marker is invalid; world unchanged"
-"error.cannot-request-an-undo-now": "Cannot request an undo now"
 "error.captures-are-mandatory-continue-capture-chains-with-the-same-piece": "Captures are mandatory; continue capture chains with the same piece"
 "error.chinese-checkers-supports-2-3-4-or-6-players": "Chinese Checkers supports 2, 3, 4, or 6 players"
 "error.choose-available-dice-or-an-empty-score-category": "Choose available dice or an empty score category"
@@ -116,7 +112,6 @@
 "error.color-eight.players": "Color Eight requires 2 to 5 players"
 "error.existing-world-is-not-owned-by-this": "Existing world is not owned by this plugin. It was not changed; configure a new empty world name"
 "error.finish-this-game-before-starting-a-rematch": "Finish this game before starting a rematch"
-"error.game-changed-or-an-undo-is-pending": "Game changed or an undo is pending; reopen the table"
 "error.game-type-cannot-be-empty": "Game type cannot be empty"
 "error.game.unknown": "Unknown game: {game}"
 "error.go-supports-9-9-13-13-and-19-19": "Go supports 9×9, 13×13, and 19×19"
@@ -139,7 +134,6 @@
 "error.mahjong.action": "Choose a legal mahjong action"
 "error.mahjong.profile": "Unknown mahjong profile: {profile}"
 "error.menu-template": "Cannot read menu template {file}; ask an administrator to check it"
-"error.no-pending-undo-request": "No pending undo request"
 "error.only-the-host-can-add-bots": "Only the host can add bots"
 "error.page-changed": "Page changed; reopen it"
 "error.repeated-position-or-no-liberties": "Repeated position or no liberties"
@@ -159,14 +153,11 @@
 "error.this-game-requires-two-players": "This game requires two players"
 "error.this-room-is-full-or-has-started": "This room is full or has started"
 "error.tray-space": "Leave clear space on the east side of the table for the dice stand."
-"error.undo-request-expired-or-does-not-need": "Undo request expired or does not need your approval"
 "error.unsupported-game-or-player-count": "Unsupported game or player count"
 "error.use-3dtabletop-resume-to-return-to-the": "Use /3dtabletop resume to return to the table world first"
-"error.wait-for-the-other-human-players-to": "Wait for the other human players to approve"
 "error.wait-for-the-other-players-to-ready": "Wait for the other players to ready"
 "error.waiting-for-tablemates-to-ready-for-a": "Waiting for tablemates to ready for a rematch"
 "error.yacht-dice-supports-2-4-players": "Yacht Dice supports 2–4 players"
-"error.you-have-no-turn-to-undo": "You have no turn to undo"
 "error.you-have-not-joined-a-room": "You have not joined a room"
 "error.you-must-bracket-and-flip-at-least-one-opponent-disc": "You must bracket and flip at least one opponent disc"
 
@@ -240,6 +231,10 @@
 "hand.winning-patterns": "Winning patterns: {patterns}"
 
 # hint
+"hint.mahjong.assist.sort": "Automatically sort your hand; when off, keep the current order."
+"hint.mahjong.assist.win": "Automatically take a legal Ron or Tsumo."
+"hint.mahjong.assist.no-calls": "Skip Chi, Pon and open Kan; wins and your own Kans remain available."
+"hint.mahjong.assist.draw-discard": "Automatically discard the drawn tile; pause when you can win."
 "hint.act": "Click to act"
 "hint.busy": "Updating the board…"
 "hint.cancelled": "Selection cancelled"
@@ -274,7 +269,6 @@
 "hint.selected": "Selected · Blue markers show legal destinations · Click the piece again to cancel"
 "hint.starting": "Preparing the game…"
 "hint.unavailable": "Cannot act here yet"
-"hint.undo": "Waiting for undo approval · Open the room menu"
 "hint.wait": "Wait for your turn"
 
 # language
@@ -392,7 +386,6 @@
 "menu.observe.refresh": "Refresh Public Game"
 "menu.observe.title": "{room} · Spectate"
 "menu.observe.visit": "Go to Board"
-"menu.options": "Room Options"
 "menu.pieces.description": "Choose a piece, then a destination; you can also click the board in the world."
 "menu.pieces.empty": "No pieces can be moved now. Wait for your turn."
 "menu.pieces.option": "{piece} · {count} legal moves"
@@ -414,10 +407,6 @@
 "menu.rooms.view": "View"
 "menu.rules": "Rules & Help"
 "menu.title": "3D Tabletop Games"
-"menu.undo.approve": "<green>Approve Undo</green>"
-"menu.undo.cancel": "Cancel Undo Request"
-"menu.undo.reject": "<red>Reject Undo</red>"
-"menu.undo.request": "Request Undo"
 "menu.unready": "Cancel Ready"
 "menu.yacht.choose-score": "Choose Score Category"
 "menu.yacht.dice": "Dice: {dice}"
@@ -583,8 +572,6 @@
 "room.seat": "Seat {number}: {player}{ready}{turn}"
 "room.summary": "{phase} · {occupied}/{capacity} players"
 "room.turn": "← Current turn"
-"room.undo.paused": "<yellow>Waiting for undo approval; turn timer and moves are paused.</yellow><newline>"
-"room.undo.pending": "Waiting for undo approval<newline>"
 "room.unready": " · Not ready"
 
 # rules
@@ -647,6 +634,11 @@
 "status.starting": "Starting"
 
 # table
+"table.mahjong.assist.draw-discard": "Draw"
+"table.mahjong.assist.no-calls": "No Call"
+"table.mahjong.assist.win": "Win"
+"table.mahjong.assist.sort": "Sort"
+"table.mahjong.counters": "Riichi x{deposits}  Honba x{honba}"
 "table.card.color": "{color}"
 "table.card.pass": "Pass"
 "table.dice.choose": "Choose a plane"

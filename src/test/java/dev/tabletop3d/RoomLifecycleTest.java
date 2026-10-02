@@ -71,9 +71,6 @@ class RoomLifecycleTest {
                                         room.revision,
                                         new JsonPrimitive("move:e2:e4")),
                         () -> plugin.apply(room, 0, new JsonPrimitive("move:e2:e4"), null),
-                        () -> plugin.requestUndo(player, room),
-                        () -> plugin.approveUndo(player, room),
-                        () -> plugin.rejectUndo(player, room),
                         () -> plugin.rematch(player, room));
         for (Runnable action : actions) assertThrows(IllegalArgumentException.class, action::run);
         assertTrue(room.ready.isEmpty());

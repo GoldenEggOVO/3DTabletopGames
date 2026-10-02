@@ -91,6 +91,7 @@ public final class MahjongGame implements HandGame {
             roundSerial,
             discardCount;
     private Tiles.Tile drawnTile;
+    private Tiles.Tile winningTileInstance;
     private boolean anyCalls, kongDraw, discardAfterKong;
     private int preparationSeat, exchangeOffset;
     private String settlement = "";
@@ -198,6 +199,7 @@ public final class MahjongGame implements HandGame {
         winningHan = 0;
         winningFu = 0;
         winningTile = "";
+        winningTileInstance = null;
         forbiddenDiscards = java.util.Set.of();
         for (int tile = 0; tile < (taiwan != null ? 16 : 13); tile++)
             for (int offset = 0; offset < 4; offset++) take((dealer + offset) % 4, false);
@@ -324,9 +326,24 @@ public final class MahjongGame implements HandGame {
     }
 
     public String riichiDrawDiscard(int seat) {
-        if (!riichiDeclared(seat) || phase != Phase.TURN || seat != current || drawnTile == null)
-            return null;
-        return "discard:" + drawnTile.id();
+        return riichiDeclared(seat) ? drawDiscard(seat) : null;
+    }
+
+    public String drawDiscard(int seat) {
+        return phase == Phase.TURN && seat == current && drawnTile != null
+                ? "discard:" + drawnTile.id()
+                : null;
+    }
+
+    /** Reveal only settled riichi winners, including the claimed winning tile on ron. */
+    public List<Piece> revealedHand(int seat) {
+        if (!riichiProfile || !winners.contains(seat)
+                || phase != Phase.ROUND_END && phase != Phase.FINISHED) return List.of();
+        List<Piece> result = new ArrayList<>(hand(seat));
+        if (winningTileInstance != null
+                && result.stream().noneMatch(tile -> tile.id().equals(winningTileInstance.id())))
+            result.add(piece(winningTileInstance));
+        return List.copyOf(result);
     }
 
     public String riichiAutoDiscard(int seat) {
@@ -489,6 +506,7 @@ public final class MahjongGame implements HandGame {
             winners.clear();
             winners.add(seat);
             winningTile = drawnTile.face();
+            winningTileInstance = drawnTile;
             for (int other = 0; other < 4; other++)
                 if (other != seat && !finishedSeats.contains(other))
                     pay(other, seat, payment(seat, other, drawnTile, true));
@@ -759,6 +777,7 @@ public final class MahjongGame implements HandGame {
 
     private void finishRon() {
         winningTile = offered.face();
+        winningTileInstance = offered;
         if (offer != Offer.DISCARD) {
             hands.get(source).remove(offered);
             rivers.get(source).add(offered);

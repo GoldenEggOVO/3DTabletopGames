@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.9.4-SNAPSHOT
+
+- Make Browse Rooms a full-width catalogue text link, mutually exclusive with Resume Current Game.
+- Put Leave Room directly in the room menu and remove player undo commands, negotiations, timers and state.
+- Show five private Dora slots with concealed backs and riichi deposit/honba counters below them.
+- Add owner-only Riichi sort, auto-win, no-call and drawn-tile discard controls on the right rim. Brightness indicates state; action-bar hover text explains only the function.
+- Reveal settled winners' hands face-up, including the claimed winning tile for every Ron winner.
+
 ## 1.9.3-SNAPSHOT
 
 - Use solid dark table edges and a raised open Mahjong rim in the resource pack.

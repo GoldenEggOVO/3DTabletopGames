@@ -12,6 +12,62 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import java.util.*;
 
 class MahjongTableControlsTest {
+    @Test
+    void assistanceControlsArePrivateToggleBrightnessAndShowOnlyTheirExplanation() throws Exception {
+        var f = new HandTableTest.Fixture("mahjong");
+        when(f.game.publicInfo()).thenReturn(Map.of("profile", "riichi", "dora", "m1", "riichiSticks", "2", "honba", "3"));
+        f.room.revision++;
+        f.table.show(f.owner);
+        Object view = ((Map<?, ?>) TableViewTest.field(f.table, "privateViews")).get(f.owner.getUniqueId());
+        Map<?, ?> controls = (Map<?, ?>) TableViewTest.field(view, "assistanceButtons");
+        assertEquals(Set.of("sort", "win", "no-calls", "draw-discard"), controls.keySet());
+        Object control = controls.get("win");
+        List<org.bukkit.entity.Entity> parts = (List<org.bukkit.entity.Entity>) TableViewTest.field(control, "parts");
+        for (var part : parts) {
+            verify(part).setVisibleByDefault(false);
+            verify(f.spectator, never()).showEntity(f.plugin, part);
+            verify((org.bukkit.entity.Display) part).setBrightness(new org.bukkit.entity.Display.Brightness(7, 7));
+        }
+        var bounds = (org.bukkit.util.BoundingBox) TableViewTest.field(control, "bounds");
+        Location eye = bounds.getCenter().toLocation(f.world).add(.5, 0, 0);
+        assertEquals("assist:win", f.table.callHit(f.owner, eye, new Vector(-1, 0, 0)));
+        f.table.assistanceHint(f.owner, "@call:assist:win");
+        verify(f.owner).sendActionBar(Language.component("hint.mahjong.assist.win").colorIfAbsent(net.kyori.adventure.text.format.NamedTextColor.YELLOW));
+        assertFalse(f.table.toggleAssistance(f.spectator, "win"));
+        assertTrue(f.table.toggleAssistance(f.owner, "win"));
+        assertSame(control, controls.get("win"), "State changes reuse the control entities");
+        for (var part : (List<org.bukkit.entity.Entity>) TableViewTest.field(controls.get("win"), "parts"))
+            verify((org.bukkit.entity.Display) part, atLeastOnce()).setBrightness(new org.bukkit.entity.Display.Brightness(15, 15));
+        var counters = (org.bukkit.entity.TextDisplay) TableViewTest.field(view, "counters");
+        verify(counters, atLeastOnce()).text(Language.component("table.mahjong.counters", "deposits", "2", "honba", "3"));
+        f.table.clear(f.owner);
+        verify(counters).remove();
+        f.table.close();
+    }
+
+    @Test
+    void settledWinnerTilesArePublicFaceUpAndTheirPrivateHandIsRemoved() throws Exception {
+        var f = new HandTableTest.Fixture("mahjong");
+        var game = mock(dev.tabletop3d.rules.MahjongGame.class);
+        var winning = List.of(new dev.tabletop3d.rules.HandGame.Piece("winning", "m1"));
+        when(game.playerCount()).thenReturn(4);
+        when(game.handSize(0)).thenReturn(1);
+        when(game.hand(0)).thenReturn(winning);
+        when(game.revealedHand(0)).thenReturn(winning);
+        when(game.publicInfo()).thenReturn(Map.of("profile", "riichi"));
+        f.room.board = game;
+        f.room.revision++;
+        f.table.sync();
+        Object winner = ((Map<?, ?>) TableViewTest.field(f.table, "publicPieces")).get("winner:0:winning");
+        assertNotNull(winner);
+        Object spec = TableViewTest.field(winner, "spec");
+        assertFalse((boolean) TableViewTest.field(spec, "back"));
+        assertFalse((boolean) TableViewTest.field(spec, "standing"));
+        f.table.show(f.owner);
+        Object view = ((Map<?, ?>) TableViewTest.field(f.table, "privateViews")).get(f.owner.getUniqueId());
+        assertTrue(((Map<?, ?>) TableViewTest.field(view, "pieces")).isEmpty());
+        f.table.close();
+    }
     @BeforeEach
     void setup() {
         MockBukkit.mock();
@@ -319,7 +375,8 @@ class MahjongTableControlsTest {
                     ((Map<?, ?>) TableViewTest.field(f.table, "privateViews"))
                             .get(f.owner.getUniqueId());
             Map<?, ?> pieces = (Map<?, ?>) TableViewTest.field(own, "indicators");
-            assertEquals(3, pieces.size());
+            assertEquals(5, pieces.size());
+            assertTrue((boolean) TableViewTest.field(TableViewTest.field(pieces.get("dora:" + seat + ":slot-3"), "spec"), "back"));
             for (int i = 0; i < 3; i++) {
                 Object tile = pieces.get("dora:" + seat + ":d" + (i + 1));
                 assertNotNull(tile);
@@ -392,11 +449,11 @@ class MahjongTableControlsTest {
         f.room.revision++;
         f.table.sync();
         f.table.show(f.owner);
-        assertEquals(2, own.size());
-        assertEquals(1, peer.size());
+        assertEquals(5, own.size());
+        assertEquals(5, peer.size());
         assertSame(original, own.get("dora:0:d1"));
         f.table.show(f.spectator);
-        assertEquals(2, peer.size());
+        assertEquals(5, peer.size());
         originalBody.remove();
         f.table.show(f.owner);
         assertNotSame(original, own.get("dora:0:d1"));
@@ -772,16 +829,4 @@ class MahjongTableControlsTest {
         f.table.close();
     }
 
-    @Test
-    void pendingUndoRemovesCallsWithoutRequiringARevisionChange() {
-        var f = new HandTableTest.Fixture("mahjong");
-        when(f.game.legalActions(0)).thenReturn(List.of("pon:a,b", "pass"));
-        Location eye = f.origin.clone().add(-.125, .32, 1.8);
-        assertEquals("pon", f.table.callHit(f.owner, eye, new Vector(0, 0, -1)));
-        f.room.undo = new RoundActions.Undo(f.owner.getUniqueId(), 0, 30_000, Set.of());
-        assertNull(f.table.callHit(f.owner, eye, new Vector(0, 0, -1)));
-        f.room.undo = null;
-        assertEquals("pon", f.table.callHit(f.owner, eye, new Vector(0, 0, -1)));
-        f.table.close();
-    }
 }

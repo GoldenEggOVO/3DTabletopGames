@@ -87,7 +87,7 @@ class StockMenuUpgradeTest {
         Room room = f.addRoom(0);
         room.join(f.player.getUniqueId(), "Owner");
         room.phase = Room.Phase.PLAYING;
-        f.menus.roomOptions(f.player, room);
+        f.menus.room(f.player, room);
         var result =
                 layouts.load(
                         "dialog",
@@ -96,7 +96,7 @@ class StockMenuUpgradeTest {
                         f.buttons,
                         UUID.randomUUID());
         assertEquals(
-                List.of("leave", "back", "close"),
+                List.of("leave", "play", "back", "close"),
                 result.buttons().stream().map(GameMenus.Button::id).toList());
         assertEquals("My Exit", result.config().getString("Bottom.buttons.slot0.text"));
         assertEquals(222, result.config().getInt("Bottom.buttons.slot0.width"));

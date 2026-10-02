@@ -1,5 +1,17 @@
 # Verification and acceptance
 
+## Local build: 1.9.4-SNAPSHOT - Riichi assistance and simpler room navigation
+
+- JDK 25 / Maven package: **549 tests passed**, zero failures, errors or skipped tests. Python resource-pack tools: **14 tests passed**.
+- Main-menu room browsing is a full-width clickable header and is mutually exclusive with resume. Leave Room is direct; player undo commands, callbacks, state, timer branches, sounds and translations are removed. Saved history, replay, room recovery and rematches remain supported.
+- Riichi has five private Dora slots, revealed faces plus concealed backs, with deposit/honba counts below. Four private rim controls provide automatic sorting, automatic wins, skipped calls and drawn-tile discards. Hover shows only the function description in the action bar. Controls reuse their entities and distinguish enabled/disabled states using brightness 15/7.
+- Regressions cover legal action priority, pausing at wins, persistent unsorted order, owner-only displays, control reuse/removal and settled winner hands. Ron includes its physical claimed tile; multiple Ron hands reveal only after all responses settle. Tsumo cannot append a prior offered tile.
+- The exact shaded JAR passed three isolated native Purpur 26.2-2622 boots in `target/standalone-smoke-20261002-152831/`. Probe coverage includes native Display metadata, five Dora slots, private assistance/counters, room recovery and unseated browser navigation; proxy players do not verify connected-client input or visuals.
+- The same JAR passed three CraftEngine 26.8.2 boots in `target/standalone-smoke-20261002-153337`; all 111 registered item models loaded.
+- Resource-pack assets are unchanged: 111 models and nine sounds. Client visual/input acceptance remains pending; no production deployment or public Release is claimed.
+
+Verified JAR SHA-256: `42d6ab2210e4a08ef91c6af7cac676ffd17b45387f20c7d0b2592108221eca0e`.
+
 ## Local build: 1.8.7-SNAPSHOT — Fixed Spectator camera, longer sticks and model counts
 
 - JDK 25 / Maven package: **510 tests passed**, zero failures, errors or skipped tests. New regressions first failed for fixed mode/target, move cancellation, read-only clicks, stick length, interrupted-session recovery, rejected mode/camera transitions, camera eye clearance and spectator-menu teleports.
@@ -221,7 +233,7 @@ The server directory must contain the legally obtained Purpur 26.2 `purpur-2622.
 
 Three boots cover clean creation, restart recovery and copying a legacy ServerBoards folder. The probe additionally exercises real BlockDisplay transforms and removal for Connect Four, Reversi, Go and Chess, Dialog construction/callbacks using a simulated Player, permission denial, and duplicate command suggestions. It does not connect a Minecraft client.
 
-For continuous model/replay testing, `python tools/standalone-probe/run_soak.py --seconds 3600` prepares another isolated fixture on `127.0.0.1:25618`. It runs all eleven game kinds with bots, completes and restarts rounds, periodically undoes/replays moves, compares tracked model entities with live entities and checks cleanup after removing the rooms. It uses the same prepared server/cache and EULA prerequisites as the short probe. Duration is bounded to 60–7200 seconds.
+For continuous model/replay testing, `python tools/standalone-probe/run_soak.py --seconds 3600` prepares another isolated fixture on `127.0.0.1:25618`. It runs all eleven game kinds with bots, completes and restarts rounds, periodically replays moves, compares tracked model entities with live entities and checks cleanup after removing the rooms. It uses the same prepared server/cache and EULA prerequisites as the short probe. Duration is bounded to 60–7200 seconds.
 
 To check a snapshot from that synthetic fixture, copy its `plugins/3dtabletop/rooms.json` while the games are running, then pass the copy to `run_standalone.py --rooms-snapshot path/to/copy.json`. Synthetic fixtures with 1–32 rooms are accepted, including legacy Aeroplane and regional Mahjong; all players must be bots without return locations. The runner keeps the input unchanged, maps its anchors to the fresh test world, and checks room IDs, seeds, seats, positions, saved history and rule state on both restart and legacy-folder migration. Each boot reads its own new log so a previous success marker cannot end the next boot early.
 
@@ -233,7 +245,7 @@ The packager requires a passing three-boot receipt whose SHA-256 matches the exa
 - Reversi: flip several stones, observe both colors and interrupted consecutive updates; confirm the visible final face matches the game.
 - Go/Chess: repeatedly mark/unmark a dead group without stone jumps; inspect opposing knight headings and stone/base seams.
 - Text: default English, custom MiniMessage, old `&` colors, long names/translations, leave-confirmation label and menu title.
-- Flow: room pages, rules/help, direct menu placements, create/join/ready, bots, legal and denied actions, spectate, undo, rematch, leave, restart and resume.
+- Flow: room pages, rules/help, direct menu placements, create/join/ready, bots, legal and denied actions, spectate, rematch, leave, restart and resume.
 - Table area: create adjacent tables, try an overlapping placement, open a new table immediately and use both upper rack faces; walk more than six blocks away or change worlds and check collision/hunger behavior.
 
 Actual client visuals, smoothness, font appearance and input feel remain pending maintainer acceptance. Production deployment and Release publication are not part of this delivery.

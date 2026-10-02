@@ -23,9 +23,9 @@ final class CommandSuggestions {
             if (own != null && own.phase == Room.Phase.LOBBY)
                 base = Stream.concat(base, Stream.of("ready", "bots"));
             if (own != null && own.phase == Room.Phase.PLAYING)
-                base = Stream.concat(base, Stream.of("move", "undo"));
+                base = Stream.concat(base, Stream.of("move"));
             if (own != null && own.phase == Room.Phase.FINISHED)
-                base = Stream.concat(base, Stream.of("rematch", "undo"));
+                base = Stream.concat(base, Stream.of("rematch"));
             return filter(base, args[0]);
         }
         if (args.length == 2)

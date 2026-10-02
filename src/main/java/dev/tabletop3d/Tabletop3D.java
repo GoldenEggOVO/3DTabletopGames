@@ -236,7 +236,6 @@ public final class Tabletop3D extends JavaPlugin
                 case "leave" -> {
                     menus.confirmLeave(p);
                 }
-                case "undo" -> requestUndo(p, requireRoom(p));
                 case "rematch" -> rematch(p, requireRoom(p));
                 case "rules" -> {
                     Room r = room(p);
@@ -600,7 +599,7 @@ public final class Tabletop3D extends JavaPlugin
 
     void apply(Room r, int seat, JsonElement action, Player source) {
         requireLiveRoom(r);
-        if (r.phase != Room.Phase.PLAYING || r.busy || r.undo != null) return;
+        if (r.phase != Room.Phase.PLAYING || r.busy) return;
         if (arena.rolling(r)) {
             if (source != null) tell(source, Language.component("hint.roll.wait"));
             return;
@@ -652,7 +651,6 @@ public final class Tabletop3D extends JavaPlugin
         r.completed = true;
         r.result = result;
         r.ready.clear();
-        r.undo = null;
         r.changed = System.currentTimeMillis();
         if (first && !r.restoring && !(r.kind.equals("mahjong") && r.board.finished()))
             arena.sound(r, result.startsWith("winner:") ? TableSounds.WIN : TableSounds.DRAW);
@@ -666,47 +664,6 @@ public final class Tabletop3D extends JavaPlugin
             Player p = Bukkit.getPlayer(s.id());
             if (!s.bot() && p != null && allowed(p) && arena.atTableWorld(p, r)) menus.room(p, r);
         }
-    }
-
-    void requestUndo(Player p, Room r) {
-        if (!allowed(p)) return;
-        requireLiveRoom(r);
-        if (!arena.atTableWorld(p, r)) return;
-        if (arena.rolling(r)) {
-            tell(p, Language.component("hint.roll.wait"));
-            return;
-        }
-        RoundActions.request(r, p.getUniqueId(), System.currentTimeMillis());
-        if (r.undo.pending.isEmpty()) completeUndo(r);
-        else {
-            announce(r, Language.component("chat.undo.requested", "player", p.getName()));
-            showRoomToHumans(r);
-        }
-    }
-
-    void approveUndo(Player p, Room r) {
-        if (!allowed(p)) return;
-        requireLiveRoom(r);
-        if (!arena.atTableWorld(p, r)) return;
-        if (RoundActions.approve(r, p.getUniqueId(), System.currentTimeMillis())) completeUndo(r);
-        else showRoomToHumans(r);
-    }
-
-    void rejectUndo(Player p, Room r) {
-        if (!allowed(p)) return;
-        requireLiveRoom(r);
-        RoundActions.reject(r, p.getUniqueId());
-        announce(r, Language.component("chat.undo.cancelled"));
-        showRoomToHumans(r);
-    }
-
-    void completeUndo(Room r) {
-        RoundActions.apply(r);
-        arena.render(r);
-        arena.sound(r, TableSounds.UNDO);
-        save();
-        announce(r, Language.component("chat.undo.complete"));
-        showRoomToHumans(r);
     }
 
     void rematch(Player p, Room r) {
@@ -821,15 +778,6 @@ public final class Tabletop3D extends JavaPlugin
         long now = System.currentTimeMillis();
         pulse++;
         for (Room r : new ArrayList<>(rooms.values())) {
-            if (r.undo != null) {
-                if (now >= r.undo.expires) {
-                    r.undo = null;
-                    r.revision++;
-                    r.changed = now;
-                    announce(r, Language.component("chat.undo.expired"));
-                    showRoomToHumans(r);
-                } else continue;
-            }
             if (r.phase == Room.Phase.PAUSED) continue;
             for (Room.Seat s : r.seats)
                 if (!s.bot()) {
@@ -878,7 +826,8 @@ public final class Tabletop3D extends JavaPlugin
                             now - r.changed,
                             wait,
                             random,
-                            !r.offline.containsKey(s.id()));
+                            !r.offline.containsKey(s.id()),
+                            arena.mahjongAssistance(r, turn));
             if (choice != null) apply(r, turn, new JsonPrimitive(choice), null);
         }
         if (pulse % 30 == 0) save();

@@ -17,6 +17,18 @@ import java.util.*;
 
 class MenuFlowTest {
     @Test
+    void catalogueRoomBrowserAndResumeAreMutuallyExclusive() throws Exception {
+        var f = new Fixture();
+        Room room = f.addRoom(0);
+        f.menus.main(f.player);
+        assertTrue(f.buttons.stream().anyMatch(b -> b.id().equals("rooms")));
+        assertFalse(f.buttons.stream().anyMatch(b -> b.id().equals("resume")));
+        room.join(f.player.getUniqueId(), "Owner");
+        f.menus.main(f.player);
+        assertTrue(f.buttons.stream().anyMatch(b -> b.id().equals("resume")));
+        assertFalse(f.buttons.stream().anyMatch(b -> b.id().equals("rooms")));
+    }
+    @Test
     void closeCallbackEndsTheSessionAndSynchronizesFocusInput() throws Exception {
         Fixture f = new Fixture();
         f.plugin.comfort = mock(TableComfort.class);
@@ -221,7 +233,7 @@ class MenuFlowTest {
                 .action()
                 .run();
         verify(f.plugin).enterArena(f.player, r);
-        f.menus.roomOptions(f.player, r);
+        f.menus.room(f.player, r);
         assertFalse(f.buttons.stream().anyMatch(b -> b.id().equals("rules")));
         f.menus.rules(f.player, "chess");
         assertTrue(MessageText.plain(f.description).contains("castling"));
@@ -299,7 +311,7 @@ class MenuFlowTest {
 
     @Test
     void placeholderLabelsFollowNamedMessagesButCustomCaptionsStayUntouched() {
-        for (String id : List.of("bots", "play", "options")) {
+        for (String id : List.of("bots", "play", "leave")) {
             String source = "<white>@label@";
             var config = new YamlConfiguration();
             config.set("Bottom.buttons." + id + ".text", source);

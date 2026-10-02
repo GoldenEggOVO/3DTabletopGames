@@ -47,18 +47,16 @@ class MenuExperienceTest {
     }
 
     @Test
-    void playingRoomOptionsOmitDetailsPublicTableAndRules() throws Exception {
+    void playingRoomShowsLeaveDirectlyAndOmitsTheOptionsSubmenu() throws Exception {
         var f = new MenuFlowTest.Fixture();
         Room r = handRoom(f);
         f.menus.room(f.player, r);
-        assertEquals(List.of("play", "options", "back", "close"), ids(f));
+        assertEquals(List.of("play", "leave", "back", "close"), ids(f));
         assertFalse(
                 MessageText.plain(f.description)
                         .contains(MessageText.plain(RoomText.options(r.kind, r.options))));
-        click(f, "options");
-        assertEquals(List.of("leave", "back", "close"), ids(f));
-        click(f, "back");
-        assertTrue(ids(f).contains("play"));
+        click(f, "leave");
+        assertTrue(f.buttons.stream().anyMatch(b -> b.label().equals("Confirm Leave")));
     }
 
     @Test
@@ -99,19 +97,11 @@ class MenuExperienceTest {
         Room r = f.addRoom(0);
         r.join(f.player.getUniqueId(), "Owner");
         f.menus.room(f.player, r);
-        assertEquals(List.of("ready", "bots", "options", "back", "close"), ids(f));
-        assertEquals(
-                "Room Options",
-                f.buttons.stream()
-                        .filter(b -> b.id().equals("options"))
-                        .findFirst()
-                        .orElseThrow()
-                        .label());
+        assertEquals(List.of("ready", "bots", "leave", "back", "close"), ids(f));
         assertFalse(
                 MessageText.plain(f.description)
                         .contains(MessageText.plain(RoomText.options(r.kind, r.options))));
-        click(f, "options");
-        assertEquals(List.of("leave", "back", "close"), ids(f));
+        assertFalse(ids(f).contains("options"));
         assertFalse(
                 MessageText.plain(f.description)
                         .contains(MessageText.plain(RoomText.options(r.kind, r.options))));
@@ -138,7 +128,7 @@ class MenuExperienceTest {
                                                 Set.of("rules", "public-table").contains(b.id())
                                                         || b.label().equals("Room Details")),
                         kind + " " + phase);
-                click(f, "options");
+                assertFalse(ids(f).contains("options"));
                 assertTrue(
                         Collections.disjoint(ids(f), List.of("rules", "details", "public-table")),
                         kind + " options " + phase);
@@ -155,59 +145,12 @@ class MenuExperienceTest {
             f.menus.room(f.player, r);
             assertEquals(
                     Set.of("go", "go9", "go13").contains(kind)
-                            ? List.of("play", "pass", "options", "back", "close")
-                            : List.of("play", "options", "back", "close"),
+                            ? List.of("play", "pass", "leave", "back", "close")
+                            : List.of("play", "leave", "back", "close"),
                     ids(f),
                     kind);
             click(f, "play");
             verify(f.plugin).enterArena(f.player, r);
-            f.plugin.rooms.remove(r.id);
-        }
-    }
-
-    @Test
-    void chanceAndHiddenHandGamesOmitUndoWhileBoardGamesKeepIt() throws Exception {
-        var f = new MenuFlowTest.Fixture();
-        for (String kind :
-                List.of(
-                        "ludo",
-                        "aeroplane",
-                        "yacht",
-                        "color-eight",
-                        "mahjong",
-                        "chess",
-                        "checkers",
-                        "draughts",
-                        "xiangqi",
-                        "gomoku",
-                        "go",
-                        "go9",
-                        "go13",
-                        "reversi",
-                        "connectfour")) {
-            Room r = playingRoom(f, kind);
-            r.history.add(new com.google.gson.JsonPrimitive("played"));
-            for (Room.Phase phase : List.of(Room.Phase.PLAYING, Room.Phase.FINISHED)) {
-                r.phase = phase;
-                f.menus.roomOptions(f.player, r);
-                boolean boardGame =
-                        Set.of(
-                                        "chess",
-                                        "checkers",
-                                        "draughts",
-                                        "xiangqi",
-                                        "gomoku",
-                                        "go",
-                                        "go9",
-                                        "go13",
-                                        "reversi",
-                                        "connectfour")
-                                .contains(kind);
-                assertEquals(
-                        boardGame,
-                        f.buttons.stream().anyMatch(b -> b.label().equals("Request Undo")),
-                        kind + " " + phase);
-            }
             f.plugin.rooms.remove(r.id);
         }
     }
@@ -221,7 +164,7 @@ class MenuExperienceTest {
         verify(f.plugin)
                 .action(f.player, r, r.revision, new com.google.gson.JsonPrimitive("move:a7:a8:q"));
         click(f, "back");
-        assertEquals(List.of("play", "options", "back", "close"), ids(f));
+        assertEquals(List.of("play", "leave", "back", "close"), ids(f));
     }
 
     @Test
@@ -231,41 +174,36 @@ class MenuExperienceTest {
             Room r = playingRoom(f, kind);
             r.revision = 12;
             f.menus.room(f.player, r);
-            assertEquals(List.of("play", "pass", "options", "back", "close"), ids(f), kind);
+            assertEquals(List.of("play", "pass", "leave", "back", "close"), ids(f), kind);
             click(f, "pass");
             verify(f.plugin).action(f.player, r, 12, new com.google.gson.JsonPrimitive("pass"));
             r.board.apply(0, "pass");
             r.revision++;
             f.menus.room(f.player, r);
             assertEquals(
-                    List.of("play", "options", "back", "close"),
+                    List.of("play", "leave", "back", "close"),
                     ids(f),
                     "Only the current player can pass");
             r.board.apply(1, "pass");
             r.revision++;
             f.menus.room(f.player, r);
             assertEquals(
-                    List.of("play", "accept", "resume", "options", "back", "close"), ids(f), kind);
+                    List.of("play", "accept", "resume", "leave", "back", "close"), ids(f), kind);
             click(f, "accept");
             verify(f.plugin).action(f.player, r, 14, new com.google.gson.JsonPrimitive("accept"));
             r.board.apply(0, "accept");
             r.revision++;
             f.menus.room(f.player, r);
             assertEquals(
-                    List.of("play", "resume", "options", "back", "close"),
+                    List.of("play", "resume", "leave", "back", "close"),
                     ids(f),
                     "A confirmed player can still dispute scoring");
             click(f, "resume");
             verify(f.plugin).action(f.player, r, 15, new com.google.gson.JsonPrimitive("resume"));
             r.busy = true;
             f.menus.room(f.player, r);
-            assertEquals(List.of("play", "options", "back", "close"), ids(f));
+            assertEquals(List.of("play", "leave", "back", "close"), ids(f));
             r.busy = false;
-            r.undo = new RoundActions.Undo(f.player.getUniqueId(), 0, 30_000, Set.of());
-            f.menus.room(f.player, r);
-            assertTrue(
-                    Collections.disjoint(ids(f), List.of("pass", "accept", "resume")),
-                    "Undo pauses state actions");
         }
     }
 
@@ -274,7 +212,7 @@ class MenuExperienceTest {
         var f = new MenuFlowTest.Fixture();
         Room r = playingRoom(f, "color-eight");
         f.menus.room(f.player, r);
-        assertEquals(List.of("play", "options", "back", "close"), ids(f));
+        assertEquals(List.of("play", "leave", "back", "close"), ids(f));
         assertFalse(r.board.legalActions(0).contains("declare"));
     }
 

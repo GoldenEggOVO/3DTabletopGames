@@ -187,7 +187,7 @@ final class GameMenus implements AutoCloseable {
                             "resume",
                             Language.component("menu.resume"),
                             () -> plugin.resume(p, current)));
-        if (!plugin.rooms.isEmpty())
+        else if (!plugin.rooms.isEmpty())
             b.add(new Button("rooms", Language.component("setup.rooms"), () -> rooms(p)));
         for (String kind : Tabletop3D.GAMES)
             if (!Set.of("go9", "go13").contains(kind))
@@ -501,7 +501,6 @@ final class GameMenus implements AutoCloseable {
         else if (r.board != null)
             for (var message : r.board.messages())
                 text = text.append(BoardMessages.render(message)).append(Component.newline());
-        if (r.undo != null) text = text.append(Language.component("room.undo.paused"));
         if (r.phase == Room.Phase.FINISHED || r.phase == Room.Phase.PAUSED)
             text = text.append(RoomText.outcome(r, r.result));
         return text;
@@ -543,7 +542,7 @@ final class GameMenus implements AutoCloseable {
                                 forget(p);
                                 plugin.enterArena(p, r);
                             }));
-            if (r.board != null && !r.busy && r.undo == null) {
+            if (r.board != null && !r.busy) {
                 List<String> actions =
                         Set.of("go", "go9", "go13").contains(r.kind)
                                 ? List.of("pass", "accept", "resume")
@@ -568,20 +567,6 @@ final class GameMenus implements AutoCloseable {
                 }
             }
         }
-        if (r.undo != null) {
-            if (r.undo.pending.contains(p.getUniqueId()))
-                b.add(
-                        new Button(
-                                Language.component("menu.undo.approve"),
-                                () -> plugin.approveUndo(p, r)));
-            b.add(
-                    new Button(
-                            Language.component(
-                                    r.undo.requester.equals(p.getUniqueId())
-                                            ? "menu.undo.cancel"
-                                            : "menu.undo.reject"),
-                            () -> plugin.rejectUndo(p, r)));
-        }
         if (r.phase == Room.Phase.FINISHED)
             b.add(
                     new Button(
@@ -591,7 +576,7 @@ final class GameMenus implements AutoCloseable {
                                             ? "menu.rematch.waiting"
                                             : "menu.rematch"),
                             () -> plugin.rematch(p, r)));
-        b.add(new Button("options", Language.component("menu.options"), () -> roomOptions(p, r)));
+        b.add(new Button("leave", Language.component("menu.leave.title"), () -> confirmLeave(p)));
         show(p, RoomText.name(r), compactRoomSummary(r), b, () -> main(p), "room");
     }
 
@@ -640,8 +625,6 @@ final class GameMenus implements AutoCloseable {
                                                                 : "room.unready")));
             }
         if (r.phase == Room.Phase.FINISHED) text = text.append(RoomText.scores(r));
-        if (r.undo != null)
-            text = text.append(Component.newline()).append(Language.component("room.undo.pending"));
         if (r.phase == Room.Phase.FINISHED || r.phase == Room.Phase.PAUSED)
             text =
                     text.append(Component.newline())
@@ -679,8 +662,6 @@ final class GameMenus implements AutoCloseable {
                                             "state",
                                             state));
         }
-        if (r.undo != null)
-            text = text.append(Component.newline()).append(Language.component("room.undo.pending"));
         text = text.append(Component.newline()).append(RoomText.options(r.kind, r.options));
         text = text.append(RoomText.ranking(r));
         if (r.board instanceof dev.tabletop3d.rules.HandGame hand)
@@ -691,36 +672,6 @@ final class GameMenus implements AutoCloseable {
         if (r.phase == Room.Phase.FINISHED || r.phase == Room.Phase.PAUSED)
             text = text.append(Component.newline()).append(RoomText.outcome(r, r.result));
         return text;
-    }
-
-    void roomOptions(Player p, Room r) {
-        if (plugin.rooms.get(r.id) != r || r.seat(p.getUniqueId()) < 0) {
-            main(p);
-            return;
-        }
-        List<Button> b = new ArrayList<>();
-        if (Set.of(
-                                "xiangqi",
-                                "gomoku",
-                                "chess",
-                                "checkers",
-                                "draughts",
-                                "reversi",
-                                "go",
-                                "go9",
-                                "go13",
-                                "connectfour")
-                        .contains(r.kind)
-                && r.undo == null
-                && r.board != null
-                && !r.history.isEmpty()
-                && (r.phase == Room.Phase.PLAYING || r.phase == Room.Phase.FINISHED))
-            b.add(
-                    new Button(
-                            Language.component("menu.undo.request"),
-                            () -> plugin.requestUndo(p, r)));
-        b.add(new Button("leave", Language.component("menu.leave.title"), () -> confirmLeave(p)));
-        show(p, Language.component("menu.options"), compactRoomSummary(r), b, () -> room(p, r));
     }
 
     void yacht(Player p, Room r) {

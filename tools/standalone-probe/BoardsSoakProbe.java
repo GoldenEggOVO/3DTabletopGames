@@ -18,7 +18,7 @@ public final class BoardsSoakProbe extends JavaPlugin {
     private final List<Object> rooms=new ArrayList<>();
     private final Map<String,Integer> moves=new LinkedHashMap<>(),rounds=new LinkedHashMap<>();
     private final Map<UUID,Integer> lengths=new HashMap<>();
-    private long started;private int seconds,samples,undos,replays,peakEntities;private boolean finished;
+    private long started;private int seconds,samples,replays,peakEntities;private boolean finished;
     @Override public void onEnable(){Bukkit.getScheduler().runTaskLater(this,this::begin,80);}
     @SuppressWarnings("unchecked") private void begin(){
         try{
@@ -58,11 +58,6 @@ public final class BoardsSoakProbe extends JavaPlugin {
                     replay(room);rounds.merge(kind,1,Integer::sum);call(arena,"remove",new Class<?>[]{roomType},room);
                     invoke(roundType,null,"fresh",new Class<?>[]{roomType,long.class},room,2000L+rounds.get(kind));
                     call(arena,"platform",new Class<?>[]{int.class},(int)field(room,"table"));call(boards,"start",new Class<?>[]{roomType},room);
-                }else if(samples%180==0&&history.size()>2){
-                    int seat=history.get(history.size()-1).getAsJsonObject().get("seat").getAsInt();
-                    Object player=((List<?>)field(room,"seats")).get(seat);UUID actor=(UUID)call(player,"id",new Class<?>[0]);
-                    invoke(roundType,null,"request",new Class<?>[]{roomType,UUID.class,long.class},room,actor,System.currentTimeMillis());
-                    call(boards,"completeUndo",new Class<?>[]{roomType},room);undos++;replay(room);
                 }
                 lengths.put(id,((JsonArray)field(room,"history")).size());
             }
@@ -75,7 +70,7 @@ public final class BoardsSoakProbe extends JavaPlugin {
                 for(Object room:rooms)call(boards,"remove",new Class<?>[]{roomType},room);call(boards,"save",new Class<?>[0]);
                 int remaining=ownedEntities().size();require(remaining==0,"owned entities remain after room removal: "+remaining);
                 require(moves.values().stream().allMatch(n->n>0),"every game must make progress");
-                write(true,elapsed,remaining);finished=true;Bukkit.getScheduler().cancelTasks(this);getLogger().info("TABLETOP_SOAK_PASS elapsed="+elapsed+" moves="+moves+" rounds="+rounds+" undos="+undos+" replays="+replays);
+                write(true,elapsed,remaining);finished=true;Bukkit.getScheduler().cancelTasks(this);getLogger().info("TABLETOP_SOAK_PASS elapsed="+elapsed+" moves="+moves+" rounds="+rounds+" replays="+replays);
             }
         }catch(Throwable error){fail(error);}
     }
@@ -103,9 +98,12 @@ public final class BoardsSoakProbe extends JavaPlugin {
                 for(Object piece:((Map<?,?>)field(hand,"publicPieces")).values())addEntities(expected,(List<Entity>)field(piece,"parts"));
                 for(Object owner:((Map<?,?>)field(hand,"privateViews")).values()){
                     Entity remaining=(Entity)field(owner,"remaining");if(remaining!=null)addEntities(expected,List.of(remaining));
+                    Entity counters=(Entity)field(owner,"counters");if(counters!=null)addEntities(expected,List.of(counters));
                     for(Object match:((Map<?,?>)field(owner,"matches")).values())addEntities(expected,List.of((Entity)match));
                     for(Object piece:((Map<?,?>)field(owner,"pieces")).values())addEntities(expected,(List<Entity>)field(piece,"parts"));
                     for(Object button:((Map<?,?>)field(owner,"calls")).values())addEntities(expected,(List<Entity>)field(button,"parts"));
+                    for(Object button:((Map<?,?>)field(owner,"assistanceButtons")).values())addEntities(expected,(List<Entity>)field(button,"parts"));
+                    for(Object indicator:((Map<?,?>)field(owner,"indicators")).values())addEntities(expected,(List<Entity>)field(indicator,"parts"));
                 }
             }
         }
@@ -117,7 +115,7 @@ public final class BoardsSoakProbe extends JavaPlugin {
     }
     private Set<UUID> ownedEntities(){Set<UUID> ids=new HashSet<>();NamespacedKey key=new NamespacedKey("3dtabletop","board-cell");for(World world:Bukkit.getWorlds())for(Entity entity:world.getEntities())if(entity.isValid()&&entity.getPersistentDataContainer().has(key))ids.add(entity.getUniqueId());return ids;}
     private void write(boolean pass,long elapsed,int remaining)throws Exception{
-        JsonObject report=new JsonObject();report.addProperty("pass",pass);report.addProperty("elapsed_seconds",elapsed);report.addProperty("requested_seconds",seconds);report.addProperty("samples",samples);report.addProperty("undos",undos);report.addProperty("replays",replays);report.addProperty("peak_owned_entities",peakEntities);report.addProperty("final_owned_entities",remaining);report.add("moves",new Gson().toJsonTree(moves));report.add("rounds",new Gson().toJsonTree(rounds));
+        JsonObject report=new JsonObject();report.addProperty("pass",pass);report.addProperty("elapsed_seconds",elapsed);report.addProperty("requested_seconds",seconds);report.addProperty("samples",samples);report.addProperty("replays",replays);report.addProperty("peak_owned_entities",peakEntities);report.addProperty("final_owned_entities",remaining);report.add("moves",new Gson().toJsonTree(moves));report.add("rounds",new Gson().toJsonTree(rounds));
         Files.createDirectories(getDataFolder().toPath());Files.writeString(getDataFolder().toPath().resolve("soak.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));
     }
     private void fail(Throwable error){finished=true;getLogger().log(java.util.logging.Level.SEVERE,"TABLETOP_SOAK_FAIL",error);Bukkit.getScheduler().cancelTasks(this);}

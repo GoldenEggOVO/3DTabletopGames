@@ -29,7 +29,7 @@ final class CardTurnIndicator implements AutoCloseable {
 
     void sync() {
         int active =
-                room.phase == Room.Phase.PLAYING && room.undo == null
+                room.phase == Room.Phase.PLAYING
                         ? room.board.currentPlayer()
                         : -1;
         if (active < 0 || active >= room.seats.size()) {

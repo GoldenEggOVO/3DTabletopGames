@@ -31,6 +31,7 @@ final class HandTable implements AutoCloseable {
     private boolean buildingPacked;
     private long audienceGeneration = -1;
     private final Map<UUID, PrivateView> privateViews = new HashMap<>();
+    private final Map<UUID, MahjongAssist> assistance = new HashMap<>();
     private final List<Entity> furniture = new ArrayList<>();
     private TextDisplay deckLabel;
     private TurnRing turnRing;
@@ -444,9 +445,12 @@ final class HandTable implements AutoCloseable {
         final Map<String, PieceView> indicators = new LinkedHashMap<>();
         final Map<String, CallView> calls = new LinkedHashMap<>();
         final Map<String, CardButton> cardButtons = new LinkedHashMap<>();
+        final Map<String, CallView> assistanceButtons = new LinkedHashMap<>();
         final Map<String, Entity> matches = new LinkedHashMap<>();
         HandGame board;
         long revision = -1, language = -1;
+        long assistanceLanguage = -1;
+        int assistanceSeat = -1;
         int seat = -1, historySize;
         String hover;
         String callGroup;
@@ -454,6 +458,7 @@ final class HandTable implements AutoCloseable {
         Location pressedEye;
         long pressedAt;
         TextDisplay remaining;
+        TextDisplay counters;
         boolean callsEnabled;
         boolean packed;
         long dismissedRevision = -1;
@@ -467,6 +472,12 @@ final class HandTable implements AutoCloseable {
             pieces.clear();
             indicators.values().forEach(PieceView::remove);
             indicators.clear();
+            assistanceButtons.values().forEach(CallView::remove);
+            assistanceButtons.clear();
+            if (counters != null) {
+                counters.remove();
+                counters = null;
+            }
             clearCalls();
             if (remaining != null) {
                 remaining.remove();
@@ -584,24 +595,31 @@ final class HandTable implements AutoCloseable {
     private final class CallView {
         final List<Entity> parts;
         final BoundingBox bounds;
+        private Boolean enabled;
 
         CallView(String group, Pose pose, Player player, List<String> faces) {
+            this(group, pose, player, faces, Language.component("table.mahjong." + group), .34, null);
+        }
+
+        CallView(String group, Pose pose, Player player, List<String> faces,
+                Component caption, double width, Boolean enabled) {
             Location at = at(pose);
             String id = "@call:" + group;
-            BlockDisplay plate = block(at, Material.GRAY_CONCRETE, .34, .105, .014, id, player);
+            BlockDisplay plate = block(at, enabled == null ? Material.GRAY_CONCRETE : Material.GREEN_CONCRETE, width, .105, .014, id, player);
             var fit =
                     dev.tabletop3d.ui.LabelLayout.fit(
-                            Language.component("table.mahjong." + group), .30f, .06f);
+                            caption, (float) (width - .025), .06f);
             TextDisplay label =
                     text(
                             at.clone().add(rotated(0, .047, .010, pose)),
-                            fit.text().colorIfAbsent(NamedTextColor.GOLD),
+                            fit.text().colorIfAbsent(enabled == null ? NamedTextColor.GOLD : NamedTextColor.WHITE),
                             fit.scale(),
                             pose.yaw(),
                             false,
                             id,
                             player);
             parts = new ArrayList<>(List.of(plate, label));
+            if (enabled != null) setEnabled(enabled);
             for (int i = 0; i < faces.size(); i++) {
                 Vector offset = rotated((i - (faces.size() - 1) / 2.0) * .101, 0, 0, pose);
                 PieceView tile =
@@ -620,7 +638,7 @@ final class HandTable implements AutoCloseable {
                                 player);
                 parts.addAll(tile.parts);
             }
-            double half = Math.max(.17, faces.size() * .101 / 2),
+            double half = Math.max(width / 2, faces.size() * .101 / 2),
                     a = Math.toRadians(pose.yaw()),
                     x = Math.abs(Math.cos(a)) * half + Math.abs(Math.sin(a)) * .03,
                     z = Math.abs(Math.sin(a)) * half + Math.abs(Math.cos(a)) * .03;
@@ -636,6 +654,13 @@ final class HandTable implements AutoCloseable {
 
         boolean valid() {
             return parts.stream().allMatch(Entity::isValid);
+        }
+
+        void setEnabled(boolean enabled) {
+            if (Objects.equals(this.enabled, enabled)) return;
+            this.enabled = enabled;
+            int brightness = enabled ? 15 : 7;
+            for (Entity part : parts) ((Display) part).setBrightness(new Display.Brightness(brightness, brightness));
         }
 
         void remove() {
@@ -859,8 +884,16 @@ final class HandTable implements AutoCloseable {
                 && packPieces.values().stream().allMatch(PieceView::valid)) return;
         List<Spec> wanted = new ArrayList<>();
         for (int seat = 0; seat < game.playerCount(); seat++) {
+            List<HandGame.Piece> revealed = game instanceof MahjongGame tiles
+                    ? tiles.revealedHand(seat) : List.of();
             int count = Math.min(54, game.handSize(seat));
-            for (int i = 0; i < count; i++)
+            if (!revealed.isEmpty()) {
+                for (int i = 0; i < revealed.size(); i++) {
+                    var tile = revealed.get(i);
+                    wanted.add(new Spec("winner:" + seat + ":" + tile.id(), tile.face(),
+                            handPose(seat, game.playerCount(), i, revealed.size(), true), false, false, seat));
+                }
+            } else for (int i = 0; i < count; i++)
                 wanted.add(
                         new Spec(
                                 "back:" + seat + ":" + i,
@@ -1077,7 +1110,7 @@ final class HandTable implements AutoCloseable {
         PrivateView view =
                 privateViews.computeIfAbsent(player.getUniqueId(), id -> new PrivateView(player));
         view.packed = audience.packed(player);
-        boolean callsEnabled = mahjong && room.phase == Room.Phase.PLAYING && room.undo == null;
+        boolean callsEnabled = mahjong && room.phase == Room.Phase.PLAYING;
         if (view.board == game
                 && view.revision == room.revision
                 && view.language == Language.generation()
@@ -1086,13 +1119,17 @@ final class HandTable implements AutoCloseable {
                 && view.pieces.values().stream().allMatch(PieceView::valid)
                 && view.indicators.values().stream().allMatch(PieceView::valid)
                 && view.calls.values().stream().allMatch(CallView::valid)
-                && view.cardButtons.values().stream().allMatch(CardButton::valid)) return;
+                && view.cardButtons.values().stream().allMatch(CardButton::valid)
+                && view.assistanceButtons.values().stream().allMatch(CallView::valid)
+                && (view.counters == null || view.counters.isValid())) return;
         if ((view.seat != seat || view.board != game) && view.seat >= 0) {
             restoreBacks(player, view.seat);
             view.remove();
             view.dismissedRevision = -1;
         }
         List<HandGame.Piece> hand = game.hand(seat);
+        if (isRiichi(game)) hand = assistance(player).arrange(hand, view.pieces.keySet());
+        if (game instanceof MahjongGame tiles && !tiles.revealedHand(seat).isEmpty()) hand = List.of();
         List<Spec> wanted = new ArrayList<>();
         for (int i = 0; i < Math.min(54, hand.size()); i++) {
             HandGame.Piece piece = hand.get(i);
@@ -1120,21 +1157,34 @@ final class HandTable implements AutoCloseable {
             String[] faces = info.getOrDefault("dora", "").split(","),
                     ids = info.getOrDefault("doraIds", "").split(",");
             List<Spec> indicators = new ArrayList<>();
-            for (int i = 0; i < faces.length; i++)
-                if (!faces[i].isEmpty()) {
-                    String id = i < ids.length && !ids[i].isEmpty() ? ids[i] : Integer.toString(i);
-                    Pose frame = seatPose(seat, 4, (i - (faces.length - 1) / 2.0) * .101, 1.477);
+            for (int i = 0; i < (faces[0].isEmpty() ? 0 : 5); i++) {
+                    boolean revealed = i < faces.length && !faces[i].isEmpty();
+                    String id = revealed && i < ids.length && !ids[i].isEmpty() ? ids[i] : "slot-" + i;
+                    Pose frame = seatPose(seat, 4, (i - 2) * .101, 1.477);
                     indicators.add(
                             new Spec(
                                     "dora:" + seat + ":" + id,
-                                    faces[i],
+                                    revealed ? faces[i] : "back",
                                     new Pose(frame.x(), frame.z(), frame.yaw(), -.197),
-                                    false,
+                                    !revealed,
                                     true,
                                     seat));
                 }
             reconcile(view.indicators, indicators, player);
             for (PieceView piece : view.indicators.values()) piece.highlight(false);
+            if (!indicators.isEmpty()) {
+                if (view.counters == null) {
+                    Pose frame = seatPose(seat, 4, 0, 1.509);
+                    view.counters = text(at(new Pose(frame.x(), frame.z(), frame.yaw(), -.265)),
+                            Component.empty(), .11f, frame.yaw(), false, "@counters", player);
+                }
+                view.counters.text(Language.component("table.mahjong.counters",
+                        "deposits", info.getOrDefault("riichiSticks", "0"),
+                        "honba", info.getOrDefault("honba", "0")));
+            } else if (view.counters != null) {
+                view.counters.remove();
+                view.counters = null;
+            }
         }
         clearMatches(view);
         view.hover = null;
@@ -1167,6 +1217,7 @@ final class HandTable implements AutoCloseable {
         updatePlayable(view);
         view.callsEnabled = callsEnabled;
         buildCalls(view);
+        buildAssistance(view);
         if (!mahjong) buildCardButtons(view);
     }
 
@@ -1174,8 +1225,73 @@ final class HandTable implements AutoCloseable {
         return room.board instanceof ColorEightGame game ? game.pendingCard(view.seat) : null;
     }
 
+    private static boolean isRiichi(HandGame game) {
+        return game.publicInfo().getOrDefault("profile", "").equals("riichi");
+    }
+
+    private MahjongAssist assistance(Player player) {
+        return assistance.computeIfAbsent(player.getUniqueId(), id -> new MahjongAssist());
+    }
+
+    MahjongAssist assistance(int seat) {
+        if (!(room.board instanceof MahjongGame game) || !isRiichi(game)) return null;
+        return seat >= 0 && seat < room.seats.size() ? assistance.get(room.seats.get(seat).id()) : null;
+    }
+
+    private List<String> visibleMahjongActions(PrivateView view) {
+        List<String> legal = room.board.legalActions(view.seat);
+        return isRiichi((HandGame) room.board) ? assistance(view.player).visibleActions(legal) : legal;
+    }
+
+    private void buildAssistance(PrivateView view) {
+        boolean visible = mahjong && isRiichi((HandGame) room.board) && view.callsEnabled;
+        MahjongAssist preferences = assistance(view.player);
+        if (visible && view.assistanceSeat == view.seat
+                && view.assistanceLanguage == Language.generation()
+                && view.assistanceButtons.size() == MahjongAssist.Option.values().length
+                && view.assistanceButtons.values().stream().allMatch(CallView::valid)) {
+            for (MahjongAssist.Option option : MahjongAssist.Option.values())
+                view.assistanceButtons.get(option.id).setEnabled(preferences.enabled(option));
+            return;
+        }
+        view.assistanceButtons.values().forEach(CallView::remove);
+        view.assistanceButtons.clear();
+        if (!visible) return;
+        int index = 0;
+        for (MahjongAssist.Option option : MahjongAssist.Option.values()) {
+            Pose frame = seatPose(view.seat, 4, 1.40, .98 - index++ * .16);
+            view.assistanceButtons.put(option.id, new CallView("assist:" + option.id,
+                    new Pose(frame.x(), frame.z(), frame.yaw(), .08), view.player, List.of(),
+                    Language.component("table.mahjong.assist." + option.id), .12, preferences.enabled(option)));
+        }
+        view.assistanceSeat = view.seat;
+        view.assistanceLanguage = Language.generation();
+    }
+
+    boolean toggleAssistance(Player player, String option) {
+        if (!eligible(player) || !isRiichi((HandGame) room.board) || room.phase != Room.Phase.PLAYING) return false;
+        if (!assistance(player).toggle(option)) return false;
+        PrivateView view = privateViews.get(player.getUniqueId());
+        if (view != null) view.revision = -1;
+        show(player);
+        return true;
+    }
+
+    void assistanceHint(Player player, String selected) {
+        PrivateView view = privateViews.get(player.getUniqueId());
+        if (view == null) return;
+        String prefix = "@call:assist:";
+        if (selected != null && selected.startsWith(prefix)) {
+            String option = selected.substring(prefix.length());
+            for (MahjongAssist.Option candidate : MahjongAssist.Option.values())
+                if (candidate.id.equals(option))
+                    player.sendActionBar(Language.component("hint.mahjong.assist." + option)
+                            .colorIfAbsent(NamedTextColor.YELLOW));
+        }
+    }
+
     private void buildCardButtons(PrivateView view) {
-        if (room.phase != Room.Phase.PLAYING || room.undo != null) return;
+        if (room.phase != Room.Phase.PLAYING) return;
         List<String> legal = room.board.legalActions(view.seat);
         String pending = pendingCard(view);
         PieceView piece = pending == null ? null : view.pieces.get(pending);
@@ -1233,7 +1349,7 @@ final class HandTable implements AutoCloseable {
         view.clearCalls();
         if (!view.callsEnabled || view.dismissedRevision == room.revision) return;
         HandGame game = (HandGame) room.board;
-        var groups = MahjongControls.groups(game.legalActions(view.seat));
+        var groups = MahjongControls.groups(visibleMahjongActions(view));
         Map<String, String> buttons = new LinkedHashMap<>();
         if ("riichi".equals(view.callGroup)) {
             buttons.put("back", "back");
@@ -1282,7 +1398,7 @@ final class HandTable implements AutoCloseable {
             return true;
         }
         if (!Set.of("chi", "pon", "kan", "riichi").contains(group)) return false;
-        if (MahjongControls.groups(((HandGame) room.board).legalActions(view.seat))
+        if (MahjongControls.groups(visibleMahjongActions(view))
                 .getOrDefault(group, List.of())
                 .isEmpty()) return false;
         view.callGroup = group;
@@ -1517,6 +1633,13 @@ final class HandTable implements AutoCloseable {
                 selected = call.getKey();
             }
         }
+        for (var button : view.assistanceButtons.entrySet()) {
+            var hit = button.getValue().bounds.rayTrace(eye.toVector(), ray, nearest);
+            if (hit != null) {
+                nearest = hit.getHitPosition().distance(eye.toVector());
+                selected = "assist:" + button.getKey();
+            }
+        }
         if (selected == null
                 || origin.getWorld()
                                 .rayTraceBlocks(
@@ -1532,7 +1655,7 @@ final class HandTable implements AutoCloseable {
     void tick() {
         sync();
         if (turnRing != null) turnRing.tick();
-        if (packedRing != null && room.phase == Room.Phase.PLAYING && room.undo == null) {
+        if (packedRing != null && room.phase == Room.Phase.PLAYING) {
             ringAngle += ringDirection * .024;
             packedRing.setRotation((float) Math.toDegrees(-ringAngle), 0);
         }
@@ -1782,6 +1905,7 @@ final class HandTable implements AutoCloseable {
                             view.remove();
                         });
         privateViews.clear();
+        assistance.clear();
         publicPieces.values().forEach(PieceView::remove);
         publicPieces.clear();
         furniture.forEach(Entity::remove);

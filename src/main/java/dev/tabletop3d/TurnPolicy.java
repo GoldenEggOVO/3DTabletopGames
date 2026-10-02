@@ -21,6 +21,18 @@ final class TurnPolicy {
             long timeout,
             Random random,
             boolean present) {
+        return choose(game, seat, bot, elapsed, timeout, random, present, null);
+    }
+
+    static String choose(BoardGame game, int seat, boolean bot, long elapsed, long timeout,
+            Random random, boolean present, MahjongAssist assistance) {
+        if (!bot && present && game instanceof MahjongGame mahjong && assistance != null) {
+            String choice = assistance.choose(mahjong, seat, elapsed);
+            if (choice != null) return choice;
+            if (assistance.enabled(MahjongAssist.Option.DRAW_DISCARD)
+                    && mahjong.legalActions(seat).stream().anyMatch(action -> action.equals("ron") || action.equals("tsumo")))
+                return null;
+        }
         if (!bot && game instanceof MahjongGame mahjong && mahjong.riichiDeclared(seat)) {
             var legal = game.legalActions(seat);
             if (legal.contains("ron") || legal.contains("tsumo")) return null;

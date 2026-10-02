@@ -52,7 +52,7 @@ final class GameMenuLayouts {
             config.loadFromString(text);
             if (page.equals("catalog")) {
                 config.set("Bottom.columns", 2);
-                config.set("Bottom.header-buttons", List.of("resource-pack", "resume"));
+                config.set("Bottom.header-buttons", List.of("resource-pack", "resume", "rooms"));
             }
             return render(config, title, description, buttons, token);
         } catch (Exception ex) {

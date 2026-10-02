@@ -66,7 +66,7 @@ class TurnRingTest {
     }
 
     @Test
-    void pausesOutsidePlayingAndWhileUndoIsPending() {
+    void pausesOutsidePlayingAndResumesDuringPlay() {
         Fixture f = new Fixture();
         for (Room.Phase phase : Room.Phase.values()) {
             if (phase == Room.Phase.PLAYING) continue;
@@ -76,11 +76,7 @@ class TurnRingTest {
             assertEquals(before, positions(f.parts), "The ring must stay still in " + phase);
         }
         f.base.room.phase = Room.Phase.PLAYING;
-        f.base.room.undo = new RoundActions.Undo(UUID.randomUUID(), 0, 30_000, Set.of());
         List<Location> before = positions(f.parts);
-        f.ring.tick();
-        assertEquals(before, positions(f.parts));
-        f.base.room.undo = null;
         f.ring.tick();
         assertMovesInSeatOrder(before, positions(f.parts), f.base.origin, 1);
     }

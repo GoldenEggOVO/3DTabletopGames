@@ -13,9 +13,9 @@ Public Mahjong tiles now use the same width as hand tiles, and the central wall 
 3. Open **Detailed Rules** when you want to change the defaults. Click settings to cycle their values and use next/previous for additional pages. **Back** retains your choices and returns to basic setup.
 4. Choose **Create Room** for friends, or **Start with Bots**. Friends join the room and ready up; the host can fill remaining seats with bots after the other humans are ready.
 
-**Rules lock when the room is created.** Joining players use those rules; undo and rematch retain them. To change rules, create another room. `/3dtabletop create <kind> [players]` creates a room with default rules; use Game Setup to customize them.
+**Rules lock when the room is created.** Joining players use those rules; rematches retain them. To change rules, create another room. `/3dtabletop create <kind> [players]` creates a room with default rules; use Game Setup to customize them.
 
-The lobby prioritizes readiness and starting. Playing rooms return to the physical table and do not offer full hand/board move selectors. Necessary Go pass/scoring actions remain separate legal-state buttons; Color Eight pass and wild-color controls are on the table. Room options offer undo only for deterministic board games; leaving remains available. Help/Details entries are removed. All Close buttons share the same bottom exit, red bracketed caption and width, including customized layouts; installed YAML bytes are preserved.
+The lobby prioritizes readiness and starting. Playing rooms return to the physical table and do not offer full hand/board move selectors. Necessary Go pass/scoring actions remain separate legal-state buttons; Color Eight pass and wild-color controls are on the table. Leave Room is directly available in the room menu; player undo is removed. Help/Details entries are removed. All Close buttons share the same bottom exit, red bracketed caption and width, including customized layouts; installed YAML bytes are preserved.
 
 | Game | Players | Setup choices |
 | --- | --- | --- |
@@ -121,7 +121,7 @@ Bots are casual opponents. Mahjong bots complete the exchange without repeatedly
 
 ## Physical dice stand
 
-New Ludo rooms include a separate dice stand beside the board. Leave space for both the main table and the stand when creating the room. Click the die/stand when it is your turn to roll; wait for it to settle before moving. World input, menu/command moves, bot moves and new undo requests are blocked during the animation; retry once the die settles. The displayed result comes from the room's rule state, so the animation cannot change the outcome.
+New Ludo rooms include a separate dice stand beside the board. Leave space for both the main table and the stand when creating the room. Click the die/stand when it is your turn to roll; wait for it to settle before moving. World input, menu/command moves, and bot moves are blocked during the animation; retry once the die settles. The displayed result comes from the room's rule state, so the animation cannot change the outcome.
 
 Saved older rooms retain their original world position and compact dice presentation. Recovery displays the saved result at rest instead of replaying an old throw. No resource pack is required for the stand, cards or tiles.
 
@@ -129,7 +129,7 @@ Saved older rooms retain their original world position and compact dice presenta
 
 - Schema 1 room files retain their IDs, seats, seeds, action history and world anchors. New records also store the selected rules, host identity and dice-stand layout.
 - Missing option fields use the legacy defaults. Existing Ludo histories keep automatic first-pawn deployment, no blocking, exact arrival and first-place completion.
-- Recovery and undo replay the saved game with its saved options. Rematches keep the rules and host while using a fresh shuffle/dice sequence and a fresh random first-seat choice where selected.
+- Recovery replays the saved game with its saved options. Rematches keep the rules and host while using a fresh shuffle/dice sequence and a fresh random first-seat choice where selected.
 - Unknown rule options or unsupported rule versions are rejected instead of silently changing a saved game.
 - Existing language and menu customizations are preserved; missing text falls back to bundled English.
 - Original 1.7.0 stock setup, room and hand templates use the new layout in memory after content matching, without changing installed file bytes. Customized layouts keep their ordering and styles; back up and manually merge new templates when desired. Schema 1 and the four remaining Mahjong profiles keep their rules; removed-profile saves are rejected as described in migration.
@@ -140,13 +140,21 @@ See [migration](migration.md) for upgrades and older room imports. The [Nintendo
 
 - A normal tile has four copies: own hand 2 / public 0 → Remaining 2; own 1 / public 1 → Remaining 2. Public rivers, melds, indicator tiles and offered tiles are counted once by physical ID. Red and normal fives share a type. The count is unseen copies, which can be in opponents’ hands or the dead wall; it is not a prediction of future draws. The central count is the rules engine’s actual drawable wall count.
 - Hands up to 17 tiles occupy one row. Call previews and unseen-copy labels are visible only to their owner; stale choices are rechecked against current legal actions.
-- The timer shares the actual human/bot/offline turn deadline and pauses for suspended play or pending undo. No second timer or rule change is introduced.
+- The timer shares the actual human/bot/offline turn deadline and pauses for suspended play. No second timer or rule change is introduced.
 - Shift focus requires a seat, permission and proximity. Holding Shift temporarily enters Spectator mode with a private fixed camera. Position and orientation stay fixed, and the player and equipment do not enter the view. This view is read-only; release restores the entry game mode, pose, flight, gravity and invisibility before playing. The eye position keeps the previous 1-block inward and 0.2-block downward adjustment; standing hands and inset indicators may lie behind the camera. Menus, leaving, death, external teleports and shutdown restore temporary state. A cancelled game-mode restoration retains the fixed camera and retries on sync; an interrupted session records restoration state for login/reload. External mode changes keep their own mode. A blocked or cancelled return teleport is respected. Native client camera behavior and the Shift + right-click interaction packet still require in-game acceptance. Riichi sticks are now 0.24 blocks long, twice the previous length, with the same two entities each.
 
 ### Mahjong artwork, indicators and bonus hints
 
-Public Dora indicator tiles are inset into the center of all four wooden front aprons and face outward toward each owner. These are repeated views of the same physical indicators, not extra tiles in the wall. Each river starts with six tiles left-to-right near the center, then fills rows toward its owner. Character, wind, dragon and flower inscriptions use native stroke models.
+Five owner-only Dora indicator slots are inset into the center of each wooden front apron and face outward toward that owner. Initially one is revealed; each Kan reveals another, up to five. The concealed backs reveal no tile identity. Riichi deposits (1000 points each) and honba counters are shown underneath. These are repeated views of the same physical indicators, not extra tiles in the wall. Each river starts with six tiles left-to-right near the center, then fills rows toward its owner. Character, wind, dragon and flower inscriptions use native stroke models.
 
 In Riichi, Dora and red fives have a native enchanted ItemDisplay overlay over the original artwork. Own hand overlays remain owner-only; public rivers and exposed melds show them to everyone. Indicators update these hints after Kan. Indicator tiles themselves are not automatically Dora, concealed backs stay unmarked, and hidden Ura Dora is not hinted before disclosure. This presentation adds no scoring or yaku changes: Dora contributes bonus han but cannot supply the required yaku. Minecraft client glint appearance remains a visual acceptance item.
 
 See [native display counts](model-counts.zh-CN.md) for entity costs; no client FPS measurement has been performed.
+
+### Riichi assistance and settled hands
+
+Four owner-only controls run along the right rim: Sort, Win, No Call and Draw. Only Sort is enabled by default. On and off share the same model; brightness distinguishes their state. Aim at a control for a function-only action-bar explanation. Preferences remain with that player at the current table. Turning Sort off freezes the existing order and appends new tiles at the right.
+
+Win takes only a legal Ron or Tsumo. No Call declines opponent Chi/Pon/open Kan while retaining wins and the player's own Kans. Draw discards only the newly drawn tile after the normal short delay and pauses for a legal win; Win takes precedence when both are enabled. Automatic actions use the same validation, sound and saved-history path as manual actions.
+
+After settlement, each Riichi winner's concealed hand lies face-up on the table for all viewers. Ron includes the claimed tile without modifying the stored concealed hand. Multiple Ron winners each show a full winning hand; hands are not exposed while claims are pending.

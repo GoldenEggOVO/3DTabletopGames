@@ -97,18 +97,14 @@
 "chat.table.removed": "这张桌子已被删除。"
 "chat.table.started": "这张桌子已开局，暂时不能加入。"
 "chat.table.unavailable": "桌位接口暂不可用。"
-"chat.undo.cancelled": "悔棋申请已取消，继续对局。"
-"chat.undo.complete": "已撤销上一回合及之后的回应，骰子仍沿用原随机序列。"
-"chat.undo.expired": "悔棋申请超时，继续原对局。"
-"chat.undo.requested": "{player} 申请撤销上一回合，30秒内请在房间菜单同意或拒绝。"
 
 # color-eight
 "color-eight.turn": "{player} 的回合"
 
 # error
+"error.game-changed": "对局已更新，请重新打开牌桌"
 "error.aeroplane-chess-supports-2-4-players": "飞行棋支持 2 到 4 人"
 "error.board-world-ownership-marker-is-invalid-world": "棋牌世界归属标记无效，未修改世界"
-"error.cannot-request-an-undo-now": "当前不能申请悔棋"
 "error.captures-are-mandatory-continue-capture-chains-with-the-same-piece": "有吃必吃；连跳必须用同一枚棋子完成"
 "error.chinese-checkers-supports-2-3-4-or-6-players": "标准跳棋支持 2、3、4 或 6 人"
 "error.choose-available-dice-or-an-empty-score-category": "请选择可用骰子或尚未填写的计分项"
@@ -116,7 +112,6 @@
 "error.color-eight.players": "Color Eight 需要 2 至 5 人"
 "error.existing-world-is-not-owned-by-this": "已有世界不属于棋牌插件；未修改，请配置新的空世界名称"
 "error.finish-this-game-before-starting-a-rematch": "结束本局后才能再来一局"
-"error.game-changed-or-an-undo-is-pending": "对局已更新或正在协商悔棋，请重新打开牌桌"
 "error.game-type-cannot-be-empty": "游戏类型不能为空"
 "error.game.unknown": "未知游戏：{game}"
 "error.go-supports-9-9-13-13-and-19-19": "围棋提供9、13、19路"
@@ -139,7 +134,6 @@
 "error.mahjong.action": "请选择合法麻将操作"
 "error.mahjong.profile": "未知麻将规则：{profile}"
 "error.menu-template": "无法读取菜单模板 {file}，请联系管理员检查"
-"error.no-pending-undo-request": "没有待处理的悔棋申请"
 "error.only-the-host-can-add-bots": "仅房主可以添加陪练"
 "error.page-changed": "页面已更新，请重新打开"
 "error.repeated-position-or-no-liberties": "此步重复局面或没有气"
@@ -159,14 +153,11 @@
 "error.this-game-requires-two-players": "此游戏需要两人"
 "error.this-room-is-full-or-has-started": "这个房间已经满员或开局"
 "error.tray-space": "Leave clear space on the east side of the table for the dice stand."
-"error.undo-request-expired-or-does-not-need": "悔棋申请已失效或无需你确认"
 "error.unsupported-game-or-player-count": "不支持的游戏或人数"
 "error.use-3dtabletop-resume-to-return-to-the": "请先用 /3dtabletop resume 回到棋桌所在世界"
-"error.wait-for-the-other-human-players-to": "需等待其他真人玩家同意"
 "error.wait-for-the-other-players-to-ready": "请等待其他玩家准备"
 "error.waiting-for-tablemates-to-ready-for-a": "等待同桌玩家准备重开"
 "error.yacht-dice-supports-2-4-players": "快艇骰子支持2–4人"
-"error.you-have-no-turn-to-undo": "你还没有可撤销的回合"
 "error.you-have-not-joined-a-room": "你尚未加入房间"
 "error.you-must-bracket-and-flip-at-least-one-opponent-disc": "必须夹住并翻转至少一枚对方棋子"
 
@@ -240,6 +231,10 @@
 "hand.winning-patterns": "Winning patterns: {patterns}"
 
 # hint
+"hint.mahjong.assist.sort": "自动整理手牌；关闭后保留当前排列。"
+"hint.mahjong.assist.win": "有合法和牌机会时自动荣和或自摸。"
+"hint.mahjong.assist.no-calls": "跳过吃、碰和明杠；仍可和牌及进行自己的杠。"
+"hint.mahjong.assist.draw-discard": "自动打出刚摸到的牌；可以和牌时暂停。"
 "hint.act": "点击操作"
 "hint.busy": "Updating the board…"
 "hint.cancelled": "已取消选择"
@@ -274,7 +269,6 @@
 "hint.selected": "已选中 · 蓝点为合法落点 · 再点棋子取消"
 "hint.starting": "Preparing the game…"
 "hint.unavailable": "这里暂不能操作"
-"hint.undo": "Waiting for undo approval · Open the room menu"
 "hint.wait": "等待你的回合"
 
 # language
@@ -392,7 +386,6 @@
 "menu.observe.refresh": "刷新公开牌局"
 "menu.observe.title": "{room} · 观战"
 "menu.observe.visit": "前往棋盘旁"
-"menu.options": "房间选项"
 "menu.pieces.description": "选择棋子，再选择落点；也可以直接点击世界里的棋盘。"
 "menu.pieces.empty": "现在没有可操作的棋子，请等待你的回合。"
 "menu.pieces.option": "{piece} · {count}种走法"
@@ -414,10 +407,6 @@
 "menu.rooms.view": "View"
 "menu.rules": "Rules & Help"
 "menu.title": "3D Tabletop Games"
-"menu.undo.approve": "§a同意悔棋"
-"menu.undo.cancel": "取消悔棋申请"
-"menu.undo.reject": "§c拒绝悔棋"
-"menu.undo.request": "申请悔棋"
 "menu.unready": "取消准备"
 "menu.yacht.choose-score": "选择计分项"
 "menu.yacht.dice": "骰子：{dice}"
@@ -583,8 +572,6 @@
 "room.seat": "Seat {number}: {player}{ready}{turn}"
 "room.summary": "{phase} · {occupied}/{capacity} players"
 "room.turn": "← 当前回合"
-"room.undo.paused": "§e正在等待悔棋确认，暂时停止计时和落子。\n"
-"room.undo.pending": "等待悔棋确认\n"
 "room.unready": "· 未准备"
 
 # rules
@@ -647,6 +634,11 @@
 "status.starting": "正在准备"
 
 # table
+"table.mahjong.assist.draw-discard": "切"
+"table.mahjong.assist.no-calls": "鸣"
+"table.mahjong.assist.win": "和"
+"table.mahjong.assist.sort": "理"
+"table.mahjong.counters": "供托×{deposits}  本场×{honba}"
 "table.card.color": "{color}"
 "table.card.pass": "Pass"
 "table.dice.choose": "请选择飞机"

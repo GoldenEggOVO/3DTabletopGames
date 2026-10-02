@@ -125,8 +125,11 @@ class TableSoundsTest {
         var f = new TableViewTest.Fixture("gomoku", "place:0,0");
         f.room.revision++;
         f.view.sync();
-        RoundActions.request(f.room, f.room.seats.getFirst().id(), 0);
-        RoundActions.apply(f.room);
+        f.room.board = f.room.newBoard();
+        for (var event : f.room.history) {
+            var record = event.getAsJsonObject();
+            f.room.board.applyRecorded(record.get("seat").getAsInt(), record.get("action").getAsString());
+        }
         f.view.sync();
         verify(f.world, never())
                 .playSound(any(Location.class), any(Sound.class), anyFloat(), anyFloat());
@@ -239,7 +242,7 @@ class TableSoundsTest {
     }
 
     @Test
-    void restoreIsSilentButNewRoundsUndoAndResultsHaveDedicatedCues() throws Exception {
+    void restoreIsSilentButNewRoundsAndResultsHaveDedicatedCues() throws Exception {
         var f = application("gomoku");
         f.room.restoring = true;
         f.plugin.start(f.room);
@@ -260,15 +263,6 @@ class TableSoundsTest {
                         anyFloat(),
                         eq(TableSounds.START.pitch()));
         f.plugin.apply(f.room, 0, new JsonPrimitive("place:0,0"), null);
-        RoundActions.request(f.room, f.room.seats.getFirst().id(), 0);
-        f.plugin.completeUndo(f.room);
-        verify(f.world)
-                .playSound(
-                        any(Location.class),
-                        eq(TableSounds.UNDO.sound()),
-                        eq(SoundCategory.BLOCKS),
-                        anyFloat(),
-                        eq(TableSounds.UNDO.pitch()));
         f.plugin.finish(f.room, "winner:0");
         f.plugin.finish(f.room, "winner:0");
         verify(f.world, times(1))
@@ -583,7 +577,6 @@ class TableSoundsTest {
         doCallRealMethod().when(f.plugin).start(any());
         doCallRealMethod().when(f.plugin).prepareSeats(any());
         doCallRealMethod().when(f.plugin).finish(any(), anyString());
-        doCallRealMethod().when(f.plugin).completeUndo(any());
         return f;
     }
 }

@@ -278,7 +278,16 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                         }
                     }
                     require(glints>0,"live owner bonus tile has an ItemDisplay glint");
-                    var indicators=(Map<?,?>)field(own,"indicators");require(indicators.size()==1,"owner gets one initial inset Dora indicator");
+                    var indicators=(Map<?,?>)field(own,"indicators");require(indicators.size()==5,"owner gets five inset Dora slots");
+                    long faces=0;for(Object tile:indicators.values())if(!(boolean)field(field(tile,"spec"),"back"))faces++;
+                    require(faces==1,"only the initial Dora indicator is revealed");
+                    var assists=(Map<?,?>)field(own,"assistanceButtons");require(assists.size()==4,"owner gets four Riichi assistance controls");
+                    for(Object button:assists.values())for(Object item:(List<?>)field(button,"parts")){
+                        var part=(org.bukkit.entity.Entity)item;privateParts.add(part);
+                        require(part.isValid()&&!part.isVisibleByDefault(),"assistance control is private");
+                    }
+                    var counters=(org.bukkit.entity.Entity)field(own,"counters");privateParts.add(counters);
+                    require(counters.isValid()&&!counters.isVisibleByDefault(),"Dora counters are private");
                     require(((Map<?,?>)field(hand,"publicPieces")).keySet().stream().noneMatch(key->key.toString().startsWith("dora:")),"Dora indicator models are not public");
                     for(Object piece:indicators.values())for(Object item:(List<?>)field(piece,"parts")){
                         var part=(org.bukkit.entity.Entity)item;privateParts.add(part);
@@ -377,6 +386,12 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         Class<?> roomType=Class.forName("dev.tabletop3d.Room",true,plugin.getClass().getClassLoader());
         var constructor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class);constructor.setAccessible(true);
         try {
+            for(Object room:rooms.values())if((int)call(room,"seat",new Class<?>[]{UUID.class},player.getUniqueId())>=0){
+                call(menus,"main",new Class<?>[]{Player.class},player);
+                require(!clickMenu(menus,player,"id","rooms"),"seated player cannot browse other rooms from the catalog");
+                require(!menuLabel(menus,player,"resume").isEmpty(),"seated player can resume");
+            }
+            player=player(player.getWorld(),new AtomicInteger(),true,UUID.randomUUID());
             for(int i=0;i<25;i++){UUID id=UUID.randomUUID();rooms.put(id,constructor.newInstance(id,"chess",2,1L,i));added.add(id);}
             call(menus,"games",new Class<?>[]{Player.class,String.class},player,"chess");Set<String> seen=new HashSet<>();
             for(int page=0;page<4;page++){

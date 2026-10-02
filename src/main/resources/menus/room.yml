@@ -29,7 +29,7 @@ Bottom:
       text: '<white>@label@'
       width: 330
       actions: [close]
-    options:
+    leave:
       text: '<gray>@label@'
       width: 330
       actions: [close]

@@ -3,7 +3,7 @@ Title: '<white>@title@'
 Bottom:
   type: multi
   columns: 2
-  header-buttons: [resource-pack, resume]
+  header-buttons: [resource-pack, resume, rooms]
   buttons:
     entry:
       text: '<white>@label@'

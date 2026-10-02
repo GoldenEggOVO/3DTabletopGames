@@ -164,7 +164,6 @@ final class MahjongTableHud implements AutoCloseable {
         int active =
                 room.phase == Room.Phase.PLAYING
                                 && !room.busy
-                                && room.undo == null
                                 && turn >= 0
                                 && turn < 4
                         ? turn
@@ -214,7 +213,7 @@ final class MahjongTableHud implements AutoCloseable {
         for (TextDisplay roundDisplay : rounds) label(roundDisplay, heading, .46f, .075f);
         Component clock;
         if (room.phase == Room.Phase.FINISHED) clock = Language.component("table.mahjong.finished");
-        else if (room.phase != Room.Phase.PLAYING || room.busy || room.undo != null)
+        else if (room.phase != Room.Phase.PLAYING || room.busy)
             clock = Language.component("table.mahjong.paused");
         else {
             long left = Math.max(0, plugin.turnWaitMillis(room) - Math.max(0, now - room.changed));
