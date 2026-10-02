@@ -22,7 +22,7 @@
 - [x] Rules: translate diagnostics and unused human-readable summaries to English; keep semantic message keys and canonical piece/action values.
 - [x] Runtime: translate comments/logging; route remaining displayed prose through existing semantic catalogs.
 - [x] Artwork and tests/tools: name fixed game glyphs in English; keep Unicode testing via catalog fixtures or explicit Unicode notation; translate Python comments/errors.
-- [ ] Verify: no Han prose in executable source; full Maven/Python suites, glyph/persistence regressions, local package and test-server boot/config checks.
+- [x] Verify: no Han prose in executable source; full Maven/Python suites, glyph/persistence regressions, local package and test-server boot/config checks.
 
 ## Review Focus
 
@@ -40,4 +40,4 @@
 - Independent review found the HUD bot-name leak; fixed with a behavioral regression.
 - All Unicode piece values, bitmap strokes and model geometry preserved.
 
-- Native and CraftEngine three-boot probes passed for the final JAR; VPS deployment pending.
+- Native and CraftEngine three-boot probes passed for the final JAR; the authorized test VPS is running 1.9.2 with verified language reload, 111 models and HTTPS pack integrity. Deployment evidence: reports/tabletop-test-1.9.2-20261002.json in the workspace root.
