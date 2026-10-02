@@ -38,6 +38,7 @@ for mode in ("vanilla", "resource-pack", "mixed"):
         "    uuid: 40ae45a0-4d81-4c07-8e68-807e85168a09\n", encoding="utf-8")
 shutil.copy2(ROOT / "docs/craftengine.zh-CN.md", out / "INSTALL.zh-CN.md")
 shutil.copy2(ROOT / "docs/model-counts.zh-CN.md", out / "model-counts.zh-CN.md")
+shutil.copy2(ROOT / "docs/craftengine-verification.zh-CN.md", out / "verification.zh-CN.md")
 shutil.copy2(ROOT / "resource-pack/sources.json", out / "asset-sources.json")
 for folder, source in (("pack", "pack-preview"), ("native-before", "native-before"), ("native-after", "native-after")):
     target = out / "previews" / folder
@@ -51,6 +52,7 @@ shutil.copy2(args.native_receipt, evidence / "native-runtime.json")
 shutil.copy2(args.craftengine_receipt, evidence / "craftengine-runtime.json")
 for name in ("craftengine-package.log", "resource-green.log"):
     shutil.copy2(ROOT / "target" / name, evidence / name)
+shutil.copy2(ROOT / "target/full-table-counts.csv", evidence / "full-table-counts.csv")
 verification_path = out / "verification.json"
 verification = json.loads(verification_path.read_text(encoding="utf-8"))
 verification.update(craftengine=ce, resource_pack=manifest, client_audio_test=False, client_fps_test=False)
@@ -70,4 +72,5 @@ with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as z:
         z.write(ROOT / name, name)
     for p in sorted((ROOT / "docs").rglob("*.md")):
         z.write(p, p.relative_to(ROOT).as_posix())
+    z.write(ROOT / "tools/server_boards_migrate.py", "tools/server_boards_migrate.py")
 print(package)

@@ -17,6 +17,19 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class MahjongTableHudTest {
+    @Test void currentTurnLightsOnlyItsPanelEdgeAndPausesWithoutRecreatingEntities(){
+        Fixture f=new Fixture();assertEquals(28,f.spawned.size());
+        BlockDisplay marker=(BlockDisplay)f.spawned.getLast();
+        assertEquals(.34f,f.transforms.get(marker).getScale().x,1e-6);
+        when(f.game.currentPlayer()).thenReturn(2);f.room.revision++;f.hud.tick(1_000);
+        assertEquals(-.49,f.locations.get(marker).getZ(),1e-6);
+        clearInvocations(marker);f.hud.tick(1_100);verify(marker,never()).teleport(any(Location.class));
+        for(Room.Phase phase:List.of(Room.Phase.PAUSED,Room.Phase.FINISHED)){
+            f.room.phase=phase;f.hud.tick(2_000);assertEquals(0,f.transforms.get(marker).getScale().length());
+        }
+        f.room.phase=Room.Phase.PLAYING;f.hud.tick(2_000);assertTrue(f.transforms.get(marker).getScale().length()>0);
+        assertEquals(28,f.spawned.size());
+    }
     @Test void scoresMoveToPanelAndEmptyWallTurnsRed(){
         Fixture f=new Fixture();when(f.game.deckSize()).thenReturn(0);f.room.revision++;f.hud.tick(1_000);
         assertEquals(NamedTextColor.RED,f.texts.get(f.count(0)).color());
@@ -40,7 +53,7 @@ class MahjongTableHudTest {
         assertEquals("Player 2 discarded 9 Characters",MessageText.plain(f.texts.get(f.discard())));
         verify(f.game,never()).hand(anyInt());verify(f.game,never()).handSize(anyInt());
         verify(f.game,never()).legalActions(anyInt());
-        assertEquals(27,f.spawned.size());
+        assertEquals(28,f.spawned.size());
     }
 
     @Test void countdownUsesElapsedTimeCeilingAndReusesDisplays() {
@@ -51,7 +64,7 @@ class MahjongTableHudTest {
         f.hud.tick(2_100);verify(f.statusEntity(),never()).text(any(Component.class));
         f.hud.tick(5_001);assertTrue(f.status().contains("1s"));
         f.hud.tick(9_000);assertTrue(f.status().contains("0s"));
-        assertEquals(27,f.spawned.size());
+        assertEquals(28,f.spawned.size());
     }
     @Test void floatingRoundClockAndDiscardInformationAreRaisedTogether() {
         Fixture f=new Fixture();
@@ -111,7 +124,7 @@ class MahjongTableHudTest {
         f.room.phase=Room.Phase.PLAYING;f.hud.tick(1_000);
         assertTrue(f.status().contains("East 1"));
         assertFalse(MessageText.plain(f.texts.get(f.discard())).isEmpty());
-        assertEquals(27,f.spawned.size());
+        assertEquals(28,f.spawned.size());
     }
 
     @Test void enlargedCountsFitCenterPadAndWindsSitToEachSeatsRight() {
@@ -217,6 +230,7 @@ class MahjongTableHudTest {
             when(world.spawn(any(Location.class),any(Class.class),any(Consumer.class))).thenAnswer(inv->{
                 Entity entity=mock((Class<? extends Entity>)inv.getArgument(1));spawned.add(entity);
                 locations.put(entity,((Location)inv.getArgument(0)).clone());
+                doAnswer(a->{locations.put(entity,((Location)a.getArgument(0)).clone());return true;}).when(entity).teleport(any(Location.class));
                 when(entity.getPersistentDataContainer()).thenReturn(mock(PersistentDataContainer.class));
                 doAnswer(a->{transforms.put((Display)entity,a.getArgument(0));return null;})
                     .when((Display)entity).setTransformation(any(Transformation.class));

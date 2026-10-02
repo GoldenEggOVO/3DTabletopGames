@@ -29,6 +29,25 @@ class TabletopPackTest {
         pack=new TabletopPack(plugin,()->available,id->new ItemStack(Material.PAPER));
     }
     @AfterEach void cleanup(){MockBukkit.unmock();}
+    @Test void terminalOwnedStatusRefreshesOpenMenuAndInvalidatesOldActions() throws Exception {
+        when(player.getWorld()).thenReturn(Bukkit.getWorlds().getFirst());when(plugin.allowed(player)).thenReturn(true);
+        plugin.menus=new GameMenus(plugin);
+        var field=GameMenus.class.getDeclaredField("sessions");field.setAccessible(true);
+        @SuppressWarnings("unchecked") Map<UUID,GameMenus.Session> sessions=(Map<UUID,GameMenus.Session>)field.get(plugin.menus);
+        for(Status terminal:List.of(Status.SUCCESSFULLY_LOADED,Status.FAILED_DOWNLOAD)){
+            pack=new TabletopPack(plugin,()->available,id->new ItemStack(Material.PAPER));plugin.pack=pack;
+            pack.toggle(player);UUID request=pack.requestId(player);
+            plugin.menus.show(player,"Test","",List.of(),null);
+            var loading=sessions.get(player.getUniqueId());
+            pack.status(player,request,terminal);var updated=sessions.get(player.getUniqueId());
+            assertNotEquals(loading.token(),updated.token(),"Terminal status must redraw an active menu");
+            assertEquals(pack.button(player),updated.buttons().getFirst().component());
+            plugin.menus.handle(player,"3dtabletop:"+loading.token()+" 0");
+            assertEquals(request,pack.requestId(player),"Old loading-menu action must be invalid");
+            plugin.menus.forget(player);pack.status(player,request,terminal);
+            assertFalse(plugin.menus.active(player),"A closed menu must stay closed");
+        }
+    }
     @Test void onlySuccessfulOwnedPackLoadsModels(){
         assertFalse(pack.packed(player));pack.toggle(player);UUID request=pack.requestId(player);
         assertNotNull(request);assertFalse(pack.packed(player));

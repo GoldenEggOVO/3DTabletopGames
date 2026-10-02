@@ -6,7 +6,7 @@
 - Remove unused public backends based on nearby viewers, including spectators; keep private hands private and reject stale pack callbacks.
 - Move Mahjong scores into the larger central panel, orient round/remaining text per viewer and turn zero remaining red.
 - Reduce native round-table, rounded-card and circle geometry; add detailed pack artwork, tablecloth and nine event-bound sound effects.
-- Validate 526 JUnit tests, native three-boot recovery and 111 CraftEngine item displays; client acceptance remains pending.
+- Refresh open pack menus on terminal loading status and show the Mahjong active edge; validate native three-boot recovery and 111 CraftEngine item displays. Client acceptance remains pending.
 
 ## 1.8.7-SNAPSHOT
 

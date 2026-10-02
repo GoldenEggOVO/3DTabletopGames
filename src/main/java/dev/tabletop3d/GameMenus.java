@@ -18,7 +18,7 @@ final class GameMenus implements AutoCloseable {
         Button(String id,Component label,Runnable action){this(id,MessageText.plain(label),action,label);}
         Button(Component label,Runnable action){this("entry",label,action);}
     }
-    record Session(UUID token,UUID world,long expires,List<Button> buttons){}
+    record Session(UUID token,UUID world,long expires,List<Button> buttons,Runnable refresh){}
     record Setup(String kind,int capacity,boolean bots,Map<String,String> options){
         Setup { options=GameOptions.validate(kind,options); }
     }
@@ -45,13 +45,14 @@ final class GameMenus implements AutoCloseable {
         else if(plugin.mainMenuAvailable())entries.add(new Button("main",Language.component("menu.main"),()->{forget(p);Bukkit.dispatchCommand(p,"servermenu:servermenu main");}));
         entries.add(new Button("close",Language.component("menu.close"),()->forget(p)));
         UUID token=UUID.randomUUID();
+        Runnable refresh=()->show(p,title,description,buttons,back,page);
         if(window!=null){
             var rendered=window.render(page,title,description,entries,token);
             entries=rendered.buttons();
-            sessions.put(p.getUniqueId(),new Session(token,p.getWorld().getUID(),System.currentTimeMillis()+120000,List.copyOf(entries)));
+            sessions.put(p.getUniqueId(),new Session(token,p.getWorld().getUID(),System.currentTimeMillis()+120000,List.copyOf(entries),refresh));
             if(window.open(p,rendered.config(),page))return;
         }
-        sessions.put(p.getUniqueId(),new Session(token,p.getWorld().getUID(),System.currentTimeMillis()+120000,List.copyOf(entries)));
+        sessions.put(p.getUniqueId(),new Session(token,p.getWorld().getUID(),System.currentTimeMillis()+120000,List.copyOf(entries),refresh));
         p.sendMessage(title.append(Component.newline()).append(description));
         for(int i=0;i<entries.size();i++){var b=entries.get(i);p.sendMessage(Component.text("[ ").append(b.component()!=null?b.component():BoardWindow.text(b.label())).append(Component.text(" ] ")).clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/3dtabletop click 3dtabletop:"+token+" "+i)));}
     }
@@ -64,6 +65,7 @@ final class GameMenus implements AutoCloseable {
     }
     void forget(Player p){sessions.remove(p.getUniqueId());if(plugin.comfort!=null)plugin.comfort.menuClosed(p);}
     boolean active(Player p){Session s=sessions.get(p.getUniqueId());return s!=null&&s.world().equals(p.getWorld().getUID())&&System.currentTimeMillis()<s.expires();}
+    void refresh(Player p){if(active(p)&&p.isOnline())sessions.get(p.getUniqueId()).refresh().run();}
     void main(Player p){
         List<Button> b=new ArrayList<>();Room current=plugin.room(p);
         if(current!=null)b.add(new Button("resume",Language.component("menu.resume"),()->plugin.resume(p,current)));

@@ -43,6 +43,8 @@ final class MahjongTableHud implements AutoCloseable {
     private Map<String,String> info = Map.of();
     private int remaining, turn = -1;
     private boolean closed;
+    private final BlockDisplay turnEdge;
+    private int highlightedTurn=-2;
 
     MahjongTableHud(Tabletop3D plugin,Room room,Location surfaceOrigin,NamespacedKey tag) {
         this(plugin,room,surfaceOrigin,tag,new TableAudience(plugin,surfaceOrigin));
@@ -78,6 +80,7 @@ final class MahjongTableHud implements AutoCloseable {
             Location round=origin.clone().add(-.15*Math.sin(angle),.029,-.15*Math.cos(angle));
             round.setYaw(-90*seat);privateText=true;rounds.add(text(round,true));privateText=false;
         }
+        turnEdge=block(origin.clone().add(0,.033,0),Material.CYAN_CONCRETE,.34f,.003f,.014f);
         tick();
     }
 
@@ -100,6 +103,16 @@ final class MahjongTableHud implements AutoCloseable {
             label(scores.get(seat),Component.text(info.getOrDefault("score."+seat,""),NamedTextColor.GOLD),.30f,.075f);
         }
         boolean lobby=room.phase==Room.Phase.LOBBY||room.phase==Room.Phase.STARTING;
+        int active=room.phase==Room.Phase.PLAYING&&!room.busy&&room.undo==null&&turn>=0&&turn<4?turn:-1;
+        if(highlightedTurn!=active){
+            highlightedTurn=active;
+            if(active>=0){
+                double angle=active*Math.PI/2;
+                Location edge=origin.clone().add(.49*Math.sin(angle),.033,.49*Math.cos(angle));edge.setYaw(-90*active);
+                turnEdge.teleport(edge);
+            }
+            visible(turnEdge,active>=0,.34f,.003f,.014f);
+        }
         for(int seat=0;seat<4;seat++) {
             boolean next=!lobby&&Boolean.parseBoolean(info.getOrDefault("riichi."+seat,"false"));
             if(declared[seat]==next)continue;

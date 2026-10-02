@@ -243,7 +243,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     var remaining=(org.bukkit.entity.TextDisplay)field(own,"remaining");privateParts.add(remaining);
                     require(!remaining.isVisibleByDefault()&&plain(remaining.text()).startsWith("Remaining: "),"native remaining label is owner-only");
                     Object hud=field(hand,"mahjongHud");
-                    require(((List<?>)field(hud,"entities")).size()==27,"native Mahjong HUD has bounded entity inventory");
+                    require(((List<?>)field(hud,"entities")).size()==28,"native Mahjong HUD has bounded entity inventory");
                     var count=(org.bukkit.entity.TextDisplay)((List<?>)field(hud,"counts")).getFirst();
                     require(plain(count.text()).equals(Integer.toString(((HandGame)board.get(room)).deckSize())),"native tabletop count matches drawable wall");
                     call(hand,"hover",new Class<?>[]{Player.class,String.class},owner,null);

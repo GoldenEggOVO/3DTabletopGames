@@ -73,6 +73,7 @@ final class TabletopPack implements Listener,AutoCloseable {
             case ACCEPTED,DOWNLOADED->{}
             default->{requests.put(player.getUniqueId(),new Request(id,Stage.FAILED));plugin.tell(player,Language.component("pack.failed"));}
         }
+        if(status!=PlayerResourcePackStatusEvent.Status.ACCEPTED&&status!=PlayerResourcePackStatusEvent.Status.DOWNLOADED&&plugin.menus!=null)plugin.menus.refresh(player);
     }
     @EventHandler public void status(PlayerResourcePackStatusEvent event){status(event.getPlayer(),event.getID(),event.getStatus());}
     @EventHandler public void joined(PlayerJoinEvent event){org.bukkit.Bukkit.getScheduler().runTaskLater(plugin,()->{if(event.getPlayer().isOnline())request(event.getPlayer());},20);}
