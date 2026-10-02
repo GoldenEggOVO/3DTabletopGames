@@ -292,6 +292,14 @@ public final class MahjongGame implements HandGame {
         return List.copyOf(melds.get(seat));
     }
 
+    public List<Piece> flowers(int seat) {
+        return flowers.get(seat).stream().map(MahjongGame::piece).toList();
+    }
+
+    public boolean concealedMeldFacesVisible() {
+        return riichiProfile;
+    }
+
     @Override
     public List<Piece> exposed(int seat) {
         List<Piece> result = new ArrayList<>();

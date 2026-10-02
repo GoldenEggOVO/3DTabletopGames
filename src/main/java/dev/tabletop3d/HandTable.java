@@ -942,14 +942,12 @@ final class HandTable implements AutoCloseable {
         for (var tile : MahjongLayout.river(game.discards(seat), game.riichiTile(seat)))
             publicTile(
                     wanted, tile, "discard:" + seat, seat, tile.offset(), .65 + tile.row() * .16);
-        Set<String> grouped = new HashSet<>();
         double edge = 0;
         int group = 0;
         for (var meld : game.melds(seat)) {
             if (group % 2 == 0) edge = 0;
-            var tiles = MahjongLayout.meld(meld, seat);
+            var tiles = MahjongLayout.meld(meld, seat, game.concealedMeldFacesVisible());
             for (var tile : tiles) {
-                grouped.add(tile.piece().id());
                 publicTile(
                         wanted,
                         tile,
@@ -970,8 +968,7 @@ final class HandTable implements AutoCloseable {
                             + .04;
             group++;
         }
-        var flowers =
-                game.exposed(seat).stream().filter(tile -> !grouped.contains(tile.id())).toList();
+        var flowers = game.flowers(seat);
         int flowerRow = (group + 1) / 2;
         for (int index = 0; index < flowers.size(); index++) {
             var tile = new MahjongLayout.Tile(flowers.get(index), 0, 0, false, 0);

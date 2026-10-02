@@ -275,6 +275,53 @@ class HandTableTest {
                 pose.x() - x, 0, pose.z() - z, pose.x() + x, .02, pose.z() + z);
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    void realRegionalClosedKansStayHiddenAndAreNotMistakenForFlowers() throws Exception {
+        Fixture fixture = new Fixture("mahjong");
+        var publicRows =
+                HandTable.class.getDeclaredMethod(
+                        "mahjongPublicRows",
+                        List.class,
+                        dev.tabletop3d.rules.MahjongGame.class,
+                        int.class);
+        publicRows.setAccessible(true);
+        for (String profile : List.of("guangdong", "sichuan", "taiwan")) {
+            var game = new dev.tabletop3d.rules.MahjongGame(4, 0, Map.of("profile", profile));
+            var meldField = game.getClass().getDeclaredField("melds");
+            meldField.setAccessible(true);
+            var melds = (List<List<dev.tabletop3d.rules.mahjong.Meld>>) meldField.get(game);
+            var tiles =
+                    java.util.stream.IntStream.range(0, 4)
+                            .mapToObj(
+                                    i ->
+                                            new dev.tabletop3d.rules.mahjong.Tiles.Tile(
+                                                    "closed-" + i, 3, false))
+                            .toList();
+            melds.get(0)
+                    .add(
+                            new dev.tabletop3d.rules.mahjong.Meld(
+                                    dev.tabletop3d.rules.mahjong.Meld.Kind.QUAD, tiles, false, 0));
+            var wanted = new ArrayList<>();
+            publicRows.invoke(fixture.table, wanted, game, 0);
+            assertEquals(4, wanted.size(), profile + " must render exactly four public tiles");
+            for (Object spec : wanted) {
+                var face = spec.getClass().getDeclaredMethod("face");
+                face.setAccessible(true);
+                assertEquals(
+                        "back", face.invoke(spec), profile + " must keep closed-kan faces private");
+            }
+            var flowerField = game.getClass().getDeclaredField("flowers");
+            flowerField.setAccessible(true);
+            ((List<List<dev.tabletop3d.rules.mahjong.Tiles.Tile>>) flowerField.get(game))
+                    .get(0)
+                    .add(new dev.tabletop3d.rules.mahjong.Tiles.Tile("flower", 34, false));
+            wanted.clear();
+            publicRows.invoke(fixture.table, wanted, game, 0);
+            assertEquals(5, wanted.size(), profile + " flower is separate from the concealed meld");
+        }
+    }
+
     static final class Fixture {
         final Tabletop3D plugin = mock(Tabletop3D.class);
         final World world = mock(World.class);

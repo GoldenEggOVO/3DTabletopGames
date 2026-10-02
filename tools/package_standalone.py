@@ -91,7 +91,11 @@ with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as archive:
         archive.write(project / name, name)
     for path in sorted((project / "docs").rglob("*.md")):
         archive.write(path, path.relative_to(project).as_posix())
-    archive.write(project / "tools/server_boards_migrate.py", "tools/server_boards_migrate.py")
+    archive.write(project / "tools/upgrade_current_data.py", "tools/upgrade_current_data.py")
+    archive.write(project / "tools/upgrade/language-map-1.8.10.json", "tools/upgrade/language-map-1.8.10.json")
+    for path in sorted((project / "src/main/resources").rglob("*.yml")):
+        if path.parent.name in ("languages", "menus"):
+            archive.write(path, path.relative_to(project).as_posix())
     for name in ("ludo-side-tray-frames.png", "lastcard-owner-view.png", "mahjong-owner-view.png",
                  "lastcard-hover-draw-frames.png", "hand-face-art.png", "table-controls-preview.png", "mahjong-table-preview.png",
                  "mahjong-table-preview-notes.txt", "source-geometry-preview.txt"):

@@ -30,6 +30,10 @@ final class MahjongLayout {
     }
 
     static List<Tile> meld(Meld meld, int seat) {
+        return meld(meld, seat, true);
+    }
+
+    static List<Tile> meld(Meld meld, int seat, boolean revealConcealedFaces) {
         List<Tiles.Tile> pieces = new ArrayList<>(meld.tiles());
         Tiles.Tile called =
                 pieces.stream()
@@ -57,7 +61,9 @@ final class MahjongLayout {
             var piece = pieces.get(index);
             boolean sideways = piece.equals(called);
             double width = sideways ? SIDEWAYS_WIDTH : TILE_WIDTH;
-            boolean hidden = !meld.open() && (index == 0 || index == pieces.size() - 1);
+            boolean hidden =
+                    !meld.open()
+                            && (!revealConcealedFaces || index == 0 || index == pieces.size() - 1);
             Tile tile =
                     new Tile(
                             new HandGame.Piece(piece.id(), hidden ? "back" : piece.face()),
