@@ -15,3 +15,6 @@
 - Ruling: Remove disabled foreign-provider probe branches and label code — current plugin only owns its own tables — external-provider features would require explicit new implementation if requested.
 - Final review: one important finding, regional concealed kan was duplicated as flowers and exposed two faces. RED reproduced eight tiles; GREEN now renders four backs and one explicit flower when present. One fix pass completed; no minor findings.
 - Final ruling: client appearance/audio/FPS require in-game acceptance. Real CraftEngine registration, server lifecycle and official client transform parsing verify their respective layers but cannot certify the user's screen or listening experience.
+
+- Final verification: 540 Java tests, 9 pack checks, 3 converter checks; exact JAR SHA256 34372b0bd8a58a28c573ebc1a19210f54ab8ad077eedecd1ba01d5cd8dd8f465 passed native and CraftEngine three-boot recovery. Official 26.2 transform parser passed.
+- Deployment: authorized test server 5.104.84.28:25589 running 1.9.0, 111 CE models, HTTPS200/hash verified, 657 semantic keys each locale and language reload passed. Full backup tabletop-190-20261002-164054; protected files unchanged. Client acceptance pending; branch/worktree retained, no Release.
