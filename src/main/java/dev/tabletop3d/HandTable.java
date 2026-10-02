@@ -1259,9 +1259,9 @@ final class HandTable implements AutoCloseable {
         if (!visible) return;
         int index = 0;
         for (MahjongAssist.Option option : MahjongAssist.Option.values()) {
-            Pose frame = seatPose(view.seat, 4, 1.40, .98 - index++ * .16);
+            Pose frame = seatPose(view.seat, 4, .70 + index++ * .16, 1.525);
             view.assistanceButtons.put(option.id, new CallView("assist:" + option.id,
-                    new Pose(frame.x(), frame.z(), frame.yaw(), .08), view.player, List.of(),
+                    new Pose(frame.x(), frame.z(), frame.yaw(), -.16), view.player, List.of(),
                     Language.component("table.mahjong.assist." + option.id), .12, preferences.enabled(option)));
         }
         view.assistanceSeat = view.seat;

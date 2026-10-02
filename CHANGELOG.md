@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.5-SNAPSHOT
+
+- Place Riichi assistance controls in a horizontal row on the owner's front-right apron, below the playing surface; preserve private visibility, brightness and action-bar descriptions.
+
 ## 1.9.4-SNAPSHOT
 
 - Make Browse Rooms a full-width catalogue text link, mutually exclusive with Resume Current Game.

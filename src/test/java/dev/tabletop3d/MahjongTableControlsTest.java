@@ -13,6 +13,36 @@ import java.util.*;
 
 class MahjongTableControlsTest {
     @Test
+    void assistanceControlsLineUpOnEachOwnersFrontRightApronAndRemainClickable() throws Exception {
+        for (int seat = 0; seat < 4; seat++) {
+            var f = new HandTableTest.Fixture("mahjong");
+            f.room.seats.clear();
+            for (int peer = 0; peer < 4; peer++)
+                f.room.seats.add(new Room.Seat(peer == seat ? f.owner.getUniqueId() : UUID.randomUUID(), "Player", false));
+            when(f.game.playerCount()).thenReturn(4);
+            when(f.game.publicInfo()).thenReturn(Map.of("profile", "riichi"));
+            f.table.show(f.owner);
+            Object view = ((Map<?, ?>) TableViewTest.field(f.table, "privateViews")).get(f.owner.getUniqueId());
+            Map<?, ?> controls = (Map<?, ?>) TableViewTest.field(view, "assistanceButtons");
+            double angle = seat * Math.PI / 2;
+            Vector outward = new Vector(Math.sin(angle), 0, Math.cos(angle));
+            Vector right = new Vector(Math.cos(angle), 0, -Math.sin(angle));
+            double previousRight = 0;
+            for (String option : List.of("sort", "win", "no-calls", "draw-discard")) {
+                var bounds = (org.bukkit.util.BoundingBox) TableViewTest.field(controls.get(option), "bounds");
+                Vector offset = bounds.getCenter().subtract(f.origin.toVector());
+                assertTrue(offset.dot(outward) > 1.5, "Controls must sit outside the owner's front rim");
+                assertTrue(offset.getY() < 0 && offset.getY() > -.19, "Controls must sit on the wooden apron");
+                assertTrue(offset.dot(right) > .6 && offset.dot(right) > previousRight, "Controls must run left to right on the owner's right");
+                previousRight = offset.dot(right);
+                Location eye = bounds.getCenter().toLocation(f.world).add(outward.clone().multiply(.5));
+                assertEquals("assist:" + option, f.table.callHit(f.owner, eye, outward.clone().multiply(-1)));
+            }
+            f.table.close();
+        }
+    }
+
+    @Test
     void assistanceControlsArePrivateToggleBrightnessAndShowOnlyTheirExplanation() throws Exception {
         var f = new HandTableTest.Fixture("mahjong");
         when(f.game.publicInfo()).thenReturn(Map.of("profile", "riichi", "dora", "m1", "riichiSticks", "2", "honba", "3"));
@@ -29,8 +59,8 @@ class MahjongTableControlsTest {
             verify((org.bukkit.entity.Display) part).setBrightness(new org.bukkit.entity.Display.Brightness(7, 7));
         }
         var bounds = (org.bukkit.util.BoundingBox) TableViewTest.field(control, "bounds");
-        Location eye = bounds.getCenter().toLocation(f.world).add(.5, 0, 0);
-        assertEquals("assist:win", f.table.callHit(f.owner, eye, new Vector(-1, 0, 0)));
+        Location eye = bounds.getCenter().toLocation(f.world).add(0, 0, .5);
+        assertEquals("assist:win", f.table.callHit(f.owner, eye, new Vector(0, 0, -1)));
         f.table.assistanceHint(f.owner, "@call:assist:win");
         verify(f.owner).sendActionBar(Language.component("hint.mahjong.assist.win").colorIfAbsent(net.kyori.adventure.text.format.NamedTextColor.YELLOW));
         assertFalse(f.table.toggleAssistance(f.spectator, "win"));
