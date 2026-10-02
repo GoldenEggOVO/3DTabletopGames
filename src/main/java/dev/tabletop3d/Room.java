@@ -19,6 +19,7 @@ final class Room {
     final List<Seat> seats=new ArrayList<>(); final Set<UUID> ready=new HashSet<>();
     final Map<UUID,Long> offline=new HashMap<>(); final JsonArray history=new JsonArray();
     Phase phase=Phase.LOBBY; long revision=0; long changed=System.currentTimeMillis();
+    long countdownChanged=-1;int countdownSecond=-1;
     boolean busy=false; boolean restoring=false; boolean completed=false; BoardGame board; String result="";
     Room(UUID id,String kind,int capacity,long seed,int table) { this(id,kind,capacity,seed,table,Map.of()); }
     Room(UUID id,String kind,int capacity,long seed,int table,Map<String,String> options) {

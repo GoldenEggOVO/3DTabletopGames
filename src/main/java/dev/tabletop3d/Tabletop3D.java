@@ -262,6 +262,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener, CommandExe
             if(r.phase!=Room.Phase.PLAYING||r.busy)continue;
             int turn=r.turn();if(turn<0||turn>=r.seats.size())continue;
             Room.Seat s=r.seats.get(turn);long wait=turnWaitMillis(r);
+            arena.countdown(r,now);
             if(!s.bot()&&pack!=null&&pack.mode==TabletopPack.Mode.RESOURCE_PACK&&TabletopPack.supported(r.kind)){
                 Player player=Bukkit.getPlayer(s.id());if(player==null||!pack.canPlay(player,r.kind))continue;
             }

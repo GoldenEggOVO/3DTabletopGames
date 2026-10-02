@@ -165,7 +165,8 @@ final class GameWorld implements Listener, AutoCloseable {
         if(view==null){view=new TableView(plugin,room,center(room.table),tag,maps);views.put(room.id,view);}
         else view.sync();
     }
-    void sound(Room room,TableSounds.Cue cue){TableView view=views.get(room.id);if(view!=null)TableSounds.play(plugin,view.origin,cue);}
+    void countdown(Room room,long now){TableView view=views.get(room.id);if(view!=null)TableSounds.countdown(plugin,room,view.origin,now);}
+    void sound(Room room,TableSounds.Cue cue){TableView view=views.get(room.id);if(view!=null)TableSounds.play(plugin,view.origin,cue,room.kind);}
     boolean rolling(Room room){TableView view=views.get(room.id);return view!=null&&view.rolling();}
     void turnSound(Room room){TableView view=views.get(room.id);if(view!=null)view.turnSound();}
     private String aimed(Player player,TableView view) {

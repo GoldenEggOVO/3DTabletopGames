@@ -21,7 +21,8 @@ class TabletopPackTest {
     @BeforeEach void setup(){
         var server=MockBukkit.mock();plugin=mock(Tabletop3D.class);player=mock(Player.class);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());when(player.isOnline()).thenReturn(true);
-        when(player.getPersistentDataContainer()).thenReturn(server.addPlayer().getPersistentDataContainer());
+        var data=server.addPlayer().getPersistentDataContainer();
+        when(player.getPersistentDataContainer()).thenReturn(data);
         config=new YamlConfiguration();when(plugin.getConfig()).thenReturn(config);
         config.set("rendering.mode","mixed");config.set("rendering.resource-pack.url","https://example.org/tabletop.zip");
         config.set("rendering.resource-pack.sha1","0123456789012345678901234567890123456789");

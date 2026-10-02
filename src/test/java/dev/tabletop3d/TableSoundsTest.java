@@ -12,6 +12,44 @@ import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
 
 class TableSoundsTest {
+    @Test void mixedViewersEachHearOnlyTheirOwnMahjongSound(){
+        var plugin=mock(Tabletop3D.class);when(plugin.getConfig()).thenReturn(new YamlConfiguration());
+        plugin.pack=mock(TabletopPack.class);
+        var world=mock(World.class);var at=new Location(world,0,80,0);
+        var nativePlayer=mock(org.bukkit.entity.Player.class);var packedPlayer=mock(org.bukkit.entity.Player.class);
+        when(world.getPlayers()).thenReturn(List.of(nativePlayer,packedPlayer));
+        for(var player:List.of(nativePlayer,packedPlayer)){
+            when(player.getLocation()).thenReturn(at);when(plugin.allowed(player)).thenReturn(true);
+        }
+        when(plugin.pack.packed(packedPlayer)).thenReturn(true);
+        TableSounds.play(plugin,at,TableSounds.TILE_DISCARD,"mahjong");
+        verify(nativePlayer).playSound(at,TableSounds.TILE_DISCARD.sound(),SoundCategory.BLOCKS,TableSounds.TILE_DISCARD.volume(),TableSounds.TILE_DISCARD.pitch());
+        verify(packedPlayer).playSound(at,"tabletop3d:mahjong.discard",SoundCategory.BLOCKS,TableSounds.TILE_DISCARD.volume(),1f);
+        verify(nativePlayer,never()).playSound(any(Location.class),anyString(),any(SoundCategory.class),anyFloat(),anyFloat());
+        verify(packedPlayer,never()).playSound(any(Location.class),any(Sound.class),any(SoundCategory.class),anyFloat(),anyFloat());
+        verify(world,never()).playSound(any(Location.class),any(Sound.class),any(SoundCategory.class),anyFloat(),anyFloat());
+    }
+
+    @Test void doraCueOnlyFollowsANewPublicIndicator(){
+        var before=new TableSounds.MahjongState(Map.of("phase","TURN","wall","40","lastWin","","doraIds","a"),0);
+        var after=new TableSounds.MahjongState(Map.of("phase","TURN","wall","39","lastWin","","doraIds","a,b"),4);
+        assertEquals(List.of(TableSounds.TILE_KAN,TableSounds.TILE_DORA,TableSounds.TILE_DRAW),TableSounds.mahjong("kan-closed:x",before,after));
+        assertFalse(TableSounds.mahjong("discard:x",after,after).contains(TableSounds.TILE_DORA));
+    }
+
+    @Test void countdownIsOncePerSecondAndSilentDuringReplay(){
+        var server=MockBukkit.getMock();var world=server.addSimpleWorld("countdown");var player=server.addPlayer();
+        player.teleport(new Location(world,0,80,0));var plugin=mock(Tabletop3D.class);
+        when(plugin.getConfig()).thenReturn(new YamlConfiguration());when(plugin.allowed(player)).thenReturn(true);
+        var room=new Room(UUID.randomUUID(),"mahjong",4,0,0);room.join(player.getUniqueId(),"Player");room.fillBots();
+        room.board=mock(HandGame.class);when(room.board.currentPlayer()).thenReturn(0);room.phase=Room.Phase.PLAYING;room.changed=1_000;
+        when(plugin.turnWaitMillis(room)).thenReturn(10_000L);
+        TableSounds.countdown(plugin,room,player.getLocation(),6_000);TableSounds.countdown(plugin,room,player.getLocation(),6_200);
+        assertEquals(1,player.getHeardSounds().size());
+        TableSounds.countdown(plugin,room,player.getLocation(),7_000);assertEquals(2,player.getHeardSounds().size());
+        room.restoring=true;TableSounds.countdown(plugin,room,player.getLocation(),8_000);assertEquals(2,player.getHeardSounds().size());
+    }
+
     @BeforeEach void setup(){MockBukkit.mock();}
     @AfterEach void close(){MockBukkit.unmock();}
 

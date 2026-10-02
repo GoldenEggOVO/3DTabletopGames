@@ -42,7 +42,7 @@ final class TabletopPack implements Listener,AutoCloseable {
     void require(Player player,String kind){
         if(canPlay(player,kind))return;
         Request r=requests.get(player.getUniqueId());if(r==null||r.stage()==Stage.FAILED)request(player);
-        throw new IllegalArgumentException(Language.text("请先成功加载桌游资源包后再入座或操作；可重新打开菜单重试。"));
+        throw new IllegalArgumentException(dev.tabletop3d.ui.MessageText.plain(Language.component("pack.required")));
     }
     Component button(Player player){Request r=requests.get(player.getUniqueId());return Language.component(r!=null&&r.stage()==Stage.LOADING?"pack.loading":packed(player)?"pack.disable":"pack.enable");}
     void toggle(Player player){

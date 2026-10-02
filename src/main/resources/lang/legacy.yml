@@ -1,6 +1,7 @@
 # Internal mappings for older translations sections. Not a selectable language.
 # Dynamic values are inserted only after the legacy template has been translated.
 messages:
+  'pack.required': '请先成功加载桌游资源包后再入座或操作；可重新打开菜单重试。'
   'pack.enable': '启用桌游资源包'
   'pack.disable': '关闭桌游资源包'
   'pack.loading': '桌游包加载中（点击取消）'

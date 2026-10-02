@@ -380,6 +380,7 @@ translations:
 
 # Named display messages. Parameters are literal text or Components, never parsed as markup.
 messages:
+  'pack.required': 'Load the tabletop resource pack before joining or playing; reopen the menu to retry.'
   'pack.enable': 'Enable tabletop resource pack'
   'pack.disable': 'Disable tabletop resource pack'
   'pack.loading': 'Loading tabletop pack (click to cancel)'
