@@ -113,14 +113,14 @@ class TabletopTest {
         }
         verify(f.plugin.menus,never()).room(any(),any());verify(f.plugin,never()).apply(any(),anyInt(),any(),any());
     }
-    @Test void focusedMahjongLeftClickStillPlaysTheAimedHandTile()throws Exception{
+    @Test void focusedMahjongLeftClickOnlyObservesAndNeverPlaysTheHandTile()throws Exception{
         Fixture f=new Fixture();set(f.room,"kind","mahjong");HandGame game=mock(HandGame.class);f.room.board=game;
         when(game.hand(0)).thenReturn(List.of(new HandGame.Piece("a","1m")));when(game.legalActions(0)).thenReturn(List.of("discard:a"));
         f.plugin.menus=mock(GameMenus.class);f.plugin.comfort=mock(TableComfort.class);
         when(f.plugin.comfort.focused(f.player)).thenReturn(true);when(f.player.isSneaking()).thenReturn(true);
         TableView view=((Map<UUID,TableView>)TableViewTest.field(f.arena,"views")).get(f.room.id);
         when(view.handHit(eq(f.player),any(),any())).thenReturn("a");when(view.mahjongHandAction(f.player,"a")).thenReturn("discard:a");
-        assertTrue(f.click());verify(f.plugin).apply(eq(f.room),eq(0),eq(new JsonPrimitive("discard:a")),isNull());
+        assertTrue(f.click());verify(f.plugin,never()).apply(any(),anyInt(),any(),any());
         verify(f.plugin.comfort,never()).release(any());verify(f.plugin.menus,never()).room(any(),any());
     }
     @Test void blockInteractionRoutesRightClickToTheColorEightMenuButNotLeftClick()throws Exception{
@@ -165,7 +165,7 @@ class TabletopTest {
             Fixture f=new Fixture();set(f.room,"kind","mahjong");
             HandGame game=mock(HandGame.class);when(game.currentPlayer()).thenReturn(1);f.room.board=game;
             TableView view=((Map<UUID,TableView>)TableViewTest.field(f.arena,"views")).get(f.room.id);
-            f.plugin.comfort=mock(TableComfort.class);when(f.plugin.comfort.focused(f.player)).thenReturn(true);
+            f.plugin.comfort=mock(TableComfort.class);
             when(f.player.getEyeLocation()).thenReturn(new Location(f.world,0,1.62,2.25).setDirection(new Vector(0,overTable?-.74:1,-2.25)));
             assertEquals(overTable,f.click());verify(view).maintainMahjongPress(f.player);
             verify(f.plugin,never()).apply(any(),anyInt(),any(),any());

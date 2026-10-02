@@ -72,7 +72,7 @@ class MahjongTableHudTest {
         for(int seat=0;seat<4;seat++)assertEquals(0,f.transforms.get(f.stick(seat)).getScale().length());
         when(f.game.publicInfo()).thenReturn(Map.of("riichi.1","true","riichiSticks","3"));
         f.room.revision++;f.hud.tick(1_000);
-        assertTrue(f.transforms.get(f.stick(1)).getScale().length()>0);
+        assertEquals(.24f,f.transforms.get(f.stick(1)).getScale().x,1e-6);
         for(int seat:new int[]{0,2,3})assertEquals(0,f.transforms.get(f.stick(seat)).getScale().length());
         assertTrue(f.status().contains("Riichi sticks: 3"));
         when(f.game.publicInfo()).thenReturn(Map.of("round","2","riichiSticks","3"));

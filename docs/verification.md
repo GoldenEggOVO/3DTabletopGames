@@ -1,5 +1,18 @@
 # Verification and acceptance
 
+## Local build: 1.8.7-SNAPSHOT — Fixed Spectator camera, longer sticks and model counts
+
+- JDK 25 / Maven package: **510 tests passed**, zero failures, errors or skipped tests. New regressions first failed for fixed mode/target, move cancellation, read-only clicks, stick length, interrupted-session recovery, rejected mode/camera transitions, camera eye clearance and spectator-menu teleports.
+- The reported 1.8.6 movement issue was traced in the actual Purpur packet listener: changing a movement destination calls `CraftPlayer.teleport(..., PLUGIN)`, which the old focus cleanup interpreted as an external teleport. Movement cancellation instead uses Paper's internal correction. The old proxy probe did not exercise that native packet path.
+- Shift now temporarily enters Spectator mode and attaches a private invisible marker ArmorStand. Both position and orientation stay fixed; view-only clicks cannot play tiles. The marker eye height is zero, so camera height is center + 2.15, preserving the prior sneaking eye position rather than raising the view again. The original game mode, flight, gravity, visibility and pose are restored on release.
+- Regressions cover all four seats, rejected camera attachment, restoration veto/retry, quit/close/death/external-teleport cleanup, external game-mode authority, persisted recovery, three-block-high rooms and blocked eye space. Non-internal SPECTATE teleports and camera target switches are cancelled; command/plugin teleports remain authoritative. Current client interaction delivery is a separate acceptance gate.
+- Riichi sticks are **0.24 blocks** long instead of 0.12, still two entities each. The existing raised HUD and previous artwork are retained.
+- Model counts were regenerated against the final compiled classes and matched the measured JSON. Native Color Eight standing faces use 80–122 entities, backs 77; a five-player starting example has 4,643 server entities and 2,283 visible to seat 0. The 30-card geometric sample has 4,910 visible entities. See the model-count report for scope, Mahjong counts and animation overhead. **No client FPS or server performance profile was collected**, and no model simplification was implemented.
+- The exact shaded JAR passed three isolated Purpur **26.2-2622** boots (create, restart and legacy migration) in `target/standalone-smoke-20261001-214624/`. The real event-bus/world probe uses proxy players and checks the marker camera, zero marker eye height, movement cancellation, fixed equivalent angles, spectator-menu teleport rejection, release and cleanup. Paper normalizes yaw 180 to -180; the probe compares equivalent angles. It does not exercise connected-client physics.
+- Independent code and Purpur bytecode review found no remaining important issues after the regressions above. Actual fixed-camera feel, equipment disappearance, client physics, native Shift + right-click packet delivery and Mahjong glint remain Minecraft client acceptance items. No production deployment or public Release.
+
+Verified JAR SHA-256: `779e4ef07aa605efdac24cc526d5e16d2e801dd5776763f99c801ee4f3d9b9e8`.
+
 ## Local build: 1.8.6-SNAPSHOT — Closer locked Mahjong camera and raised HUD
 
 - JDK 25 / Maven package: **499 tests passed**, zero failures, errors or skipped tests. Before implementation, regressions failed at the old camera radius (1.65 rather than 0.65) and floating HUD height (0.85 rather than 1.25).

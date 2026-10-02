@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.8.7-SNAPSHOT
+
+- Replace the Mahjong Shift view with a private marker camera in temporary Spectator mode. Lock position and orientation, hide the player and equipment, and make the view read-only until release. Preserve the previous eye position.
+- Cancel movement through Paper's internal correction rather than changing the move destination, which could trigger a plugin teleport and end the previous lock.
+- Restore mode, flight, pose, gravity and invisibility; retain camera state when another plugin vetoes mode restoration, and recover interrupted sessions from player data. Roll back a rejected camera connection.
+- Block spectator-menu teleports and target switching during focus; keep command/plugin teleports authoritative. Check camera eye clearance separately from player return clearance.
+- Double Riichi stick length from 0.12 to 0.24 blocks without adding model entities.
+- Document measured Mahjong and Color Eight display counts, dense-hand rendering costs and the absence of client FPS measurements. No model simplification, production deployment or public Release.
+
 ## 1.8.6-SNAPSHOT
 
 - Move the Mahjong Shift camera exactly 1 block toward the table center and 0.2 blocks down, to a seat-relative radius of 0.65 and height of 0.88. Keep position locked with free mouse aiming, temporary invisibility and restoration on release. Standing hands and apron indicators may lie behind this closer camera.

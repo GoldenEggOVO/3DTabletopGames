@@ -47,10 +47,10 @@ final class MahjongTableHud implements AutoCloseable {
             counts.add(text(number,true));
             Location stick=origin.clone().add(.38*Math.sin(angle),.029,.38*Math.cos(angle));
             stick.setYaw(-90*seat);
-            BlockDisplay body=block(stick,Material.WHITE_CONCRETE,.12f,.006f,.018f);
+            BlockDisplay body=block(stick,Material.WHITE_CONCRETE,.24f,.006f,.018f);
             BlockDisplay dot=block(stick.clone().add(0,.007,0),Material.RED_CONCRETE,.012f,.002f,.012f);
             sticks.add(List.of(body,dot));
-            visible(body,false,.12f,.006f,.018f);visible(dot,false,.012f,.002f,.012f);
+            visible(body,false,.24f,.006f,.018f);visible(dot,false,.012f,.002f,.012f);
         }
         status=text(origin.clone().add(0,1.25,0),false);
         discard=text(origin.clone().add(0,1.12,0),false);
@@ -87,7 +87,7 @@ final class MahjongTableHud implements AutoCloseable {
             boolean next=!lobby&&Boolean.parseBoolean(info.getOrDefault("riichi."+seat,"false"));
             if(declared[seat]==next)continue;
             declared[seat]=next;
-            visible(sticks.get(seat).get(0),next,.12f,.006f,.018f);
+            visible(sticks.get(seat).get(0),next,.24f,.006f,.018f);
             visible(sticks.get(seat).get(1),next,.012f,.002f,.012f);
         }
         if(lobby) {

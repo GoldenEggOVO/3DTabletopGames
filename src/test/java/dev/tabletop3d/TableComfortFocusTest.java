@@ -3,6 +3,7 @@ package dev.tabletop3d;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.event.player.*;
 import org.junit.jupiter.api.*;
 import org.mockbukkit.mockbukkit.MockBukkit;
@@ -24,9 +25,9 @@ class TableComfortFocusTest {
             double angle=2*Math.PI*seat/4;
             assertEquals(Math.sin(angle)*(1.65-1),focus.getX(),.0001);
             assertEquals(Math.cos(angle)*(1.65-1),focus.getZ(),.0001);
-            double eyeAboveFelt=focus.getY()+1.27-original.getY()-TableGeometry.SURFACE;
+            double eyeAboveFelt=focus.getY()-original.getY()-TableGeometry.SURFACE;
             assertTrue(Math.hypot(Math.hypot(focus.getX(),focus.getZ()),eyeAboveFelt)<Math.hypot(Math.hypot(original.getX(),original.getZ()),1.62-TableGeometry.SURFACE),"Focus brings the eye closer to the table center");
-            assertEquals(original.getY()+1.08-.2,focus.getY(),.0001);
+            assertEquals(original.getY()+1.08-.2+1.27,focus.getY(),.0001);
             assertTrue(focus.getPitch()>55&&focus.getPitch()<65);
             assertTrue(focus.getDirection().dot(new org.bukkit.util.Vector(-focus.getX(),0,-focus.getZ()))>0);
             verify(f.player).setGravity(false);verify(f.player).setInvisible(true);f.input(false);
@@ -34,12 +35,13 @@ class TableComfortFocusTest {
             assertEquals(original,f.location.get());assertFalse(f.comfort.focused(f.player));verify(f.player).setGravity(true);
         }
     }
-    @Test void movementIsAnchoredButAimRemainsAvailable(){
+    @Test void movementAndAimAreCancelledWithoutPaperCorrectionTeleport(){
         Fixture f=new Fixture(0);f.input(true);Location anchor=f.location.get().clone();
         Location attempted=anchor.clone().add(4,2,4);attempted.setYaw(57);attempted.setPitch(73);
         PlayerMoveEvent event=new PlayerMoveEvent(f.player,anchor,attempted);MockBukkit.getMock().getPluginManager().callEvent(event);
-        assertEquals(anchor.getX(),event.getTo().getX());assertEquals(anchor.getY(),event.getTo().getY());assertEquals(anchor.getZ(),event.getTo().getZ());
-        assertEquals(57,event.getTo().getYaw());assertEquals(73,event.getTo().getPitch());
+        assertTrue(event.isCancelled());
+        assertTrue(f.comfort.focused(f.player));assertEquals(anchor,f.location.get());
+        assertEquals(anchor,f.cameraLocation.get());verify(f.player,times(1)).teleport(any(Location.class));
     }
     @Test void externalTeleportWinsAndHoldingShiftDoesNotReenter(){
         Fixture f=new Fixture(0);f.input(true);Location external=new Location(f.world,20,85,20);
@@ -141,8 +143,96 @@ class TableComfortFocusTest {
             verify(peer).showPlayer(f.plugin,f.player);verify(f.player,never()).setInvisible(false);
         }
     }
+    @Test void fixedSpectatorCameraHidesEquipmentWithoutChangingInventoryAndRestoresFlight(){
+        Fixture f=new Fixture(0);when(f.player.getAllowFlight()).thenReturn(true);when(f.player.isFlying()).thenReturn(true);
+        f.input(true);assertEquals(GameMode.SPECTATOR,f.mode.get());verify(f.player).setSpectatorTarget(f.camera);
+        verify(f.camera).setMarker(true);verify(f.camera).setVisible(false);verify(f.camera).setVisibleByDefault(false);
+        f.input(false);assertEquals(GameMode.SURVIVAL,f.mode.get());verify(f.player).setSpectatorTarget(null);
+        verify(f.player).setAllowFlight(true);verify(f.player).setFlying(true);verify(f.camera).remove();
+        verify(f.player,never()).getInventory();
+    }
+    @Test void heldShiftCannotDetachOrSwitchTheCamera(){
+        Fixture f=new Fixture(0);f.input(true);
+        var stop=new com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent(f.player,f.camera);
+        MockBukkit.getMock().getPluginManager().callEvent(stop);assertTrue(stop.isCancelled());assertTrue(f.comfort.focused(f.player));
+        var start=new com.destroystokyo.paper.event.player.PlayerStartSpectatingEntityEvent(f.player,f.camera,mock(Player.class));
+        MockBukkit.getMock().getPluginManager().callEvent(start);assertTrue(start.isCancelled());f.input(false);
+    }
+    @Test void externalGameModeChangeCleansCameraWithoutRestoringThePreviousMode(){
+        Fixture f=new Fixture(0);f.input(true);clearInvocations(f.player);
+        MockBukkit.getMock().getPluginManager().callEvent(new PlayerGameModeChangeEvent(f.player,GameMode.CREATIVE));
+        assertFalse(f.comfort.focused(f.player));verify(f.camera).remove();verify(f.player,never()).setGameMode(any());assertTrue(f.saved.isEmpty());
+    }
+    @Test void savedFocusRecoversModeFlagsAndSeatAfterAnInterruptedSession(){
+        Fixture f=new Fixture(0);Location original=f.location.get().clone();f.input(true);
+        assertFalse(f.saved.isEmpty());
+        try(var bukkit=mockStatic(Bukkit.class,CALLS_REAL_METHODS)){
+            bukkit.when(()->Bukkit.getWorld(f.world.getUID())).thenReturn(f.world);
+            TableComfort restarted=new TableComfort(f.plugin);MockBukkit.getMock().getPluginManager().callEvent(new PlayerJoinEvent(f.player,net.kyori.adventure.text.Component.empty()));
+            assertEquals(GameMode.SURVIVAL,f.mode.get());assertEquals(original,f.location.get());assertTrue(f.saved.isEmpty());
+        }
+    }
+    @Test void recoveryDoesNotOverrideAnExternalGameModeAndNormalExitClearsJournal(){
+        Fixture f=new Fixture(0);f.input(true);f.mode.set(GameMode.CREATIVE);clearInvocations(f.player);
+        TableComfort restarted=new TableComfort(f.plugin);MockBukkit.getMock().getPluginManager().callEvent(new PlayerJoinEvent(f.player,net.kyori.adventure.text.Component.empty()));
+        verify(f.player,never()).setGameMode(any());assertEquals(GameMode.CREATIVE,f.mode.get());assertTrue(f.saved.isEmpty());verify(f.player).setGravity(true);verify(f.player).setInvisible(false);verify(f.player).setCollidable(true);
+        Fixture normal=new Fixture(0);normal.input(true);normal.input(false);assertTrue(normal.saved.isEmpty());
+    }
+    @Test void rejectedCameraAttachmentRollsBackToOriginalModeAndPose(){
+        Fixture f=new Fixture(0);Location original=f.location.get().clone();
+        doNothing().when(f.player).setSpectatorTarget(any());
+        f.input(true);assertFalse(f.comfort.focused(f.player));assertEquals(GameMode.SURVIVAL,f.mode.get());
+        assertEquals(original,f.location.get());verify(f.camera).remove();assertTrue(f.saved.isEmpty());
+    }
+    @Test void rejectedExitModeRetainsFixedCameraUntilRestorationCanSucceed(){
+        Fixture f=new Fixture(0);Location original=f.location.get().clone();f.input(true);Location anchor=f.location.get().clone();
+        doAnswer(inv->{if(inv.getArgument(0)!=GameMode.SURVIVAL)f.mode.set(inv.getArgument(0));return null;}).when(f.player).setGameMode(any());
+        f.input(false);assertTrue(f.comfort.focused(f.player));assertEquals(GameMode.SPECTATOR,f.mode.get());
+        assertEquals(anchor,f.location.get());assertEquals(f.camera,f.target.get());verify(f.camera,never()).remove();assertFalse(f.saved.isEmpty());
+        doAnswer(inv->{f.mode.set(inv.getArgument(0));return null;}).when(f.player).setGameMode(any());
+        f.sync();assertFalse(f.comfort.focused(f.player));assertEquals(GameMode.SURVIVAL,f.mode.get());
+        assertEquals(original,f.location.get());assertTrue(f.saved.isEmpty());
+    }
+    @Test void vetoedModeRestorationDuringTerminationRemovesCameraAndRetainsRecoveryJournal(){
+        for(int reason=0;reason<3;reason++){
+            Fixture f=new Fixture(0);f.input(true);
+            doNothing().when(f.player).setGameMode(any());
+            if(reason==0)f.comfort.quit(new PlayerQuitEvent(f.player,net.kyori.adventure.text.Component.empty()));
+            else if(reason==1){try(var bukkit=mockStatic(Bukkit.class,CALLS_REAL_METHODS)){bukkit.when(Bukkit::getOnlinePlayers).thenReturn(List.of(f.player));f.comfort.close();}}
+            else{Location external=new Location(f.world,20,85,20);f.player.teleport(external);assertEquals(external,f.location.get());}
+            assertFalse(f.comfort.focused(f.player));verify(f.camera).remove();assertNull(f.target.get());
+            verify(f.player).setGravity(true);verify(f.player).setInvisible(false);assertFalse(f.saved.isEmpty());
+        }
+    }
+    @Test void cameraNeedsClearEyeSpaceWithoutRequiringPlayerHeightAboveTheEye(){
+        for(int ceiling:List.of(82,83)){
+            Fixture f=new Fixture(0);Block solid=mock(Block.class);
+            when(f.world.getBlockAt(any(Location.class))).thenAnswer(inv->((Location)inv.getArgument(0)).getY()>=ceiling?solid:f.block);
+            when(f.world.getBlockAt(anyInt(),anyInt(),anyInt())).thenAnswer(inv->(int)inv.getArgument(1)>=ceiling?solid:f.block);
+            f.input(true);assertEquals(ceiling==83,f.comfort.focused(f.player));
+            f.input(false);
+        }
+    }
+    @Test void spectatorPlayerTeleportMenuCannotGrantASeatedPlayerRemoteTeleport(){
+        Fixture f=new Fixture(0);f.input(true);Location anchor=f.location.get().clone();
+        PlayerTeleportEvent event=new PlayerTeleportEvent(f.player,anchor,new Location(f.world,1000,90,1000),PlayerTeleportEvent.TeleportCause.SPECTATE);
+        MockBukkit.getMock().getPluginManager().callEvent(event);
+        assertTrue(event.isCancelled());assertTrue(f.comfort.focused(f.player));assertEquals(anchor,f.location.get());assertEquals(GameMode.SPECTATOR,f.mode.get());
+        f.input(false);
+    }
+    @Test void internallyAttachingTheMarkerCameraStillAllowsItsSpectateTeleport(){
+        Fixture f=new Fixture(0);
+        doAnswer(inv->{
+            org.bukkit.entity.Entity next=inv.getArgument(0);
+            if(next!=null){var event=new PlayerTeleportEvent(f.player,f.location.get().clone(),next.getLocation(),PlayerTeleportEvent.TeleportCause.SPECTATE);
+                MockBukkit.getMock().getPluginManager().callEvent(event);assertFalse(event.isCancelled());}
+            f.target.set(next);return null;
+        }).when(f.player).setSpectatorTarget(any());
+        f.input(true);assertTrue(f.comfort.focused(f.player));assertEquals(f.camera,f.target.get());f.input(false);
+    }
     static final class Fixture {
         final Tabletop3D plugin=mock(Tabletop3D.class);final Player player=mock(Player.class);final World world=mock(World.class);final Block block=mock(Block.class);
+        final AtomicReference<org.bukkit.entity.Entity> target=new AtomicReference<>();final Map<org.bukkit.NamespacedKey,String> saved=new HashMap<>();final ArmorStand camera=mock(ArmorStand.class);final AtomicReference<Location> cameraLocation=new AtomicReference<>();final AtomicReference<GameMode> mode=new AtomicReference<>(GameMode.SURVIVAL);
         final Room room=new Room(UUID.randomUUID(),"mahjong",4,0,0);final AtomicReference<Location> location=new AtomicReference<>();final TableComfort comfort;
         Fixture(int seat){
             when(plugin.getName()).thenReturn("3dtabletop");when(plugin.isEnabled()).thenReturn(true);when(plugin.getServer()).thenReturn(MockBukkit.getMock());
@@ -150,6 +240,16 @@ class TableComfortFocusTest {
             plugin.arena=mock(GameWorld.class);when(plugin.room(player)).thenReturn(room);when(plugin.allowed(player)).thenReturn(true);
             when(plugin.arena.atTableWorld(player,room)).thenReturn(true);when(plugin.arena.center(0)).thenAnswer(inv->new Location(world,0,80,0));
             when(world.getBlockAt(anyInt(),anyInt(),anyInt())).thenReturn(block);when(world.getBlockAt(any(Location.class))).thenReturn(block);when(block.isPassable()).thenReturn(true);
+            var data=mock(org.bukkit.persistence.PersistentDataContainer.class);when(player.getPersistentDataContainer()).thenReturn(data);
+            when(data.get(any(),eq(org.bukkit.persistence.PersistentDataType.STRING))).thenAnswer(inv->saved.get(inv.getArgument(0)));
+            doAnswer(inv->{saved.put(inv.getArgument(0),inv.getArgument(2));return null;}).when(data).set(any(),eq(org.bukkit.persistence.PersistentDataType.STRING),anyString());
+            doAnswer(inv->{saved.remove(inv.getArgument(0));return null;}).when(data).remove(any());
+            when(world.getUID()).thenReturn(UUID.randomUUID());
+            when(player.getSpectatorTarget()).thenAnswer(inv->target.get());doAnswer(inv->{target.set(inv.getArgument(0));return null;}).when(player).setSpectatorTarget(any());
+            when(player.getGameMode()).thenAnswer(inv->mode.get());doAnswer(inv->{mode.set(inv.getArgument(0));return null;}).when(player).setGameMode(any());
+            when(camera.isValid()).thenReturn(true);when(camera.getPersistentDataContainer()).thenReturn(mock(org.bukkit.persistence.PersistentDataContainer.class));
+            when(camera.getLocation()).thenAnswer(inv->cameraLocation.get().clone());
+            when(world.spawn(any(Location.class),eq(ArmorStand.class),any(java.util.function.Consumer.class))).thenAnswer(inv->{cameraLocation.set(((Location)inv.getArgument(0)).clone());((java.util.function.Consumer<ArmorStand>)inv.getArgument(2)).accept(camera);return camera;});
             UUID id=UUID.randomUUID();when(player.getUniqueId()).thenReturn(id);when(player.getWorld()).thenReturn(world);
             for(int i=0;i<seat;i++)room.join(UUID.randomUUID(),"other");room.join(id,"player");
             double angle=2*Math.PI*seat/4;location.set(new Location(world,Math.sin(angle)*2.25,80,Math.cos(angle)*2.25,33,21));

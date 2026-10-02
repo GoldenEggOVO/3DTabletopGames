@@ -133,9 +133,16 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         Location original=new Location(world,32,83,2.25,33,21);
         var location=new java.util.concurrent.atomic.AtomicReference<>(original.clone());
         boolean[] gravity={true},collision={true},cancelReturn={false},invisible={false};
+        var mode=new java.util.concurrent.atomic.AtomicReference<>(org.bukkit.GameMode.SURVIVAL);
+        var camera=new java.util.concurrent.atomic.AtomicReference<org.bukkit.entity.Entity>();
         Player player=(Player)Proxy.newProxyInstance(Player.class.getClassLoader(),new Class<?>[]{Player.class},(proxy,method,args)->switch(method.getName()){
             case "getUniqueId"->id;case "getName"->"FocusProbe";case "getWorld"->location.get().getWorld();
-            case "getLocation"->location.get().clone();case "getY"->location.get().getY();case "getGameMode"->org.bukkit.GameMode.SURVIVAL;
+            case "getLocation"->location.get().clone();case "getY"->location.get().getY();case "getGameMode"->mode.get();
+            case "setGameMode"->{mode.set((org.bukkit.GameMode)args[0]);yield null;}
+            case "getAllowFlight","isFlying"->false;
+            case "getPersistentDataContainer"->world.getPersistentDataContainer();
+            case "getSpectatorTarget"->camera.get();
+            case "setSpectatorTarget"->{camera.set((org.bukkit.entity.Entity)args[0]);yield null;}
             case "isOnline","isValid","hasPermission","isPermissionSet"->true;
             case "isDead","isInsideVehicle","isOp"->false;
             case "hasGravity"->gravity[0];case "setGravity"->{gravity[0]=(boolean)args[0];yield null;}
@@ -157,15 +164,22 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         };
         try {
             input.accept(true);require((boolean)call(comfort,"focused",new Class<?>[]{Player.class},player),"real event registration enters focus");
-            require(!gravity[0]&&!collision[0]&&invisible[0]&&Math.abs(location.get().getX()-32)<.0001&&Math.abs(location.get().getY()-83.88)<.0001&&Math.abs(location.get().getZ()-.65)<.0001,"focus owns gravity, collision and invisibility at close position");
+            require(!gravity[0]&&!collision[0]&&invisible[0]&&Math.abs(location.get().getX()-32)<.0001&&Math.abs(location.get().getY()-85.15)<.0001&&Math.abs(location.get().getZ()-.65)<.0001,"focus owns gravity, collision and invisibility at close position");
+            require(mode.get()==org.bukkit.GameMode.SPECTATOR&&camera.get() instanceof org.bukkit.entity.ArmorStand stand&&stand.isMarker()&&!stand.isVisible()&&!stand.isVisibleByDefault()&&stand.getEyeHeight()==0,"fixed private marker camera replaces the player and equipment view");
+            org.bukkit.entity.Entity target=camera.get();
             Location anchor=location.get().clone(),attempt=anchor.clone().add(3,1,3);attempt.setYaw(70);
             var move=new org.bukkit.event.player.PlayerMoveEvent(player,anchor,attempt);Bukkit.getPluginManager().callEvent(move);
-            require(move.getTo().distanceSquared(anchor)<1e-8&&move.getTo().getYaw()==70,"real event pipeline locks position and preserves aim");
-            input.accept(false);require(location.get().equals(original)&&gravity[0]&&!invisible[0],"input release restores pose, gravity and visibility");
+            getLogger().info("BOARDS_FOCUS_CAMERA cancelled="+move.isCancelled()+" anchored="+location.get().equals(anchor)+" anchor_yaw="+anchor.getYaw()+" camera_yaw="+target.getLocation().getYaw()+" anchor_pitch="+anchor.getPitch()+" camera_pitch="+target.getLocation().getPitch());
+            require(move.isCancelled()&&location.get().equals(anchor)&&Math.abs(Math.IEEEremainder(target.getLocation().getYaw()-anchor.getYaw(),360))<.0001&&Math.abs(target.getLocation().getPitch()-anchor.getPitch())<.0001,"real event pipeline cancels movement and aim without a correction plugin teleport");
+            var remote=new org.bukkit.event.player.PlayerTeleportEvent(player,anchor,anchor.clone().add(100,0,100),org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.SPECTATE);
+            Bukkit.getPluginManager().callEvent(remote);require(remote.isCancelled()&&(boolean)call(comfort,"focused",new Class<?>[]{Player.class},player),"spectator menu cannot grant remote teleport");
+            var detach=new com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent(player,target);Bukkit.getPluginManager().callEvent(detach);
+            require(detach.isCancelled(),"held Shift cannot detach the camera");
+            input.accept(false);require(location.get().equals(original)&&gravity[0]&&!invisible[0]&&mode.get()==org.bukkit.GameMode.SURVIVAL&&camera.get()==null&&!target.isValid(),"input release restores mode, pose, gravity, visibility and removes camera");
             input.accept(true);Location external=new Location(world,50,83,0);player.teleport(external);input.accept(true);input.accept(false);
             require(location.get().equals(external)&&gravity[0]&&collision[0],"external teleport wins without focus reentry");
             location.set(original.clone());input.accept(true);cancelReturn[0]=true;input.accept(false);
-            require(!(boolean)call(comfort,"focused",new Class<?>[]{Player.class},player)&&gravity[0]&&!invisible[0]&&Math.abs(location.get().getY()-83.88)<.0001,"cancelled return clears focus flags without overriding cancellation");
+            require(!(boolean)call(comfort,"focused",new Class<?>[]{Player.class},player)&&gravity[0]&&!invisible[0]&&Math.abs(location.get().getY()-85.15)<.0001,"cancelled return clears focus flags without overriding cancellation");
             getLogger().info("BOARDS_FOCUS_EVENTS_PASS proxy_player=true real_event_bus=true real_world_clearance=true native_player_physics=false client_visual_test=false");
         } finally {
             cancelReturn[0]=false;input.accept(false);call(comfort,"release",new Class<?>[]{Player.class},player);rooms.remove(roomId);

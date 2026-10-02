@@ -200,7 +200,8 @@ final class GameWorld implements Listener, AutoCloseable {
             if(!plugin.allowed(player)||player.getEyeLocation().distanceSquared(view.origin)>36){view.clear(player);continue;}
             Pick pick=selections.get(player.getUniqueId());
             if(pick!=null&&(!pick.room().equals(room.id)||pick.revision()!=room.revision)){selections.remove(player.getUniqueId());pick=null;}
-            view.cursor(player,pick,aimed(player,view));
+            if(plugin.comfort!=null&&plugin.comfort.focused(player))view.cursor(player,null,null);
+            else view.cursor(player,pick,aimed(player,view));
         }
     }
 
@@ -299,6 +300,11 @@ final class GameWorld implements Listener, AutoCloseable {
     private boolean worldClick(Player player,boolean rightClick) {
         if(!plugin.allowed(player))return false;
         boolean focused=plugin.comfort!=null&&plugin.comfort.focused(player);
+        if(focused){
+            Room room=plugin.room(player);
+            if(rightClick&&room!=null){plugin.comfort.release(player);plugin.menus.room(player,room);}
+            return true;
+        }
         if(player.isSneaking()&&!focused&&plugin.tableLobby!=null)return false;
         Room room=plugin.room(player);TableView view=room==null?null:views.get(room.id);if(view==null||room.board==null||!player.getWorld().equals(view.origin.getWorld()))return false;
         String cell=aimed(player,view);
