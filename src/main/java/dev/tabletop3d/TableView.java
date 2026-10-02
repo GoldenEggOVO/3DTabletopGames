@@ -43,7 +43,7 @@ final class TableView implements AutoCloseable {
     private TableAudience boardAudience;
     private final List<Entity> nativeBoardFurniture = new ArrayList<>();
     private ItemDisplay packedBoard;
-    private long boardAudienceGeneration = -1;
+    private int boardLayers = -1;
     private long revision = -1;
     private int renderedHistory;
     private Component lastTitle;
@@ -247,7 +247,7 @@ final class TableView implements AutoCloseable {
                     parts.add(display);
                 }
             else if (!dead && !deadMarks.isEmpty()) {
-                deadMarks.forEach(Entity::remove);
+                deadMarks.forEach(boardAudience::remove);
                 parts.removeAll(deadMarks);
                 deadMarks.clear();
             }
@@ -851,7 +851,7 @@ final class TableView implements AutoCloseable {
         tokens.clear();
         tokens.putAll(next);
         if (changed) {
-            lastMove.forEach(Entity::remove);
+            lastMove.forEach(boardAudience::remove);
             lastMove.clear();
             lastDestination = move.length >= 3 ? move[2] : move.length == 2 ? move[1] : null;
             if (lastDestination != null && geometry.byId.containsKey(lastDestination))
@@ -892,9 +892,10 @@ final class TableView implements AutoCloseable {
             boardAudience.remove(packedBoard);
             packedBoard = null;
         }
-        if (boardAudienceGeneration != boardAudience.generation) {
+        int neededLayers = (boardAudience.needed(false) ? 1 : 0) | (boardAudience.needed(true) ? 2 : 0);
+        if (boardLayers != neededLayers) {
             for (TokenView token : tokens.values()) token.rebuildLayers();
-            boardAudienceGeneration = boardAudience.generation;
+            boardLayers = neededLayers;
         }
     }
 
@@ -1473,9 +1474,9 @@ final class TableView implements AutoCloseable {
         handFurniture.forEach(Entity::remove);
         if (packedTable != null) packedTable.remove();
         if (packedBoard != null) boardAudience.remove(packedBoard);
-        furniture.forEach(Entity::remove);
+        furniture.forEach(entity -> { if (boardAudience == null) entity.remove(); else boardAudience.remove(entity); });
         overlays.values().forEach(Overlay::remove);
         overlays.clear();
-        lastMove.forEach(Entity::remove);
+        lastMove.forEach(boardAudience::remove);
     }
 }

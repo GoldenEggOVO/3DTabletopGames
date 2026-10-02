@@ -87,6 +87,18 @@ class ResourcePackTest(unittest.TestCase):
             self.archive.read("assets/tabletop3d/models/item/board_connectfour.json"))["elements"]),
             "Hole walls need real depth")
 
+    def test_round_piece_caps_are_round_including_vertical_discs(self):
+        for name in ("stone_black", "draught_white", "xiangqi_red_general", "chess_black_pawn", "reversi_disc", "connectfour_red", "poker_chips"):
+            data=json.loads(self.archive.read(f"assets/tabletop3d/models/item/{name}.json"))
+            caps=[face for part in data["elements"] for face in part["faces"].values()
+                  if face["texture"].endswith("_cap") or face["texture"]=="#engraving"]
+            self.assertTrue(caps,name)
+            for cap in caps:
+                path="assets/"+data["textures"][cap["texture"][1:]].replace(":","/textures/")+".png"
+                image=Image.open(io.BytesIO(self.archive.read(path))).convert("RGBA")
+                self.assertEqual(0,image.getpixel((0,0))[3],name)
+                self.assertEqual(255,image.getpixel((image.width//2,image.height//2))[3],name)
+
     def test_tile_and_card_faces_point_to_owner_and_up_when_flat(self):
         # Minecraft 26.2 ignores display.none; ItemTransforms reads fixed.
         # ItemDisplay adds Y180, then the Java -90 X lays the face upward.

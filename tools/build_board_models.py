@@ -13,13 +13,39 @@ MATERIALS = {
 }
 
 
-def build(root, texture, model, cube, disc, rounded_square, face_model, pixel_text):
+def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_model, pixel_text):
     source = root / "target/board-model-source"
     if not (source/"meshes.json").exists():
         raise ValueError("Run Maven -Dtest=BoardModelExportTest test before building the pack")
     material_textures = {name:texture("surface/material-"+name.lower(),Image.new("RGB",(16,16),color))
                          for name,color in MATERIALS.items()}
     wood = "tabletop3d:item/surface/wood"
+
+    def round_image(image):
+        image=image.convert("RGBA")
+        mask=Image.new("L",image.size)
+        ImageDraw.Draw(mask).ellipse((0,0,image.width-1,image.height-1),fill=255)
+        from PIL import ImageChops
+        image.putalpha(ImageChops.multiply(image.getchannel("A"),mask))
+        return image
+
+    def disc(radius,y,height,side,cap,segments=64):
+        parts=disc_mesh(radius,y,height,side,cap,segments)
+        for part in parts:
+            for direction in ("up","down"):
+                if direction in part["faces"]:
+                    part["faces"][direction]["texture"]="#"+cap+"_cap"
+        return parts
+
+    def model(name,textures,parts):
+        textures=dict(textures)
+        caps={face["texture"][1:] for part in parts for face in part["faces"].values()
+              if face["texture"].endswith("_cap")}
+        for cap in caps:
+            original=textures[cap[:-4]]
+            path=root/"target/resource-pack-build/assets"/(original.replace(":","/textures/")+".png")
+            textures[cap]=texture("surface/round-"+original.split("/")[-1],round_image(Image.open(path)))
+        export_model(name,textures,parts)
 
     def block(x,y,z,w,h,d,material="STRIPPED_BIRCH_WOOD",scale=1):
         part = cube([8+(x-w/2)*16/scale,8+y*16/scale,8+(z-d/2)*16/scale],
@@ -102,7 +128,7 @@ def build(root, texture, model, cube, disc, rounded_square, face_model, pixel_te
                     ink="#b52324" if side=="red" else "#22242b"
                     draw.ellipse((5,5,122,122),outline=ink,width=3)
                     draw.text((64,63),glyphs[piece][0 if side=="red" else 1],font=ImageFont.truetype("C:/Windows/Fonts/msyh.ttc",82),fill=ink,anchor="mm")
-                    textures["engraving"]=texture("surface/"+name,image)
+                    textures["engraving"]=texture("surface/"+name,round_image(image))
                     parts[0]["faces"]["up"]["texture"]="#engraving"
         else:
             parts=[block(p["x"],p["y"],p["z"],p["w"],p["h"],p["d"],p["material"]) for p in native]
@@ -185,6 +211,22 @@ def build(root, texture, model, cube, disc, rounded_square, face_model, pixel_te
     for name,color,squash in (("doudizhu_table","#286346",1),("liars_bar_table","#473129",1),("texas_holdem_table","#245346",.76)):
         im=Image.new("RGBA",(512,512));d=ImageDraw.Draw(im)
         d.ellipse((0,0,511,511),fill="#38251d");d.ellipse((19,19,492,492),fill=color,outline="#bd9955",width=2)
+        if name=="doudizhu_table":
+            for angle in (0,120,240):
+                x=256+178*math.sin(math.radians(angle));y=256+178*math.cos(math.radians(angle))
+                d.ellipse((x-15,y-15,x+15,y+15),outline="#b3c995",width=2)
+            for x in (209,256,303):d.rounded_rectangle((x-18,164,x+18,216),4,outline="#89a282",width=2)
+        elif name=="liars_bar_table":
+            d.rounded_rectangle((213,206,299,322),7,outline="#bd9955",width=2)
+            for i in range(6):
+                angle=math.radians(i*60);x=256+93*math.sin(angle);y=256+93*math.cos(angle)
+                d.ellipse((x-8,y-8,x+8,y+8),outline="#96795b",width=2)
+        else:
+            for x in (154,205,256,307,358):
+                d.rounded_rectangle((x-20,224,x+20,294),4,outline="#87ac92",width=2)
+            for angle in range(0,360,60):
+                x=256+177*math.sin(math.radians(angle));y=256+177*math.cos(math.radians(angle))
+                d.ellipse((x-11,y-11,x+11,y+11),outline="#bd9955",width=2)
         toptex=texture("surface/"+name,im)
         parts=disc(1.5,-.19,.19,"wood","top")+disc(.25,-.95125,.76125,"wood","wood",32)+disc(.70,-1.03125,.08,"wood","wood",48)
         if squash != 1:

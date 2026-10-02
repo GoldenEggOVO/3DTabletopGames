@@ -71,6 +71,20 @@ class PackedBoardRenderingTest {
         }
     }
 
+    @Test void retiredHighlightsAreUnregisteredAndClosingClearsEveryLayer() throws Exception {
+        var f=new TableViewTest.Fixture("reversi");
+        packed(f); f.view.tick();
+        for(int i=0;i<20&&!f.room.board.finished();i++) {
+            f.move(f.room.board.legalActions(f.room.board.currentPlayer()).getFirst());
+            Map<?,?> layers=(Map<?,?>)field(field(f.view,"boardAudience"),"layers");
+            for(Object entity:layers.keySet())
+                assertTrue(mockingDetails(entity).getInvocations().stream()
+                        .noneMatch(call -> call.getMethod().getName().equals("remove")),"Retired entity is still registered");
+        }
+        f.view.close();
+        assertTrue(((Map<?,?>)field(field(f.view,"boardAudience"),"layers")).isEmpty());
+    }
+
     private Object field(Object object,String name) throws Exception {
         var field=object.getClass().getDeclaredField(name);field.setAccessible(true);return field.get(object);
     }
