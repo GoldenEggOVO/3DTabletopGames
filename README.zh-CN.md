@@ -6,6 +6,8 @@
 
 支持 **Paper／Purpur 26.2、Java 25**。无需资源包或客户端模组，可独立安装；AuthMe 为可选接入。
 
+1.8.8-SNAPSHOT 增加可选 CraftEngine 图片模型与独立音效包，支持纯原版、纯资源包及玩家自选的混合模式。默认仍为纯原版。见 [安装与配置](docs/craftengine.zh-CN.md) 和 [实体数量对照](docs/model-counts.zh-CN.md)。
+
 ## 安装
 
 1. 从 [Releases](https://github.com/GoldenEggOVO/3DTabletopGames/releases) 下载已发布版本。

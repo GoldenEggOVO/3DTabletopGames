@@ -53,6 +53,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 return;
             }
             World world = Bukkit.getWorlds().getFirst();
+            if(Boolean.getBoolean("boards.probe.craftengine")){craftEngineProbe(boards,world);return;}
             soundProbe(boards, world);
             modelProbe(boards, world);
             focusProbe(boards, world);
@@ -226,7 +227,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     for(int tick=0;tick<4;tick++)call(hand,"tick",new Class<?>[0]);
                     require(Math.abs(body.getLocation().getY()-y)<.0001,"hover exit restores the same card entity");
                     Object ring=field(hand,"turnRing");List<?> segments=(List<?>)field(ring,"parts");
-                    require(segments.size()==36,"native curved turn ring");
+                    require(segments.size()==24,"native curved turn ring");
                     var segment=(org.bukkit.entity.Entity)call(segments.getFirst(),"entity",new Class<?>[0]);
                     Location before=segment.getLocation();
                     for(int tick=0;tick<10;tick++)call(hand,"tick",new Class<?>[0]);
@@ -242,7 +243,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     var remaining=(org.bukkit.entity.TextDisplay)field(own,"remaining");privateParts.add(remaining);
                     require(!remaining.isVisibleByDefault()&&plain(remaining.text()).startsWith("Remaining: "),"native remaining label is owner-only");
                     Object hud=field(hand,"mahjongHud");
-                    require(((List<?>)field(hud,"entities")).size()==23,"native Mahjong HUD has bounded entity inventory");
+                    require(((List<?>)field(hud,"entities")).size()==27,"native Mahjong HUD has bounded entity inventory");
                     var count=(org.bukkit.entity.TextDisplay)((List<?>)field(hud,"counts")).getFirst();
                     require(plain(count.text()).equals(Integer.toString(((HandGame)board.get(room)).deckSize())),"native tabletop count matches drawable wall");
                     call(hand,"hover",new Class<?>[]{Player.class,String.class},owner,null);
@@ -304,6 +305,27 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             } finally {call(view,"close",new Class<?>[0]);}
         }
         getLogger().info("BOARDS_HAND_MODELS_PASS games=lastcard,taiwan,riichi private_by_default=true spectator_faces=0 client_visual_test=false");
+    }
+
+    private void craftEngineProbe(Plugin plugin,World world)throws Exception{
+        world.getChunkAt(0,0).addPluginChunkTicket(this);
+        Plugin ce=Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("CraftEngine"));
+        require(ce.isEnabled(),"CraftEngine enabled");
+        Class<?> type=Class.forName("dev.tabletop3d.CraftEngineModels",true,plugin.getClass().getClassLoader());
+        var ctor=type.getDeclaredConstructor();ctor.setAccessible(true);Object models=ctor.newInstance();
+        require((boolean)call(models,"ready",new Class<?>[0]),"all CE models registered and buildable");
+        Field ids=type.getDeclaredField("IDS");ids.setAccessible(true);int count=0;
+        for(Object id:(List<?>)ids.get(null)){
+            org.bukkit.inventory.ItemStack item=(org.bukkit.inventory.ItemStack)call(models,"item",new Class<?>[]{String.class},id);
+            require(item.getType()==org.bukkit.Material.PAPER,"CE carrier");
+            require(new org.bukkit.NamespacedKey("tabletop3d",id.toString()).equals(item.getItemMeta().getItemModel()),"item model component: "+id+" actual="+item.getItemMeta().getItemModel());
+            org.bukkit.entity.ItemDisplay display=world.spawn(new Location(world,8,84,0),org.bukkit.entity.ItemDisplay.class,d->{
+                d.setVisibleByDefault(false);d.setPersistent(false);d.setItemDisplayTransform(org.bukkit.entity.ItemDisplay.ItemDisplayTransform.NONE);d.setItemStack(item);
+            });
+            require(display.isValid()&&!display.isVisibleByDefault(),"packed display hidden before audience");
+            display.remove();count++;
+        }
+        getLogger().info("BOARDS_CRAFTENGINE_PASS models="+count+" optional_api=true client_visual_test=false");
     }
 
     /** Resolve native sounds against the real server registry and exercise their dispatch. */

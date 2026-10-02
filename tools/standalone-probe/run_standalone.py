@@ -18,6 +18,8 @@ parser.add_argument("--server-dir", type=Path, default=workspace / "table-games"
                     help="Prepared Purpur 26.2 cache with purpur-2622.jar, libraries and versions")
 parser.add_argument("--maven-repo", type=Path, default=workspace / ".tools/m2")
 parser.add_argument("--rooms-snapshot", type=Path, help="Synthetic all-bot snapshot to restore on boots 2 and 3; remaps its anchors to the fresh fixture world")
+parser.add_argument("--craftengine-jar", type=Path, help="Optional local CE binary; never bundled")
+parser.add_argument("--craftengine-cache", type=Path, help="Existing CE dependency cache (libs directory)")
 args = parser.parse_args()
 source = args.server_dir
 version = ET.parse(project / "pom.xml").getroot().find("{*}version").text
@@ -27,7 +29,9 @@ shutil.copy2(source / "purpur-2622.jar", runtime / "purpur-2622.jar")
 for name in ("libraries", "versions", "cache"):
     if (source / name).is_dir():
         shutil.copytree(source / name, runtime / name)
-(runtime / "eula.txt").write_text("eula=true\n", encoding="utf-8")
+if "eula=true" not in (source / "eula.txt").read_text(encoding="utf-8"):
+    raise RuntimeError("Source fixture must already have an accepted EULA")
+shutil.copy2(source / "eula.txt", runtime / "eula.txt")
 (runtime / "server.properties").write_text(
     "server-ip=127.0.0.1\nserver-port=25617\nlevel-name=boards_smoke\n"
     'level-type=minecraft:flat\ngenerator-settings={"layers":[{"block":"minecraft:bedrock","height":1}],"biome":"minecraft:plains"}\n'
@@ -37,6 +41,15 @@ plugins = runtime / "plugins"
 plugins.mkdir()
 jar = project / "target" / f"3dtabletop-{version}.jar"
 shutil.copy2(jar, plugins / jar.name)
+if args.craftengine_jar:
+    shutil.copy2(args.craftengine_jar, plugins / "CraftEngine.jar")
+    ce = plugins / "CraftEngine"
+    ce.mkdir()
+    if args.craftengine_cache:
+        shutil.copytree(args.craftengine_cache / "libs", ce / "libs")
+    shutil.copytree(project / "craftengine/resources/tabletop3d", ce / "resources/tabletop3d")
+    (ce / "config.yml").write_text("metrics: false\nupdate-checker: false\nresource-pack:\n  merge-external-folders: []\n  delivery:\n    send-on-join: false\n    auto-upload: false\n    resend-on-upload: false\n    hosting: []\n", encoding="utf-8")
+
 tested_digest = hashlib.sha256((plugins / jar.name).read_bytes()).hexdigest()
 paper_api = args.maven_repo / "io/papermc/paper/paper-api/26.2.build.111-stable/paper-api-26.2.build.111-stable.jar"
 kyori = args.maven_repo / "net/kyori"
@@ -56,8 +69,9 @@ with zipfile.ZipFile(plugins / "BoardsStandaloneProbe.jar", "w", zipfile.ZIP_DEF
 
 boots = []
 snapshot_digest = None
-for number, marker in ((1, "BOARDS_STANDALONE_CREATE_PASS"), (2, "BOARDS_STANDALONE_RESTORE_PASS"),
-                       (3, "BOARDS_STANDALONE_MIGRATION_PASS")):
+boot_steps = ((1, "BOARDS_CRAFTENGINE_PASS"),) if args.craftengine_jar else ((1, "BOARDS_STANDALONE_CREATE_PASS"), (2, "BOARDS_STANDALONE_RESTORE_PASS"),
+                       (3, "BOARDS_STANDALONE_MIGRATION_PASS"))
+for number, marker in boot_steps:
     if args.rooms_snapshot and number == 2:
         snapshot_bytes = args.rooms_snapshot.read_bytes()
         snapshot_digest = hashlib.sha256(snapshot_bytes).hexdigest()
@@ -88,6 +102,7 @@ for number, marker in ((1, "BOARDS_STANDALONE_CREATE_PASS"), (2, "BOARDS_STANDAL
                                    "-Dterminal.jline=false", "-Dterminal.ansi=false",
                                    "-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8",
                                    f"-Dboards.probe.snapshot={str(snapshot_mode).lower()}",
+                                   f"-Dboards.probe.craftengine={str(bool(args.craftengine_jar)).lower()}",
                                    "-jar", "purpur-2622.jar", "nogui"],
                                   cwd=runtime, stdin=subprocess.PIPE, stdout=output,
                                   stderr=subprocess.STDOUT, text=True,
@@ -125,8 +140,8 @@ for number, marker in ((1, "BOARDS_STANDALONE_CREATE_PASS"), (2, "BOARDS_STANDAL
         if not boots[-1]["pass"]:
             break
 
-receipt = {"version": version, "jar_sha256": tested_digest, "runtime": str(runtime), "pass": len(boots) == 3 and all(boot["pass"] for boot in boots),
-           "boots": boots, "client_visual_test": False, "production_deployed": False}
+receipt = {"version": version, "jar_sha256": tested_digest, "runtime": str(runtime), "pass": len(boots) == len(boot_steps) and all(boot["pass"] for boot in boots),
+           "craftengine": bool(args.craftengine_jar), "boots": boots, "client_visual_test": False, "production_deployed": False}
 if snapshot_digest:
     receipt["snapshot_source_sha256"] = snapshot_digest
     receipt["snapshot_rooms"] = len(snapshot["rooms"])

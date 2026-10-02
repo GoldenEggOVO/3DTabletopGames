@@ -1,5 +1,7 @@
 # 3DTabletopGames
 
+1.8.8-SNAPSHOT adds optional CraftEngine rendering for Mahjong and Color Eight: vanilla, resource-pack, or mixed per-player display. Vanilla remains the default. See [installation](docs/craftengine.zh-CN.md) and [model counts](docs/model-counts.zh-CN.md).
+
 [![Build](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml/badge.svg)](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml)
 
 [English](README.md) | [简体中文](README.zh-CN.md)

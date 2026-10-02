@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.8.8-SNAPSHOT
+
+- Add optional CraftEngine item rendering and an isolated Mahjong/Color Eight resource pack, with vanilla, resource-pack and mixed per-player modes.
+- Remove unused public backends based on nearby viewers, including spectators; keep private hands private and reject stale pack callbacks.
+- Move Mahjong scores into the larger central panel, orient round/remaining text per viewer and turn zero remaining red.
+- Reduce native round-table, rounded-card and circle geometry; add detailed pack artwork, tablecloth and nine event-bound sound effects.
+- Validate 526 JUnit tests, native three-boot recovery and 111 CraftEngine item displays; client acceptance remains pending.
+
 ## 1.8.7-SNAPSHOT
 
 - Replace the Mahjong Shift view with a private marker camera in temporary Spectator mode. Lock position and orientation, hide the player and equipment, and make the view read-only until release. Preserve the previous eye position.
