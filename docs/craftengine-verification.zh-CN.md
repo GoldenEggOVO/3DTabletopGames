@@ -1,7 +1,8 @@
-# 1.8.9-SNAPSHOT 本地验证记录
+# 1.8.10-SNAPSHOT 本地验证记录
 
-- Maven `package`：537 项 JUnit 测试，失败／错误／跳过均为 0。
-- Python：7 项资源包检查通过，覆盖 111 个模型、纹理引用、朝向、圆桌外围面、像素调色板及 9 个 OGG。
+- Maven `package`：538 项 JUnit 测试，失败／错误／跳过均为 0。
+- Python：8 项资源包检查通过，覆盖 111 个模型、纹理引用、有效显示模式、圆桌外围面、像素调色板、箭头透明边缘和连续性及 9 个 OGG。
+- 调用本机 Minecraft 26.2 原始 `ItemTransforms`／`ItemTransform` 解析器：旧 `none` 变换被忽略，新 `fixed` 读取 Y180 后，立牌正面朝向拥有者，平放后朝上。诊断源文件为 `tools/client-transform-probe/ClientTransformProbe.java`；需提供本机客户端、公共代码和运行库 classpath，不分发 Minecraft 二进制。
 - 无 CraftEngine：隔离 Purpur 26.2 创建／重启恢复／旧目录迁移三次启动全部通过。
 - 有 CraftEngine：26.8.2 注册并创建、移除 111 个真实 ItemDisplay，与上项使用同一份最终 JAR。
 - 语言：独立键、中文与英文占位符、旧文件转换、父键与子键并存、权限、失败保留当前语言和成功刷新菜单均有回归检查。

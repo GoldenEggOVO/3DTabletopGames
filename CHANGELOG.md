@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.10-SNAPSHOT
+
+- Correct resource-pack facing through the supported FIXED item display context; Minecraft ignores the previous model `display.none` rotation.
+- Redraw both Color Eight direction rings as continuous curved silhouettes with filtered edges, eliminating the separate arc/head seams.
+- Verify the generated face transforms using Minecraft 26.2's actual model deserializer, plus 538 Java tests, eight asset checks and exact-JAR startup probes. Language files are unchanged.
+
 ## 1.8.9-SNAPSHOT
 
 - Use Casino-style independent language keys in `languages/en_US.yml` and `languages/zh_CN.yml`; migrate legacy translations without overwriting custom files, and add transactional `/3dtabletop reload-language`.

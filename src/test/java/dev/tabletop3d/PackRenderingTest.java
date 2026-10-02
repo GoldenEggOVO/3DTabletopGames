@@ -17,6 +17,13 @@ import static org.mockito.ArgumentMatchers.*;
 class PackRenderingTest {
     @BeforeEach void setup(){MockBukkit.mock();}
     @AfterEach void cleanup(){MockBukkit.unmock();}
+    @Test void packedHandsPublicCardsAndFurnitureUseReadableModelTransform(){
+        Fixture f=new Fixture();f.table.show(f.owner);
+        var items=f.entities.stream().filter(ItemDisplay.class::isInstance).map(ItemDisplay.class::cast).toList();
+        assertFalse(items.isEmpty());
+        for(ItemDisplay item:items)verify(item).setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);
+        f.table.close();
+    }
     @Test void fixedFullTablesCountEachBackendAndDeleteAllDisplaysOnClose() throws Exception {
         StringBuilder csv=new StringBuilder("players,mode,public_displays,private_displays,server_live,player_0_visible,player_1_visible\n");
         for(int size:new int[]{2,5})for(String mode:List.of("vanilla","mixed","resource-pack")){

@@ -13,7 +13,7 @@ final class PackedDisplay {
             d.setVisibleByDefault(false);d.setPersistent(false);d.setGravity(false);d.setInvulnerable(true);
             d.getPersistentDataContainer().set(tag,PersistentDataType.STRING,room.id+"|@board");
             d.setBrightness(new Display.Brightness(15,15));d.setViewRange(.35f);d.setTeleportDuration(2);d.setInterpolationDuration(2);
-            d.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.NONE);d.setItemStack(plugin.pack.item(id));
+            d.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);d.setItemStack(plugin.pack.item(id));
             d.setTransformation(new Transformation(new Vector3f(),rotation,scale,new Quaternionf()));
         });
         audience.add(entity,true);return entity;

@@ -51,11 +51,12 @@ class ResourcePackTest(unittest.TestCase):
             self.assertTrue(self.archive.read(path).startswith(b"OggS"))
 
     def test_tile_and_card_faces_point_to_owner_and_up_when_flat(self):
-        # ItemDisplay adds a Y half-turn after the model's display transform.
-        # The Java renderer's -90 X rotation then lays this outward face flat.
+        # Minecraft 26.2 ignores display.none; ItemTransforms reads fixed.
+        # ItemDisplay adds Y180, then the Java -90 X lays the face upward.
         for name in ("mahjong_m1", "mahjong_z1", "card_r3", "card_wild", "button_b"):
             model = json.loads(self.archive.read(f"assets/tabletop3d/models/item/{name}.json"))
-            rotation = model.get("display", {}).get("none", {}).get("rotation", [0, 0, 0])
+            self.assertNotIn("none", model.get("display", {}), "NONE cannot carry a model transform")
+            rotation = model.get("display", {}).get("fixed", {}).get("rotation", [0, 0, 0])
             self.assertEqual(0, rotation[0])
             self.assertEqual(0, rotation[2])
             effective_y = math.radians(rotation[1] + 180)
@@ -63,6 +64,24 @@ class ResourcePackTest(unittest.TestCase):
             self.assertGreater(front_z, .999, name + " must face the owner, not the back")
             flat_y = -math.sin(-math.pi / 2) * front_z
             self.assertGreater(flat_y, .999, name + " must face upward after laying flat")
+
+    def test_ring_arrows_have_smooth_alpha_edges_and_no_detached_fragments(self):
+        for name in ("ring_1", "ring_-1"):
+            im = Image.open(io.BytesIO(self.archive.read(
+                f"assets/tabletop3d/textures/item/surface/{name}.png"))).convert("RGBA")
+            self.assertTrue(any(0 < alpha < 255 for alpha in im.getchannel("A").getdata()),
+                            "Curved arrows need filtered edges instead of jagged polygon seams")
+            opaque = {point for point in ((x,y) for y in range(im.height) for x in range(im.width))
+                      if im.getpixel(point)[3] >= 128}
+            components = []
+            while opaque:
+                pending = [opaque.pop()]; size = 0
+                while pending:
+                    x,y = pending.pop(); size += 1
+                    for neighbor in ((x-1,y),(x+1,y),(x,y-1),(x,y+1)):
+                        if neighbor in opaque:opaque.remove(neighbor);pending.append(neighbor)
+                components.append(size)
+            self.assertEqual(4, len(components), "Four continuous arrows, without stray fragments")
 
     def test_forward_ring_arrowheads_follow_increasing_seat_order(self):
         # Seats advance from +Z toward +X: counterclockwise in a +X/+Z UV plane.

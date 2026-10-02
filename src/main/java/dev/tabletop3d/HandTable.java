@@ -66,7 +66,7 @@ final class HandTable implements AutoCloseable {
             if(packed){
                 String face=spec.back()?"back":spec.face().toLowerCase(Locale.ROOT).replace("draw1","draw");
                 ItemDisplay item=origin.getWorld().spawn(at,ItemDisplay.class,display->{
-                    configure(display,id,viewer);display.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.NONE);
+                    configure(display,id,viewer);display.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);
                     display.setItemStack(plugin.pack.item((mahjong?"mahjong_":"card_")+face));
                     Quaternionf rotation=spec.standing()?new Quaternionf():new Quaternionf().rotateX((float)-Math.PI/2);
                     display.setTransformation(new Transformation(new Vector3f(0,(float)(h/2),0),rotation,
@@ -233,7 +233,7 @@ final class HandTable implements AutoCloseable {
             if(audience.packed(player)){
                 String model=caption.equals(Component.empty())?"button_"+action.substring(action.lastIndexOf(':')+1):"button_pass";
                 ItemDisplay button=origin.getWorld().spawn(at,ItemDisplay.class,display->{
-                    configure(display,id,player);display.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.NONE);display.setItemStack(plugin.pack.item(model));
+                    configure(display,id,player);display.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);display.setItemStack(plugin.pack.item(model));
                     display.setTransformation(new Transformation(new Vector3f(0,.0425f,0),new Quaternionf(),new Vector3f((float)width,.085f,.014f),new Quaternionf()));
                 });
                 parts.add(button);player.showEntity(plugin,button);

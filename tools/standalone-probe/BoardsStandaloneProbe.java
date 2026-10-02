@@ -320,9 +320,10 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             require(item.getType()==org.bukkit.Material.PAPER,"CE carrier");
             require(new org.bukkit.NamespacedKey("tabletop3d",id.toString()).equals(item.getItemMeta().getItemModel()),"item model component: "+id+" actual="+item.getItemMeta().getItemModel());
             org.bukkit.entity.ItemDisplay display=world.spawn(new Location(world,8,84,0),org.bukkit.entity.ItemDisplay.class,d->{
-                d.setVisibleByDefault(false);d.setPersistent(false);d.setItemDisplayTransform(org.bukkit.entity.ItemDisplay.ItemDisplayTransform.NONE);d.setItemStack(item);
+                d.setVisibleByDefault(false);d.setPersistent(false);d.setItemDisplayTransform(org.bukkit.entity.ItemDisplay.ItemDisplayTransform.FIXED);d.setItemStack(item);
             });
             require(display.isValid()&&!display.isVisibleByDefault(),"packed display hidden before audience");
+            require(display.getItemDisplayTransform()==org.bukkit.entity.ItemDisplay.ItemDisplayTransform.FIXED,"client-readable model display transform");
             display.remove();count++;
         }
         getLogger().info("BOARDS_CRAFTENGINE_PASS models="+count+" optional_api=true client_visual_test=false");

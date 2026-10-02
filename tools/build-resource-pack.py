@@ -59,7 +59,7 @@ def model(name, textures, elements):
     CATALOG.append(name)
     write_json(ASSETS / f"models/item/{name}.json", {"gui_light": "front", "ambientocclusion": False,
                "textures": textures, "elements": elements,
-               "display": {"none": {"rotation": [0, 180, 0]}}})
+               "display": {"fixed": {"rotation": [0, 180, 0]}}})
     write_json(ASSETS / f"items/{name}.json",
                {"model": {"type": "minecraft:model", "model": f"tabletop3d:item/{name}"}})
 
@@ -286,15 +286,19 @@ def furniture():
 
 def rings():
     for direction in (1,-1):
-        im=Image.new("RGBA",(512,512));d=ImageDraw.Draw(im)
+        scale=4
+        im=Image.new("RGBA",(512*scale,512*scale));d=ImageDraw.Draw(im)
         for a in range(4):
-            start=a*90-30;d.arc((24,24,488,488),start,start+60,fill=CREAM,width=16)
-            # Increasing seats travel +Z -> +X, opposite image-space clockwise.
-            tip=math.radians(start if direction==1 else start+60)
-            x,y=256+232*math.cos(tip),256+232*math.sin(tip)
-            tangent=(math.sin(tip)*direction,-math.cos(tip)*direction)
-            d.polygon([(x,y),(x-tangent[0]*42-math.cos(tip)*25,y-tangent[1]*42-math.sin(tip)*25),
-                       (x-tangent[0]*42+math.cos(tip)*25,y-tangent[1]*42+math.sin(tip)*25)],fill=CREAM)
+            # One closed outline joins the head to the arc, without overlapping seams.
+            tip=a*90-30 if direction==1 else a*90+30
+            def point(angle,radius):
+                rad=math.radians(angle)
+                return ((256+radius*math.cos(rad))*scale,(256+radius*math.sin(rad))*scale)
+            outline=[point(tip+direction*angle,240) for angle in range(60,9,-1)]
+            outline += [point(tip+direction*10,258),point(tip,232),point(tip+direction*10,206)]
+            outline += [point(tip+direction*angle,224) for angle in range(10,61)]
+            d.polygon(outline,fill=CREAM)
+        im=im.resize((512,512),Image.Resampling.LANCZOS)
         tex=texture("surface/ring_"+str(direction),im)
         part=cube([.96,8,.96],[15.04,8.03,15.04]);part["faces"]={"up":{"uv":[0,0,16,16],"texture":"#ring"}}
         model("ring_forward" if direction==1 else "ring_reverse",{"body":"tabletop3d:item/surface/dark","ring":tex},[part])
@@ -361,7 +365,7 @@ def main():
     write_json(BUILD/"pack.mcmeta",{"pack":{"pack_format":88,"min_format":88,"max_format":88,"description":"Tabletop 3D · Mahjong & Color Eight"}})
     config=ROOT/"craftengine/resources/tabletop3d/configuration/items.yml";config.parent.mkdir(parents=True,exist_ok=True)
     config.write_text("items:\n"+"".join(f"  tabletop3d:{name}:\n    material: paper\n    item_model: tabletop3d:{name}\n" for name in sorted(CATALOG)),encoding="utf-8")
-    (config.parent.parent/"pack.yml").write_text("name: Tabletop 3D\nauthor: Tabletop3D\nversion: 1.8.9-SNAPSHOT\n",encoding="utf-8")
+    (config.parent.parent/"pack.yml").write_text("name: Tabletop 3D\nauthor: Tabletop3D\nversion: 1.8.10-SNAPSHOT\n",encoding="utf-8")
     target=ROOT/"target/tabletop-resource-pack.zip"
     with zipfile.ZipFile(target,"w",zipfile.ZIP_DEFLATED) as z:
         for path in sorted(BUILD.rglob("*")):
