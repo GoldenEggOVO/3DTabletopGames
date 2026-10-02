@@ -1,5 +1,7 @@
 package dev.tabletop3d.rules;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import org.junit.jupiter.api.Test;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,7 +15,7 @@ class ChessGameTest {
         BoardGame game = new ChessGame("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1");
         assertTrue(game.legalActions(0).contains("move:e1:g1")); assertTrue(game.legalActions(0).contains("move:e1:c1"));
         game.apply(0,"move:e1:g1");
-        assertEquals("王",cell(game,"g1").piece()); assertEquals("车",cell(game,"f1").piece()); assertEquals(-1,cell(game,"h1").owner());
+        assertEquals(GameSymbols.KING,cell(game,"g1").piece()); assertEquals(GameSymbols.ROOK,cell(game,"f1").piece()); assertEquals(-1,cell(game,"h1").owner());
         BoardGame attacked = new ChessGame("r3kr1r/8/8/8/8/8/8/R3K2R w KQkq - 0 1");
         assertFalse(attacked.legalActions(0).contains("move:e1:g1"));
     }
@@ -33,7 +35,7 @@ class ChessGameTest {
             assertEquals(4,options.size());
             assertThrows(IllegalArgumentException.class, ()->game.apply(0,"move:a7:a8"));
             game.apply(0,"move:a7:a8:"+promotion);
-            assertNotEquals("兵",cell(game,"a8").piece()); assertEquals(0,cell(game,"a8").owner());
+            assertNotEquals(GameSymbols.PAWN,cell(game,"a8").piece()); assertEquals(0,cell(game,"a8").owner());
         }
     }
     @Test void foolsMateEndsInBlackWinAndStalemateDraws() {

@@ -14,11 +14,15 @@
 
 # board
 "board.confirmed": "已确认"
+"board.die": "骰子 {number}"
 "board.draughts.chain": "从 {coordinate} 继续连跳"
 "board.draughts.choose": "选择棋子和落点"
 "board.finish": "终点"
+"board.flight.hangar": "机库"
+"board.flight.landing": "降落 {number}"
 "board.flight.moved": "玩家 {player} 移动飞机 {pawn} 至 {coordinate}"
 "board.flight.no-move": "玩家 {player} 掷出 {roll}；无飞机可移动"
+"board.flight.takeoff": "起飞"
 "board.flight.triple-six": "玩家 {player} 连续掷出第三个 6，未到终点飞机回营"
 "board.go.agreed": "双方已确认终局计分"
 "board.go.captures": "黑提：{black} · 白提：{white}"

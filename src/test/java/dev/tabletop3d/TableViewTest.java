@@ -173,15 +173,15 @@ class TableViewTest {
     @Test
     void rosterKeepsHumanNamesLiteralEvenWhenTheyLookLikeBotNames() throws Exception {
         Fixture f = new Fixture("gomoku");
-        String name = "<red>准备&c陪练";
+        String name = "<red>Ready&cBot";
         f.room.seats.set(0, new Room.Seat(f.room.seats.getFirst().id(), name, false));
-        f.room.seats.set(1, new Room.Seat(f.room.seats.getLast().id(), "陪练99", false));
+        f.room.seats.set(1, new Room.Seat(f.room.seats.getLast().id(), "Bot99", false));
         f.view.tick();
         var capture = org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
         verify((TextDisplay) field(f.view, "title"), atLeastOnce()).text(capture.capture());
         String actual = dev.tabletop3d.ui.MessageText.plain(capture.getValue());
         assertTrue(actual.contains(name), actual);
-        assertTrue(actual.contains("陪练99"), actual);
+        assertTrue(actual.contains("Bot99"), actual);
     }
 
     @Test
@@ -302,7 +302,7 @@ class TableViewTest {
                 verify(text, never())
                         .text(
                                 net.kyori.adventure.text.Component.text(
-                                        "操作 / 离开",
+                                        "Controls / Leave",
                                         net.kyori.adventure.text.format.NamedTextColor.GOLD));
     }
 
@@ -320,15 +320,15 @@ class TableViewTest {
                 net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
                         .serialize(capture.getValue());
         assertTrue(initial.contains("Waiting for ready players"), initial);
-        assertTrue(initial.contains("At table: 本人"), initial);
+        assertTrue(initial.contains("At table: Owner"), initial);
         assertTrue(initial.contains("Open seats: 1 / 2"), initial);
-        f.room.join(UUID.randomUUID(), "好友");
+        f.room.join(UUID.randomUUID(), "Friend");
         f.view.tick();
         verify(title, atLeastOnce()).text(capture.capture());
         String full =
                 net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
                         .serialize(capture.getValue());
-        assertTrue(full.contains("本人, 好友"));
+        assertTrue(full.contains("Owner, Friend"));
         assertTrue(full.contains("Open seats: 0 / 2"));
         assertEquals(count, f.entities.size());
     }
@@ -583,7 +583,7 @@ class TableViewTest {
             UUID id = UUID.randomUUID();
             when(player.getUniqueId()).thenReturn(id);
             room = new Room(UUID.randomUUID(), kind, 2, 0, 0);
-            room.join(id, "本人");
+            room.join(id, "Owner");
             room.fillBots();
             room.board = GameFactory.create(kind, 2, 0);
             room.phase = Room.Phase.PLAYING;

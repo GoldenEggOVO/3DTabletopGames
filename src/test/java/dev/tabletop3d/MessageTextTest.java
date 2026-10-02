@@ -12,7 +12,7 @@ class MessageTextTest {
     }
 
     @Test void dynamicValuesAreLiteralAndNeverBecomeCommandsOrColors() {
-        String name = "<red>玩家&c<click:run_command:'/op x'>";
+        String name = "<red>Player&c<click:run_command:'/op x'>";
         var component = MessageText.render("<gold>{player}</gold>", "player", name);
         assertEquals(name, MessageText.plain(component));
         assertNull(component.clickEvent());

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.2-SNAPSHOT
+
+- Use English source comments, diagnostics and internal rule summaries; keep translated UI messages in language catalogs.
+- Reference fixed piece artwork through named Unicode symbols without changing shapes or saved action IDs.
+- Preserve non-English test coverage using catalog fixtures and add a source-language guard.
+- Localize remaining dice and aeroplane coordinate hints.
+
 ## 1.9.1-SNAPSHOT
 
 - Keep navigation buttons localized even when an editable layout contains a literal caption.

@@ -21,9 +21,9 @@ public final class FlightMoves {
         String prefix = cell.substring(0, 2);
         int number = Integer.parseInt(cell.substring(2));
         int count = roll;
-        if (prefix.equals("go")) throw new IllegalArgumentException("飞机已经抵达终点");
+        if (prefix.equals("go")) throw new IllegalArgumentException("Plane has already reached home");
         if (prefix.equals("ba")) {
-            if (roll != 6) throw new IllegalArgumentException("掷出 6 才能起飞");
+            if (roll != 6) throw new IllegalArgumentException("A roll of six is required to launch");
             plane.setInCellId("to" + color);
             return;
         }

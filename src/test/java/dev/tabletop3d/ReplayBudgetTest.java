@@ -20,11 +20,11 @@ class ReplayBudgetTest {
     }
 
     @Test void countsChineseAndSupplementaryCharactersAsUtf8Bytes() {
-        assertTrue(ReplayBudget.allows(new JsonArray(),action("中".repeat(260_000))));
-        assertFalse(ReplayBudget.allows(new JsonArray(),action("中".repeat(270_000))));
+        assertTrue(ReplayBudget.allows(new JsonArray(),action("\u4e2d".repeat(260_000))));
+        assertFalse(ReplayBudget.allows(new JsonArray(),action("\u4e2d".repeat(270_000))));
         assertFalse(ReplayBudget.allows(new JsonArray(),action("🀄".repeat(200_000))));
-        JsonArray history=new JsonArray();history.add(event(action("中".repeat(260_000))));
-        assertFalse(ReplayBudget.allows(history,action("中".repeat(10_000))));
+        JsonArray history=new JsonArray();history.add(event(action("\u4e2d".repeat(260_000))));
+        assertFalse(ReplayBudget.allows(history,action("\u4e2d".repeat(10_000))));
     }
 
     @Test void reservesEnvelopeBytesAndUsesStrictLimit() {
@@ -39,7 +39,7 @@ class ReplayBudgetTest {
     }
 
     @Test void acceptedHistoryFitsCompleteWorkerCreateFrameIncludingUtf8() {
-        JsonArray history=new JsonArray();JsonObject next=action("中".repeat(260_000));
+        JsonArray history=new JsonArray();JsonObject next=action("\u4e2d".repeat(260_000));
         assertTrue(ReplayBudget.allows(history,next));history.add(event(next));
         JsonObject create=new JsonObject();create.addProperty("op","create");create.addProperty("room","ffffffff-ffff-ffff-ffff-ffffffffffff");
         create.addProperty("kind","doudizhu");create.addProperty("players",10);create.addProperty("seed",Long.MIN_VALUE);create.add("history",history);

@@ -28,7 +28,8 @@ STOCK_MENUS = {
     'room': 'b427352f17f7a177b4a4a522abb5ea13ea5f52906a52a8621f1baf953aa0c2db',
     'hand': '38f413de466aadea58826919d161b58827c5eeeebd54bed0b8d19699df1264b2',
 }
-STOCK_CAPTIONS = {'bots': '&f补齐陪练并开始', 'play': '&f回到对局', 'options': '&f房间选项'}
+STOCK_CAPTIONS = {key: '&f' + MAPPING['defaults']['zh_CN'][f'menu.{key}']
+                  for key in ('bots', 'play', 'options')}
 
 
 def flatten(values, prefix=''):

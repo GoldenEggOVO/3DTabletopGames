@@ -1,5 +1,7 @@
 package dev.tabletop3d.rules;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import java.util.*;
 
 /** 8x8 Othello: mandatory flips, automatic forced pass, count only when neither side can move. */
@@ -15,7 +17,7 @@ public final class ReversiGame implements BoardGame {
 
     private final int[] board = new int[64];
     private int turn;
-    private String result = "ongoing", last = "黑方先行";
+    private String result = "ongoing", last = "Black moves first";
 
     public ReversiGame() {
         Arrays.fill(board, -1);
@@ -51,7 +53,7 @@ public final class ReversiGame implements BoardGame {
                             key(i),
                             i % 8,
                             i / 8,
-                            board[i] < 0 ? "" : board[i] == 0 ? "黑" : "白",
+                            board[i] < 0 ? "" : board[i] == 0 ? GameSymbols.BLACK : GameSymbols.WHITE,
                             board[i]));
         return List.copyOf(cells);
     }
@@ -93,13 +95,13 @@ public final class ReversiGame implements BoardGame {
         if (action == null || !legalActions(seat).contains(action))
             throw new RuleViolation(
                     "error.you-must-bracket-and-flip-at-least-one-opponent-disc",
-                    "必须夹住并翻转至少一枚对方棋子");
+                    "You must bracket and flip at least one opponent disc");
         String[] xy = action.substring(6).split(",");
         int pos = Integer.parseInt(xy[0]) + 8 * Integer.parseInt(xy[1]);
         List<Integer> taken = flips(pos, seat);
         board[pos] = seat;
         taken.forEach(i -> board[i] = seat);
-        last = (seat == 0 ? "黑方" : "白方") + "翻转 " + taken.size() + " 子";
+        last = (seat == 0 ? "Black" : "White") + " flipped " + taken.size() + " discs";
         lastMessage =
                 RuleMessage.of("board.reversi.flipped", "player", seat + 1, "count", taken.size());
         turn = 1 - seat;
@@ -109,7 +111,7 @@ public final class ReversiGame implements BoardGame {
                 result = a == b ? "draw:equal-discs" : "winner:" + (a > b ? 0 : 1);
             } else {
                 turn = seat;
-                last += " · 对方无合法落点，自动停一手";
+                last += " · opponent has no legal move and passes automatically";
             }
         }
     }
@@ -121,11 +123,11 @@ public final class ReversiGame implements BoardGame {
     public Map<String, String> publicInfo() {
         return Map.of(
                 "rules",
-                "8×8 黑白棋，黑先；无子可翻自动停手，双方无合法落点时数子",
+                "8×8 Reversi, Black first; pass automatically when no discs can be flipped; count discs when neither player has a legal move",
                 "rulesVariant",
                 "othello-8",
                 "count",
-                "黑 " + count(0) + " · 白 " + count(1),
+                "Black " + count(0) + " · White " + count(1),
                 "lastAction",
                 last);
     }

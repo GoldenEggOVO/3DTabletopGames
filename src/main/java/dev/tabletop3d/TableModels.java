@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import dev.tabletop3d.rules.Cell;
 import org.bukkit.Material;
 import java.util.*;
@@ -13,7 +15,7 @@ final class TableModels {
         Material color=COLORS[Math.floorMod(GameWorld.actualColor(info,owner),6)];
         switch(kind){
             case "gomoku", "go", "go9", "go13", "reversi" -> {Material stone=owner==0?Material.BLACK_CONCRETE:Material.WHITE_CONCRETE;disc(p,stone,.76,.13);if(cell.piece().contains("×"))p.addAll(deadStoneMarks());}
-            case "draughts" -> {Material stone=owner==0?Material.POLISHED_BLACKSTONE:Material.SMOOTH_QUARTZ;disc(p,stone,.76,.19);if(cell.piece().equals("王")){disc(p,Material.GOLD_BLOCK,.54,.30);box(p,0,.31,0,.18,.07,.18,stone);}}
+            case "draughts" -> {Material stone=owner==0?Material.POLISHED_BLACKSTONE:Material.SMOOTH_QUARTZ;disc(p,stone,.76,.19);if(cell.piece().equals(GameSymbols.KING)){disc(p,Material.GOLD_BLOCK,.54,.30);box(p,0,.31,0,.18,.07,.18,stone);}}
             case "yacht" -> {Material body=cell.piece().endsWith("✓")?Material.LIGHT_BLUE_CONCRETE:Material.SMOOTH_QUARTZ;box(p,0,0,0,1.14,1.14,1.14,body);int face=Character.digit(cell.piece().charAt(0),10);int[][] dots={{0,0},{-1,-1},{1,1},{-1,1},{1,-1},{-1,0},{1,0}};for(int i:TableView.pipIndices(face))box(p,dots[i][0]*.30,1.145,dots[i][1]*.30,.14,.025,.14,Material.BLACK_CONCRETE);}
             case "xiangqi" -> {roundedDisc(p,Material.STRIPPED_BIRCH_WOOD,.78,.19);}
             case "checkers" -> {roundedDisc(p,color,.68,.18);box(p,0,.18,0,.38,.20,.38,color);box(p,-.07,.38,-.07,.15,.035,.15,Material.WHITE_CONCRETE);}
@@ -34,12 +36,12 @@ final class TableModels {
                 Material trim=owner==0?Material.GOLD_BLOCK:Material.COPPER_BLOCK;
                 disc(p,body,.76,.12);box(p,0,.13,0,.49,.10,.49,body);box(p,0,.23,0,.28,.28,.28,body);
                 switch(cell.piece()){
-                    case "兵" -> {box(p,0,.49,0,.39,.24,.39,body);}
-                    case "车" -> {box(p,0,.50,0,.57,.14,.57,body);for(double x:new double[]{-.20,.20})for(double z:new double[]{-.20,.20})box(p,x,.64,z,.16,.16,.16,body);}
-                    case "马" -> {box(p,0,.49,.04,.28,.33,.30,body);box(p,0,.70,-.15,.28,.22,.45,body);box(p,0,.92,.02,.25,.12,.11,body);}
-                    case "象" -> {box(p,0,.51,0,.46,.08,.46,trim);box(p,0,.59,0,.33,.25,.33,body);box(p,0,.84,0,.16,.13,.16,body);}
-                    case "后" -> {box(p,0,.51,0,.42,.25,.42,body);box(p,0,.76,0,.55,.08,.55,trim);for(double x:new double[]{-.19,.19})box(p,x,.84,0,.13,.15,.34,body);}
-                    case "王" -> {box(p,0,.51,0,.44,.28,.44,body);box(p,0,.79,0,.15,.32,.15,trim);box(p,0,.93,0,.40,.10,.15,trim);}
+                    case GameSymbols.PAWN -> {box(p,0,.49,0,.39,.24,.39,body);}
+                    case GameSymbols.ROOK -> {box(p,0,.50,0,.57,.14,.57,body);for(double x:new double[]{-.20,.20})for(double z:new double[]{-.20,.20})box(p,x,.64,z,.16,.16,.16,body);}
+                    case GameSymbols.HORSE -> {box(p,0,.49,.04,.28,.33,.30,body);box(p,0,.70,-.15,.28,.22,.45,body);box(p,0,.92,.02,.25,.12,.11,body);}
+                    case GameSymbols.ELEPHANT -> {box(p,0,.51,0,.46,.08,.46,trim);box(p,0,.59,0,.33,.25,.33,body);box(p,0,.84,0,.16,.13,.16,body);}
+                    case GameSymbols.QUEEN -> {box(p,0,.51,0,.42,.25,.42,body);box(p,0,.76,0,.55,.08,.55,trim);for(double x:new double[]{-.19,.19})box(p,x,.84,0,.13,.15,.34,body);}
+                    case GameSymbols.KING -> {box(p,0,.51,0,.44,.28,.44,body);box(p,0,.79,0,.15,.32,.15,trim);box(p,0,.93,0,.40,.10,.15,trim);}
                     default -> throw new IllegalArgumentException("Unknown chess piece "+cell.piece());
                 }
             }

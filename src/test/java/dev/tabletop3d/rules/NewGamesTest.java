@@ -1,5 +1,7 @@
 package dev.tabletop3d.rules;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import org.junit.jupiter.api.Test;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,7 +14,7 @@ class NewGamesTest {
     @Test void reversiFlipsEveryDirectionAndEndsWhenNeitherCanMove()throws Exception{var g=new ReversiGame();int[] b=board(g);Arrays.fill(b,0);b[0]=-1;b[1]=b[8]=b[9]=1;g.apply(0,"place:0,0");assertTrue(g.finished());assertEquals("winner:0",g.outcome());assertEquals(64,g.cells().stream().filter(c->c.owner()==0).count());}
     @Test void reversiForcedPassDoesNotEndEarly()throws Exception{var g=new ReversiGame();int[] b=board(g);Arrays.fill(b,0);b[0]=b[7]=-1;b[1]=b[6]=1;g.apply(0,"place:0,0");assertFalse(g.finished());assertEquals(0,g.currentPlayer());assertEquals(List.of("place:7,0"),g.legalActions(0));}
     @Test void draughtsOpeningAndMandatoryChain()throws Exception{var g=new DraughtsGame();assertEquals(7,g.legalActions(0).size());int[] b=board(g);Arrays.fill(b,-1);b[1+5*8]=0;b[2+4*8]=1;b[4+2*8]=1;b[7+8]=1;assertEquals(List.of("move:1,5:3,3"),g.legalActions(0));g.apply(0,"move:1,5:3,3");assertEquals(0,g.currentPlayer());assertEquals(List.of("move:3,3:5,1"),g.legalActions(0));g.apply(0,"move:3,3:5,1");assertEquals(1,g.currentPlayer());assertEquals(-1,at(g,"2,4"));assertEquals(-1,at(g,"4,2"));}
-    @Test void draughtsCrowningEndsCaptureTurn()throws Exception{var g=new DraughtsGame();int[] b=board(g);Arrays.fill(b,-1);b[1+2*8]=0;b[2+8]=b[4+8]=1;g.apply(0,"move:1,2:3,0");assertEquals(1,g.currentPlayer());assertEquals("王",g.cells().stream().filter(c->c.id().equals("3,0")).findFirst().orElseThrow().piece());assertEquals(1,at(g,"4,1"));}
+    @Test void draughtsCrowningEndsCaptureTurn()throws Exception{var g=new DraughtsGame();int[] b=board(g);Arrays.fill(b,-1);b[1+2*8]=0;b[2+8]=b[4+8]=1;g.apply(0,"move:1,2:3,0");assertEquals(1,g.currentPlayer());assertEquals(GameSymbols.KING,g.cells().stream().filter(c->c.id().equals("3,0")).findFirst().orElseThrow().piece());assertEquals(1,at(g,"4,1"));}
     @Test void draughtsManCannotCaptureBackwardButKingCan()throws Exception{var g=new DraughtsGame();int[] b=board(g);Arrays.fill(b,-1);b[3+3*8]=0;b[4+4*8]=1;assertFalse(g.legalActions(0).contains("move:3,3:5,5"));b[3+3*8]=2;assertEquals(List.of("move:3,3:5,5"),g.legalActions(0));g.apply(0,"move:3,3:5,5");assertEquals("winner:0",g.outcome());}
     @Test void goCaptureAndSuicide(){var g=new GoGame(9);String[] moves={"1,0","1,1","0,1","8,8","2,1","8,7","1,2"};for(String m:moves)g.apply(g.currentPlayer(),"place:"+m);assertEquals(-1,at(g,"1,1"));assertFalse(g.legalActions(1).contains("place:1,1"));assertThrows(IllegalArgumentException.class,()->g.apply(1,"place:1,1"));}
     @Test void goKoCannotImmediatelyRecreatePosition()throws Exception{var g=new GoGame(9);int[] b=board(g);for(int p:new int[]{0+1*9,1,2+1*9})b[p]=0;for(int p:new int[]{1+1*9,0+2*9,2+2*9,1+3*9})b[p]=1;var f=GoGame.class.getDeclaredField("seen");f.setAccessible(true);@SuppressWarnings("unchecked")Set<String> seen=(Set<String>)f.get(g);seen.clear();StringBuilder key=new StringBuilder();for(int p:b)key.append((char)('0'+p+1));seen.add(key.toString());g.apply(0,"place:1,2");assertEquals(-1,at(g,"1,1"));assertFalse(g.legalActions(1).contains("place:1,1"));}

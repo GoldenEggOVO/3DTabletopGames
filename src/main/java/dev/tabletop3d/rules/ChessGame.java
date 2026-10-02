@@ -1,5 +1,7 @@
 package dev.tabletop3d.rules;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import dev.tabletop3d.rules.upstream.chesslib.Board;
 import dev.tabletop3d.rules.upstream.chesslib.Piece;
 import dev.tabletop3d.rules.upstream.chesslib.PieceType;
@@ -19,7 +21,7 @@ public final class ChessGame implements BoardGame {
     }
 
     private final Board board = new Board();
-    private String result = "ongoing", lastAction = "白方先行", reason = "";
+    private String result = "ongoing", lastAction = "White moves first", reason = "";
     private Map<String, Move> cached;
 
     public ChessGame() {}
@@ -84,12 +86,12 @@ public final class ChessGame implements BoardGame {
 
     private static String symbol(Piece piece) {
         return switch (piece.getPieceType()) {
-            case KING -> "王";
-            case QUEEN -> "后";
-            case ROOK -> "车";
-            case BISHOP -> "象";
-            case KNIGHT -> "马";
-            case PAWN -> "兵";
+            case KING -> GameSymbols.KING;
+            case QUEEN -> GameSymbols.QUEEN;
+            case ROOK -> GameSymbols.ROOK;
+            case BISHOP -> GameSymbols.ELEPHANT;
+            case KNIGHT -> GameSymbols.HORSE;
+            case PAWN -> GameSymbols.PAWN;
             default -> "";
         };
     }
@@ -123,13 +125,13 @@ public final class ChessGame implements BoardGame {
     @Override
     public void apply(int seat, String action) {
         if (finished() || seat != currentPlayer() || action == null || !moves().containsKey(action))
-            throw new RuleViolation("error.invalid-chess-move", "不是有效国际象棋着法");
+            throw new RuleViolation("error.invalid-chess-move", "Invalid chess move");
         Move move = moves().get(action);
-        if (!board.doMove(move, true)) throw new IllegalStateException("规则引擎拒绝已经验证的着法");
-        lastAction = (seat == 0 ? "白方 " : "黑方 ") + action.substring(5);
+        if (!board.doMove(move, true)) throw new IllegalStateException("Rules engine rejected a validated move");
+        lastAction = (seat == 0 ? "White " : "Black ") + action.substring(5);
         lastMessage = RuleMessage.of("board.move", "player", seat + 1, "move", action.substring(5));
         if (move.getPromotion() != Piece.NONE) {
-            lastAction += " 升变为" + symbol(move.getPromotion());
+            lastAction += " promoted to " + symbol(move.getPromotion());
             lastMessage =
                     RuleMessage.of(
                             "board.move-promoted",
@@ -148,19 +150,19 @@ public final class ChessGame implements BoardGame {
         // Checkmate takes precedence over a halfmove draw on the same final move.
         if (board.isMated()) {
             result = "winner:" + (1 - currentPlayer());
-            reason = "将死";
+            reason = "Checkmate";
         } else if (board.isStaleMate()) {
             result = "draw:stalemate";
-            reason = "逼和";
+            reason = "Stalemate";
         } else if (deadMaterial()) {
             result = "draw:insufficient-material";
-            reason = "子力不足以将死";
+            reason = "Insufficient mating material";
         } else if (board.isRepetition()) {
             result = "draw:threefold-repetition";
-            reason = "同局面三次重复";
+            reason = "Threefold repetition";
         } else if (board.getHalfMoveCounter() >= 100) {
             result = "draw:50-move-rule";
-            reason = "50 回合无吃子且无兵移动";
+            reason = "50 moves without a capture or pawn move";
         }
     }
 
@@ -189,15 +191,15 @@ public final class ChessGame implements BoardGame {
     public Map<String, String> publicInfo() {
         return Map.of(
                 "rules",
-                "标准国际象棋：王车易位、吃过路兵、兵升变；将死获胜，逼和/子力不足和棋",
+                "Standard chess: castling, en passant and promotion; checkmate wins, stalemate or insufficient material draws",
                 "rulesVariant",
                 "standard-auto-claim-draws",
                 "ruleLimit",
-                "休闲模式自动执行三次重复与 50 回合和棋，无需另行申请",
+                "Casual mode automatically draws on threefold repetition or the 50-move rule",
                 "phase",
-                finished() ? "对局结束" : board.isKingAttacked() ? "将军，必须应将" : "等待走棋",
+                finished() ? "Game finished" : board.isKingAttacked() ? "In check; respond to the check" : "Waiting for a move",
                 "turn",
-                currentPlayer() == 0 ? "白方" : "黑方",
+                currentPlayer() == 0 ? "White" : "Black",
                 "lastAction",
                 lastAction,
                 "resultReason",

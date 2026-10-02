@@ -189,7 +189,10 @@ def flower_image(n):
         a=i*math.tau/petals;x=128+math.sin(a)*44;y=145+math.cos(a)*44
         d.ellipse((x-24,y-24,x+24,y+24),fill=["#cd5978","#9772bb","#6d9d72","#d4a840"][(n-1)%4])
     d.ellipse((106,123,150,167),fill="#dfbe5a")
-    chars="梅蘭竹菊春夏秋冬"
+    # Fixed flower-tile artwork glyphs.
+    plum, orchid, bamboo, chrysanthemum = "\u6885", "\u862d", "\u7af9", "\u83ca"
+    spring, summer, autumn, winter = "\u6625", "\u590f", "\u79cb", "\u51ac"
+    chars = (plum, orchid, bamboo, chrysanthemum, spring, summer, autumn, winter)
     cjk=ImageFont.truetype("C:/Windows/Fonts/msyh.ttc",38)
     d.text((128,338),chars[n-1],font=cjk,anchor="mm",fill="#a0413d" if n<=4 else "#315783")
     return im

@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import dev.tabletop3d.rules.HandGame;
 import dev.tabletop3d.ui.LabelLayout;
 
@@ -148,7 +150,7 @@ final class MahjongTableHud implements AutoCloseable {
             label(
                     winds.get(seat),
                     Component.text(
-                            List.of("東", "南", "西", "北").get(wind),
+                            List.of(GameSymbols.EAST, GameSymbols.SOUTH, GameSymbols.WEST, GameSymbols.NORTH).get(wind),
                             wind == 0 ? NamedTextColor.RED : NamedTextColor.WHITE),
                     .12f,
                     .12f);
@@ -324,8 +326,10 @@ final class MahjongTableHud implements AutoCloseable {
         orientations.putAll(next);
     }
 
-    private String seatName(int seat) {
-        return seat >= 0 && seat < room.seats.size() ? room.seats.get(seat).name() : "—";
+    private Component seatName(int seat) {
+        return seat >= 0 && seat < room.seats.size()
+                ? RoomText.player(room.seats.get(seat), seat + 1)
+                : Component.text("—");
     }
 
     private void configure(Display display) {

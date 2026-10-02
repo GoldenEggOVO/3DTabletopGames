@@ -19,7 +19,7 @@ public final class YachtGame implements BoardGame {
                     "large-straight",
                     "yacht");
     public static final List<String> LABELS =
-            List.of("一点", "二点", "三点", "四点", "五点", "六点", "全选", "四条", "葫芦", "小顺", "大顺", "快艇");
+            List.of("Ones", "Twos", "Threes", "Fours", "Fives", "Sixes", "Choice", "Four of a Kind", "Full House", "Small Straight", "Large Straight", "Yacht");
     private final int[][] sheet;
     private final int[] dice = new int[5];
     private final boolean[] held = new boolean[5];
@@ -29,7 +29,7 @@ public final class YachtGame implements BoardGame {
 
     public YachtGame(int players, long seed) {
         if (players < 2 || players > 4)
-            throw new RuleViolation("error.yacht-dice-supports-2-4-players", "快艇骰子支持2–4人");
+            throw new RuleViolation("error.yacht-dice-supports-2-4-players", "Yacht Dice supports 2–4 players");
         sheet = new int[players][12];
         for (int[] row : sheet) Arrays.fill(row, -1);
         random = new Random(seed);
@@ -111,7 +111,7 @@ public final class YachtGame implements BoardGame {
     public void apply(int seat, String action) {
         if (action == null || !legalActions(seat).contains(action))
             throw new RuleViolation(
-                    "error.choose-available-dice-or-an-empty-score-category", "请选择可用骰子或尚未填写的计分项");
+                    "error.choose-available-dice-or-an-empty-score-category", "Choose available dice or an empty score category");
         if (action.equals("roll")) {
             for (int i = 0; i < 5; i++) if (!held[i]) dice[i] = random.nextInt(6) + 1;
             rolls++;
@@ -148,7 +148,7 @@ public final class YachtGame implements BoardGame {
                 || category >= 12
                 || dice.length != 5
                 || Arrays.stream(dice).anyMatch(d -> d < 1 || d > 6))
-            throw new RuleViolation("error.invalid-score-data", "无效计分数据");
+            throw new RuleViolation("error.invalid-score-data", "Invalid score data");
         int[] count = new int[7];
         int sum = 0;
         for (int d : dice) {
@@ -174,15 +174,15 @@ public final class YachtGame implements BoardGame {
 
     public Map<String, String> publicInfo() {
         Map<String, String> out = new LinkedHashMap<>();
-        out.put("rules", "12轮快艇变体：每回合最多3掷，可保留骰子；小顺15、大顺30、快艇50；上半区满63加35分，无额外快艇奖励");
+        out.put("rules", "12-round Yacht variant: up to three rolls per turn with held dice; small straight 15, large straight 30, Yacht 50; upper section of at least 63 earns 35 bonus points; no extra Yacht bonus");
         out.put("rulesVariant", "yacht-12-upper-bonus");
         out.put(
                 "phase",
                 finished()
-                        ? "12轮已结束"
-                        : "第 " + (filled / sheet.length + 1) + " / 12 轮 · 已掷 " + rolls + " / 3 次");
+                        ? "All twelve rounds finished"
+                        : "Round " + (filled / sheet.length + 1) + " / 12 · Rolls " + rolls + " / 3");
         for (int i = 0; i < sheet.length; i++)
-            out.put("score" + i, (i + 1) + "号：" + total(i) + " 分");
+            out.put("score" + i, (i + 1) + ": " + total(i) + " points");
         return out;
     }
 }

@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import dev.tabletop3d.rules.HandGame;
 import dev.tabletop3d.ui.MessageText;
 import net.kyori.adventure.text.Component;
@@ -17,6 +19,31 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class MahjongTableHudTest {
+    @org.junit.jupiter.api.io.TempDir(factory = WorkspaceTempFactory.class)
+    java.nio.file.Path languageFolder;
+
+    @Test void botNamesOnThePhysicalTableFollowTheLanguageInsteadOfStoredNames() {
+        Fixture f = new Fixture();
+        Room.Seat seat = f.room.seats.getFirst();
+        f.room.seats.set(0, new Room.Seat(seat.id(), "Internal bot name", true));
+        when(f.game.publicInfo()).thenReturn(Map.of("round", "1", "lastDiscardTile", "p3", "lastDiscardBy", "0"));
+        Language.load(languageFolder, "en_US", message -> fail(message));
+        try {
+            for (String locale : List.of("zh_CN", "en_US")) {
+                assertTrue(Language.reload(languageFolder, locale, message -> fail(message)));
+                f.room.revision++;
+                f.hud.tick(1_000);
+                String expected = MessageText.plain(Language.component("room.bot", "number", 1));
+                assertTrue(f.status().contains(expected), f.status());
+                assertTrue(MessageText.plain(f.texts.get(f.discard())).contains(expected));
+                assertFalse(f.status().contains("Internal bot name"));
+                assertEquals("Internal bot name", f.room.seats.getFirst().name());
+            }
+        } finally {
+            Language.reload(languageFolder, "en_US", message -> fail(message));
+        }
+    }
+
     @Test void currentTurnLightsOnlyItsPanelEdgeAndPausesWithoutRecreatingEntities(){
         Fixture f=new Fixture();assertEquals(28,f.spawned.size());
         BlockDisplay marker=(BlockDisplay)f.spawned.getLast();
@@ -166,7 +193,7 @@ class MahjongTableHudTest {
         Fixture f=new Fixture();
         when(f.game.publicInfo()).thenReturn(Map.of("dealer","2","score.0","24000","score.1","30000","score.2","-1000","score.3","47000"));
         f.room.revision++;f.hud.tick(1_000);
-        String[] winds={"西","北","東","南"},scores={"24000","30000","-1000","47000"};
+        String[] winds={GameSymbols.WEST,GameSymbols.NORTH,GameSymbols.EAST,GameSymbols.SOUTH},scores={"24000","30000","-1000","47000"};
         for(int seat=0;seat<4;seat++) {
             assertEquals(winds[seat],MessageText.plain(f.texts.get(f.wind(seat))));
             assertEquals(seat==2?NamedTextColor.RED:NamedTextColor.WHITE,f.texts.get(f.wind(seat)).color());
@@ -176,7 +203,7 @@ class MahjongTableHudTest {
         when(f.game.publicInfo()).thenReturn(Map.of("dealer","0","score.0","999"));
         clearInvocations(f.game);f.hud.tick(2_000);
         assertEquals("24000",MessageText.plain(f.texts.get(f.score(0))));
-        assertEquals("東",MessageText.plain(f.texts.get(f.wind(2))));
+        assertEquals(GameSymbols.EAST,MessageText.plain(f.texts.get(f.wind(2))));
         verifyNoInteractions(f.game);
     }
 

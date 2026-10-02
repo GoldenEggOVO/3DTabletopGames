@@ -1,5 +1,7 @@
 package dev.tabletop3d.rules;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import dev.tabletop3d.rules.upstream.xiangqi.model.*;
 
 import java.util.*;
@@ -14,7 +16,7 @@ public final class XiangqiGame implements BoardGame {
     }
 
     private final Board board;
-    private String result = "ongoing", lastAction = "红方先行", reason = "";
+    private String result = "ongoing", lastAction = "Red moves first", reason = "";
     private int noCapturePly;
     private final Map<String, List<Integer>> positions = new HashMap<>();
     private final List<CheckRecord> checks = new ArrayList<>();
@@ -32,7 +34,7 @@ public final class XiangqiGame implements BoardGame {
         positions.put(positionKey(), new ArrayList<>(List.of(0)));
         if (moves().isEmpty()) {
             result = "winner:" + (1 - currentPlayer());
-            reason = "无合法着法判负";
+            reason = "No legal move loses";
         }
     }
 
@@ -80,13 +82,13 @@ public final class XiangqiGame implements BoardGame {
 
     private static String symbol(Piece piece) {
         return switch (Math.abs(piece.getCode())) {
-            case 1 -> piece.getColor() == 0 ? "帅" : "将";
-            case 2 -> piece.getColor() == 0 ? "仕" : "士";
-            case 3 -> piece.getColor() == 0 ? "相" : "象";
-            case 4 -> "马";
-            case 5 -> "车";
-            case 6 -> piece.getColor() == 0 ? "炮" : "砲";
-            case 7 -> piece.getColor() == 0 ? "兵" : "卒";
+            case 1 -> piece.getColor() == 0 ? GameSymbols.RED_GENERAL : GameSymbols.BLACK_GENERAL;
+            case 2 -> piece.getColor() == 0 ? GameSymbols.RED_ADVISOR : GameSymbols.BLACK_ADVISOR;
+            case 3 -> piece.getColor() == 0 ? GameSymbols.RED_ELEPHANT : GameSymbols.ELEPHANT;
+            case 4 -> GameSymbols.HORSE;
+            case 5 -> GameSymbols.ROOK;
+            case 6 -> piece.getColor() == 0 ? GameSymbols.RED_CANNON : GameSymbols.BLACK_CANNON;
+            case 7 -> piece.getColor() == 0 ? GameSymbols.PAWN : GameSymbols.BLACK_PAWN;
             default -> throw new IllegalStateException("Unknown piece");
         };
     }
@@ -112,17 +114,17 @@ public final class XiangqiGame implements BoardGame {
     @Override
     public void apply(int seat, String action) {
         if (finished() || seat != currentPlayer() || action == null || !moves().containsKey(action))
-            throw new RuleViolation("error.invalid-move", "不是有效着法");
+            throw new RuleViolation("error.invalid-move", "Invalid move");
         Move move = moves().get(action);
         noCapturePly = move.target == null ? noCapturePly + 1 : 0;
-        lastAction = (seat == 0 ? "红方" : "黑方") + symbol(move.piece) + " " + action.substring(5);
+        lastAction = (seat == 0 ? "Red " : "Black ") + symbol(move.piece) + " " + action.substring(5);
         lastMessage = RuleMessage.of("board.move", "player", seat + 1, "move", action.substring(5));
         board.move(move);
         cached = null;
         checks.add(new CheckRecord(seat, inCheck(currentPlayer())));
         if (moves().isEmpty()) {
             result = "winner:" + seat;
-            reason = "将死或困毙";
+            reason = "Checkmate or stalemate";
             return;
         }
         List<Integer> occurrences =
@@ -131,7 +133,7 @@ public final class XiangqiGame implements BoardGame {
         if (occurrences.size() >= 3) adjudicateRepetition(occurrences.get(occurrences.size() - 3));
         if (!finished() && noCapturePly >= 120) {
             result = "draw:120-ply-no-capture";
-            reason = "连续 60 回合无吃子和棋";
+            reason = "Draw after sixty rounds without a capture";
         }
     }
 
@@ -147,10 +149,10 @@ public final class XiangqiGame implements BoardGame {
         if (allChecking[0] != allChecking[1]) {
             int checkingSeat = allChecking[0] ? 0 : 1;
             result = "winner:" + (1 - checkingSeat);
-            reason = (checkingSeat == 0 ? "红方" : "黑方") + "单方长将判负";
+            reason = (checkingSeat == 0 ? "Red" : "Black") + " loses for perpetual check";
         } else {
             result = "draw:threefold-repetition";
-            reason = "同局面三次重复和棋";
+            reason = "Draw by threefold repetition";
         }
     }
 
@@ -176,15 +178,15 @@ public final class XiangqiGame implements BoardGame {
     public Map<String, String> publicInfo() {
         return Map.of(
                 "rules",
-                "中国象棋；困毙判负；三次重复和棋，单方长将判负；60 回合无吃子和棋",
+                "Xiangqi; stalemate loses; threefold repetition draws, perpetual check loses; sixty rounds without a capture draws",
                 "rulesVariant",
                 "casual-threefold-perpetual-check",
                 "ruleLimit",
-                "休闲规则：长捉按三次重复处理，不作比赛级长捉裁定",
+                "Casual rules: perpetual chase uses threefold repetition; tournament chase adjudication is not implemented",
                 "phase",
-                finished() ? "对局结束" : inCheck(currentPlayer()) ? "将军，必须应将" : "等待走棋",
+                finished() ? "Game finished" : inCheck(currentPlayer()) ? "In check; respond to the check" : "Waiting for a move",
                 "turn",
-                currentPlayer() == 0 ? "红方" : "黑方",
+                currentPlayer() == 0 ? "Red" : "Black",
                 "lastAction",
                 lastAction,
                 "resultReason",

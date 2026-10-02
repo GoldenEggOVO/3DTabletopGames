@@ -59,7 +59,7 @@ class XiangqiGameTest {
         String[] cycle = {"move:5,7:4,7","move:4,9:5,9","move:4,7:5,7","move:5,9:4,9"};
         for (int round = 0; round < 2; round++) for (String action : cycle) game.apply(game.currentPlayer(), action);
         assertEquals("winner:1", game.outcome());
-        assertTrue(game.publicInfo().get("resultReason").contains("长将"));
+        assertTrue(game.publicInfo().get("resultReason").contains("perpetual check"));
     }
     @Test void stalemateIsLossInXiangqi() {
         Board board = new Board();

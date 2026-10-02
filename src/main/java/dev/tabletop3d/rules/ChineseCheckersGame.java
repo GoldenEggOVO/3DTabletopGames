@@ -37,7 +37,7 @@ public final class ChineseCheckersGame implements BoardGame {
     private final Map<String, Integer> occupied = new LinkedHashMap<>();
     private final Map<String, Integer> repeats = new HashMap<>();
     private int current, passes;
-    private String result = "ongoing", lastAction = "等待第一步";
+    private String result = "ongoing", lastAction = "Waiting for the first move";
     private Map<String, List<String>> cached;
 
     public ChineseCheckersGame(int players) {
@@ -55,7 +55,7 @@ public final class ChineseCheckersGame implements BoardGame {
                     default ->
                             throw new RuleViolation(
                                     "error.chinese-checkers-supports-2-3-4-or-6-players",
-                                    "标准跳棋支持 2、3、4 或 6 人");
+                                    "Chinese Checkers supports 2, 3, 4, or 6 players");
                 };
         for (int seat = 0; seat < colors.length; seat++)
             for (int[] xy : CAMPS[colors[seat]]) occupied.put(xy[0] + "," + xy[1], seat);
@@ -188,17 +188,17 @@ public final class ChineseCheckersGame implements BoardGame {
     @Override
     public void apply(int seat, String action) {
         if (finished() || seat != current || action == null || !moves().containsKey(action))
-            throw new RuleViolation("error.invalid-chinese-checkers-move", "不是有效跳棋移动");
+            throw new RuleViolation("error.invalid-chinese-checkers-move", "Invalid Chinese Checkers move");
         if (action.equals("pass")) {
             passes++;
-            lastAction = "玩家 " + (seat + 1) + " 无合法移动，跳过";
+            lastAction = "Player " + (seat + 1) + " has no legal move; passed";
             lastMessage = RuleMessage.of("board.passed", "player", seat + 1);
         } else {
             List<String> path = moves().get(action);
             occupied.remove(path.getFirst());
             occupied.put(path.getLast(), seat);
             passes = 0;
-            lastAction = "玩家 " + (seat + 1) + " " + String.join(" → ", path);
+            lastAction = "Player " + (seat + 1) + " " + String.join(" → ", path);
             lastMessage =
                     RuleMessage.of(
                             "board.move", "player", seat + 1, "move", String.join(" → ", path));
@@ -230,7 +230,7 @@ public final class ChineseCheckersGame implements BoardGame {
     public Map<String, String> publicInfo() {
         String rules =
                 options.equals(ChineseCheckersOptions.DEFAULT)
-                        ? "六角星 121 孔，每人 10 子；邻格步行或隔一子连续短跳；先占满对营获胜"
+                        ? "121-hole star, ten pegs each; adjacent steps or consecutive short jumps; first player to fill the opposite camp wins"
                         : "121-hole star, ten pegs each; adjacent steps or consecutive short jumps;"
                               + " "
                                 + (options.allPlaces()
@@ -238,7 +238,7 @@ public final class ChineseCheckersGame implements BoardGame {
                                         : "first player home wins");
         String limits =
                 options.equals(ChineseCheckersOptions.DEFAULT)
-                        ? "进入目标营后不能离开；允许经过其他营地；三次重复和棋"
+                        ? "Cannot leave the target camp; may pass through other camps; threefold repetition draws"
                         : "Cannot leave the target camp; "
                                 + (options.jumpOwn()
                                         ? "may jump own pegs; "
@@ -255,9 +255,9 @@ public final class ChineseCheckersGame implements BoardGame {
                 "ruleLimit",
                 limits,
                 "phase",
-                finished() ? "对局结束" : "等待走棋",
+                finished() ? "Game finished" : "Waiting for a move",
                 "turn",
-                "玩家 " + (current + 1),
+                "Player " + (current + 1),
                 "lastAction",
                 lastAction,
                 "colors",

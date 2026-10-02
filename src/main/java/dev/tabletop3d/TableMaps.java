@@ -37,7 +37,7 @@ final class TableMaps {
                 });
                 ItemStack item=new ItemStack(Material.FILLED_MAP);MapMeta meta=(MapMeta)item.getItemMeta();meta.setMapView(map);item.setItemMeta(meta);items.add(item);
             }
-            try{index.save(file);}catch(IOException ex){throw new IllegalStateException("不能保存棋盘地图编号",ex);}
+            try{index.save(file);}catch(IOException ex){throw new IllegalStateException("Cannot save board map IDs",ex);}
             return List.copyOf(items);
         });
     }

@@ -50,7 +50,10 @@ class UpgradeTest(unittest.TestCase):
             (source / 'lang').mkdir(parents=True)
             (source / 'menus').mkdir()
             (source / 'lang/en.yml').write_text('messages:\n  menu:\n    close: Customized\ntranslations:\n  Special phrase: Special value\n', encoding='utf-8')
-            (source / 'menus/room.yml').write_text('Bottom:\n  buttons:\n    bots:\n      text: "&f补齐陪练并开始"\n    options:\n      text: "Custom options"\n', encoding='utf-8')
+            historical_caption = '&f' + upgrade.MAPPING['defaults']['zh_CN']['menu.bots']
+            (source / 'menus/room.yml').write_text(upgrade.dump({'Bottom': {'buttons': {
+                'bots': {'text': historical_caption},
+                'options': {'text': 'Custom options'}}}}), encoding='utf-8')
             output = Path(temporary) / 'output'
             report = upgrade.convert(source, output)
             values = upgrade.yaml.safe_load((output / 'languages/en_US.yml').read_text(encoding='utf-8'))

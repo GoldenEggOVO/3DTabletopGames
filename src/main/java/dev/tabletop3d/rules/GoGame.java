@@ -1,5 +1,7 @@
 package dev.tabletop3d.rules;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import java.util.*;
 
 /**
@@ -41,12 +43,12 @@ public final class GoGame implements BoardGame {
     private final int[] prisoners = new int[2];
     private int turn, passes, playTurnBeforeScoring;
     private boolean scoring;
-    private String result = "ongoing", last = "黑方先行";
+    private String result = "ongoing", last = "Black moves first";
     private List<String> cachedMoves;
 
     public GoGame(int size) {
         if (!Set.of(9, 13, 19).contains(size))
-            throw new RuleViolation("error.go-supports-9-9-13-13-and-19-19", "围棋提供9、13、19路");
+            throw new RuleViolation("error.go-supports-9-9-13-13-and-19-19", "Go supports 9×9, 13×13, and 19×19");
         this.size = size;
         board = new int[size * size];
         Arrays.fill(board, -1);
@@ -101,7 +103,7 @@ public final class GoGame implements BoardGame {
                             i / size,
                             board[i] < 0
                                     ? ""
-                                    : (board[i] == 0 ? "黑" : "白") + (dead.contains(i) ? "×" : ""),
+                                    : (board[i] == 0 ? GameSymbols.BLACK : GameSymbols.WHITE) + (dead.contains(i) ? "×" : ""),
                             board[i]));
         return List.copyOf(out);
     }
@@ -175,7 +177,7 @@ public final class GoGame implements BoardGame {
         if (action == null || !legalActions(seat).contains(action))
             throw new RuleViolation(
                     "error.invalid-move-check-turn-liberties-suicide-or-repeated-position",
-                    "此步无效：请检查回合、气、自杀或重复局面");
+                    "Invalid move: check turn, liberties, suicide, or repeated position");
         cachedMoves = null;
         if (scoring) {
             if (action.equals("resume")) {
@@ -184,7 +186,7 @@ public final class GoGame implements BoardGame {
                 dead.clear();
                 Arrays.fill(accepted, false);
                 passes = 0;
-                last = "继续对局，争议棋块可继续行棋解决";
+                last = "Play resumed; resolve disputed groups by continuing play";
                 lastMessage = RuleMessage.of("board.go.resumed");
                 return;
             }
@@ -193,7 +195,7 @@ public final class GoGame implements BoardGame {
                 if (dead.containsAll(stones)) dead.removeAll(stones);
                 else dead.addAll(stones);
                 Arrays.fill(accepted, false);
-                last = "死子标记已调整，需双方重新确认";
+                last = "Dead group markings changed; both players must confirm again";
                 lastMessage = RuleMessage.of("board.go.dead-adjusted");
                 return;
             }
@@ -202,7 +204,7 @@ public final class GoGame implements BoardGame {
             if (accepted[0] && accepted[1]) {
                 double[] score = score();
                 result = score[0] > score[1] ? "winner:0" : "winner:1";
-                last = "双方已确认终局计分";
+                last = "Both players confirmed the final score";
                 lastMessage = RuleMessage.of("board.go.agreed");
             }
             return;
@@ -210,13 +212,13 @@ public final class GoGame implements BoardGame {
         if (action.equals("pass")) {
             passes++;
             turn = 1 - turn;
-            last = (seat == 0 ? "黑方" : "白方") + "停一手";
+            last = (seat == 0 ? "Black" : "White") + " passed";
             lastMessage = RuleMessage.of("board.passed", "player", seat + 1);
             if (passes >= 2) {
                 scoring = true;
                 playTurnBeforeScoring = turn;
                 Arrays.fill(accepted, false);
-                last = "双方停手：点击棋块标记死子，再各自确认计分；有争议可继续对局";
+                last = "Both players passed: mark dead groups and confirm the score; resume play to resolve disputes";
                 lastMessage = RuleMessage.of("board.go.scoring");
             }
             return;
@@ -224,14 +226,14 @@ public final class GoGame implements BoardGame {
         int pos = parse(action.substring(6));
         int[] next = placed(pos, seat);
         if (next == null)
-            throw new RuleViolation("error.repeated-position-or-no-liberties", "此步重复局面或没有气");
+            throw new RuleViolation("error.repeated-position-or-no-liberties", "Repeated position or no liberties");
         for (int i = 0; i < board.length; i++)
             if (board[i] == 1 - seat && next[i] < 0) prisoners[seat]++;
         board = next;
         seen.add(position(board));
         passes = 0;
         turn = 1 - seat;
-        last = (seat == 0 ? "黑方" : "白方") + "落子 " + key(pos);
+        last = (seat == 0 ? "Black" : "White") + " placed at " + key(pos);
         lastMessage = RuleMessage.of("board.placed", "player", seat + 1, "coordinate", key(pos));
     }
 
@@ -270,23 +272,23 @@ public final class GoGame implements BoardGame {
 
     public Map<String, String> publicInfo() {
         Map<String, String> out = new LinkedHashMap<>();
-        out.put("rules", size + "路面积计分，白贴7.5目；禁自杀，全局同形禁着；连续停两手后双方标死子并确认，有争议可恢复行棋");
+        out.put("rules", size + "-line board with area scoring and 7.5 komi for White; no suicide and positional superko; after two passes, both players mark dead groups and confirm; resume play to resolve disputes");
         out.put("rulesVariant", "area-psk-komi7.5-agreement");
         out.put(
                 "phase",
                 finished()
-                        ? "已结束"
+                        ? "Finished"
                         : scoring
-                                ? "终局协商 · 黑"
-                                        + (accepted[0] ? "已确认" : "待确认")
-                                        + " / 白"
-                                        + (accepted[1] ? "已确认" : "待确认")
-                                : "行棋中");
+                                ? "Scoring agreement · Black "
+                                        + (accepted[0] ? "confirmed" : "pending")
+                                        + " / White "
+                                        + (accepted[1] ? "confirmed" : "pending")
+                                : "Playing");
         out.put("lastAction", last);
-        out.put("captures", "黑提 " + prisoners[0] + " · 白提 " + prisoners[1]);
+        out.put("captures", "Black captures " + prisoners[0] + " · White captures " + prisoners[1]);
         if (scoring || finished()) {
             double[] s = score();
-            out.put("score", "面积：黑 " + s[0] + " · 白 " + s[1] + "（含贴目） · 标记死子 " + dead.size());
+            out.put("score", "Area: Black " + s[0] + " · White " + s[1] + " (including komi) · marked dead stones " + dead.size());
         }
         return out;
     }

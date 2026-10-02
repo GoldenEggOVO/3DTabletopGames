@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import dev.tabletop3d.rules.BoardGame;
 import dev.tabletop3d.rules.Cell;
 import dev.tabletop3d.rules.RuleViolation;
@@ -87,7 +89,7 @@ final class GameWorld implements Listener, AutoCloseable {
     static UUID preflightOwner(Path legacy, Path dimension) {
         if (!legacy.equals(dimension) && Files.exists(legacy, LinkOption.NOFOLLOW_LINKS)) {
             readOwner(legacy); // Unmarked old worlds fail before CraftBukkit can migrate them.
-            throw new IllegalStateException("检测到旧目录格式的棋牌世界；请先备份并完成管理员迁移，插件不会自动移动世界");
+            throw new IllegalStateException("Legacy board world directory detected; back up and migrate it manually. The plugin will not move the world automatically");
         }
         if (!Files.exists(dimension, LinkOption.NOFOLLOW_LINKS)) return null;
         return readOwner(dimension);
@@ -98,17 +100,17 @@ final class GameWorld implements Listener, AutoCloseable {
         if (Files.isSymbolicLink(folder)
                 || !Files.isDirectory(folder, LinkOption.NOFOLLOW_LINKS)
                 || !Files.isRegularFile(marker, LinkOption.NOFOLLOW_LINKS))
-            throw new IllegalStateException("已有世界不属于棋牌插件；未修改，请配置新的空世界名称");
+            throw new IllegalStateException("Existing world is not owned by this plugin. It was not changed; configure a new empty world name");
         try {
             String value = Files.readString(marker, StandardCharsets.UTF_8);
             String prefix =
                     value.startsWith(OWNER_MARKER)
                             ? OWNER_MARKER
                             : value.startsWith(LEGACY_OWNER_MARKER) ? LEGACY_OWNER_MARKER : null;
-            if (prefix == null) throw new IllegalStateException("棋牌世界归属标记无效，未修改世界");
+            if (prefix == null) throw new IllegalStateException("Board world ownership marker is invalid; world unchanged");
             return UUID.fromString(value.substring(prefix.length()));
         } catch (IOException | IllegalArgumentException ex) {
-            throw new IllegalStateException("不能核对棋牌世界归属，未修改世界", ex);
+            throw new IllegalStateException("Cannot verify board world ownership; world unchanged", ex);
         }
     }
 
@@ -162,10 +164,10 @@ final class GameWorld implements Listener, AutoCloseable {
                         .orElse(null);
         if (r != null && r.anchorWorld != null) {
             World w = Bukkit.getWorld(r.anchorWorld);
-            if (w == null) throw new IllegalStateException("桌位世界未加载");
+            if (w == null) throw new IllegalStateException("Table world is not loaded");
             return TablePlacement.snap(new Location(w, r.anchorX, r.anchorY, r.anchorZ), 2);
         }
-        throw new IllegalStateException("房间缺少可用的世界坐标");
+        throw new IllegalStateException("Room has no usable world coordinates");
     }
 
     boolean atTableWorld(Player p, Room r) {
@@ -212,7 +214,7 @@ final class GameWorld implements Listener, AutoCloseable {
 
     Location externalPlatform(int index) {
         if (world == null || index < 0 || index >= 5)
-            throw new RuleViolation("error.invalid-card-table-number", "无效卡牌桌号");
+            throw new RuleViolation("error.invalid-card-table-number", "Invalid card table number");
         Location center = new Location(world, -64 - index * 32 + .5, 80, -32 + .5);
         lobbyChunks.addAll(floor(center, 11));
         return center;
@@ -220,7 +222,7 @@ final class GameWorld implements Listener, AutoCloseable {
 
     void platform(int index) {
 
-        if (index < 0 || index > 127) throw new RuleViolation("error.invalid-table-number", "无效桌号");
+        if (index < 0 || index > 127) throw new RuleViolation("error.invalid-table-number", "Invalid table number");
         Location c = center(index);
         Set<Chunk> chunks = new HashSet<>();
         for (int x = (c.getBlockX() - 4) >> 4; x <= ((c.getBlockX() + 4) >> 4); x++)
@@ -287,7 +289,7 @@ final class GameWorld implements Listener, AutoCloseable {
         if (!location.getBlock().isPassable()
                 || !location.clone().add(0, 1, 0).getBlock().isPassable())
             throw new RuleViolation(
-                    "error.the-seat-is-blocked-choose-a-more", "座位被方块挡住，请换一个更开阔的位置。");
+                    "error.the-seat-is-blocked-choose-a-more", "The seat is blocked. Choose a more open position.");
         return location;
     }
 
@@ -444,7 +446,7 @@ final class GameWorld implements Listener, AutoCloseable {
             case "chess" -> {
                 background = ((cell.x() + cell.y()) & 1) == 0 ? 0xb49166 : 0xe0c79f;
                 ink = cell.owner() == 0 ? TextColor.color(0xfff6db) : TextColor.color(0x2e2630);
-                glyph = empty ? "·" : (cell.owner() == 0 ? "白" : "黑") + cell.piece();
+                glyph = empty ? "·" : (cell.owner() == 0 ? GameSymbols.WHITE : GameSymbols.BLACK) + cell.piece();
             }
             case "checkers" -> {
                 background = empty ? 0x2d4c43 : 0x283b35;
@@ -457,11 +459,11 @@ final class GameWorld implements Listener, AutoCloseable {
                 glyph =
                         empty
                                 ? cell.id().startsWith("go")
-                                        ? "终"
+                                        ? GameSymbols.FINISH
                                         : cell.id().startsWith("ba")
-                                                ? "库"
-                                                : cell.id().startsWith("to") ? "起" : "·"
-                                : cell.piece().replace("✈", "机");
+                                                ? GameSymbols.HANGAR
+                                                : cell.id().startsWith("to") ? GameSymbols.TAKEOFF : "·"
+                                : cell.piece().replace("✈", GameSymbols.AIRPLANE);
             }
             case "ludo" -> {
                 background = 0xe8decb;
@@ -542,15 +544,24 @@ final class GameWorld implements Listener, AutoCloseable {
         if (kind.equals("chess")) return cell.id().toUpperCase(Locale.ROOT);
         if (Set.of("gomoku", "xiangqi", "draughts", "reversi", "go", "go9", "go13").contains(kind))
             return String.valueOf((char) ('A' + cell.x())) + (cell.y() + 1);
-        if (kind.equals("yacht")) return "骰子 " + (cell.x() / 2 + 1);
+        if (kind.equals("yacht"))
+            return dev.tabletop3d.ui.MessageText.plain(
+                    Language.component("board.die", "number", cell.x() / 2 + 1));
         if (kind.equals("aeroplane")) {
             if (cell.id().startsWith("sk"))
                 return String.valueOf(Integer.parseInt(cell.id().substring(2)) + 1);
             if (cell.id().startsWith("ld"))
-                return "降落 " + (Character.digit(cell.id().charAt(4), 10) + 1);
-            if (cell.id().startsWith("go")) return "终点";
-            if (cell.id().startsWith("to")) return "起飞";
-            return "机库";
+                return dev.tabletop3d.ui.MessageText.plain(
+                        Language.component(
+                                "board.flight.landing",
+                                "number",
+                                Character.digit(cell.id().charAt(4), 10) + 1));
+            if (cell.id().startsWith("go"))
+                return dev.tabletop3d.ui.MessageText.plain(Language.component("board.finish"));
+            if (cell.id().startsWith("to"))
+                return dev.tabletop3d.ui.MessageText.plain(
+                        Language.component("board.flight.takeoff"));
+            return dev.tabletop3d.ui.MessageText.plain(Language.component("board.flight.hangar"));
         }
         return cell.id();
     }

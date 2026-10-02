@@ -13,10 +13,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class WindowMenuTest {
     @Test
-    void navigationAlwaysUsesCurrentLanguageInsteadOfLiteralTemplateCaptions() {
+    void navigationAlwaysUsesCurrentLanguageInsteadOfLiteralTemplateCaptions() throws Exception {
         var config = new YamlConfiguration();
-        config.set("Bottom.buttons.back.text", "&e返回上一页");
-        config.set("Bottom.buttons.main.text", "&e返回主菜单");
+        var chinese = chineseCatalog();
+        config.set("Bottom.buttons.back.text", "&e" + chinese.getString("menu.back"));
+        config.set("Bottom.buttons.main.text", "&e" + chinese.getString("menu.main"));
         config.set("Bottom.buttons.back.width", 330);
         var rendered =
                 GameMenuLayouts.render(
@@ -108,7 +109,7 @@ class WindowMenuTest {
         when(world.getUID()).thenReturn(UUID.randomUUID());
         when(player.getWorld()).thenReturn(world);
         var room = new Room(UUID.randomUUID(), "chess", 2, 0, 0);
-        String name = "<red>准备&c陪练";
+        String name = "<red>Ready&cBot";
         room.join(id, name);
         // The mocked plugin has no initialized fields; provide the live room registry.
         try {
@@ -145,24 +146,27 @@ class WindowMenuTest {
     }
 
     @Test
-    void namedTitleAndBodyKeepTheirOwnLanguageAndStyles() {
+    void namedTitleAndBodyKeepTheirOwnLanguageAndStyles() throws Exception {
         var config = new YamlConfiguration();
         config.set("Title", "<white>@title@");
         config.set("Body.content.text", "<gray>@description@");
-        var title = dev.tabletop3d.ui.MessageText.render("<red>棋盘游戏</red>");
-        var body = dev.tabletop3d.ui.MessageText.render("<gold>确认离开</gold>");
+        var chinese = chineseCatalog();
+        String titleText = chinese.getString("game.chess");
+        String bodyText = chinese.getString("menu.leave.confirm");
+        var title = dev.tabletop3d.ui.MessageText.render("<red>" + titleText + "</red>");
+        var body = dev.tabletop3d.ui.MessageText.render("<gold>" + bodyText + "</gold>");
         var rendered = GameMenuLayouts.render(config, title, body, List.of(), UUID.randomUUID());
         var actualTitle =
                 (net.kyori.adventure.text.Component) rendered.config().get("Title-component");
         var actualBody =
                 (net.kyori.adventure.text.Component)
                         rendered.config().get("Body.content.component");
-        assertEquals("棋盘游戏", dev.tabletop3d.ui.MessageText.plain(actualTitle));
-        assertEquals("确认离开", dev.tabletop3d.ui.MessageText.plain(actualBody));
+        assertEquals(titleText, dev.tabletop3d.ui.MessageText.plain(actualTitle));
+        assertEquals(bodyText, dev.tabletop3d.ui.MessageText.plain(actualBody));
         assertTrue(
                 net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()
                         .serialize(actualTitle)
-                        .contains("§c棋盘游戏"));
+                        .contains("§c" + titleText));
     }
 
     @Test
@@ -170,7 +174,7 @@ class WindowMenuTest {
         for (String style : List.of("&a@label@", "<green>@label@</green>")) {
             var config = new YamlConfiguration();
             config.set("Bottom.buttons.entry.text", style);
-            String name = "<red>玩家&c";
+            String name = "<red>Player&c";
             var rendered =
                     GameMenuLayouts.render(
                             config,
@@ -264,15 +268,15 @@ class WindowMenuTest {
         config.set("Title", "@title@");
         config.set("Bottom.buttons.connectfour.width", 222);
         config.set("Bottom.buttons.connectfour.actions", List.of("command: op bad"));
-        config.set("Bottom.buttons.mahjong.text", "麻将");
+        config.set("Bottom.buttons.mahjong.text", "Mahjong");
         config.set("Events.Open", List.of("command: old"));
         UUID token = UUID.randomUUID();
         var rendered =
                 GameMenuLayouts.render(
                         config,
-                        "棋盘游戏",
+                        "Board Games",
                         "",
-                        List.of(new GameMenus.Button("connectfour", "四子棋", () -> {})),
+                        List.of(new GameMenus.Button("connectfour", "Connect Four", () -> {})),
                         token);
         assertEquals(222, rendered.config().getInt("Bottom.buttons.slot0.width"));
         assertEquals(
@@ -331,5 +335,15 @@ class WindowMenuTest {
         assertEquals(0, clicked.get());
         verify(player, never()).sendMessage(anyString());
         menus.close();
+    }
+    private static YamlConfiguration chineseCatalog() throws Exception {
+        var catalog = new YamlConfiguration();
+        catalog.options().pathSeparator('\u001f');
+        try (var input = WindowMenuTest.class.getResourceAsStream("/languages/zh_CN.yml")) {
+            assertNotNull(input);
+            catalog.loadFromString(
+                    new String(input.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8));
+        }
+        return catalog;
     }
 }

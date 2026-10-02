@@ -413,7 +413,7 @@ class TabletopTest {
 
         Fixture() throws Exception {
             UUID id = UUID.randomUUID();
-            room.join(id, "测试玩家");
+            room.join(id, "Test Player");
             room.fillBots();
             room.board = GameFactory.create("gomoku", 2, 0);
             room.phase = Room.Phase.PLAYING;

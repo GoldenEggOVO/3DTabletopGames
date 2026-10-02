@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import dev.tabletop3d.rules.Cell;
 import dev.tabletop3d.ui.LabelLayout;
 
@@ -158,7 +160,7 @@ final class TableView implements AutoCloseable {
                                             (float) (part.h() * scale),
                                             (float) (part.d() * scale)));
                 }
-                if (room.kind.equals("chess") && c.piece().equals("马"))
+                if (room.kind.equals("chess") && c.piece().equals(GameSymbols.HORSE))
                     d.setRotation(c.owner() == 0 ? 180 : 0, 0);
                 if (Set.of("go", "go9", "go13").contains(room.kind)
                         && part.material() == Material.RED_CONCRETE) deadMarks.add(d);
@@ -481,7 +483,7 @@ final class TableView implements AutoCloseable {
             furniture.add(
                     text(
                             origin.clone().add(0, .018, 0),
-                            Component.text("楚河      漢界"),
+                            Component.text(GameSymbols.XIANGQI_RIVER),
                             .26,
                             true,
                             NamedTextColor.DARK_GRAY));

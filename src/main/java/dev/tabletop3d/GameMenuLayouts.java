@@ -35,7 +35,7 @@ final class GameMenuLayouts {
                     }
             }
         } catch (IOException ex) {
-            throw new IllegalStateException("不能释放棋牌菜单模板", ex);
+            throw new IllegalStateException("Cannot extract board game menu templates", ex);
         }
     }
 

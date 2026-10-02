@@ -289,12 +289,12 @@ public final class Tabletop3D extends JavaPlugin
     }
 
     private void requireLiveRoom(Room room) {
-        if (rooms.get(room.id) != room) throw new RuleViolation("error.room-closed", "房间已关闭");
+        if (rooms.get(room.id) != room) throw new RuleViolation("error.room-closed", "Room closed");
     }
 
     Room requireRoom(Player p) {
         Room r = room(p);
-        if (r == null) throw new RuleViolation("error.you-have-not-joined-a-room", "你尚未加入房间");
+        if (r == null) throw new RuleViolation("error.you-have-not-joined-a-room", "You have not joined a room");
         return r;
     }
 
@@ -302,7 +302,7 @@ public final class Tabletop3D extends JavaPlugin
         return rooms.values().stream()
                 .filter(r -> r.id.toString().startsWith(text))
                 .findFirst()
-                .orElseThrow(() -> new RuleViolation("error.room-closed", "房间已关闭"));
+                .orElseThrow(() -> new RuleViolation("error.room-closed", "Room closed"));
     }
 
     static int defaultCapacity(String kind) {
@@ -339,9 +339,9 @@ public final class Tabletop3D extends JavaPlugin
 
     void create(Player p, String kind, int capacity, Map<String, String> options) {
         if (!allowed(p))
-            throw new RuleViolation("error.log-in-and-obtain-board-game-permission", "请先登录并取得棋类权限");
+            throw new RuleViolation("error.log-in-and-obtain-board-game-permission", "Log in and obtain board game permission first");
         if (!coordinator.reserve(p.getUniqueId(), kind))
-            throw new RuleViolation("error.leave-your-current-game-first", "请先离开当前对局");
+            throw new RuleViolation("error.leave-your-current-game-first", "Leave your current game first");
         try {
             createReserved(p, kind, capacity, options);
         } catch (RuntimeException | Error ex) {
@@ -365,14 +365,14 @@ public final class Tabletop3D extends JavaPlugin
         if (Set.of("uno", "doudizhu", "yacht", "aeroplane", "flying").contains(kind))
             throw new RuleViolation(
                     "error.this-game-is-temporarily-disabled-choose-another",
-                    "这个游戏暂时停用，请在菜单选择其他游戏。");
+                    "This game is temporarily disabled. Choose another game from the menu.");
         if (!capacityValid(kind, capacity))
-            throw new RuleViolation("error.unsupported-game-or-player-count", "不支持的游戏或人数");
+            throw new RuleViolation("error.unsupported-game-or-player-count", "Unsupported game or player count");
         if (room(p) != null)
-            throw new RuleViolation("error.leave-your-current-game-first", "请先离开当前对局");
+            throw new RuleViolation("error.leave-your-current-game-first", "Leave your current game first");
         if (rooms.size() >= getConfig().getInt("max-rooms", 12))
             throw new RuleViolation(
-                    "error.room-limit-reached-join-an-existing-room", "房间已满，请先加入现有房间");
+                    "error.room-limit-reached-join-an-existing-room", "Room limit reached; join an existing room");
         int index = 0;
         Set<Integer> used = new HashSet<>();
         rooms.values().forEach(r -> used.add(r.table));
@@ -397,7 +397,7 @@ public final class Tabletop3D extends JavaPlugin
             returns.remove(p.getUniqueId());
             throw new RuleViolation(
                     "error.teleport-cancelled-room-was-not-created-remove",
-                    "传送被取消，未创建房间。请解除传送限制后再试。");
+                    "Teleport cancelled; room was not created. Remove the teleport restriction and try again.");
         }
         save();
         if (comfort != null) comfort.sync();
@@ -412,7 +412,7 @@ public final class Tabletop3D extends JavaPlugin
             return;
         }
         if (!coordinator.reserve(p.getUniqueId(), r.kind))
-            throw new RuleViolation("error.leave-your-current-game-first", "请先离开当前对局");
+            throw new RuleViolation("error.leave-your-current-game-first", "Leave your current game first");
         try {
             joinReserved(p, r);
         } catch (RuntimeException | Error ex) {
@@ -436,7 +436,7 @@ public final class Tabletop3D extends JavaPlugin
         if (pack != null) pack.require(p, r.kind);
         Room old = room(p);
         if (old != null && old != r)
-            throw new RuleViolation("error.leave-your-current-game-first", "请先离开当前对局");
+            throw new RuleViolation("error.leave-your-current-game-first", "Leave your current game first");
         boolean already = r.seat(p.getUniqueId()) >= 0;
         r.join(p.getUniqueId(), p.getName());
         if (!enterArena(p, r)) {
@@ -448,7 +448,7 @@ public final class Tabletop3D extends JavaPlugin
                 save();
             }
             throw new RuleViolation(
-                    "error.teleport-cancelled-could-not-take-a-seat", "传送被取消，无法入座。请解除限制后再试。");
+                    "error.teleport-cancelled-could-not-take-a-seat", "Teleport cancelled; could not take a seat. Remove the restriction and try again.");
         }
         announce(r, Language.component("chat.joined", "player", p.getName()));
         save();
@@ -461,7 +461,7 @@ public final class Tabletop3D extends JavaPlugin
         requireLiveRoom(r);
         if (pack != null) pack.require(p, r.kind);
         if (r.seat(p.getUniqueId()) < 0)
-            throw new RuleViolation("error.you-have-not-joined-a-room", "你尚未加入房间");
+            throw new RuleViolation("error.you-have-not-joined-a-room", "You have not joined a room");
         if (!arena.atTableWorld(p, r))
             returns.putIfAbsent(p.getUniqueId(), p.getLocation().clone());
         if (!p.teleport(arena.seatLocation(r, r.seat(p.getUniqueId())))) {
@@ -503,11 +503,11 @@ public final class Tabletop3D extends JavaPlugin
         requireLiveRoom(r);
         if (pack != null) pack.require(p, r.kind);
         if (r.phase != Room.Phase.LOBBY || !r.host(p.getUniqueId()))
-            throw new RuleViolation("error.only-the-host-can-add-bots", "仅房主可以添加陪练");
+            throw new RuleViolation("error.only-the-host-can-add-bots", "Only the host can add bots");
         if (r.seats.stream()
                 .filter(s -> !s.bot() && !s.id().equals(p.getUniqueId()))
                 .anyMatch(s -> !r.ready.contains(s.id())))
-            throw new RuleViolation("error.wait-for-the-other-players-to-ready", "请等待其他玩家准备");
+            throw new RuleViolation("error.wait-for-the-other-players-to-ready", "Wait for the other players to ready");
         r.fillBots();
         start(r);
     }
@@ -593,7 +593,7 @@ public final class Tabletop3D extends JavaPlugin
         if (!arena.atTableWorld(p, r))
             throw new RuleViolation(
                     "error.use-3dtabletop-resume-to-return-to-the",
-                    "请先用 /3dtabletop resume 回到棋桌所在世界");
+                    "Use /3dtabletop resume to return to the table world first");
         r.requireAction(p.getUniqueId(), revision);
         apply(r, r.seat(p.getUniqueId()), action, p);
     }
@@ -606,7 +606,7 @@ public final class Tabletop3D extends JavaPlugin
             return;
         }
         if (!ReplayBudget.allows(r.history, action)) {
-            finish(r, "本局达到休闲对局长度上限，按和局结束");
+            finish(r, "result.limit");
             save();
             return;
         }
@@ -739,7 +739,7 @@ public final class Tabletop3D extends JavaPlugin
                     || r.phase == Room.Phase.PAUSED) {
                 abort(
                         r,
-                        p.getName() + " 离开，免费对局已结束",
+                        "result.left",
                         Language.component("result.left", "player", p.getName()));
             } else if (r.phase == Room.Phase.FINISHED) {
                 remove(r);

@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import dev.tabletop3d.ui.MessageText;
 import java.util.List;
 import java.util.Map;
@@ -29,12 +31,12 @@ class VisualCleanupTest {
             List<?> parts=(List<?>)TableViewTest.field(tokens.get(cell.id()),"parts");
             TextDisplay label=(TextDisplay)parts.stream().filter(TextDisplay.class::isInstance).findFirst().orElseThrow();
             assertEquals(cell.piece(),text(label));
-            if(cell.owner()==1&&cell.piece().equals("砲"))blackCannons++;
+            if(cell.owner()==1&&cell.piece().equals(GameSymbols.BLACK_CANNON))blackCannons++;
         }
         assertEquals(2,blackCannons);
         List<?> furniture=(List<?>)TableViewTest.field(f.view,"furniture");
         assertTrue(furniture.stream().filter(TextDisplay.class::isInstance).map(TextDisplay.class::cast)
-            .map(VisualCleanupTest::text).anyMatch("楚河      漢界"::equals));
+            .map(VisualCleanupTest::text).anyMatch(GameSymbols.XIANGQI_RIVER::equals));
         assertTrue(text((TextDisplay)TableViewTest.field(f.view,"title")).contains("Xiangqi"));
         f.view.close();
     }

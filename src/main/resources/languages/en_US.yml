@@ -14,11 +14,15 @@
 
 # board
 "board.confirmed": "Confirmed"
+"board.die": "Die {number}"
 "board.draughts.chain": "Continue capturing from {coordinate}"
 "board.draughts.choose": "Choose a piece and destination"
 "board.finish": "Finish"
+"board.flight.hangar": "Hangar"
+"board.flight.landing": "Landing {number}"
 "board.flight.moved": "Player {player} moved plane {pawn} to {coordinate}"
 "board.flight.no-move": "Player {player} rolled {roll}; no plane can move"
+"board.flight.takeoff": "Takeoff"
 "board.flight.triple-six": "Player {player} rolled a third consecutive six; unfinished planes returned home"
 "board.go.agreed": "Both players confirmed the score"
 "board.go.captures": "Black captures: {black} · White captures: {white}"

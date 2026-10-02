@@ -1,5 +1,7 @@
 package dev.tabletop3d.rules;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import java.util.*;
 import java.util.function.IntUnaryOperator;
 
@@ -22,7 +24,7 @@ public final class GomokuGame implements BoardGame {
     private final GomokuOptions options;
     private List<String> cachedActions;
     private int current, empty = SIZE * SIZE;
-    private String result = "ongoing", lastAction = "尚未落子";
+    private String result = "ongoing", lastAction = "No stones placed yet";
 
     public GomokuGame() {
         this(GomokuOptions.DEFAULT);
@@ -68,7 +70,7 @@ public final class GomokuGame implements BoardGame {
         for (int y = 0; y < SIZE; y++)
             for (int x = 0; x < SIZE; x++) {
                 int p = board[y][x];
-                out.add(new Cell(x + "," + y, x, y, p == 0 ? "黑" : p == 1 ? "白" : "", p));
+                out.add(new Cell(x + "," + y, x, y, p == 0 ? GameSymbols.BLACK : p == 1 ? GameSymbols.WHITE : "", p));
             }
         return List.copyOf(out);
     }
@@ -97,13 +99,13 @@ public final class GomokuGame implements BoardGame {
     @Override
     public void apply(int seat, String action) {
         if (action == null || !legalActions(seat).contains(action))
-            throw new RuleViolation("error.invalid-placement", "不是有效落子");
+            throw new RuleViolation("error.invalid-placement", "Invalid placement");
         String[] xy = action.substring(6).split(",");
         int x = Integer.parseInt(xy[0]), y = Integer.parseInt(xy[1]);
         board[y][x] = seat;
         empty--;
         cachedActions = null;
-        lastAction = (seat == 0 ? "黑方" : "白方") + "落子 " + (x + 1) + "," + (y + 1);
+        lastAction = (seat == 0 ? "Black" : "White") + " placed at " + (x + 1) + "," + (y + 1);
         lastMessage =
                 RuleMessage.of(
                         "board.placed", "player", seat + 1, "coordinate", (x + 1) + "," + (y + 1));
@@ -251,7 +253,7 @@ public final class GomokuGame implements BoardGame {
     public Map<String, String> publicInfo() {
         String rules =
                 options.equals(GomokuOptions.DEFAULT)
-                        ? "15×15 自由五子棋；连五或以上获胜；无禁手"
+                        ? "15×15 freestyle Gomoku; five or more in a row wins; no forbidden moves"
                         : "15x15 Gomoku; White wins with five or more; Black wins with "
                                 + (options.forbidOverline() ? "exactly five" : "five or more")
                                 + (options.forbidDoubleThree() ? "; no double threes" : "")
@@ -263,9 +265,9 @@ public final class GomokuGame implements BoardGame {
                 "rulesVariant",
                 options.equals(GomokuOptions.DEFAULT) ? "freestyle-15" : "gomoku-15-custom",
                 "phase",
-                finished() ? "对局结束" : "等待落子",
+                finished() ? "Game finished" : "Waiting for a placement",
                 "turn",
-                current == 0 ? "黑方" : "白方",
+                current == 0 ? "Black" : "White",
                 "lastAction",
                 lastAction,
                 "remaining",

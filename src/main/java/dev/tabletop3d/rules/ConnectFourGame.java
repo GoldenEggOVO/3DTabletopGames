@@ -1,5 +1,7 @@
 package dev.tabletop3d.rules;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import java.util.*;
 
 /** Standard 7-column, 6-row gravity Connect Four. Row zero is the bottom. */
@@ -42,7 +44,7 @@ public final class ConnectFourGame implements BoardGame {
                                 x + "," + y,
                                 x,
                                 y,
-                                board[y][x] < 0 ? "" : board[y][x] == 0 ? "红" : "黄",
+                                board[y][x] < 0 ? "" : board[y][x] == 0 ? GameSymbols.RED : GameSymbols.YELLOW,
                                 board[y][x]));
         return List.copyOf(cells);
     }
@@ -63,7 +65,7 @@ public final class ConnectFourGame implements BoardGame {
     public void apply(int seat, String action) {
         if (action == null || !legalActions(seat).contains(action))
             throw new RuleViolation(
-                    "error.invalid-drop-choose-a-column-that-is-not-full", "不是有效落子：请选择未满的列");
+                    "error.invalid-drop-choose-a-column-that-is-not-full", "Invalid drop: choose a column that is not full");
         int x = action.charAt(5) - '0', y = heights[x]++;
         board[y][x] = seat;
         moves++;
@@ -85,6 +87,6 @@ public final class ConnectFourGame implements BoardGame {
     }
 
     public Map<String, String> publicInfo() {
-        return Map.of("rules", "7列6行竖直棋盘；点击列后棋子落到底部；横、竖或斜向四连获胜", "turn", turn == 0 ? "红方" : "黄方");
+        return Map.of("rules", "Vertical 7×6 board; click a column to drop a disc; four in a horizontal, vertical or diagonal line wins", "turn", turn == 0 ? "Red" : "Yellow");
     }
 }

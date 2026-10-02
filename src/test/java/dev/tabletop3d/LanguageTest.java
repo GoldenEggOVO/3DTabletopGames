@@ -15,7 +15,8 @@ class LanguageTest {
     Path temp;
 
     @Test
-    void completeRuleMessagesHaveNamedParametersAndNeverTranslatePlayerNames() {
+    void completeRuleMessagesHaveNamedParametersAndNeverTranslatePlayerNames() throws Exception {
+        String player = chineseCatalog().getString("game.xiangqi");
         var message =
                 dev.tabletop3d.rules.RuleMessage.of(
                         "board.move", "player", 1, "move", "a2a4");
@@ -23,12 +24,12 @@ class LanguageTest {
         assertTrue(rendered.contains("a2") && rendered.contains("a4"), rendered);
         assertFalse(rendered.contains("board.move"));
         assertEquals(
-                "中国象棋's turn",
+                player + "'s turn",
                 plain(
                         Language.component(
                                 "color-eight.turn",
                                 "player",
-                                net.kyori.adventure.text.Component.text("中国象棋"))));
+                                net.kyori.adventure.text.Component.text(player))));
     }
 
     @Test
@@ -64,7 +65,7 @@ class LanguageTest {
             dev.tabletop3d.ui.MessageText.validate(chinese);
         }
         assertTrue(Language.reload(temp, "zh_CN", w -> fail(w)));
-        assertEquals("创建房间", plain(Language.component("menu.create")));
+        assertEquals(catalogs.getLast().getString("menu.create"), plain(Language.component("menu.create")));
         Language.reload(temp, "en_US", w -> fail(w));
     }
 
@@ -116,7 +117,7 @@ class LanguageTest {
                     + "result.winner: 'Winner: {player}'\n"
                     + "status.finished: 'Done'\n"
                     + "promotion.q: 'Regina'\n");
-        String name = "<red>准备&c陪练99";
+        String name = "<red>" + chineseCatalog().getString("game.xiangqi") + "&c99";
         var room = new Room(java.util.UUID.randomUUID(), "chess", 2, 0, 0);
         room.join(java.util.UUID.randomUUID(), name);
         room.fillBots();
@@ -139,7 +140,39 @@ class LanguageTest {
         }
     }
 
+
+    @Test
+    void physicalCoordinateHintsFollowTheChosenLanguage() {
+        Language.load(temp, "en_US", message -> fail(message));
+        try {
+            for (String locale : java.util.List.of("en_US", "zh_CN")) {
+                var catalog = Language.load(temp, locale, message -> fail(message));
+                assertTrue(Language.reload(temp, locale, message -> fail(message)));
+                assertEquals(catalog.get("board.die").replace("{number}", "2"),
+                        GameWorld.coordinate("yacht", new dev.tabletop3d.rules.Cell("die", 2, 0, "", -1)));
+                assertEquals(catalog.get("board.flight.landing").replace("{number}", "2"),
+                        GameWorld.coordinate("aeroplane", new dev.tabletop3d.rules.Cell("ld001", 0, 0, "", -1)));
+                assertEquals(catalog.get("board.flight.takeoff"),
+                        GameWorld.coordinate("aeroplane", new dev.tabletop3d.rules.Cell("to00", 0, 0, "", -1)));
+                assertEquals(catalog.get("board.flight.hangar"),
+                        GameWorld.coordinate("aeroplane", new dev.tabletop3d.rules.Cell("ba00", 0, 0, "", -1)));
+            }
+        } finally {
+            Language.reload(temp, "en_US", message -> fail(message));
+        }
+    }
+
     private static String plain(net.kyori.adventure.text.Component text) {
         return dev.tabletop3d.ui.MessageText.plain(text);
+    }
+
+    private static YamlConfiguration chineseCatalog() throws Exception {
+        var catalog = new YamlConfiguration();
+        catalog.options().pathSeparator('\u001f');
+        try (var input = LanguageTest.class.getResourceAsStream("/languages/zh_CN.yml")) {
+            assertNotNull(input);
+            catalog.loadFromString(new String(input.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8));
+        }
+        return catalog;
     }
 }

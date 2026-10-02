@@ -257,9 +257,9 @@ public final class LudoGame implements BoardGame {
                                         : "All pawns start in yard")
                         + "; captured pawns need six; no triple-six penalty",
                 "phase",
-                finished() ? "对局结束" : pendingRoll == 0 ? "等待掷骰" : "选择棋子",
+                finished() ? "Game finished" : pendingRoll == 0 ? "Waiting for a roll" : "Choose a pawn",
                 "turn",
-                "玩家 " + (current + 1),
+                "Player " + (current + 1),
                 "lastAction",
                 lastAction,
                 "dice",

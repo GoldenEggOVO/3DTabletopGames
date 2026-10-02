@@ -12,7 +12,7 @@ public final class GameFactory {
 
     public static BoardGame create(
             String game, int players, long seed, Map<String, String> options) {
-        if (game == null) throw new RuleViolation("error.game-type-cannot-be-empty", "游戏类型不能为空");
+        if (game == null) throw new RuleViolation("error.game-type-cannot-be-empty", "Game type cannot be empty");
         game = game.toLowerCase(Locale.ROOT);
         options = GameOptions.validate(game, options);
         return switch (game.toLowerCase(Locale.ROOT)) {
@@ -76,6 +76,6 @@ public final class GameFactory {
 
     private static void requireTwo(int players) {
         if (players != 2)
-            throw new RuleViolation("error.this-game-requires-two-players", "此游戏需要两人");
+            throw new RuleViolation("error.this-game-requires-two-players", "This game requires two players");
     }
 }

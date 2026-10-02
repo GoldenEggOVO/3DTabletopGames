@@ -1,5 +1,7 @@
 package dev.tabletop3d.rules;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import java.util.*;
 
 /** English draughts / American checkers: short kings and compulsory forward captures by men. */
@@ -60,7 +62,7 @@ public final class DraughtsGame implements BoardGame {
                             key(i),
                             i % 8,
                             i / 8,
-                            board[i] < 0 ? "" : board[i] >= 2 ? "王" : "兵",
+                            board[i] < 0 ? "" : board[i] >= 2 ? GameSymbols.KING : GameSymbols.PAWN,
                             board[i] < 0 ? -1 : board[i] % 2));
         return List.copyOf(out);
     }
@@ -104,7 +106,7 @@ public final class DraughtsGame implements BoardGame {
         if (action == null || !legalActions(seat).contains(action))
             throw new RuleViolation(
                     "error.captures-are-mandatory-continue-capture-chains-with-the-same-piece",
-                    "有吃必吃；连跳必须用同一枚棋子完成");
+                    "Captures are mandatory; continue capture chains with the same piece");
         String[] a = action.split(":");
         int from = pos(a[1]), to = pos(a[2]), piece = board[from];
         boolean capture = Math.abs(from % 8 - to % 8) == 2;
@@ -132,10 +134,10 @@ public final class DraughtsGame implements BoardGame {
     public Map<String, String> publicInfo() {
         return Map.of(
                 "rules",
-                "8×8 英美式西洋跳棋：有吃必吃，兵向前走及吃子，短王双向，连吃不可中断；升王立即结束该回合。三次重复或双方各40步无吃子且无兵移动自动和棋",
+                "8×8 English draughts: mandatory captures; men move and capture forward; short kings move both ways; continue capture chains; crowning ends the turn. Automatic draw on threefold repetition or forty moves each without a capture or man move",
                 "rulesVariant",
                 "english-draughts-auto-draw",
                 "phase",
-                chain < 0 ? "选择棋子和落点" : "继续连跳：" + key(chain));
+                chain < 0 ? "Choose a piece and destination" : "Continue capture chain: " + key(chain));
     }
 }

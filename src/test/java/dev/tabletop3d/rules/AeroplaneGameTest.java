@@ -56,7 +56,7 @@ class AeroplaneGameTest {
         game.apply(0,game.legalActions(0).getFirst());
         game.apply(0,"roll"); game.apply(0,game.legalActions(0).getFirst()); game.apply(0,"roll");
         assertEquals(1,game.currentPlayer()); assertEquals("ba0",planes[0].getInCellId()); assertEquals("go0",planes[1].getInCellId());
-        assertTrue(game.publicInfo().get("lastAction").contains("第三个"));
+        assertTrue(game.publicInfo().get("lastAction").contains("third consecutive"));
     }
     @Test void allSeatsHaveFourPlanesAndUniqueCrossBoardPositions() {
         for (int players=2; players<=4; players++) {

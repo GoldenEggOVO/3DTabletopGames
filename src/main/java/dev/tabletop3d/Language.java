@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.ui.GameSymbols;
+
 import dev.tabletop3d.rules.RuleMessage;
 import dev.tabletop3d.rules.RuleViolation;
 import dev.tabletop3d.ui.MessageText;
@@ -58,24 +60,24 @@ final class Language {
 
     private static final Map<String, String> GLYPHS =
             Map.ofEntries(
-                    Map.entry("将", "piece.xiangqi.black-general"),
-                    Map.entry("帅", "piece.xiangqi.red-general"),
-                    Map.entry("士", "piece.xiangqi.advisor"),
-                    Map.entry("仕", "piece.xiangqi.advisor"),
-                    Map.entry("象", "piece.xiangqi.elephant"),
-                    Map.entry("相", "piece.xiangqi.elephant"),
-                    Map.entry("车", "piece.xiangqi.rook"),
-                    Map.entry("馬", "piece.xiangqi.horse"),
-                    Map.entry("马", "piece.xiangqi.horse"),
-                    Map.entry("炮", "piece.xiangqi.cannon"),
-                    Map.entry("砲", "piece.xiangqi.cannon"),
-                    Map.entry("卒", "piece.xiangqi.pawn"),
-                    Map.entry("兵", "piece.xiangqi.pawn"),
-                    Map.entry("王", "piece.draughts.king"),
-                    Map.entry("红", "piece.color.red"),
-                    Map.entry("黄", "piece.color.yellow"),
-                    Map.entry("黑", "piece.color.black"),
-                    Map.entry("白", "piece.color.white"));
+                    Map.entry(GameSymbols.BLACK_GENERAL, "piece.xiangqi.black-general"),
+                    Map.entry(GameSymbols.RED_GENERAL, "piece.xiangqi.red-general"),
+                    Map.entry(GameSymbols.BLACK_ADVISOR, "piece.xiangqi.advisor"),
+                    Map.entry(GameSymbols.RED_ADVISOR, "piece.xiangqi.advisor"),
+                    Map.entry(GameSymbols.ELEPHANT, "piece.xiangqi.elephant"),
+                    Map.entry(GameSymbols.RED_ELEPHANT, "piece.xiangqi.elephant"),
+                    Map.entry(GameSymbols.ROOK, "piece.xiangqi.rook"),
+                    Map.entry(GameSymbols.TRADITIONAL_HORSE, "piece.xiangqi.horse"),
+                    Map.entry(GameSymbols.HORSE, "piece.xiangqi.horse"),
+                    Map.entry(GameSymbols.RED_CANNON, "piece.xiangqi.cannon"),
+                    Map.entry(GameSymbols.BLACK_CANNON, "piece.xiangqi.cannon"),
+                    Map.entry(GameSymbols.BLACK_PAWN, "piece.xiangqi.pawn"),
+                    Map.entry(GameSymbols.PAWN, "piece.xiangqi.pawn"),
+                    Map.entry(GameSymbols.KING, "piece.draughts.king"),
+                    Map.entry(GameSymbols.RED, "piece.color.red"),
+                    Map.entry(GameSymbols.YELLOW, "piece.color.yellow"),
+                    Map.entry(GameSymbols.BLACK, "piece.color.black"),
+                    Map.entry(GameSymbols.WHITE, "piece.color.white"));
 
     static void load(Tabletop3D plugin) {
         current =

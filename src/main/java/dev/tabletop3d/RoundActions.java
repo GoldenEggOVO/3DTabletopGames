@@ -27,11 +27,11 @@ final class RoundActions {
                 || r.busy
                 || r.undo != null
                 || r.phase != Room.Phase.PLAYING && r.phase != Room.Phase.FINISHED)
-            throw new RuleViolation("error.cannot-request-an-undo-now", "当前不能申请悔棋");
+            throw new RuleViolation("error.cannot-request-an-undo-now", "Cannot request an undo now");
         int cut = r.history.size() - 1;
         while (cut >= 0 && r.history.get(cut).getAsJsonObject().get("seat").getAsInt() != seat)
             cut--;
-        if (cut < 0) throw new RuleViolation("error.you-have-no-turn-to-undo", "你还没有可撤销的回合");
+        if (cut < 0) throw new RuleViolation("error.you-have-no-turn-to-undo", "You have no turn to undo");
         if (Set.of("draughts", "yacht", "aeroplane", "ludo").contains(r.kind))
             while (cut > 0
                     && r.history.get(cut - 1).getAsJsonObject().get("seat").getAsInt() == seat)
@@ -44,14 +44,14 @@ final class RoundActions {
 
     static boolean approve(Room r, UUID player, long now) {
         if (r.undo == null || now >= r.undo.expires || !r.undo.pending.remove(player))
-            throw new RuleViolation("error.undo-request-expired-or-does-not-need", "悔棋申请已失效或无需你确认");
+            throw new RuleViolation("error.undo-request-expired-or-does-not-need", "Undo request expired or does not need your approval");
         r.revision++;
         return r.undo.pending.isEmpty();
     }
 
     static void reject(Room r, UUID player) {
         if (r.undo == null || r.seat(player) < 0)
-            throw new RuleViolation("error.no-pending-undo-request", "没有待处理的悔棋申请");
+            throw new RuleViolation("error.no-pending-undo-request", "No pending undo request");
         r.undo = null;
         r.revision++;
         r.changed = System.currentTimeMillis();
@@ -59,7 +59,7 @@ final class RoundActions {
 
     static void apply(Room r) {
         if (r.undo == null || !r.undo.pending.isEmpty())
-            throw new RuleViolation("error.wait-for-the-other-human-players-to", "需等待其他真人玩家同意");
+            throw new RuleViolation("error.wait-for-the-other-human-players-to", "Wait for the other human players to approve");
         var restored = r.newBoard();
         for (int i = 0; i < r.undo.cut; i++) {
             var event = r.history.get(i).getAsJsonObject();
@@ -79,7 +79,7 @@ final class RoundActions {
     static boolean rematchReady(Room r, UUID player) {
         if (r.phase != Room.Phase.FINISHED || r.busy || r.undo != null || r.seat(player) < 0)
             throw new RuleViolation(
-                    "error.finish-this-game-before-starting-a-rematch", "结束本局后才能再来一局");
+                    "error.finish-this-game-before-starting-a-rematch", "Finish this game before starting a rematch");
         r.ready.add(player);
         r.revision++;
         r.changed = System.currentTimeMillis();
@@ -89,7 +89,7 @@ final class RoundActions {
     static void fresh(Room r, long seed) {
         if (r.phase != Room.Phase.FINISHED
                 || r.seats.stream().anyMatch(s -> !s.bot() && !r.ready.contains(s.id())))
-            throw new RuleViolation("error.waiting-for-tablemates-to-ready-for-a", "等待同桌玩家准备重开");
+            throw new RuleViolation("error.waiting-for-tablemates-to-ready-for-a", "Waiting for tablemates to ready for a rematch");
         while (!r.history.isEmpty()) r.history.remove(r.history.size() - 1);
         r.seed = seed;
         r.board = null;

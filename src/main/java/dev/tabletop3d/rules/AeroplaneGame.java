@@ -18,7 +18,7 @@ public final class AeroplaneGame implements BoardGame {
     private final Aeroplane[] planes;
     private final SplittableRandom random;
     private int current, pendingRoll, lastRoll, sixes;
-    private String result = "ongoing", lastAction = "等待掷骰";
+    private String result = "ongoing", lastAction = "Waiting for a roll";
     private static final LinkedHashMap<String, int[]> GEOMETRY = geometry();
     private Map<String, Integer> cached;
 
@@ -30,7 +30,7 @@ public final class AeroplaneGame implements BoardGame {
                     case 4 -> new int[] {0, 1, 2, 3};
                     default ->
                             throw new RuleViolation(
-                                    "error.aeroplane-chess-supports-2-4-players", "飞行棋支持 2 到 4 人");
+                                    "error.aeroplane-chess-supports-2-4-players", "Aeroplane Chess supports 2–4 players");
                 };
         planes = new Aeroplane[players * 4];
         for (int i = 0; i < planes.length; i++)
@@ -141,19 +141,19 @@ public final class AeroplaneGame implements BoardGame {
     @Override
     public void apply(int seat, String action) {
         if (action == null || !legalActions(seat).contains(action))
-            throw new RuleViolation("error.invalid-aeroplane-chess-action", "不是有效飞行棋操作");
+            throw new RuleViolation("error.invalid-aeroplane-chess-action", "Invalid Aeroplane Chess action");
         if (action.equals("roll")) {
             pendingRoll = lastRoll = random.nextInt(1, 7);
             cached = null;
-            lastAction = "玩家 " + (seat + 1) + " 掷出 " + lastRoll;
+            lastAction = "Player " + (seat + 1) + " rolled " + lastRoll;
             lastMessage = RuleMessage.of("board.ludo.rolled", "player", seat + 1, "roll", lastRoll);
             if (lastRoll == 6 && ++sixes == 3) {
                 FlightMoves.unfinishedBackToBase(planes, colors[seat]);
-                lastAction += "，连续第三个 6，未到终点飞机回营";
+                lastAction += "; third consecutive six sends unfinished planes home";
                 lastMessage = RuleMessage.of("board.flight.triple-six", "player", seat + 1);
                 next(false);
             } else if (moves().isEmpty()) {
-                lastAction += "，没有可移动的飞机";
+                lastAction += "; no plane can move";
                 lastMessage =
                         RuleMessage.of(
                                 "board.flight.no-move", "player", seat + 1, "roll", lastRoll);
@@ -164,9 +164,9 @@ public final class AeroplaneGame implements BoardGame {
         int index = moves().get(action);
         FlightMoves.move(planes, index, pendingRoll);
         lastAction =
-                "玩家 "
+                "Player "
                         + (seat + 1)
-                        + " 移动飞机 "
+                        + " moved plane "
                         + (index % 4 + 1)
                         + " → "
                         + cellId(planes[index], index);
@@ -202,15 +202,15 @@ public final class AeroplaneGame implements BoardGame {
     public Map<String, String> publicInfo() {
         return Map.of(
                 "rules",
-                "每人 4 架；6 起飞并连掷；同色跳 4、捷径飞 12；精确冲线，超出回弹",
+                "Four planes each; six launches and grants another roll; matching colors jump four or fly twelve; exact finish with rebound on overshoot",
                 "rulesVariant",
                 "aeroplane-six-launch-single-bonus-blockade",
                 "ruleLimit",
-                "跳/飞每次只奖励一次；撞单机击落，撞叠机自身回营；第三个连续 6 令未完成飞机回营",
+                "One jump or flight bonus per move; capture single planes, return home on stacked planes; third consecutive six sends unfinished planes home",
                 "phase",
-                finished() ? "对局结束" : pendingRoll == 0 ? "等待掷骰" : "选择飞机",
+                finished() ? "Game finished" : pendingRoll == 0 ? "Waiting for a roll" : "Choose a plane",
                 "turn",
-                "玩家 " + (current + 1),
+                "Player " + (current + 1),
                 "lastAction",
                 lastAction,
                 "dice",

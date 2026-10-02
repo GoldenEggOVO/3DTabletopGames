@@ -109,7 +109,7 @@ final class Room {
     void join(UUID player, String name) {
         if (seat(player) >= 0) return;
         if (phase != Phase.LOBBY || seats.size() >= capacity)
-            throw new RuleViolation("error.this-room-is-full-or-has-started", "这个房间已经满员或开局");
+            throw new RuleViolation("error.this-room-is-full-or-has-started", "This room is full or has started");
         if (owner == null) owner = player;
         seats.add(new Seat(player, name, false));
         changed = System.currentTimeMillis();
@@ -124,7 +124,7 @@ final class Room {
                             UUID.nameUUIDFromBytes(
                                     (id + ":" + i)
                                             .getBytes(java.nio.charset.StandardCharsets.UTF_8)),
-                            "陪练" + (i + 1),
+                            "Bot " + (i + 1),
                             true));
         }
     }
@@ -136,7 +136,7 @@ final class Room {
                 || revision != expected
                 || seat(player) < 0)
             throw new RuleViolation(
-                    "error.game-changed-or-an-undo-is-pending", "对局已更新或正在协商悔棋，请重新打开牌桌");
+                    "error.game-changed-or-an-undo-is-pending", "Game changed or an undo is pending; reopen the table");
     }
 
     int turn() {

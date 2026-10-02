@@ -1135,22 +1135,6 @@ final class GameMenus implements AutoCloseable {
                 back);
     }
 
-    static String roomState(String state) {
-        return switch (state) {
-            case "WAITING", "LOBBY" -> "等候";
-            case "PLAYING", "RUNNING" -> "对局中";
-            case "STARTING" -> "正在准备";
-            case "FINISHED", "ENDED" -> "已结束";
-            case "PAUSED" -> "已暂停";
-            case "ABORTED", "CLOSED" -> "已关闭";
-            default -> state;
-        };
-    }
-
-    static String roomLabel(String game, String id, int occupied, int capacity, String state) {
-        return game + " · " + id + "  " + occupied + "/" + capacity + " · " + roomState(state);
-    }
-
     void languageChanged() {
         for (UUID id : List.copyOf(sessions.keySet())) {
             Player player = Bukkit.getPlayer(id);
