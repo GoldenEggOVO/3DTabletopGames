@@ -1,12 +1,11 @@
-language: en_US_US
+language: en_US
 rendering:
   # vanilla, resource-pack, mixed. Restart to apply a mode change.
   mode: vanilla
   resource-pack:
-    # Independent tabletop ZIP URL and its SHA-1 (40 hexadecimal characters).
+    # URL of the independent tabletop ZIP shipped with this plugin version.
+    # Pack checksum and request identity are managed by the plugin.
     url: ''
-    sha1: ''
-    uuid: 40ae45a0-4d81-4c07-8e68-807e85168a09
 max-rooms: 12
 reconnect-seconds: 120
 idle-room-minutes: 30

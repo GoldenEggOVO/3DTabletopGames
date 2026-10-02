@@ -8,6 +8,7 @@ import json
 import math
 import sys
 import zipfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
@@ -369,7 +370,8 @@ def main():
     write_json(BUILD/"pack.mcmeta",{"pack":{"pack_format":88,"min_format":88,"max_format":88,"description":"Tabletop 3D · Mahjong & Color Eight"}})
     config=ROOT/"craftengine/resources/tabletop3d/configuration/items.yml";config.parent.mkdir(parents=True,exist_ok=True)
     config.write_text("items:\n"+"".join(f"  tabletop3d:{name}:\n    material: paper\n    item_model: tabletop3d:{name}\n" for name in sorted(CATALOG)),encoding="utf-8")
-    (config.parent.parent/"pack.yml").write_text("name: Tabletop 3D\nauthor: Tabletop3D\nversion: 1.9.0-SNAPSHOT\n",encoding="utf-8")
+    version=ET.parse(ROOT/"pom.xml").getroot().find("{*}version").text
+    (config.parent.parent/"pack.yml").write_text(f"name: Tabletop 3D\nauthor: Tabletop3D\nversion: {version}\n",encoding="utf-8")
     target=ROOT/"target/tabletop-resource-pack.zip"
     with zipfile.ZipFile(target,"w",zipfile.ZIP_DEFLATED) as z:
         for path in sorted(BUILD.rglob("*")):
@@ -377,6 +379,7 @@ def main():
     manifest={"models":sorted(CATALOG),"sounds_seconds":durations,"sha1":hashlib.sha1(target.read_bytes()).hexdigest(),
               "sha256":hashlib.sha256(target.read_bytes()).hexdigest(),"bytes":target.stat().st_size}
     write_json(ROOT/"target/resource-pack-manifest.json",manifest)
+    (ROOT/"src/main/resources/resource-pack.sha1").write_text(manifest["sha1"]+"\n",encoding="ascii")
     previews();print(json.dumps({k:v for k,v in manifest.items() if k!="models"},indent=2))
 
 

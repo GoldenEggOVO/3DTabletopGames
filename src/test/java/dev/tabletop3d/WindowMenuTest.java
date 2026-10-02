@@ -13,6 +13,34 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class WindowMenuTest {
     @Test
+    void navigationAlwaysUsesCurrentLanguageInsteadOfLiteralTemplateCaptions() {
+        var config = new YamlConfiguration();
+        config.set("Bottom.buttons.back.text", "&e返回上一页");
+        config.set("Bottom.buttons.main.text", "&e返回主菜单");
+        config.set("Bottom.buttons.back.width", 330);
+        var rendered =
+                GameMenuLayouts.render(
+                        config,
+                        "Title",
+                        "",
+                        List.of(
+                                new GameMenus.Button("back", "Back", () -> {}),
+                                new GameMenus.Button("main", "Main Menu", () -> {})),
+                        UUID.randomUUID());
+        assertEquals(
+                "Back",
+                dev.tabletop3d.ui.MessageText.plain(
+                        (net.kyori.adventure.text.Component)
+                                rendered.config().get("Bottom.buttons.slot0.component")));
+        assertEquals(
+                "Main Menu",
+                dev.tabletop3d.ui.MessageText.plain(
+                        (net.kyori.adventure.text.Component)
+                                rendered.config().get("Bottom.buttons.slot1.component")));
+        assertEquals(330, rendered.config().getInt("Bottom.buttons.slot0.width"));
+    }
+
+    @Test
     void everyMenuUsesTheSameDedicatedCloseButtonAndPreservesBackStyle() throws Exception {
         for (String page : GameMenuLayouts.PAGES) {
             var config = new YamlConfiguration();

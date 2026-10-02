@@ -146,6 +146,9 @@ final class GameMenuLayouts {
                     b.id().equals("resume") && !styles.containsKey("resume")
                             ? "&e@label@"
                             : String.valueOf(style.getOrDefault("text", "&f@label@"));
+            // Navigation captions belong to the language catalogue; layouts supply appearance.
+            if ((b.id().equals("back") || b.id().equals("main")) && !template.contains("@label@"))
+                template = "<yellow>@label@";
             config.set(path + ".text", template.replace("@label@", label));
             config.set(
                     path + ".component",

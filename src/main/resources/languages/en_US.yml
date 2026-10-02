@@ -510,7 +510,7 @@
 "option.mahjong.tsumo-payment-per-opponent": "Self-draw Payment per Opponent"
 
 # pack
-"pack.configuration": "The tabletop resource-pack URL or SHA-1 is not configured correctly."
+"pack.configuration": "The tabletop resource-pack URL is not configured correctly."
 "pack.disable": "Disable tabletop resource pack"
 "pack.enable": "Enable tabletop resource pack"
 "pack.failed": "Tabletop pack failed or was declined. Reopen the menu to retry."

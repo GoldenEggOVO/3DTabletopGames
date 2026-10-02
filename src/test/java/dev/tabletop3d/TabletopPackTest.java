@@ -34,7 +34,6 @@ class TabletopPackTest {
         when(plugin.getConfig()).thenReturn(config);
         config.set("rendering.mode", "mixed");
         config.set("rendering.resource-pack.url", "https://example.org/tabletop.zip");
-        config.set("rendering.resource-pack.sha1", "0123456789012345678901234567890123456789");
         pack = new TabletopPack(plugin, () -> available, id -> new ItemStack(Material.PAPER));
     }
 
@@ -100,6 +99,34 @@ class TabletopPackTest {
                     page);
             if (page.equals("catalog")) assertEquals("resource-pack", buttons.getFirst().id());
         }
+    }
+
+    @Test
+    void requestsUseBundledHashAndGeneratedIdentityWithoutConfigFields() {
+        config.set("rendering.resource-pack.sha1", null);
+        config.set("rendering.resource-pack.uuid", null);
+        pack.toggle(player);
+        UUID request = pack.requestId(player);
+        assertNotNull(request);
+        verify(player)
+                .addResourcePack(
+                        eq(request),
+                        eq("https://example.org/tabletop.zip"),
+                        argThat(hash -> hash != null && hash.length == 20),
+                        anyString(),
+                        eq(false));
+    }
+
+    @Test
+    void toggleColoursDistinguishEnableLoadingAndDisable() {
+        assertEquals(
+                net.kyori.adventure.text.format.NamedTextColor.GREEN, pack.button(player).color());
+        pack.toggle(player);
+        assertEquals(
+                net.kyori.adventure.text.format.NamedTextColor.AQUA, pack.button(player).color());
+        pack.status(player, pack.requestId(player), Status.SUCCESSFULLY_LOADED);
+        assertEquals(
+                net.kyori.adventure.text.format.NamedTextColor.GOLD, pack.button(player).color());
     }
 
     @Test
@@ -174,13 +201,13 @@ class TabletopPackTest {
     }
 
     @Test
-    void missingCraftEngineAndMalformedHashesDoNotSendPack() {
+    void missingCraftEngineAndInvalidUrlDoNotSendPack() {
         available = false;
         pack.toggle(player);
         assertNull(pack.requestId(player));
         assertFalse(pack.packed(player));
         available = true;
-        config.set("rendering.resource-pack.sha1", "not-a-hash");
+        config.set("rendering.resource-pack.url", "file:///tabletop.zip");
         pack.request(player);
         assertNull(pack.requestId(player));
     }

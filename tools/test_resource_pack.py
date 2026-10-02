@@ -11,6 +11,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ResourcePackTest(unittest.TestCase):
+    def test_bundled_checksum_matches_shipped_pack(self):
+        import hashlib
+        expected=(ROOT/"src/main/resources/resource-pack.sha1").read_text(encoding="ascii").strip()
+        self.assertEqual(hashlib.sha1((ROOT/"target/tabletop-resource-pack.zip").read_bytes()).hexdigest(),expected)
+
     def setUp(self):
         self.archive = zipfile.ZipFile(ROOT / "target/tabletop-resource-pack.zip")
         self.addCleanup(self.archive.close)

@@ -1,6 +1,7 @@
 package dev.tabletop3d;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -9,6 +10,8 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -16,6 +19,23 @@ import java.util.function.*;
 
 /** Only a successful status for the current request selects resource-pack rendering. */
 final class TabletopPack implements Listener, AutoCloseable {
+    private static final byte[] RESOURCE_PACK_HASH = bundledHash();
+
+    private static byte[] bundledHash() {
+        try (var input = TabletopPack.class.getResourceAsStream("/resource-pack.sha1")) {
+            if (input == null) throw new IOException("Missing generated resource-pack.sha1");
+            byte[] hash =
+                    HexFormat.of()
+                            .parseHex(
+                                    new String(input.readAllBytes(), StandardCharsets.US_ASCII)
+                                            .trim());
+            if (hash.length != 20) throw new IOException("Invalid generated resource-pack SHA-1");
+            return hash;
+        } catch (IOException exception) {
+            throw new UncheckedIOException(exception);
+        }
+    }
+
     enum Mode {
         VANILLA,
         RESOURCE_PACK,
@@ -109,9 +129,13 @@ final class TabletopPack implements Listener, AutoCloseable {
     Component button(Player player) {
         Request r = requests.get(player.getUniqueId());
         return Language.component(
-                r != null && r.stage() == Stage.LOADING
-                        ? "pack.loading"
-                        : packed(player) ? "pack.disable" : "pack.enable");
+                        r != null && r.stage() == Stage.LOADING
+                                ? "pack.loading"
+                                : packed(player) ? "pack.disable" : "pack.enable")
+                .color(
+                        r != null && r.stage() == Stage.LOADING
+                                ? NamedTextColor.AQUA
+                                : packed(player) ? NamedTextColor.GOLD : NamedTextColor.GREEN);
     }
 
     void toggle(Player player) {
@@ -133,35 +157,23 @@ final class TabletopPack implements Listener, AutoCloseable {
             return;
         }
         String url = plugin.getConfig().getString("rendering.resource-pack.url", "");
-        String hash = plugin.getConfig().getString("rendering.resource-pack.sha1", "");
-        UUID namespace;
         try {
             URI uri = URI.create(url);
             if ((!"http".equals(uri.getScheme()) && !"https".equals(uri.getScheme()))
-                    || uri.getHost() == null
-                    || !hash.matches("(?i)[0-9a-f]{40}")) throw new IllegalArgumentException();
-            namespace =
-                    UUID.fromString(
-                            plugin.getConfig()
-                                    .getString(
-                                            "rendering.resource-pack.uuid",
-                                            "40ae45a0-4d81-4c07-8e68-807e85168a09"));
+                    || uri.getHost() == null) throw new IllegalArgumentException();
         } catch (IllegalArgumentException ex) {
             plugin.tell(player, Language.component("pack.configuration"));
             return;
         }
         remove(player);
         // Per-attempt IDs reject delayed callbacks after disabling or retrying the pack.
-        UUID id =
-                UUID.nameUUIDFromBytes(
-                        (namespace + ":" + player.getUniqueId() + ":" + UUID.randomUUID())
-                                .getBytes(StandardCharsets.UTF_8));
+        UUID id = UUID.randomUUID();
         requests.put(player.getUniqueId(), new Request(id, Stage.LOADING));
         try {
             player.addResourcePack(
                     id,
                     url,
-                    HexFormat.of().parseHex(hash),
+                    RESOURCE_PACK_HASH.clone(),
                     dev.tabletop3d.ui.MessageText.plain(Language.component("pack.prompt")),
                     false);
         } catch (IllegalArgumentException ex) {

@@ -23,6 +23,9 @@ pack = ROOT / "target/tabletop-resource-pack.zip"
 manifest = json.loads((ROOT / "target/resource-pack-manifest.json").read_text(encoding="utf-8"))
 if len(manifest["models"]) != 111 or hashlib.sha256(pack.read_bytes()).hexdigest() != manifest["sha256"]:
     raise SystemExit("Resource-pack manifest does not match ZIP")
+with zipfile.ZipFile(out / f"3dtabletop-{native['version']}.jar") as jar:
+    if jar.read("resource-pack.sha1").decode("ascii").strip() != manifest["sha1"]:
+        raise SystemExit("Plugin checksum does not match the shipped resource pack; rebuild plugin after pack generation")
 shutil.copy2(pack, out / pack.name)
 shutil.copy2(ROOT / "target/resource-pack-manifest.json", out / "resource-pack-manifest.json")
 with zipfile.ZipFile(out / "craftengine-registration.zip", "w", zipfile.ZIP_DEFLATED) as z:
@@ -34,8 +37,7 @@ for mode in ("vanilla", "resource-pack", "mixed"):
         "# Merge this rendering section into plugins/3dtabletop/config.yml; restart.\n"
         f"rendering:\n  mode: {mode}\n  resource-pack:\n"
         "    url: 'https://YOUR-HOST/tabletop-resource-pack.zip'\n"
-        f"    sha1: '{manifest['sha1']}'\n"
-        "    uuid: 40ae45a0-4d81-4c07-8e68-807e85168a09\n", encoding="utf-8")
+        "    # Upload the ZIP shipped with this plugin; checksum and identity are automatic.\n", encoding="utf-8")
 shutil.copy2(ROOT / "docs/craftengine.zh-CN.md", out / "INSTALL.zh-CN.md")
 shutil.copy2(ROOT / "docs/model-counts.zh-CN.md", out / "model-counts.zh-CN.md")
 shutil.copy2(ROOT / "docs/craftengine-verification.zh-CN.md", out / "verification.zh-CN.md")

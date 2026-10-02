@@ -510,7 +510,7 @@
 "option.mahjong.tsumo-payment-per-opponent": "Self-draw Payment per Opponent"
 
 # pack
-"pack.configuration": "桌游资源包 URL 或 SHA-1 配置有误。"
+"pack.configuration": "桌游资源包 URL 配置有误。"
 "pack.disable": "关闭桌游资源包"
 "pack.enable": "启用桌游资源包"
 "pack.failed": "桌游包加载失败或被拒绝，重新打开菜单可以重试。"

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.1-SNAPSHOT
+
+- Keep navigation buttons localized even when an editable layout contains a literal caption.
+- Distinguish resource-pack enable, loading and disable buttons with green, aqua and gold.
+- Remove configurable SHA-1/UUID; generate and bundle the pack checksum and create request IDs internally. Package validation ensures the JAR matches its resource-pack ZIP.
+- Correct the default English locale.
+
 ## 1.9.0-SNAPSHOT
 
 - Automatically discard the newly drawn Riichi tile after declaration; stop for ron/tsumo and resume after declining a win.

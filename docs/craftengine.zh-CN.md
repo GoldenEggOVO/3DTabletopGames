@@ -1,13 +1,13 @@
 # CraftEngine 与独立桌游资源包
 
-适用于本地验收版 **1.8.8-SNAPSHOT**：Paper／Purpur 26.2、Java 25。本次接入麻将和彩八，其他游戏保留原版显示。CraftEngine 26.8.2 的物品注册与 ItemDisplay 已在隔离服务器验证；客户端画面、音效和加载仍须按文末清单验收。
+适用于本地验收版 **1.9.1-SNAPSHOT**：Paper／Purpur 26.2、Java 25。麻将和彩八提供资源包显示，其他游戏保留原版显示。CraftEngine 26.8.2 的物品注册与 ItemDisplay 已在隔离服务器验证；客户端画面、音效和加载仍须按文末清单验收。
 
 ## 安装
 
-1. 备份 `plugins/3dtabletop/`，停服后替换 `3dtabletop-1.8.8-SNAPSHOT.jar`，只保留一个版本。
+1. 备份 `plugins/3dtabletop/`，停服后替换 `3dtabletop-1.9.1-SNAPSHOT.jar`，只保留一个版本。
 2. 若选择资源包或混合模式，安装 CraftEngine。将交付的 `craftengine-registration.zip` 解压到服务器根目录，最终路径为 `plugins/CraftEngine/resources/tabletop3d/configuration/items.yml` 和同目录包的 `pack.yml`。已有同名目录先备份。该配置注册 111 个 `tabletop3d:*` 自定义物品，物品使用独立 ZIP 中的 `item_model`。
 3. 将 `tabletop-resource-pack.zip` 放到你已有的静态文件托管服务，取得客户端可直接下载的 HTTP／HTTPS 地址。不要使用需要登录的网页或分享页。保留 ZIP 文件内容不变。
-4. 修改 **`plugins/3dtabletop/config.yml`**，参考下例，填入实际 URL。SHA-1 使用交付的 `resource-pack-manifest.json` 中的 `sha1`。改变 ZIP 后重新计算 SHA-1。
+4. 修改 **`plugins/3dtabletop/config.yml`**，参考下例，只填实际 URL。校验值内置在插件中，请上传同一交付包中的 ZIP；每次请求的 UUID 自动生成。旧配置的 `sha1`、`uuid` 可以删除，插件不再读取。
 5. 重启服务器。先以默认 `vanilla` 验证旧玩法，再切换 `mixed` 进行客户端验收。
 
 CraftEngine 负责注册模型物品，3dtabletop 负责发送这个独立 ZIP、接收加载结果及切换显示。此包不需要合并进 CraftEngine 的全局包，也不需要修改其他资源包的发送配置。Minecraft 26.2 的包格式为 88.0；纹理位于独立的 `tabletop3d` 命名空间，不覆盖原版 `paper` 或其他插件的物品模型。
@@ -19,17 +19,17 @@ rendering:
   mode: mixed # vanilla / resource-pack / mixed；修改后重启
   resource-pack:
     url: 'https://YOUR-HOST/tabletop-resource-pack.zip'
-    sha1: '从 resource-pack-manifest.json 复制 40 位 sha1'
-    uuid: 40ae45a0-4d81-4c07-8e68-807e85168a09
 ```
 
 | 模式 | 菜单开关 | 麻将／彩八 | CraftEngine |
 | --- | --- | --- | --- |
 | `vanilla`（默认） | 无 | 原版实体与原版音效 | 不需要 |
 | `resource-pack` | 无 | 本包成功加载并且物品注册就绪后才能进入／行动 | 必须 |
-| `mixed` | 所有游戏菜单最上方 | 玩家自主选择；下载中、拒绝或失败时仍用原版 | 开启包显示时必须 |
+| `mixed` | 主菜单第一页最上方 | 玩家自主选择；下载中、拒绝或失败时仍用原版 | 开启包显示时必须 |
 
-偏好保存到玩家 PDC；重新登录仍会等待本次加载成功，不会把以前的成功当成本次已加载。关闭只移除桌游自己的资源包；其他插件发送的包保持原状。每次发送使用独立请求 UUID，以忽略关闭／重试前的旧回调。配置中的 UUID 是这个包的命名空间标识。
+偏好保存到玩家 PDC；重新登录仍会等待本次加载成功，不会把以前的成功当成本次已加载。关闭只移除桌游自己的资源包；其他插件发送的包保持原状。每次发送使用独立请求 UUID，以忽略关闭／重试前的旧回调。开关启用为绿色、加载为青色、停用为金色。
+
+制作资源包时，`tools/build-resource-pack.py` 自动写入 `src/main/resources/resource-pack.sha1`；随后再编译插件。交付打包会核对 JAR 内的校验值与 ZIP，避免两者版本不匹配。
 
 附近 24 格内包括旁观者。有人使用原版，就保留原版公开模型；所有附近观看者都使用资源包时，会删除原版公开层。每个玩家只接收自己的显示层，混合模式的服务器可能同时持有两套公开模型。私人手牌、私人宝牌指示仍只显示给本人。原版模式保留原有观看范围；24 格需求范围仅用于资源包／混合模式。
 
