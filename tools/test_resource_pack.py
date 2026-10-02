@@ -114,6 +114,19 @@ class ResourcePackTest(unittest.TestCase):
                 f"assets/tabletop3d/textures/item/face/{name}.png"))).convert("RGB")
             self.assertLessEqual(len(image.getcolors(image.width * image.height)), 20, name)
 
+    def test_table_edges_are_solid_and_mahjong_rim_leaves_the_cloth_open(self):
+        wood = Image.open(io.BytesIO(self.archive.read(
+            "assets/tabletop3d/textures/item/surface/wood.png"))).convert("RGB")
+        self.assertEqual(1, len(wood.getcolors(wood.width * wood.height)))
+        model = json.loads(self.archive.read("assets/tabletop3d/models/item/mahjong_table.json"))
+        raised = [e for e in model["elements"] if e["to"][1] > 8.8]
+        self.assertTrue(raised, "Mahjong rim must stand above the playing surface")
+        top = next(e["faces"]["up"] for e in raised if "up" in e["faces"])
+        rim_path = "assets/" + model["textures"][top["texture"][1:]].replace(":", "/textures/") + ".png"
+        rim = Image.open(io.BytesIO(self.archive.read(rim_path))).convert("RGBA")
+        self.assertEqual(0, rim.getpixel((512, 512))[3], "Raised rim must not cover the playing area")
+        self.assertEqual(255, rim.getpixel((512, 10))[3])
+
     def test_round_table_has_a_continuous_polygon_wall_instead_of_parallel_strips(self):
         model = json.loads(self.archive.read("assets/tabletop3d/models/item/card_table.json"))
         rotations = {round(element.get("rotation", {}).get("angle", 0), 4)

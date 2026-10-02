@@ -13,6 +13,32 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class WindowMenuTest {
     @Test
+    void catalogKeepsFullWidthHeaderLinksAndFillsGamesAcrossEachRow() throws Exception {
+        var config = new YamlConfiguration();
+        try (var input = WindowMenuTest.class.getResourceAsStream("/menus/catalog.yml")) {
+            config.loadFromString(new String(input.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8));
+        }
+        List<GameMenus.Button> buttons = new ArrayList<>();
+        buttons.add(new GameMenus.Button("resource-pack", "Enable pack", () -> {}));
+        buttons.add(new GameMenus.Button("resume", "Resume", () -> {}));
+        for (String id : List.of("connectfour", "xiangqi", "gomoku", "chess", "ludo"))
+            buttons.add(new GameMenus.Button(id, id, () -> {}));
+        buttons.add(new GameMenus.Button("close", "Close", () -> {}));
+        UUID token = UUID.randomUUID();
+        var rendered = GameMenuLayouts.render(config, "Games", "", buttons, token);
+        assertEquals(2, rendered.config().getInt("Bottom.columns"));
+        assertEquals(350, rendered.config().getInt("Body.resource-pack.width"));
+        var link = (net.kyori.adventure.text.Component) rendered.config().get("Body.resource-pack.component");
+        assertEquals(net.kyori.adventure.text.event.ClickEvent.runCommand("/3dtabletop click 3dtabletop:" + token + " 0"), link.clickEvent());
+        assertEquals("Resume", rendered.config().getString("Body.resume.text"));
+        assertEquals(List.of("connectfour", "xiangqi", "gomoku", "chess", "ludo"),
+                rendered.buttons().subList(2, 7).stream().map(GameMenus.Button::id).toList());
+        assertEquals(174, rendered.config().getInt("Bottom.buttons.slot2.width"));
+        assertFalse(rendered.config().contains("Bottom.buttons.slot0"));
+        assertEquals(List.of("3dtabletop:" + token + " 7"), rendered.config().getStringList("Bottom.exit.actions"));
+    }
+
+    @Test
     void navigationAlwaysUsesCurrentLanguageInsteadOfLiteralTemplateCaptions() throws Exception {
         var config = new YamlConfiguration();
         var chinese = chineseCatalog();

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.3-SNAPSHOT
+
+- Use solid dark table edges and a raised open Mahjong rim in the resource pack.
+- Place the Color Eight Pass control flat on the table in front of the hand, with a matching hit area.
+- Keep full-width clickable catalogue headers above two columns of game buttons in row order.
+
 ## 1.9.2-SNAPSHOT
 
 - Use English source comments, diagnostics and internal rule summaries; keep translated UI messages in language catalogs.

@@ -234,13 +234,11 @@ def rounded_square(radius,corner,y,height,tex,cap_tex):
 
 
 def furniture():
-    wood=Image.new("RGB",(128,128),"#38251d");d=ImageDraw.Draw(wood)
-    for y in range(0,128,5):d.line((0,y,128,y+3),fill="#50352a",width=2)
+    wood=Image.new("RGB",(128,128),"#38251d")
     texture("surface/wood",wood)
     top=Image.new("RGBA",(1024,1024));d=ImageDraw.Draw(top)
     d.ellipse((1,1,1022,1022),fill="#38251d")
-    for inset,col in ((8,"#684833"),(14,"#38251d"),(27,"#99704c"),(32,"#1d4938"),(39,"#286346")):
-        d.ellipse((inset,inset,1023-inset,1023-inset),fill=col)
+    d.ellipse((39,39,984,984),fill="#286346")
     # Low-contrast weave and sparse four-color inlays keep the playing area quiet.
     for y in range(50,974,4):
         half=math.sqrt(max(0,472**2-(y-512)**2));d.line((512-half,y,512+half,y),fill="#296548")
@@ -263,7 +261,18 @@ def furniture():
     d.rounded_rectangle((53,53,970,970),radius=25,outline="#415768",width=2)
     texture("surface/mahjong-top",mj)
     tex["cloth"]="tabletop3d:item/surface/mahjong-top"
+    # A raised, open rim keeps the cloth at its original playing height.
+    rim=Image.new("RGBA",(1024,1024));rd=ImageDraw.Draw(rim)
+    rd.rounded_rectangle((0,0,1023,1023),radius=48,fill="#38251d")
+    rd.rounded_rectangle((44,44,979,979),radius=30,fill=(0,0,0,0))
+    tex["rim"]=texture("surface/mahjong-rim",rim)
     parts=rounded_square(1.5,.14,-.19,.19,"body","cloth")
+    raised=rounded_square(1.5,.14,0,.065,"body","rim")
+    parts.extend([raised[0],*raised[2:]])
+    for wall in rounded_square(1.371,.088,0,.065,"body","rim")[2:]:
+        side=next(iter(wall["faces"]))
+        wall["faces"]={"north" if side=="south" else "west":wall["faces"][side]}
+        parts.append(wall)
     for x in (-1.25,1.25):
         for z in (-1.25,1.25):parts.append(cube([8+(x-.075)*16,8-1.03125*16,8+(z-.075)*16],
                                                              [8+(x+.075)*16,8-.19*16,8+(z+.075)*16]))

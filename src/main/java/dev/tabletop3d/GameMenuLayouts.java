@@ -50,6 +50,10 @@ final class GameMenuLayouts {
                     Files.readString(directory.resolve(page + ".yml"), StandardCharsets.UTF_8);
             YamlConfiguration config = new YamlConfiguration();
             config.loadFromString(text);
+            if (page.equals("catalog")) {
+                config.set("Bottom.columns", 2);
+                config.set("Bottom.header-buttons", List.of("resource-pack", "resume"));
+            }
             return render(config, title, description, buttons, token);
         } catch (Exception ex) {
             throw new RuleViolation(
@@ -103,6 +107,7 @@ final class GameMenuLayouts {
                                                                                 ? order.indexOf(
                                                                                         b.id())
                                                                                 : order.size()));
+        List<String> headers = config.getStringList("Bottom.header-buttons");
         String titleTemplate = config.getString("Title", "@title@");
         config.set("Title", titleTemplate.replace("@title@", MessageText.plain(title)));
         config.set(
@@ -156,7 +161,19 @@ final class GameMenuLayouts {
                             template.replace("@label@", "{label}"),
                             "label",
                             b.component() != null ? b.component() : BoardWindow.text(label)));
-            config.set(path + ".width", style.getOrDefault("width", 174));
+            if (headers.contains(b.id())) {
+                Component caption = (Component) config.get(path + ".component");
+                String bodyPath = "Body." + b.id();
+                config.set(bodyPath + ".text", label);
+                config.set(bodyPath + ".width", 350);
+                config.set(bodyPath + ".component", caption.clickEvent(
+                        net.kyori.adventure.text.event.ClickEvent.runCommand(
+                                "/3dtabletop click 3dtabletop:" + token + " " + i)));
+                config.set(path, null);
+                continue;
+            }
+            int width = ((Number) style.getOrDefault("width", 174)).intValue();
+            config.set(path + ".width", headers.isEmpty() || b.id().equals("close") ? width : Math.min(width, 174));
             if (style.containsKey("tooltip")) config.set(path + ".tooltip", style.get("tooltip"));
             config.set(path + ".actions", List.of("3dtabletop:" + token + " " + i));
         }

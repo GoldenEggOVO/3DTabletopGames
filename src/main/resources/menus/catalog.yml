@@ -2,11 +2,12 @@
 Title: '<white>@title@'
 Bottom:
   type: multi
-  columns: 1
+  columns: 2
+  header-buttons: [resource-pack, resume]
   buttons:
     entry:
       text: '<white>@label@'
-      width: 350
+      width: 174
       actions: [close]
     resume:
       text: '<yellow>@label@'

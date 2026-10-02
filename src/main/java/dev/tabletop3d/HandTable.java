@@ -494,6 +494,7 @@ final class HandTable implements AutoCloseable {
                 Player player,
                 double width) {
             Location at = at(pose);
+            boolean flat = action.equals("pass");
             String id = "@call:card:" + action;
             parts = new ArrayList<>();
             if (audience.packed(player)) {
@@ -513,8 +514,8 @@ final class HandTable implements AutoCloseable {
                                             display.setItemStack(plugin.pack.item(model));
                                             display.setTransformation(
                                                     new Transformation(
-                                                            new Vector3f(0, .0425f, 0),
-                                                            new Quaternionf(),
+                                                            new Vector3f(0, flat ? .007f : .0425f, 0),
+                                                            new Quaternionf().rotateX(flat ? (float) -Math.PI / 2 : 0),
                                                             new Vector3f(
                                                                     (float) width, .085f, .014f),
                                                             new Quaternionf()));
@@ -524,11 +525,11 @@ final class HandTable implements AutoCloseable {
                 if (!caption.equals(Component.empty()))
                     parts.add(
                             text(
-                                    at.clone().add(rotated(0, .035, .011, pose)),
+                                    at.clone().add(rotated(0, flat ? .016 : .035, flat ? 0 : .011, pose)),
                                     caption,
                                     .15f,
                                     pose.yaw(),
-                                    false,
+                                    flat,
                                     id,
                                     player));
             } else if (caption.equals(Component.empty())) {
@@ -546,27 +547,28 @@ final class HandTable implements AutoCloseable {
                                     id,
                                     player));
             } else {
-                parts.add(block(at, material, width, .085, .014, id, player));
+                parts.add(block(at, material, width, flat ? .014 : .085, flat ? .085 : .014, id, player));
                 parts.add(
                         text(
-                                at.clone().add(rotated(0, .035, .011, pose)),
+                                at.clone().add(rotated(0, flat ? .016 : .035, flat ? 0 : .011, pose)),
                                 caption,
                                 .15f,
                                 pose.yaw(),
-                                false,
+                                flat,
                                 id,
                                 player));
             }
+            double depth = flat ? .085 / 2 : .02;
             double angle = Math.toRadians(pose.yaw()),
-                    x = Math.abs(Math.cos(angle)) * width / 2 + Math.abs(Math.sin(angle)) * .02,
-                    z = Math.abs(Math.sin(angle)) * width / 2 + Math.abs(Math.cos(angle)) * .02;
+                    x = Math.abs(Math.cos(angle)) * width / 2 + Math.abs(Math.sin(angle)) * depth,
+                    z = Math.abs(Math.sin(angle)) * width / 2 + Math.abs(Math.cos(angle)) * depth;
             bounds =
                     new BoundingBox(
                             at.getX() - x,
                             at.getY(),
                             at.getZ() - z,
                             at.getX() + x,
-                            at.getY() + .085,
+                            at.getY() + (flat ? .014 : .085),
                             at.getZ() + z);
         }
 
@@ -1211,7 +1213,7 @@ final class HandTable implements AutoCloseable {
                     "pass",
                     new CardButton(
                             "pass",
-                            seatPose(view.seat, room.board.playerCount(), 0, .65),
+                            seatPose(view.seat, room.board.playerCount(), 0, .82),
                             Material.GRAY_CONCRETE,
                             Language.component("table.card.pass"),
                             view.player,

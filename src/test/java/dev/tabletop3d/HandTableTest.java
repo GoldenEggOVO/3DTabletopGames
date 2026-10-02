@@ -39,6 +39,29 @@ class HandTableTest {
         verify(marker).remove();
     }
 
+    @Test
+    void passButtonLiesFlatInFrontOfTheHandAndKeepsItsClickableArea() throws Exception {
+        Fixture f = new Fixture("color-eight");
+        when(f.game.legalActions(0)).thenReturn(List.of("pass"));
+        int start = f.entities.size();
+        f.table.show(f.owner);
+        var views = HandTable.class.getDeclaredField("privateViews");
+        views.setAccessible(true);
+        Object view = ((Map<?, ?>) views.get(f.table)).get(f.owner.getUniqueId());
+        var buttons = view.getClass().getDeclaredField("cardButtons");
+        buttons.setAccessible(true);
+        Object button = ((Map<?, ?>) buttons.get(view)).get("pass");
+        var boxField = button.getClass().getDeclaredField("bounds");
+        boxField.setAccessible(true);
+        var box = (org.bukkit.util.BoundingBox) boxField.get(button);
+        assertTrue(box.getHeight() < .025, "Pass must be horizontal, not standing upright");
+        assertTrue(box.getWidthZ() >= .08, "A flat button needs table-depth hit area");
+        assertTrue(box.getCenterZ() > .75 && box.getCenterZ() < .95);
+        TextDisplay label = (TextDisplay) f.entities.subList(start, f.entities.size()).stream()
+                .filter(TextDisplay.class::isInstance).findFirst().orElseThrow();
+        verify(label).setRotation(floatThat(yaw -> Math.abs(yaw) < 1e-5), eq(-90f));
+    }
+
     @BeforeEach
     void setup() {
         MockBukkit.mock();
