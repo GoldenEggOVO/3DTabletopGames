@@ -19,11 +19,16 @@ final class TurnRing implements AutoCloseable {
     private int direction=1;
     private double angle;
     private boolean closed;
+    private TableAudience audience;
 
     private record Pose(double x,double z,float yaw,double length) {}
     private record Part(BlockDisplay entity,Pose forward,Pose reverse) {}
 
     TurnRing(Tabletop3D plugin,Room room,Location origin,NamespacedKey tag){
+        this(plugin,room,origin,tag,null);
+    }
+    TurnRing(Tabletop3D plugin,Room room,Location origin,NamespacedKey tag,TableAudience audience){
+        this.audience=audience;
         this.room=room;this.origin=origin.clone();
         for(int arrow=0;arrow<4;arrow++){
             double center=arrow*Math.PI/2;
@@ -51,6 +56,7 @@ final class TurnRing implements AutoCloseable {
             display.setBrightness(new Display.Brightness(15,15));display.setViewRange(.35f);
             display.setTeleportDuration(2);display.setInterpolationDuration(2);
             display.setBlock(Material.WHITE_CONCRETE.createBlockData());
+            if(audience!=null)audience.add(display,false);
             float length=(float)forward.length()+.003f;
             display.setTransformation(new Transformation(new Vector3f(-length/2,0,-.007f),new Quaternionf(),new Vector3f(length,.003f,.014f),new Quaternionf()));
         });
@@ -77,6 +83,6 @@ final class TurnRing implements AutoCloseable {
     }
     @Override public void close(){
         if(closed)return;closed=true;
-        parts.forEach(part -> part.entity().remove());parts.clear();
+        parts.forEach(part -> {if(audience!=null)audience.remove(part.entity());else part.entity().remove();});parts.clear();
     }
 }

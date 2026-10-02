@@ -25,6 +25,7 @@ final class TableView implements AutoCloseable {
     private final Map<UUID,Overlay> overlays=new HashMap<>();
     private final List<Entity> lastMove=new ArrayList<>();
     private TextDisplay title;private DiceTray diceTray;private HandTable handTable;
+    private final List<Entity> handFurniture=new ArrayList<>();private ItemDisplay packedTable;private boolean buildingHandFurniture;
     private long revision=-1;private int renderedHistory;private Component lastTitle;
     private TitleState titleState;private boolean wasRolling;private String lastDiceKey;
     private boolean pendingTurnSound;
@@ -114,23 +115,16 @@ final class TableView implements AutoCloseable {
     }
     TableView(Tabletop3D plugin,Room room,Location center,NamespacedKey tag,TableMaps maps){
         this.plugin=plugin;this.room=room;this.tag=tag;geometry=new TableGeometry(room.kind,room.board.cells());origin=center.clone().add(0,TableGeometry.SURFACE,0);
-        if(room.kind.equals("lastcard")){
-            for(var part:RoundCardTable.parts()){
-                Location at=origin.clone();at.setYaw(part.yaw());
-                furniture.add(block(at,part.material(),part.x(),part.y(),part.z(),part.w(),part.h(),part.d(),null));
-            }
+        if(TabletopPack.supported(room.kind)){
+            handTable=new HandTable(plugin,room,origin,tag);syncHandFurniture();
             title=text(origin.clone().add(0,1.8,0),"",.4,false,NamedTextColor.GOLD);title.setBillboard(Display.Billboard.CENTER);furniture.add(title);
-            handTable=new HandTable(plugin,room,origin,tag);sync();return;
+            if(handTable.audience.managed()){title.setVisibleByDefault(false);handTable.audience.common(title);}
+            sync();return;
         }
-        double width=room.kind.equals("mahjong")?3:2.25,leg=width/2-.135,edge=width/2-.065;
+        double width=2.25,leg=width/2-.135,edge=width/2-.065;
         furniture.add(block(origin,Material.DARK_OAK_PLANKS,0,-.19,0,width,.14,width,null));
         for(double x:new double[]{-leg,leg})for(double z:new double[]{-leg,leg})furniture.add(block(origin,Material.STRIPPED_DARK_OAK_LOG,x,-TableGeometry.SURFACE,z,.15,TableGeometry.SURFACE-.13,.15,null));
         for(double v:new double[]{-edge,edge}){furniture.add(block(origin,Material.STRIPPED_DARK_OAK_WOOD,v,-.05,0,.10,.11,width-.03,null));furniture.add(block(origin,Material.STRIPPED_DARK_OAK_WOOD,0,-.05,v,width-.03,.11,.10,null));}
-        if(room.board instanceof dev.tabletop3d.rules.HandGame){
-            furniture.add(block(origin,Material.GREEN_CONCRETE,0,-.05,0,width-.21,.05,width-.21,null));
-            title=text(origin.clone().add(0,1.8,0),"",.4,false,NamedTextColor.GOLD);title.setBillboard(Display.Billboard.CENTER);furniture.add(title);
-            handTable=new HandTable(plugin,room,origin,tag);sync();return;
-        }
         if(room.kind.equals("connectfour")){
             for(int x=0;x<=7;x++)furniture.add(block(origin,Material.BLUE_CONCRETE,(x-3.5)*.28,.02,0,.035,1.72,.12,null));
             for(int y=0;y<=6;y++)furniture.add(block(origin,Material.BLUE_CONCRETE,0,.02+y*.28,0,2,.035,.12,null));
@@ -155,10 +149,32 @@ final class TableView implements AutoCloseable {
         if(Set.of("aeroplane","ludo").contains(room.kind))diceTray=new DiceTray(plugin,room,center,tag,!room.sideTray);
         sync();
     }
+    private void syncHandFurniture(){
+        TableAudience audience=handTable.audience;
+        if(audience.needed(false)&&handFurniture.isEmpty()){
+            buildingHandFurniture=true;
+            try{
+                if(room.kind.equals("lastcard"))for(var part:RoundCardTable.parts()){
+                    Location at=origin.clone();at.setYaw(part.yaw());
+                    handFurniture.add(block(at,part.material(),part.x(),part.y(),part.z(),part.w(),part.h(),part.d(),null));
+                }else{
+                    double width=3,leg=width/2-.135,edge=width/2-.065;
+                    handFurniture.add(block(origin,Material.DARK_OAK_PLANKS,0,-.19,0,width,.14,width,null));
+                    for(double x:new double[]{-leg,leg})for(double z:new double[]{-leg,leg})handFurniture.add(block(origin,Material.STRIPPED_DARK_OAK_LOG,x,-TableGeometry.SURFACE,z,.15,TableGeometry.SURFACE-.13,.15,null));
+                    for(double v:new double[]{-edge,edge}){handFurniture.add(block(origin,Material.STRIPPED_DARK_OAK_WOOD,v,-.05,0,.10,.11,width-.03,null));handFurniture.add(block(origin,Material.STRIPPED_DARK_OAK_WOOD,0,-.05,v,width-.03,.11,.10,null));}
+                    handFurniture.add(block(origin,Material.GREEN_CONCRETE,0,-.05,0,width-.21,.05,width-.21,null));
+                }
+            }finally{buildingHandFurniture=false;}
+        }else if(!audience.needed(false)&&!handFurniture.isEmpty()){handFurniture.forEach(audience::remove);handFurniture.clear();}
+        if(audience.needed(true)&&packedTable==null)packedTable=PackedDisplay.spawn(plugin,room,audience,origin,tag,room.kind.equals("mahjong")?"mahjong_table":"card_table",new Vector3f(1),new Quaternionf());
+        else if(!audience.needed(true)&&packedTable!=null){audience.remove(packedTable);packedTable=null;}
+    }
+
     private void tag(Entity entity,String id){entity.setPersistent(false);entity.setGravity(false);entity.setInvulnerable(true);entity.getPersistentDataContainer().set(tag,PersistentDataType.STRING,room.id+"|"+id);}
     private void display(Display d,Player viewer){
         tag(d,"@model");d.setBrightness(new Display.Brightness(15,15));d.setViewRange(.35f);d.setTeleportDuration(2);d.setInterpolationDuration(2);
         if(viewer!=null)d.setVisibleByDefault(false);
+        if(buildingHandFurniture)handTable.audience.add(d,false);
     }
     private BlockDisplay block(Location at,Material mat,double x,double y,double z,double w,double h,double depth,Player viewer){
         BlockDisplay result=origin.getWorld().spawn(at,BlockDisplay.class,d->{display(d,viewer);d.setBlock(mat.createBlockData());d.setTransformation(new Transformation(new Vector3f((float)(x-w/2),(float)y,(float)(z-depth/2)),new Quaternionf(),new Vector3f((float)w,(float)h,(float)depth),new Quaternionf()));});
@@ -254,7 +270,7 @@ final class TableView implements AutoCloseable {
             wasRolling=rolling();
         }
     }
-    void tick(){for(var iterator=animating.iterator();iterator.hasNext();){TokenView token=iterator.next();token.tick();if(!token.moving())iterator.remove();}if(diceTray!=null)diceTray.tick();if(handTable!=null)handTable.tick();updateTitle();if(pendingTurnSound&&!rolling()){pendingTurnSound=false;TableSounds.turn(plugin,room,origin);}}
+    void tick(){for(var iterator=animating.iterator();iterator.hasNext();){TokenView token=iterator.next();token.tick();if(!token.moving())iterator.remove();}if(diceTray!=null)diceTray.tick();if(handTable!=null){handTable.tick();syncHandFurniture();}updateTitle();if(pendingTurnSound&&!rolling()){pendingTurnSound=false;TableSounds.turn(plugin,room,origin);}}
     void turnSound(){if(rolling())pendingTurnSound=true;else TableSounds.turn(plugin,room,origin);}
     static Set<Integer> pipIndices(int value){return switch(value){case 1->Set.of(0);case 2->Set.of(1,2);case 3->Set.of(0,1,2);case 4->Set.of(1,2,3,4);case 5->Set.of(0,1,2,3,4);case 6->Set.of(1,2,3,4,5,6);default->throw new IllegalArgumentException("dice face");};}
     static Quaternionf faceRotation(int face){float half=(float)(Math.PI/2);return switch(face){case 1->new Quaternionf();case 2->new Quaternionf().rotateZ(-half);case 3->new Quaternionf().rotateX(half);case 4->new Quaternionf().rotateX(-half);case 5->new Quaternionf().rotateZ(half);case 6->new Quaternionf().rotateX(half*2);default->throw new IllegalArgumentException("dice face");};}
@@ -363,5 +379,5 @@ final class TableView implements AutoCloseable {
     private void ring(List<Entity> list,String id,Material material,Player viewer,double fraction){Cell c=geometry.byId.get(id);if(c==null)return;double width=geometry.spacing*fraction,stroke=geometry.spacing*.065;Location at=origin.clone().add(geometry.x(c),.025,geometry.z(c));
         for(double side:new double[]{-width/2,width/2}){list.add(block(at,material,side,0,0,stroke,.012,width,viewer));list.add(block(at,material,0,0,side,width,.012,stroke,viewer));}}
     void clear(Player player){if(handTable!=null)handTable.clear(player);Overlay old=overlays.remove(player.getUniqueId());if(old!=null)old.remove();}
-    @Override public void close(){pendingTurnSound=false;if(handTable!=null)handTable.close();if(diceTray!=null)diceTray.close();tokens.values().forEach(TokenView::remove);tokens.clear();furniture.forEach(Entity::remove);overlays.values().forEach(Overlay::remove);overlays.clear();lastMove.forEach(Entity::remove);}
+    @Override public void close(){pendingTurnSound=false;if(handTable!=null)handTable.close();if(diceTray!=null)diceTray.close();tokens.values().forEach(TokenView::remove);tokens.clear();handFurniture.forEach(Entity::remove);if(packedTable!=null)packedTable.remove();furniture.forEach(Entity::remove);overlays.values().forEach(Overlay::remove);overlays.clear();lastMove.forEach(Entity::remove);}
 }
