@@ -44,6 +44,16 @@ class MahjongTableHudTest {
         f.hud.tick(9_000);assertTrue(f.status().contains("0s"));
         assertEquals(23,f.spawned.size());
     }
+    @Test void floatingRoundClockAndDiscardInformationAreRaisedTogether() {
+        Fixture f=new Fixture();
+        assertEquals(81+.85+.4,f.locations.get(f.statusEntity()).getY(),1e-6);
+        assertEquals(81+.72+.4,f.locations.get(f.discard()).getY(),1e-6);
+        assertEquals(.13,f.locations.get(f.statusEntity()).getY()-f.locations.get(f.discard()).getY(),1e-6);
+        for(int seat=0;seat<4;seat++){
+            assertEquals(81+.029,f.locations.get(f.count(seat)).getY(),1e-6);
+            assertEquals(81+.02,f.locations.get(f.wind(seat)).getY(),1e-6);
+        }
+    }
 
     @Test void pauseBusyAndUndoSuppressCountdownAndBusyKeepsSafeSnapshot() {
         Fixture f=new Fixture();f.room.changed=1_000;

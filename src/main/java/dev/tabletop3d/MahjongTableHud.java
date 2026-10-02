@@ -52,8 +52,8 @@ final class MahjongTableHud implements AutoCloseable {
             sticks.add(List.of(body,dot));
             visible(body,false,.12f,.006f,.018f);visible(dot,false,.012f,.002f,.012f);
         }
-        status=text(origin.clone().add(0,.85,0),false);
-        discard=text(origin.clone().add(0,.72,0),false);
+        status=text(origin.clone().add(0,1.25,0),false);
+        discard=text(origin.clone().add(0,1.12,0),false);
         for(int seat=0;seat<4;seat++) {
             double angle=seat*Math.PI/2;
             Location wind=origin.clone().add(1.24*Math.cos(angle)+1.30*Math.sin(angle),.02,

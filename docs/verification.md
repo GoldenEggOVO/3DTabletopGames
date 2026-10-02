@@ -1,5 +1,15 @@
 # Verification and acceptance
 
+## Local build: 1.8.6-SNAPSHOT — Closer locked Mahjong camera and raised HUD
+
+- JDK 25 / Maven package: **499 tests passed**, zero failures, errors or skipped tests. Before implementation, regressions failed at the old camera radius (1.65 rather than 0.65) and floating HUD height (0.85 rather than 1.25).
+- Four-seat regressions verify the exact 1-block inward and 0.2-block downward move, initial table aim and restoration of entry pose, gravity and visibility. Existing movement checks keep XYZ fixed while allowing yaw/pitch, including attempted horizontal and vertical movement. Shift menu and Dialog input-latch regressions remain passing.
+- Round/current-player/countdown and last-discard displays are raised by 0.4 blocks; flat remaining-count and wind inscriptions retain their surface heights. The user explicitly accepted standing hands and apron indicators behind this closer camera.
+- Independent review found no important code issues; current mode documentation was updated to remove obsolete standing-hand visibility promises.
+- The exact shaded JAR passed three isolated Purpur **26.2-2622** boots (create, restart and legacy migration) in `target/standalone-smoke-20261001-205055/`. The real event-bus focus probe checks the exact closer coordinates, position locking, free yaw and restoration with proxy players. This does not verify native client physics or camera feel. Minecraft client acceptance remains pending. No production deployment or public Release.
+
+Verified JAR SHA-256: `f197f64b1f8977cbce305a96b19869308092a714d4fdc2abc4053f228275797f`.
+
 ## Local build: 1.8.5-SNAPSHOT — Shared room browser and table menu gestures
 
 - JDK 25 / Maven package: **498 tests passed**, zero failures, errors or skipped tests. Missing shared browsing, duplicate setup browsing, ordinary Color Eight menu clicks and focused Mahjong menu release were observed failing before the changes.

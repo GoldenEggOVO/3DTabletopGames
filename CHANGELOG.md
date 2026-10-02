@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.6-SNAPSHOT
+
+- Move the Mahjong Shift camera exactly 1 block toward the table center and 0.2 blocks down, to a seat-relative radius of 0.65 and height of 0.88. Keep position locked with free mouse aiming, temporary invisibility and restoration on release. Standing hands and apron indicators may lie behind this closer camera.
+- Raise floating round, current-player, countdown and last-discard information by 0.4 blocks. Keep the flat center counter and wind inscriptions at their existing surface positions.
+
 ## 1.8.5-SNAPSHOT
 
 - Show one shared Browse Rooms entry in the main catalog whenever any room exists; list rooms from every game with their game name and short code. Remove the duplicate browser from each game setup.

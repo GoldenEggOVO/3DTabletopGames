@@ -157,7 +157,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         };
         try {
             input.accept(true);require((boolean)call(comfort,"focused",new Class<?>[]{Player.class},player),"real event registration enters focus");
-            require(!gravity[0]&&!collision[0]&&invisible[0]&&Math.abs(location.get().getY()-84.08)<.0001,"focus owns gravity, collision and invisibility at close position");
+            require(!gravity[0]&&!collision[0]&&invisible[0]&&Math.abs(location.get().getX()-32)<.0001&&Math.abs(location.get().getY()-83.88)<.0001&&Math.abs(location.get().getZ()-.65)<.0001,"focus owns gravity, collision and invisibility at close position");
             Location anchor=location.get().clone(),attempt=anchor.clone().add(3,1,3);attempt.setYaw(70);
             var move=new org.bukkit.event.player.PlayerMoveEvent(player,anchor,attempt);Bukkit.getPluginManager().callEvent(move);
             require(move.getTo().distanceSquared(anchor)<1e-8&&move.getTo().getYaw()==70,"real event pipeline locks position and preserves aim");
@@ -165,7 +165,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             input.accept(true);Location external=new Location(world,50,83,0);player.teleport(external);input.accept(true);input.accept(false);
             require(location.get().equals(external)&&gravity[0]&&collision[0],"external teleport wins without focus reentry");
             location.set(original.clone());input.accept(true);cancelReturn[0]=true;input.accept(false);
-            require(!(boolean)call(comfort,"focused",new Class<?>[]{Player.class},player)&&gravity[0]&&!invisible[0]&&Math.abs(location.get().getY()-84.08)<.0001,"cancelled return clears focus flags without overriding cancellation");
+            require(!(boolean)call(comfort,"focused",new Class<?>[]{Player.class},player)&&gravity[0]&&!invisible[0]&&Math.abs(location.get().getY()-83.88)<.0001,"cancelled return clears focus flags without overriding cancellation");
             getLogger().info("BOARDS_FOCUS_EVENTS_PASS proxy_player=true real_event_bus=true real_world_clearance=true native_player_physics=false client_visual_test=false");
         } finally {
             cancelReturn[0]=false;input.accept(false);call(comfort,"release",new Class<?>[]{Player.class},player);rooms.remove(roomId);

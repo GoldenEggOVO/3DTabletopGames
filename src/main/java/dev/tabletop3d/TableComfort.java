@@ -49,9 +49,9 @@ final class TableComfort implements Listener,AutoCloseable {
         if(room==null||!room.kind.equals("mahjong")||room.seat(player.getUniqueId())<0||!active(player)
             ||player.isDead()||player.isInsideVehicle()||player.getGameMode()==GameMode.SPECTATOR)return;
         int seat=room.seat(player.getUniqueId());double angle=2*Math.PI*seat/room.capacity;
-        Location anchor=plugin.arena.center(room.table).clone().add(Math.sin(angle)*1.65,1.08,Math.cos(angle)*1.65);
+        Location anchor=plugin.arena.center(room.table).clone().add(Math.sin(angle)*.65,.88,Math.cos(angle)*.65);
         // Shift lowers the eye to 1.27 blocks. Aim at the felt; players can still aim at individual tiles.
-        anchor.setDirection(new Vector(-Math.sin(angle)*1.65,TableGeometry.SURFACE+.05-1.08-1.27,-Math.cos(angle)*1.65));
+        anchor.setDirection(new Vector(-Math.sin(angle)*.65,TableGeometry.SURFACE+.05-.88-1.27,-Math.cos(angle)*.65));
         if(!clear(anchor))return;
         Focus state=new Focus(room,seat,player.getLocation().clone(),anchor,player.hasGravity(),player.isInvisible());
         sync(player);focus.put(player.getUniqueId(),state);player.setGravity(false);player.setInvisible(true);player.setVelocity(new Vector());player.setFallDistance(0);
