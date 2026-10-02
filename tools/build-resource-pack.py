@@ -97,6 +97,10 @@ DIGITS = {
     "7": ["11111","00011","00110","00110","01100","01100","01100"],
     "8": ["01110","11011","11011","01110","11011","11011","01110"],
     "9": ["01110","11011","11011","01111","00011","00011","01110"],
+    "A": ["01110","11011","11011","11111","11011","11011","11011"],
+    "J": ["00111","00011","00011","00011","11011","11011","01110"],
+    "Q": ["01110","11011","11011","11011","11111","01110","00011"],
+    "K": ["11011","11011","11110","11100","11110","11011","11011"],
     "+": ["00000","00100","00100","11111","00100","00100","00000"]}
 
 
@@ -378,8 +382,14 @@ def main():
         image=Image.new("RGB",(256,256),COLORS.get(color,"#47535c"))
         d=ImageDraw.Draw(image);d.rounded_rectangle((10,10,246,246),radius=50,outline=CREAM,width=6)
         face_model("button_"+color,image,True)
-    furniture();rings();durations=audio()
-    write_json(BUILD/"pack.mcmeta",{"pack":{"pack_format":88,"min_format":88,"max_format":88,"description":"Tabletop 3D · Mahjong & Color Eight"}})
+    furniture();rings()
+    from build_board_models import build
+    build(ROOT,texture,model,cube,disc,rounded_square,face_model,pixel_text)
+    expected=json.loads((ROOT/"target/board-model-source/model-ids.json").read_text(encoding="utf-8"))
+    if set(expected)!=set(CATALOG) or len(CATALOG)!=len(set(CATALOG)):
+        raise ValueError("Generated model catalog differs from CraftEngineModels: " + str(set(expected)^set(CATALOG)))
+    durations=audio()
+    write_json(BUILD/"pack.mcmeta",{"pack":{"pack_format":88,"min_format":88,"max_format":88,"description":"Tabletop 3D · Boards & Card Games"}})
     config=ROOT/"craftengine/resources/tabletop3d/configuration/items.yml";config.parent.mkdir(parents=True,exist_ok=True)
     config.write_text("items:\n"+"".join(f"  tabletop3d:{name}:\n    material: paper\n    item_model: tabletop3d:{name}\n" for name in sorted(CATALOG)),encoding="utf-8")
     version=ET.parse(ROOT/"pom.xml").getroot().find("{*}version").text

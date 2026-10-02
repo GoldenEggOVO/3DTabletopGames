@@ -21,7 +21,7 @@ subprocess.run([sys.executable, str(ROOT / "tools/package_standalone.py"), str(a
 out = ROOT / "deliverables" / native["version"]
 pack = ROOT / "target/tabletop-resource-pack.zip"
 manifest = json.loads((ROOT / "target/resource-pack-manifest.json").read_text(encoding="utf-8"))
-if len(manifest["models"]) != 111 or hashlib.sha256(pack.read_bytes()).hexdigest() != manifest["sha256"]:
+if len(manifest["models"]) != len(set(manifest["models"])) or hashlib.sha256(pack.read_bytes()).hexdigest() != manifest["sha256"]:
     raise SystemExit("Resource-pack manifest does not match ZIP")
 with zipfile.ZipFile(out / f"3dtabletop-{native['version']}.jar") as jar:
     if jar.read("resource-pack.sha1").decode("ascii").strip() != manifest["sha1"]:

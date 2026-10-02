@@ -23,7 +23,9 @@ class ResourcePackTest(unittest.TestCase):
 
     def test_catalog_and_namespace(self):
         manifest = json.loads((ROOT / "target/resource-pack-manifest.json").read_text(encoding="utf-8"))
-        self.assertEqual(111, len(manifest["models"]))
+        self.assertEqual(len(manifest["models"]), len(set(manifest["models"])))
+        for kind in ("chess", "connectfour", "xiangqi", "gomoku", "go", "go9", "go13", "reversi", "draughts", "checkers", "ludo"):
+            self.assertIn("board_" + kind, manifest["models"])
         for model in manifest["models"]:
             item = json.loads(self.archive.read(f"assets/tabletop3d/items/{model}.json"))
             self.assertEqual("minecraft:model", item["model"]["type"])
@@ -65,6 +67,25 @@ class ResourcePackTest(unittest.TestCase):
             path = "assets/" + name.replace(":", "/sounds/") + ".ogg"
             self.assertIn(path, self.names)
             self.assertTrue(self.archive.read(path).startswith(b"OggS"))
+
+    def test_standard_playing_cards_have_complete_faces_and_opaque_backs(self):
+        ranks = ["ace"] + [str(n) for n in range(2, 11)] + ["jack", "queen", "king"]
+        names = ["playing_" + suit + "_" + rank for suit in ("spades", "hearts", "diamonds", "clubs") for rank in ranks]
+        names += ["playing_joker_small", "playing_joker_big", "playing_back"]
+        for name in names:
+            model = json.loads(self.archive.read(f"assets/tabletop3d/models/item/{name}.json"))
+            self.assertIn("back", model["textures"])
+            for element in model["elements"]:
+                self.assertEqual("#back", element["faces"]["north"]["texture"])
+            back = Image.open(io.BytesIO(self.archive.read("assets/" + model["textures"]["back"].replace(":", "/textures/") + ".png"))).convert("RGBA")
+            self.assertEqual((255,255), back.getchannel("A").getextrema())
+
+    def test_connect_four_holes_are_transparent_and_not_an_opaque_picture(self):
+        image = Image.open(io.BytesIO(self.archive.read("assets/tabletop3d/textures/item/surface/connectfour-rack.png"))).convert("RGBA")
+        self.assertEqual(0,image.getpixel((256,258))[3])
+        self.assertTrue(any(e.get("rotation",{}).get("axis")=="z" for e in json.loads(
+            self.archive.read("assets/tabletop3d/models/item/board_connectfour.json"))["elements"]),
+            "Hole walls need real depth")
 
     def test_tile_and_card_faces_point_to_owner_and_up_when_flat(self):
         # Minecraft 26.2 ignores display.none; ItemTransforms reads fixed.

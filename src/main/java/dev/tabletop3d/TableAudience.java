@@ -8,11 +8,13 @@ import org.bukkit.entity.*;
 final class TableAudience {
     private final Tabletop3D plugin;
     private final Location origin;
+    private final boolean enabled;
     private Set<Player> nativeViewers=Set.of(),packViewers=Set.of();
     private final Map<Entity,Boolean> layers=new HashMap<>();
     long generation;
-    TableAudience(Tabletop3D plugin,Location origin){this.plugin=plugin;this.origin=origin;refresh();}
-    boolean managed(){return plugin.pack!=null&&plugin.pack.mode!=TabletopPack.Mode.VANILLA;}
+    TableAudience(Tabletop3D plugin,Location origin){this(plugin,origin,true);}
+    TableAudience(Tabletop3D plugin,Location origin,boolean enabled){this.plugin=plugin;this.origin=origin;this.enabled=enabled;refresh();}
+    boolean managed(){return enabled&&plugin.pack!=null&&plugin.pack.mode!=TabletopPack.Mode.VANILLA;}
     boolean packed(Player player){return plugin.pack!=null&&plugin.pack.packed(player);}
     boolean needed(boolean packed){return !managed()?!packed:!(packed?packViewers:nativeViewers).isEmpty();}
     Set<Player> viewers(boolean packed){return packed?packViewers:nativeViewers;}
@@ -33,11 +35,11 @@ final class TableAudience {
             else player.hideEntity(plugin,entry.getKey());
         }
     }
-    void add(Display entity,boolean packed){
+    void add(Entity entity,boolean packed){
         if(!managed())return;
         entity.setVisibleByDefault(false);layers.put(entity,packed);
         for(Player player:viewers(packed))player.showEntity(plugin,entity);
     }
-    void common(Display entity){if(managed()){layers.put(entity,null);for(Player player:all())player.showEntity(plugin,entity);}}
+    void common(Entity entity){if(managed()){entity.setVisibleByDefault(false);layers.put(entity,null);for(Player player:all())player.showEntity(plugin,entity);}}
     void remove(Entity entity){layers.remove(entity);entity.remove();}
 }

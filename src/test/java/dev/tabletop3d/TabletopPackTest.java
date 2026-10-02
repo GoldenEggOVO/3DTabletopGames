@@ -178,10 +178,13 @@ class TabletopPackTest {
         assertFalse(pack.hasToggle());
         assertFalse(pack.canPlay(player, "mahjong"));
         assertFalse(pack.canPlay(player, "color-eight"));
-        assertTrue(pack.canPlay(player, "chess"));
+        assertFalse(pack.canPlay(player, "chess"));
+        assertFalse(pack.canPlay(player, "connectfour"));
+        assertTrue(pack.canPlay(player, "yacht"), "Restore-only providers keep native rendering");
         pack.request(player);
         pack.status(player, pack.requestId(player), Status.SUCCESSFULLY_LOADED);
         assertTrue(pack.canPlay(player, "mahjong"));
+        assertTrue(pack.canPlay(player, "chess"));
         config.set("rendering.mode", "vanilla");
         pack = new TabletopPack(plugin, () -> false, id -> null);
         assertFalse(pack.hasToggle());

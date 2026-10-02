@@ -39,6 +39,11 @@ final class TableView implements AutoCloseable {
     private final List<Entity> handFurniture = new ArrayList<>();
     private ItemDisplay packedTable;
     private boolean buildingHandFurniture;
+    private final TableMaps maps;
+    private TableAudience boardAudience;
+    private final List<Entity> nativeBoardFurniture = new ArrayList<>();
+    private ItemDisplay packedBoard;
+    private long boardAudienceGeneration = -1;
     private long revision = -1;
     private int renderedHistory;
     private Component lastTitle;
@@ -90,7 +95,7 @@ final class TableView implements AutoCloseable {
         Location from, to;
         int frame = 6;
         double height, radius;
-        final Map<BlockDisplay, Matrix4f> flipParts = new LinkedHashMap<>();
+        final Map<Display, Matrix4f> flipParts = new LinkedHashMap<>();
         int flipFrame = 10;
         float flipFrom, flipTo;
 
@@ -104,8 +109,17 @@ final class TableView implements AutoCloseable {
         void build() {
             Cell c = token.cell;
             float scale = (float) geometry.spacing;
+            if (boardAudience.needed(true) && PackedBoardModels.supported(room.kind)) {
+                ItemDisplay item = packedItem(from,
+                        PackedBoardModels.piece(room.kind, c, room.board.publicInfo()),
+                        room.kind.equals("connectfour") ? 1 : scale);
+                parts.add(item);
+                if (room.kind.equals("reversi")) flipParts.put(item,new Matrix4f().scale(scale));
+                if ((room.kind.equals("chess") && c.piece().equals(GameSymbols.HORSE)) || room.kind.equals("xiangqi"))
+                    item.setRotation(c.owner()==0 ? 180 : 0, 0);
+            }
             if (room.kind.equals("connectfour")) {
-                for (var part : TableModels.connectFour(c.owner()))
+                if (boardAudience.needed(false)) for (var part : TableModels.connectFour(c.owner()))
                     parts.add(
                             block(
                                     from,
@@ -136,6 +150,7 @@ final class TableView implements AutoCloseable {
                                                 Math.abs(part.x()) + part.w() / 2,
                                                 Math.abs(part.z()) + part.d() / 2)
                                         * scale);
+                if (!boardAudience.needed(false)) continue;
                 BlockDisplay d =
                         block(
                                 from,
@@ -170,7 +185,7 @@ final class TableView implements AutoCloseable {
                 parts.add(d);
             }
             if (reversi) poseFlip(flipTo);
-            if (room.kind.equals("xiangqi") || room.kind.equals("aeroplane")) {
+            if (boardAudience.needed(false) && (room.kind.equals("xiangqi") || room.kind.equals("aeroplane"))) {
                 String glyph =
                         room.kind.equals("xiangqi")
                                 ? c.piece()
@@ -196,9 +211,25 @@ final class TableView implements AutoCloseable {
             }
         }
 
+        void rebuildLayers() {
+            int savedFrame = frame;
+            float savedFlipFrom = flipFrom, savedFlipTo = flipTo;
+            int savedFlipFrame = flipFrame;
+            parts.forEach(boardAudience::remove);
+            parts.clear(); deadMarks.clear(); flipParts.clear();
+            height = radius = 0;
+            build();
+            frame = savedFrame; flipFrom = savedFlipFrom; flipTo = savedFlipTo; flipFrame = savedFlipFrame;
+            positionParts(position());
+            if (room.kind.equals("reversi")) poseFlip(flipAngle());
+        }
+
         void mark(Token next) {
             boolean dead = next.cell.piece().contains("×");
-            if (dead && deadMarks.isEmpty())
+            if (token.cell.piece().contains("×") != dead)
+                for (Entity part : parts) if (part instanceof ItemDisplay item)
+                    item.setItemStack(plugin.pack.item(PackedBoardModels.piece(room.kind,next.cell,room.board.publicInfo())));
+            if (dead && deadMarks.isEmpty() && boardAudience.needed(false))
                 for (var part : TableModels.deadStoneMarks()) {
                     double scale = geometry.spacing;
                     BlockDisplay display =
@@ -310,7 +341,7 @@ final class TableView implements AutoCloseable {
 
         void remove() {
             animating.remove(this);
-            parts.forEach(Entity::remove);
+            parts.forEach(boardAudience::remove);
         }
     }
 
@@ -336,9 +367,10 @@ final class TableView implements AutoCloseable {
         this.plugin = plugin;
         this.room = room;
         this.tag = tag;
+        this.maps = maps;
         geometry = new TableGeometry(room.kind, room.board.cells());
         origin = center.clone().add(0, TableGeometry.SURFACE, 0);
-        if (TabletopPack.supported(room.kind)) {
+        if (room.board instanceof dev.tabletop3d.rules.HandGame) {
             handTable = new HandTable(plugin, room, origin, tag);
             syncHandFurniture();
             title = text(origin.clone().add(0, 1.8, 0), "", .4, false, NamedTextColor.GOLD);
@@ -351,6 +383,42 @@ final class TableView implements AutoCloseable {
             sync();
             return;
         }
+        boardAudience = new TableAudience(plugin, origin, PackedBoardModels.supported(room.kind));
+        if (!room.kind.equals("connectfour")) {
+            Interaction hit = origin.getWorld().spawn(origin.clone().add(0,.012,0), Interaction.class, e -> {
+                tag(e,"@board");
+                e.setInteractionWidth(2.25f);
+                e.setInteractionHeight(.025f);
+                e.setResponsive(true);
+            });
+            furniture.add(hit);
+            boardAudience.common(hit);
+        }
+        title = text(origin.clone().add(0, room.kind.equals("connectfour") ? 2.05 : 1.65, 0),
+                "", room.kind.equals("connectfour") ? .38 : .48, false, NamedTextColor.GOLD);
+        title.setBillboard(Display.Billboard.CENTER);
+        title.setLineWidth(500);
+        furniture.add(title);
+        boardAudience.common(title);
+        if (room.kind.equals("xiangqi")) {
+            TextDisplay river = text(origin.clone().add(0,.018,0), Component.text(GameSymbols.XIANGQI_RIVER),
+                    .26,true,NamedTextColor.DARK_GRAY);
+            furniture.add(river);
+            boardAudience.common(river);
+        }
+        if (room.kind.equals("yacht")) {
+            TextDisplay roll = text(origin.clone().add(1.30,.025,0), Language.component("table.roll"),
+                    .40,true,NamedTextColor.GOLD);
+            furniture.add(roll);
+            boardAudience.common(roll);
+        }
+        if (Set.of("aeroplane","ludo").contains(room.kind))
+            diceTray = new DiceTray(plugin,room,center,tag,!room.sideTray);
+        syncBoardFurniture();
+        sync();
+    }
+
+    private void buildNativeBoardFurniture() {
         double width = 2.25, leg = width / 2 - .135, edge = width / 2 - .065;
         furniture.add(block(origin, Material.DARK_OAK_PLANKS, 0, -.19, 0, width, .14, width, null));
         for (double x : new double[] {-leg, leg})
@@ -431,11 +499,6 @@ final class TableView implements AutoCloseable {
                                 null));
             }
             furniture.add(block(origin, Material.BLUE_CONCRETE, 0, 1.74, 0, 2.25, .09, .20, null));
-            title = text(origin.clone().add(0, 2.05, 0), "", .38, false, NamedTextColor.GOLD);
-            title.setBillboard(Display.Billboard.CENTER);
-            title.setLineWidth(500);
-            furniture.add(title);
-            sync();
             return;
         }
         List<org.bukkit.inventory.ItemStack> images = maps.get(origin.getWorld(), geometry);
@@ -450,6 +513,7 @@ final class TableView implements AutoCloseable {
                                         ItemFrame.class,
                                         e -> {
                                             tag(e, "@board");
+                                            boardAudience.add(e, false);
                                             e.setFacingDirection(BlockFace.UP, true);
                                             e.setFixed(true);
                                             e.setVisible(false);
@@ -463,42 +527,6 @@ final class TableView implements AutoCloseable {
                 f.setFacingDirection(BlockFace.UP, true);
                 furniture.add(f);
             }
-        Interaction hit =
-                origin.getWorld()
-                        .spawn(
-                                origin.clone().add(0, .012, 0),
-                                Interaction.class,
-                                e -> {
-                                    tag(e, "@board");
-                                    e.setInteractionWidth(2.25f);
-                                    e.setInteractionHeight(.025f);
-                                    e.setResponsive(true);
-                                });
-        furniture.add(hit);
-        title = text(origin.clone().add(0, 1.65, 0), "", .48, false, NamedTextColor.GOLD);
-        title.setBillboard(Display.Billboard.CENTER);
-        title.setLineWidth(500);
-        furniture.add(title);
-        if (room.kind.equals("xiangqi"))
-            furniture.add(
-                    text(
-                            origin.clone().add(0, .018, 0),
-                            Component.text(GameSymbols.XIANGQI_RIVER),
-                            .26,
-                            true,
-                            NamedTextColor.DARK_GRAY));
-        if (room.kind.equals("yacht")) {
-            furniture.add(
-                    text(
-                            origin.clone().add(1.30, .025, 0),
-                            Language.component("table.roll"),
-                            .40,
-                            true,
-                            NamedTextColor.GOLD));
-        }
-        if (Set.of("aeroplane", "ludo").contains(room.kind))
-            diceTray = new DiceTray(plugin, room, center, tag, !room.sideTray);
-        sync();
     }
 
     private void syncHandFurniture() {
@@ -622,6 +650,7 @@ final class TableView implements AutoCloseable {
         d.setTeleportDuration(2);
         d.setInterpolationDuration(2);
         if (viewer != null) d.setVisibleByDefault(false);
+        else if (boardAudience != null) boardAudience.add(d, false);
         if (buildingHandFurniture) handTable.audience.add(d, false);
     }
 
@@ -719,6 +748,7 @@ final class TableView implements AutoCloseable {
     }
 
     void sync() {
+        if (boardAudience != null) syncBoardFurniture();
         if (renderedBoard != room.board) pendingTurnSound = false;
         if (handTable != null) {
             handTable.sync();
@@ -842,6 +872,46 @@ final class TableView implements AutoCloseable {
         updateTitle();
     }
 
+    private void syncBoardFurniture() {
+        boardAudience.refresh();
+        if (boardAudience.needed(false) && nativeBoardFurniture.isEmpty()) {
+            Set<Entity> before = new HashSet<>(furniture);
+            buildNativeBoardFurniture();
+            for (Entity entity : furniture) if (!before.contains(entity)) {
+                if (entity instanceof TextDisplay || entity instanceof Interaction) boardAudience.common(entity);
+                else nativeBoardFurniture.add(entity);
+            }
+        } else if (!boardAudience.needed(false) && !nativeBoardFurniture.isEmpty()) {
+            nativeBoardFurniture.forEach(boardAudience::remove);
+            furniture.removeAll(nativeBoardFurniture);
+            nativeBoardFurniture.clear();
+        }
+        if (PackedBoardModels.supported(room.kind) && boardAudience.needed(true) && packedBoard == null) {
+            packedBoard = packedItem(origin, PackedBoardModels.table(room.kind), room.kind.equals("connectfour") ? 2 : 1);
+        } else if (!boardAudience.needed(true) && packedBoard != null) {
+            boardAudience.remove(packedBoard);
+            packedBoard = null;
+        }
+        if (boardAudienceGeneration != boardAudience.generation) {
+            for (TokenView token : tokens.values()) token.rebuildLayers();
+            boardAudienceGeneration = boardAudience.generation;
+        }
+    }
+
+    private ItemDisplay packedItem(Location at, String model, float scale) {
+        return origin.getWorld().spawn(at, ItemDisplay.class, entity -> {
+            tag(entity, "@model");
+            entity.setBrightness(new Display.Brightness(15, 15));
+            entity.setViewRange(.35f);
+            entity.setTeleportDuration(2);
+            entity.setInterpolationDuration(2);
+            entity.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);
+            entity.setItemStack(plugin.pack.item(model));
+            entity.setTransformationMatrix(new Matrix4f().scale(scale));
+            boardAudience.add(entity, true);
+        });
+    }
+
     private String lastAction() {
         if (room.history.isEmpty()) return "";
         var e = room.history.get(room.history.size() - 1).getAsJsonObject().get("action");
@@ -937,6 +1007,7 @@ final class TableView implements AutoCloseable {
     }
 
     void tick() {
+        if (boardAudience != null) syncBoardFurniture();
         for (var iterator = animating.iterator(); iterator.hasNext(); ) {
             TokenView token = iterator.next();
             token.tick();
@@ -1379,6 +1450,10 @@ final class TableView implements AutoCloseable {
         for (double side : new double[] {-width / 2, width / 2}) {
             list.add(block(at, material, side, 0, 0, stroke, .012, width, viewer));
             list.add(block(at, material, 0, 0, side, width, .012, stroke, viewer));
+            if (viewer == null && boardAudience != null) {
+                boardAudience.common(list.get(list.size()-2));
+                boardAudience.common(list.getLast());
+            }
         }
     }
 
@@ -1397,6 +1472,7 @@ final class TableView implements AutoCloseable {
         tokens.clear();
         handFurniture.forEach(Entity::remove);
         if (packedTable != null) packedTable.remove();
+        if (packedBoard != null) boardAudience.remove(packedBoard);
         furniture.forEach(Entity::remove);
         overlays.values().forEach(Overlay::remove);
         overlays.clear();
