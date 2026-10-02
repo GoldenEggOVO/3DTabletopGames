@@ -1,0 +1,334 @@
+items:
+  tabletop3d:button_b:
+    material: paper
+    item_model: tabletop3d:button_b
+  tabletop3d:button_p:
+    material: paper
+    item_model: tabletop3d:button_p
+  tabletop3d:button_pass:
+    material: paper
+    item_model: tabletop3d:button_pass
+  tabletop3d:button_r:
+    material: paper
+    item_model: tabletop3d:button_r
+  tabletop3d:button_y:
+    material: paper
+    item_model: tabletop3d:button_y
+  tabletop3d:card_b1:
+    material: paper
+    item_model: tabletop3d:card_b1
+  tabletop3d:card_b10:
+    material: paper
+    item_model: tabletop3d:card_b10
+  tabletop3d:card_b2:
+    material: paper
+    item_model: tabletop3d:card_b2
+  tabletop3d:card_b3:
+    material: paper
+    item_model: tabletop3d:card_b3
+  tabletop3d:card_b4:
+    material: paper
+    item_model: tabletop3d:card_b4
+  tabletop3d:card_b5:
+    material: paper
+    item_model: tabletop3d:card_b5
+  tabletop3d:card_b6:
+    material: paper
+    item_model: tabletop3d:card_b6
+  tabletop3d:card_b7:
+    material: paper
+    item_model: tabletop3d:card_b7
+  tabletop3d:card_b8:
+    material: paper
+    item_model: tabletop3d:card_b8
+  tabletop3d:card_b9:
+    material: paper
+    item_model: tabletop3d:card_b9
+  tabletop3d:card_back:
+    material: paper
+    item_model: tabletop3d:card_back
+  tabletop3d:card_bdraw:
+    material: paper
+    item_model: tabletop3d:card_bdraw
+  tabletop3d:card_breverse:
+    material: paper
+    item_model: tabletop3d:card_breverse
+  tabletop3d:card_bskip:
+    material: paper
+    item_model: tabletop3d:card_bskip
+  tabletop3d:card_p1:
+    material: paper
+    item_model: tabletop3d:card_p1
+  tabletop3d:card_p10:
+    material: paper
+    item_model: tabletop3d:card_p10
+  tabletop3d:card_p2:
+    material: paper
+    item_model: tabletop3d:card_p2
+  tabletop3d:card_p3:
+    material: paper
+    item_model: tabletop3d:card_p3
+  tabletop3d:card_p4:
+    material: paper
+    item_model: tabletop3d:card_p4
+  tabletop3d:card_p5:
+    material: paper
+    item_model: tabletop3d:card_p5
+  tabletop3d:card_p6:
+    material: paper
+    item_model: tabletop3d:card_p6
+  tabletop3d:card_p7:
+    material: paper
+    item_model: tabletop3d:card_p7
+  tabletop3d:card_p8:
+    material: paper
+    item_model: tabletop3d:card_p8
+  tabletop3d:card_p9:
+    material: paper
+    item_model: tabletop3d:card_p9
+  tabletop3d:card_pdraw:
+    material: paper
+    item_model: tabletop3d:card_pdraw
+  tabletop3d:card_preverse:
+    material: paper
+    item_model: tabletop3d:card_preverse
+  tabletop3d:card_pskip:
+    material: paper
+    item_model: tabletop3d:card_pskip
+  tabletop3d:card_r1:
+    material: paper
+    item_model: tabletop3d:card_r1
+  tabletop3d:card_r10:
+    material: paper
+    item_model: tabletop3d:card_r10
+  tabletop3d:card_r2:
+    material: paper
+    item_model: tabletop3d:card_r2
+  tabletop3d:card_r3:
+    material: paper
+    item_model: tabletop3d:card_r3
+  tabletop3d:card_r4:
+    material: paper
+    item_model: tabletop3d:card_r4
+  tabletop3d:card_r5:
+    material: paper
+    item_model: tabletop3d:card_r5
+  tabletop3d:card_r6:
+    material: paper
+    item_model: tabletop3d:card_r6
+  tabletop3d:card_r7:
+    material: paper
+    item_model: tabletop3d:card_r7
+  tabletop3d:card_r8:
+    material: paper
+    item_model: tabletop3d:card_r8
+  tabletop3d:card_r9:
+    material: paper
+    item_model: tabletop3d:card_r9
+  tabletop3d:card_rdraw:
+    material: paper
+    item_model: tabletop3d:card_rdraw
+  tabletop3d:card_rreverse:
+    material: paper
+    item_model: tabletop3d:card_rreverse
+  tabletop3d:card_rskip:
+    material: paper
+    item_model: tabletop3d:card_rskip
+  tabletop3d:card_swap:
+    material: paper
+    item_model: tabletop3d:card_swap
+  tabletop3d:card_table:
+    material: paper
+    item_model: tabletop3d:card_table
+  tabletop3d:card_wild:
+    material: paper
+    item_model: tabletop3d:card_wild
+  tabletop3d:card_y1:
+    material: paper
+    item_model: tabletop3d:card_y1
+  tabletop3d:card_y10:
+    material: paper
+    item_model: tabletop3d:card_y10
+  tabletop3d:card_y2:
+    material: paper
+    item_model: tabletop3d:card_y2
+  tabletop3d:card_y3:
+    material: paper
+    item_model: tabletop3d:card_y3
+  tabletop3d:card_y4:
+    material: paper
+    item_model: tabletop3d:card_y4
+  tabletop3d:card_y5:
+    material: paper
+    item_model: tabletop3d:card_y5
+  tabletop3d:card_y6:
+    material: paper
+    item_model: tabletop3d:card_y6
+  tabletop3d:card_y7:
+    material: paper
+    item_model: tabletop3d:card_y7
+  tabletop3d:card_y8:
+    material: paper
+    item_model: tabletop3d:card_y8
+  tabletop3d:card_y9:
+    material: paper
+    item_model: tabletop3d:card_y9
+  tabletop3d:card_ydraw:
+    material: paper
+    item_model: tabletop3d:card_ydraw
+  tabletop3d:card_yreverse:
+    material: paper
+    item_model: tabletop3d:card_yreverse
+  tabletop3d:card_yskip:
+    material: paper
+    item_model: tabletop3d:card_yskip
+  tabletop3d:mahjong_back:
+    material: paper
+    item_model: tabletop3d:mahjong_back
+  tabletop3d:mahjong_f1:
+    material: paper
+    item_model: tabletop3d:mahjong_f1
+  tabletop3d:mahjong_f2:
+    material: paper
+    item_model: tabletop3d:mahjong_f2
+  tabletop3d:mahjong_f3:
+    material: paper
+    item_model: tabletop3d:mahjong_f3
+  tabletop3d:mahjong_f4:
+    material: paper
+    item_model: tabletop3d:mahjong_f4
+  tabletop3d:mahjong_f5:
+    material: paper
+    item_model: tabletop3d:mahjong_f5
+  tabletop3d:mahjong_f6:
+    material: paper
+    item_model: tabletop3d:mahjong_f6
+  tabletop3d:mahjong_f7:
+    material: paper
+    item_model: tabletop3d:mahjong_f7
+  tabletop3d:mahjong_f8:
+    material: paper
+    item_model: tabletop3d:mahjong_f8
+  tabletop3d:mahjong_m0:
+    material: paper
+    item_model: tabletop3d:mahjong_m0
+  tabletop3d:mahjong_m1:
+    material: paper
+    item_model: tabletop3d:mahjong_m1
+  tabletop3d:mahjong_m2:
+    material: paper
+    item_model: tabletop3d:mahjong_m2
+  tabletop3d:mahjong_m3:
+    material: paper
+    item_model: tabletop3d:mahjong_m3
+  tabletop3d:mahjong_m4:
+    material: paper
+    item_model: tabletop3d:mahjong_m4
+  tabletop3d:mahjong_m5:
+    material: paper
+    item_model: tabletop3d:mahjong_m5
+  tabletop3d:mahjong_m6:
+    material: paper
+    item_model: tabletop3d:mahjong_m6
+  tabletop3d:mahjong_m7:
+    material: paper
+    item_model: tabletop3d:mahjong_m7
+  tabletop3d:mahjong_m8:
+    material: paper
+    item_model: tabletop3d:mahjong_m8
+  tabletop3d:mahjong_m9:
+    material: paper
+    item_model: tabletop3d:mahjong_m9
+  tabletop3d:mahjong_p0:
+    material: paper
+    item_model: tabletop3d:mahjong_p0
+  tabletop3d:mahjong_p1:
+    material: paper
+    item_model: tabletop3d:mahjong_p1
+  tabletop3d:mahjong_p2:
+    material: paper
+    item_model: tabletop3d:mahjong_p2
+  tabletop3d:mahjong_p3:
+    material: paper
+    item_model: tabletop3d:mahjong_p3
+  tabletop3d:mahjong_p4:
+    material: paper
+    item_model: tabletop3d:mahjong_p4
+  tabletop3d:mahjong_p5:
+    material: paper
+    item_model: tabletop3d:mahjong_p5
+  tabletop3d:mahjong_p6:
+    material: paper
+    item_model: tabletop3d:mahjong_p6
+  tabletop3d:mahjong_p7:
+    material: paper
+    item_model: tabletop3d:mahjong_p7
+  tabletop3d:mahjong_p8:
+    material: paper
+    item_model: tabletop3d:mahjong_p8
+  tabletop3d:mahjong_p9:
+    material: paper
+    item_model: tabletop3d:mahjong_p9
+  tabletop3d:mahjong_panel:
+    material: paper
+    item_model: tabletop3d:mahjong_panel
+  tabletop3d:mahjong_s0:
+    material: paper
+    item_model: tabletop3d:mahjong_s0
+  tabletop3d:mahjong_s1:
+    material: paper
+    item_model: tabletop3d:mahjong_s1
+  tabletop3d:mahjong_s2:
+    material: paper
+    item_model: tabletop3d:mahjong_s2
+  tabletop3d:mahjong_s3:
+    material: paper
+    item_model: tabletop3d:mahjong_s3
+  tabletop3d:mahjong_s4:
+    material: paper
+    item_model: tabletop3d:mahjong_s4
+  tabletop3d:mahjong_s5:
+    material: paper
+    item_model: tabletop3d:mahjong_s5
+  tabletop3d:mahjong_s6:
+    material: paper
+    item_model: tabletop3d:mahjong_s6
+  tabletop3d:mahjong_s7:
+    material: paper
+    item_model: tabletop3d:mahjong_s7
+  tabletop3d:mahjong_s8:
+    material: paper
+    item_model: tabletop3d:mahjong_s8
+  tabletop3d:mahjong_s9:
+    material: paper
+    item_model: tabletop3d:mahjong_s9
+  tabletop3d:mahjong_table:
+    material: paper
+    item_model: tabletop3d:mahjong_table
+  tabletop3d:mahjong_z1:
+    material: paper
+    item_model: tabletop3d:mahjong_z1
+  tabletop3d:mahjong_z2:
+    material: paper
+    item_model: tabletop3d:mahjong_z2
+  tabletop3d:mahjong_z3:
+    material: paper
+    item_model: tabletop3d:mahjong_z3
+  tabletop3d:mahjong_z4:
+    material: paper
+    item_model: tabletop3d:mahjong_z4
+  tabletop3d:mahjong_z5:
+    material: paper
+    item_model: tabletop3d:mahjong_z5
+  tabletop3d:mahjong_z6:
+    material: paper
+    item_model: tabletop3d:mahjong_z6
+  tabletop3d:mahjong_z7:
+    material: paper
+    item_model: tabletop3d:mahjong_z7
+  tabletop3d:ring_forward:
+    material: paper
+    item_model: tabletop3d:ring_forward
+  tabletop3d:ring_reverse:
+    material: paper
+    item_model: tabletop3d:ring_reverse
