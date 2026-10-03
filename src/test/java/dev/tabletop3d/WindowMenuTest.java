@@ -13,6 +13,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class WindowMenuTest {
     @Test
+    void retiredYachtMenuIsNotExtractedOrBundled() {
+        assertFalse(GameMenuLayouts.PAGES.contains("yacht"));
+        assertNull(getClass().getResource("/menus/yacht.yml"));
+    }
+
+    @Test
     void roomBrowserUsesAnOwnedFullWidthTextLinkAboveTheGameGrid() throws Exception {
         var config = new YamlConfiguration();
         try (var input = WindowMenuTest.class.getResourceAsStream("/menus/catalog.yml")) {

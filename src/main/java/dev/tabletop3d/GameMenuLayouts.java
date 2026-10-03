@@ -15,7 +15,7 @@ import java.util.*;
 /** Editable window layout with room actions bound only at open time. */
 final class GameMenuLayouts {
     static final List<String> PAGES =
-            List.of("dialog", "catalog", "room", "setup", "hand", "yacht");
+            List.of("dialog", "catalog", "room", "setup", "hand");
     private final Path directory;
     private final Tabletop3D plugin;
 
