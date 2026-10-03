@@ -91,6 +91,10 @@ public final class BoardsSoakProbe extends JavaPlugin {
         require(views.size()==rooms.size(),"one view per room");
         for(Object view:views.values()){
             for(String key:List.of("furniture","lastMove"))for(Entity e:(List<Entity>)field(view,key)){require(e.isValid(),"tracked entity is invalid");expected.add(e.getUniqueId());}
+            addEntities(expected,(List<Entity>)field(view,"nativeBoardFurniture"));
+            addEntities(expected,(List<Entity>)field(view,"handFurniture"));
+            Entity packedTable=(Entity)field(view,"packedTable");if(packedTable!=null)addEntities(expected,List.of(packedTable));
+            Entity packedBoard=(Entity)field(view,"packedBoard");if(packedBoard!=null)addEntities(expected,List.of(packedBoard));
             for(Object token:((Map<?,?>)field(view,"tokens")).values())for(Entity e:(List<Entity>)field(token,"parts")){require(e.isValid(),"tracked piece is invalid");expected.add(e.getUniqueId());}
             Object tray=field(view,"diceTray");if(tray!=null)addEntities(expected,(List<Entity>)field(tray,"entities"));
             Object cards=field(view,"playingTable");if(cards!=null){
@@ -105,6 +109,7 @@ public final class BoardsSoakProbe extends JavaPlugin {
             }
             Object hand=field(view,"handTable");if(hand!=null){
                 addTurn(expected,field(hand,"cardTurn"));
+                Entity deckLabel=(Entity)field(hand,"deckLabel");if(deckLabel!=null)addEntities(expected,List.of(deckLabel));
                 addEntities(expected,(List<Entity>)field(hand,"furniture"));
                 Object hud=field(hand,"mahjongHud");if(hud!=null)addEntities(expected,(List<Entity>)field(hud,"entities"));
                 Object ring=field(hand,"turnRing");if(ring!=null)for(Object part:(List<?>)field(ring,"parts"))addEntities(expected,List.of((Entity)field(part,"entity")));
@@ -120,7 +125,16 @@ public final class BoardsSoakProbe extends JavaPlugin {
                 }
             }
         }
-        Set<UUID> actual=ownedEntities();require(actual.equals(expected),"model entity leak or missing part: actual="+actual.size()+" expected="+expected.size());peakEntities=Math.max(peakEntities,actual.size());
+        Set<UUID> actual=ownedEntities();
+        if(!actual.equals(expected)){
+            Map<String,Integer> unexpected=new TreeMap<>();NamespacedKey key=new NamespacedKey("3dtabletop","board-cell");
+            for(World world:Bukkit.getWorlds())for(Entity entity:world.getEntities())if(actual.contains(entity.getUniqueId())&&!expected.contains(entity.getUniqueId())){
+                String tag=entity.getPersistentDataContainer().get(key,org.bukkit.persistence.PersistentDataType.STRING);
+                unexpected.merge(tag+":"+entity.getType(),1,Integer::sum);
+            }
+            getLogger().warning("UNTRACKED_MODEL_PARTS "+unexpected);
+        }
+        require(actual.equals(expected),"model entity leak or missing part: actual="+actual.size()+" expected="+expected.size());peakEntities=Math.max(peakEntities,actual.size());
     }
     private static void addEntities(Set<UUID> expected,List<Entity> entities){for(Entity entity:entities){require(entity.isValid(),"tracked display is invalid");expected.add(entity.getUniqueId());}}
     private static void addTurn(Set<UUID> expected,Object turn)throws Exception{
