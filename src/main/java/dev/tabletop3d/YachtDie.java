@@ -56,7 +56,7 @@ final class YachtDie implements AutoCloseable {
         Quaternionf rotation = pose.rotation();
         Vector3f center = new Vector3f((float)pose.x(), (float)pose.y(), (float)pose.z());
         if (packed != null) {
-            transform(packed, center, new Quaternionf(rotation).rotateY((float)Math.PI), new Vector3f((float)size));
+            transform(packed, center, rotation, new Vector3f((float)size));
             return;
         }
         transform(body, new Vector3f((float)(-size / 2)).rotate(rotation).add(center), rotation, new Vector3f((float)size));

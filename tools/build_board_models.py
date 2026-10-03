@@ -72,17 +72,24 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
     red = texture("surface/yacht-felt", Image.new("RGB", (32,32), "#843036"))
     slot = texture("surface/yacht-slot", Image.new("RGB", (16,16), "#454954"))
     def yacht_box(x,y,z,w,h,d,ink):
-        part = block(x,y,z,w,h,d)
+        part = block(x,y,z,w,h,d,scale=2)
         for face in part["faces"].values(): face["texture"] = "#"+ink
         return part
-    parts = [yacht_box(0,-.19,0,2.25,.14,2.25,"wood"), yacht_box(0,-.045,0,2.10,.045,2.10,"felt")]
-    for side in (-1,1):
-        parts += [yacht_box(side*1.085,-.045,0,.08,.10,2.25,"wood"),
-                  yacht_box(0,-.045,side*1.085,2.09,.10,.08,"wood")]
-    for x in (-.98,.98):
-        for z in (-.98,.98): parts.append(yacht_box(x,-1.03125,z,.13,.84125,.13,"wood"))
-    for i in range(5): parts.append(yacht_box(.32+(i-2)*.26,.002,-.68,.235,.017,.235,"slot"))
-    export_model("yacht_table", {"wood":wood,"felt":red,"slot":slot}, parts)
+    cream=texture("surface/yacht-paper",Image.new("RGB",(32,32),"#fff5df"))
+    black=texture("surface/yacht-grid",Image.new("RGB",(16,16),"#202934"))
+    parts=[]
+    for center,width,top in ((.32,2,"felt"),(-1.65,1.6,"paper")):
+        parts += [yacht_box(center,-.19,0,width,.14,2.25,"wood"),yacht_box(center,-.045,0,width-.15,.045,2.10,top)]
+        for side in (-1,1):
+            parts += [yacht_box(center+side*(width/2-.04),-.045,0,.08,.10,2.25,"wood"),
+                      yacht_box(center,-.045,side*1.085,width-.16,.10,.08,"wood")]
+        for x in (center-width/2+.15,center+width/2-.15):
+            for z in (-.98,.98):parts.append(yacht_box(x,-1.03125,z,.13,.84125,.13,"wood"))
+    for i in range(5):parts.append(yacht_box(.32+(i-2)*.26,.002,-.68,.235,.017,.235,"slot"))
+    for row in range(16):parts.append(yacht_box(-1.65,.013,-.85+row*.10,1.45,.003,.006,"grid"))
+    parts.append(yacht_box(-1.625,.013,-.10,.008,.003,1.50,"grid"))
+    for z in (-.20,-.10,.60):parts.append(yacht_box(-1.99,.004,z,.71,.009,.094,"grid"))
+    export_model("yacht_table", {"wood":wood,"felt":red,"slot":slot,"paper":cream,"grid":black}, parts)
 
     # The central art spans precisely two blocks, matching TableGeometry's maps.
     for path in sorted(source.glob("*.png")):
@@ -243,10 +250,22 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
         im=Image.new("RGBA",(512,512));d=ImageDraw.Draw(im)
         d.ellipse((0,0,511,511),fill="#38251d");d.ellipse((19,19,492,492),fill=color,outline="#bd9955",width=2)
         if name=="doudizhu_table":
+            # UVs span the three-block diameter. The bottom cards are now at world centre.
+            for radius,ink in ((196,"#598768"),(201,"#426c51")):
+                d.ellipse((256-radius,256-radius,256+radius,256+radius),outline=ink,width=2)
             for angle in (0,120,240):
-                x=256+178*math.sin(math.radians(angle));y=256+178*math.cos(math.radians(angle))
-                d.ellipse((x-15,y-15,x+15,y+15),outline="#b3c995",width=2)
-            for x in (209,256,303):d.rounded_rectangle((x-18,164,x+18,216),4,outline="#89a282",width=2)
+                a=math.radians(angle)
+                x,y=256+177*math.sin(a),256+177*math.cos(a)
+                emblem=Image.new("RGBA",(72,72));ed=ImageDraw.Draw(emblem)
+                ed.rounded_rectangle((2,8,70,62),12,fill="#205438",outline="#91ad7d",width=2)
+                ed.polygon(((36,18),(51,35),(36,52),(21,35)),fill="#c0ad71")
+                emblem=emblem.rotate(-angle,resample=Image.Resampling.BICUBIC,expand=True)
+                im.alpha_composite(emblem,(round(x-emblem.width/2),round(y-emblem.height/2)))
+            # Each card is .24 by .34 blocks; the marks match the centred row.
+            for x in (210,256,302):
+                d.rounded_rectangle((x-22,225,x+22,287),5,fill="#245a40",outline="#a6b889",width=2)
+            d.line((183,215,329,215),fill="#bcab70",width=2)
+            d.line((183,297,329,297),fill="#bcab70",width=2)
         elif name=="liars_bar_table":
             d.rounded_rectangle((213,206,299,322),7,outline="#bd9955",width=2)
             for i in range(6):

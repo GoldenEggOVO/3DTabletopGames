@@ -27,7 +27,13 @@ final class YachtTable implements AutoCloseable {
     private final DiceMotion[] throwsByDie = new DiceMotion[5];
     private final DiceMotion.Pose[] poses = new DiceMotion.Pose[5];
     private final TextDisplay[] categories = new TextDisplay[12];
-    private final TextDisplay rollLabel, sheetLabel, totalsLabel;
+    private final TextDisplay rollLabel, sheetLabel, headerLabel;
+    private final TextDisplay[][] scores;
+    private final BlockDisplay activeColumn;
+    private final TextDisplay[] summaryLabels = new TextDisplay[3];
+    static final double SCORE_X = -1.65;
+    static double scoreZ(int category) { return -.80 + (category < 6 ? category : category + 2) * .10; }
+    private double columnX(int seat) { return -1.29 + (seat - (room.capacity - 1) / 2.0) * .64 / room.capacity; }
     private YachtGame board;
     private long revision = -1, language = -1;
     private int history, frame;
@@ -38,15 +44,29 @@ final class YachtTable implements AutoCloseable {
         audience = new TableAudience(plugin, origin);
         for (int i = 0; i < 5; i++) poses[i] = rest(i, false, 1);
         for (int i = 0; i < categories.length; i++) {
-            double z = -.85 + i * .13;
-            common.add(block(-.78, .007, z, .53, .012, .116, Material.POLISHED_BLACKSTONE));
-            categories[i] = label(-.78, .032, z, .105f);
+            categories[i] = label(-1.99, .034, scoreZ(i), .135f);
+            categories[i].text((i < 6 ? Component.text(String.valueOf((char) (0x2680 + i))).append(Component.space()) : Component.empty())
+                    .append(Language.component("score.category." + YachtGame.CATEGORIES.get(i))).color(NamedTextColor.BLACK));
         }
+        scores = new TextDisplay[room.capacity][15];
+        for (int seat = 0; seat < room.capacity; seat++) {
+            String name = seat < room.seats.size() ? room.seats.get(seat).name() : "";
+            String shortName = name.codePoints().limit(5).collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
+            label(columnX(seat), .034, -.94, .09f).text(Component.text((seat + 1) + "\n" + shortName).color(NamedTextColor.BLACK));
+            for (int row = 0; row < 15; row++) scores[seat][row] = label(columnX(seat), .034, -.80 + row * .10, .14f);
+        }
+        summaryLabels[0] = label(-1.99, .034, -.20, .12f);
+        summaryLabels[1] = label(-1.99, .034, -.10, .12f);
+        summaryLabels[2] = label(-1.99, .034, .60, .13f);
+        for (int seat = 1; seat < room.capacity; seat++)
+            common.add(block(-1.61 + seat * .64 / room.capacity, .017, -.10, .006, .002, 1.50, Material.BLACK_CONCRETE));
+        activeColumn = block(columnX(0), .007, -.05, .64 / room.capacity - .008, .004, 1.65, Material.YELLOW_CONCRETE);
+        common.add(activeColumn);
         common.add(block(.45, .007, .82, .95, .016, .23, Material.GREEN_CONCRETE));
         rollLabel = label(.45, .038, .82, .16f);
-        common.add(block(-.70, .007, .82, .60, .016, .23, Material.POLISHED_BLACKSTONE));
-        sheetLabel = label(-.70, .038, .82, .105f);
-        totalsLabel = label(.32, .038, -.97, .105f);
+        common.add(block(SCORE_X, .007, .88, 1.4, .016, .18, Material.POLISHED_BLACKSTONE));
+        sheetLabel = label(SCORE_X, .038, .88, .135f);
+        headerLabel = label(SCORE_X, .038, -1.025, .11f);
         for (Entity entity : common) audience.common(entity);
         sync();
     }
@@ -114,14 +134,21 @@ final class YachtTable implements AutoCloseable {
     private void layers() {
         audience.refresh();
         if (audience.needed(false) && nativeTable.isEmpty()) {
-            nativeTable.add(block(0, -.19, 0, 2.25, .14, 2.25, Material.DARK_OAK_PLANKS));
-            nativeTable.add(block(0, -.045, 0, 2.10, .045, 2.10, Material.RED_CONCRETE));
-            for (double side : new double[]{-1,1}) {
-                nativeTable.add(block(side * 1.085, -.045, 0, .08, .10, 2.25, Material.STRIPPED_DARK_OAK_WOOD));
-                nativeTable.add(block(0, -.045, side * 1.085, 2.09, .10, .08, Material.STRIPPED_DARK_OAK_WOOD));
+            for (double center : new double[]{.32, SCORE_X}) {
+                double width = center == SCORE_X ? 1.60 : 2.00;
+                nativeTable.add(block(center, -.19, 0, width, .14, 2.25, Material.DARK_OAK_PLANKS));
+                nativeTable.add(block(center, -.045, 0, width - .15, .045, 2.10,
+                        center == SCORE_X ? Material.WHITE_CONCRETE : Material.RED_CONCRETE));
+                for (double side : new double[]{-1,1}) {
+                    nativeTable.add(block(center + side * (width / 2 - .04), -.045, 0, .08, .10, 2.25, Material.STRIPPED_DARK_OAK_WOOD));
+                    nativeTable.add(block(center, -.045, side * 1.085, width - .16, .10, .08, Material.STRIPPED_DARK_OAK_WOOD));
+                }
+                for (double x : new double[]{center - width / 2 + .15, center + width / 2 - .15})
+                    for (double z : new double[]{-.98,.98}) nativeTable.add(block(x, -TableGeometry.SURFACE, z, .13, TableGeometry.SURFACE - .19, .13, Material.STRIPPED_DARK_OAK_LOG));
             }
-            for (double x : new double[]{-.98,.98}) for (double z : new double[]{-.98,.98})
-                nativeTable.add(block(x, -TableGeometry.SURFACE, z, .13, TableGeometry.SURFACE - .19, .13, Material.STRIPPED_DARK_OAK_LOG));
+            for (int row = 0; row <= 15; row++) nativeTable.add(block(SCORE_X, .013, -.85 + row * .10, 1.45, .003, .006, Material.BLACK_CONCRETE));
+            nativeTable.add(block(-1.625, .013, -.1, .008, .003, 1.50, Material.BLACK_CONCRETE));
+            for (double z : new double[]{-.20, -.10, .60}) nativeTable.add(block(-1.99, .004, z, .71, .009, .094, Material.POLISHED_BLACKSTONE));
             for (int i = 0; i < 5; i++) {
                 nativeTable.add(block(x(i), .002, -.68, .235, .012, .235, Material.POLISHED_BLACKSTONE));
                 nativeTable.add(block(x(i), .015, -.68, .21, .004, .21, Material.GRAY_CONCRETE));
@@ -134,7 +161,7 @@ final class YachtTable implements AutoCloseable {
             ItemDisplay item = origin.getWorld().spawn(origin, ItemDisplay.class, d -> {
                 init(d, "@menu"); d.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);
                 d.setItemStack(plugin.pack.item("yacht_table"));
-                d.setTransformation(new Transformation(new Vector3f(), new Quaternionf().rotateY((float)Math.PI), new Vector3f(1), new Quaternionf()));
+                d.setTransformation(new Transformation(new Vector3f(), new Quaternionf(), new Vector3f(2), new Quaternionf()));
             });
             packedTable.add(item); audience.add(item, true);
         } else if (!audience.needed(true) && !packedTable.isEmpty()) {
@@ -158,22 +185,34 @@ final class YachtTable implements AutoCloseable {
     private void refreshLabels() {
         int seat = board.currentPlayer();
         sheetLabel.text(Language.component("menu.yacht.score-sheet"));
-        Component totals = Component.empty();
-        for (int i = 0; i < board.playerCount(); i++) {
-            if (i > 0) totals = totals.append(Component.text("  |  "));
-            totals = totals.append(Language.component("table.yacht.total", "number", i + 1, "score", board.total(i)));
+        for (int row = 0; row < summaryLabels.length; row++)
+            summaryLabels[row].text(Language.component("table.yacht." + List.of("subtotal", "bonus", "total-label").get(row)).color(NamedTextColor.WHITE));
+        int completed = 0;
+        for (int i = 0; i < 12; i++) if (board.written(seat, i) >= 0) completed++;
+        headerLabel.text(Language.component("table.yacht.round", "round", Math.min(12, completed + 1)).color(NamedTextColor.BLACK));
+        activeColumn.setTransformation(new Transformation(new Vector3f((float) (columnX(seat) - (.64 / room.capacity - .008) / 2), .007f, -.875f),
+                new Quaternionf(), new Vector3f((float) (.64 / room.capacity - .008), .004f, 1.65f), new Quaternionf()));
+        for (int player = 0; player < board.playerCount(); player++) {
+            int upper = 0;
+            for (int category = 0; category < 12; category++) {
+                int written = board.written(player, category);
+                if (category < 6) upper += Math.max(0, written);
+                String value = written >= 0 ? Integer.toString(written) : player == seat && board.rolls() > 0
+                        ? Integer.toString(YachtGame.score(category, board.dice())) : "—";
+                scores[player][category < 6 ? category : category + 2].text(Component.text(value)
+                        .color(written < 0 ? NamedTextColor.DARK_GRAY : NamedTextColor.BLACK));
+            }
+            scores[player][6].text(Component.text(upper + "/63").color(NamedTextColor.BLACK));
+            scores[player][7].text(Component.text(upper >= 63 ? "+35" : "+0").color(NamedTextColor.BLACK));
+            scores[player][14].text(Component.text(board.total(player)).color(NamedTextColor.BLACK));
         }
-        totalsLabel.text(totals.color(NamedTextColor.WHITE));
         rollLabel.text(Language.component(rolling() ? "hint.rolling" : board.legalActions(seat).contains("roll")
                 ? "menu.yacht.roll" : "menu.yacht.choose-score", "count", 3 - board.rolls()));
-        for (int i = 0; i < categories.length; i++) {
-            int written = board.written(seat, i);
-            String value = written >= 0 ? Integer.toString(written) : board.rolls() == 0 ? "—" : Integer.toString(YachtGame.score(i, board.dice()));
-            categories[i].text(Language.component("table.yacht.category", "category",
-                    Language.component("score.category." + YachtGame.CATEGORIES.get(i)), "score", value)
-                    .color(written >= 0 ? NamedTextColor.GRAY : NamedTextColor.GOLD));
-            categories[i].setBrightness(new Display.Brightness(written >= 0 ? 7 : 15, written >= 0 ? 7 : 15));
-        }
+        for (int i = 0; i < categories.length; i++)
+            categories[i].text((i < 6 ? Component.text(String.valueOf((char) (0x2680 + i))).append(Component.space()) : Component.empty())
+                    .append(Language.component("score.category." + YachtGame.CATEGORIES.get(i)))
+                    .color(board.written(seat, i) >= 0 ? NamedTextColor.DARK_GRAY : NamedTextColor.BLACK));
+
     }
 
     TableView.Hit hit(Location eye, Vector direction) {
@@ -184,9 +223,10 @@ final class YachtTable implements AutoCloseable {
             nearest = hit(nearest, eye, direction, "die" + i, p.x(), p.y() - SIZE / 2, p.z(), SIZE, SIZE, SIZE);
         }
         nearest = hit(nearest, eye, direction, "@roll", .45, .007, .82, .95, .035, .23);
-        nearest = hit(nearest, eye, direction, "@scores", -.70, .007, .82, .60, .035, .23);
-        for (int i = 0; i < 12; i++) nearest = hit(nearest, eye, direction, "@score:" + YachtGame.CATEGORIES.get(i), -.78, .007, -.85 + i * .13, .53, .035, .116);
-        return hit(nearest, eye, direction, "@menu", 0, -.01, 0, 2.25, .015, 2.25);
+        nearest = hit(nearest, eye, direction, "@scores", SCORE_X, .007, .88, 1.4, .035, .18);
+        for (int i = 0; i < 12; i++) nearest = hit(nearest, eye, direction, "@score:" + YachtGame.CATEGORIES.get(i), SCORE_X, .007, scoreZ(i), 1.45, .035, .094);
+        nearest = hit(nearest, eye, direction, "@menu", SCORE_X, -.01, 0, 1.60, .015, 2.25);
+        return hit(nearest, eye, direction, "@menu", .32, -.01, 0, 2.00, .015, 2.25);
     }
 
     private TableView.Hit hit(TableView.Hit nearest, Location eye, Vector direction, String id, double x, double y, double z, double w, double h, double d) {

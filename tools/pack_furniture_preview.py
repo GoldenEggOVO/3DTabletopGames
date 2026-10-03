@@ -20,7 +20,7 @@ def rotate(v,rotation):
 
 def render(name):
     model=json.loads((ASSETS/f'models/item/{name}.json').read_text())
-    faces=[];scale=12 if name!='mahjong_panel' else 20
+    faces=[];scale=24 if name=='yacht_table' else 12 if name!='mahjong_panel' else 20
     for part in model['elements']:
         x,y,z=part['from'];X,Y,Z=part['to']
         vertices={'up':[(x,Y,z),(X,Y,z),(X,Y,Z),(x,Y,Z)],
@@ -59,4 +59,4 @@ def render(name):
 
 if __name__=='__main__':
     OUT.mkdir(parents=True,exist_ok=True)
-    for name in ('card_table','mahjong_table','mahjong_panel','doudizhu_table','liars_bar_table','texas_holdem_table','board_chess','board_connectfour','chess_white_knight','playing_spades_ace'):render(name)
+    for name in ('card_table','mahjong_table','mahjong_panel','doudizhu_table','liars_bar_table','texas_holdem_table','board_chess','board_connectfour','chess_white_knight','playing_spades_ace','yacht_table'):render(name)

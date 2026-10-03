@@ -2,6 +2,7 @@ package dev.tabletop3d;
 
 import dev.tabletop3d.rules.Cell;
 import dev.tabletop3d.rules.HandGame;
+import dev.tabletop3d.rules.DoudizhuCombination;
 
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -13,7 +14,10 @@ import java.util.Map;
 
 /** Short native cues emitted by committed actions, never by rendering or replay. */
 final class TableSounds {
-    record Cue(Sound sound, float volume, float pitch) {}
+    record Cue(Sound sound, float volume, float pitch, String resource, int delayTicks) {
+        Cue(Sound sound, float volume, float pitch) { this(sound, volume, pitch, null, 0); }
+        Cue(Sound sound, float volume, float pitch, String resource) { this(sound, volume, pitch, resource, 0); }
+    }
 
     static final Cue WOOD = new Cue(Sound.BLOCK_WOOD_HIT, .28f, 1.15f);
     static final Cue XIANGQI = new Cue(Sound.BLOCK_BAMBOO_WOOD_HIT, .28f, .9f);
@@ -89,8 +93,57 @@ final class TableSounds {
         return List.copyOf(cues);
     }
 
+    static List<Cue> cards(String kind, String action, Map<String, String> before,
+            Map<String, String> after, boolean canBeat) {
+        if (kind.equals("doudizhu")) {
+            if (action.equals("pass"))
+                return List.of(new Cue(PASS.sound(), .28f, canBeat ? 1.2f : .8f,
+                        canBeat ? "doudizhu.pass" : "doudizhu.no-beat"));
+            if (action.startsWith("bid:")) {
+                if (action.equals("bid:0")) return List.of(PASS);
+                return List.of(new Cue(CONFIRM.sound(), .3f, 1.3f,
+                        before.get("bid").equals("0") ? "doudizhu.bid" : "doudizhu.grab"));
+            }
+            var type = DoudizhuCombination.Type.valueOf(after.get("combination"));
+            Sound sound = switch (type) {
+                case BOMB -> Sound.ENTITY_GENERIC_EXPLODE;
+                case ROCKET -> Sound.ENTITY_FIREWORK_ROCKET_LARGE_BLAST;
+                case STRAIGHT, PAIR_STRAIGHT, TRIPLE_STRAIGHT -> Sound.BLOCK_NOTE_BLOCK_XYLOPHONE;
+                case AIRPLANE_SINGLE, AIRPLANE_PAIR -> Sound.ENTITY_FIREWORK_ROCKET_LAUNCH;
+                default -> Sound.BLOCK_NOTE_BLOCK_PLING;
+            };
+            String event = type.name().toLowerCase(java.util.Locale.ROOT).replace('_', '-');
+            return List.of(new Cue(sound, .3f, .65f + type.ordinal() * .075f, "doudizhu." + event),
+                    new Cue(CARD.sound(), .16f, 1.4f, null, 2));
+        }
+        if (kind.equals("liars-bar")) {
+            if (action.equals("challenge")) {
+                boolean eliminated = before.entrySet().stream().anyMatch(entry ->
+                        entry.getKey().startsWith("alive.") && entry.getValue().equals("true")
+                                && after.get(entry.getKey()).equals("false"));
+                return List.of(new Cue(Sound.BLOCK_NOTE_BLOCK_BELL, .32f, .65f, "liars-bar.challenge"),
+                        new Cue(eliminated ? Sound.ENTITY_GENERIC_EXPLODE : Sound.BLOCK_LEVER_CLICK,
+                                .35f, eliminated ? 1.2f : .75f, eliminated ? "liars-bar.shot" : null, 30));
+            }
+            return List.of(CARD, new Cue(Sound.BLOCK_NOTE_BLOCK_BASS, .16f, .75f));
+        }
+        if (action.equals("fold")) return List.of(PASS);
+        if (action.equals("check")) return List.of(SELECT);
+        return List.of(CARD, new Cue(Sound.BLOCK_CHAIN_PLACE, .18f, 1.2f));
+    }
+
     static Cue move(String kind, int seat, String action, List<Cell> before, List<Cell> after) {
-        if (kind.equals("color-eight")) return action.equals("declare") ? CONFIRM : CARD;
+        if (kind.equals("color-eight")) return switch (action.split(":", 2)[0]) {
+            case "draw" -> ROLL;
+            case "pass" -> PASS;
+            case "choose" -> CONFIRM;
+            default -> CARD;
+        };
+        if (kind.equals("yacht") && action.startsWith("score:")) return switch (action.substring(6)) {
+            case "yacht" -> HOME;
+            case "small-straight", "large-straight" -> HOP;
+            default -> CONFIRM;
+        };
         if (Set.of("doudizhu","liars-bar","texas-holdem").contains(kind))
             return action.startsWith("play:") ? CARD : action.equals("pass") || action.equals("fold") ? PASS : CONFIRM;
         if (kind.equals("mahjong"))
@@ -153,9 +206,14 @@ final class TableSounds {
     }
 
     static void play(Tabletop3D plugin, Location at, Cue cue, String kind) {
+        if (cue.delayTicks() > 0) {
+            var immediate = new Cue(cue.sound(), cue.volume(), cue.pitch(), cue.resource(), 0);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> play(plugin, at, immediate, kind), cue.delayTicks());
+            return;
+        }
         float volume = volume(plugin, cue);
         if (volume <= 0) return;
-        if (!kind.equals("mahjong")
+        if ((!kind.equals("mahjong") && cue.resource() == null)
                 || plugin.pack == null
                 || plugin.pack.mode == TabletopPack.Mode.VANILLA) {
             at.getWorld().playSound(at, cue.sound(), SoundCategory.BLOCKS, volume, cue.pitch());
@@ -171,11 +229,12 @@ final class TableSounds {
         float volume = volume(plugin, cue);
         if (volume <= 0) return;
         String custom =
-                kind.equals("mahjong") && plugin.pack != null && plugin.pack.packed(player)
-                        ? packedSound(cue)
+                plugin.pack != null && plugin.pack.packed(player)
+                        ? cue.resource() != null ? cue.resource()
+                                : kind.equals("mahjong") && packedSound(cue) != null ? "mahjong." + packedSound(cue) : null
                         : null;
         if (custom != null)
-            player.playSound(at, "tabletop3d:mahjong." + custom, SoundCategory.BLOCKS, volume, 1f);
+            player.playSound(at, "tabletop3d:" + custom, SoundCategory.BLOCKS, volume, 1f);
         else player.playSound(at, cue.sound(), SoundCategory.BLOCKS, volume, cue.pitch());
     }
 

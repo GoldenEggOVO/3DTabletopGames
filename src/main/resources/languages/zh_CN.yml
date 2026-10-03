@@ -766,3 +766,7 @@
 "table.yacht.total": "{number}: {score}"
 "table.yacht.keep": "保留这颗骰子"
 "table.yacht.unkeep": "取消保留，返回掷骰区"
+"table.yacht.subtotal": "小计"
+"table.yacht.bonus": "+35 奖励"
+"table.yacht.total-label": "总分"
+"table.yacht.round": "第 {round}/12 回合"

@@ -84,12 +84,12 @@ final class GameWorld implements Listener, AutoCloseable {
                             snapped.getY(),
                             snapped.getZ(),
                             r.sideTray,
-                            Set.of("mahjong", "color-eight", "doudizhu", "liars-bar", "texas-holdem").contains(r.kind) ? 1.5 : 1.125,
+                            r.kind.equals("yacht") ? 2.45 : Set.of("mahjong", "color-eight", "doudizhu", "liars-bar", "texas-holdem").contains(r.kind) ? 1.5 : 1.125,
                             existing.anchorX,
                             existing.anchorY,
                             existing.anchorZ,
                             existing.sideTray,
-                            Set.of("mahjong", "color-eight", "doudizhu", "liars-bar", "texas-holdem").contains(existing.kind) ? 1.5 : 1.125))
+                            existing.kind.equals("yacht") ? 2.45 : Set.of("mahjong", "color-eight", "doudizhu", "liars-bar", "texas-holdem").contains(existing.kind) ? 1.5 : 1.125))
                 throw new IllegalArgumentException(
                         dev.tabletop3d.ui.MessageText.plain(
                                 Language.component("error.table-overlap")));
@@ -131,6 +131,10 @@ final class GameWorld implements Listener, AutoCloseable {
         if (room.kind.equals("chess") || room.kind.equals("xiangqi")) {
             dx = -dx;
             dz = -dz;
+        }
+        if (room.kind.equals("yacht")) {
+            c.add(-.55, 0, 0);
+            dx = Math.sin(angle) * 3.0;
         }
         if (room.kind.equals("ludo")) {
             int[] colors =

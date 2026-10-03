@@ -609,6 +609,10 @@ public final class Tabletop3D extends JavaPlugin
             List<Cell> before = r.board.cells();
             var mahjongBefore =
                     r.kind.equals("mahjong") ? TableSounds.mahjongState((HandGame) r.board) : null;
+            boolean cardGame = Set.of("doudizhu", "liars-bar", "texas-holdem").contains(r.kind);
+            var cardBefore = cardGame ? ((HandGame) r.board).publicInfo() : Map.<String, String>of();
+            boolean canBeat = !r.kind.equals("doudizhu") || !action.getAsString().equals("pass")
+                    || r.board.legalActions(seat).stream().anyMatch(a -> a.startsWith("play:"));
             int previousTurn = r.turn();
             r.board.apply(seat, action.getAsString());
             r.event(seat, action);
@@ -625,6 +629,9 @@ public final class Tabletop3D extends JavaPlugin
                                     mahjongBefore,
                                     TableSounds.mahjongState((HandGame) r.board)))
                         arena.sound(r, cue);
+                else if (cardGame)
+                    for (var cue : TableSounds.cards(r.kind, action.getAsString(), cardBefore,
+                            ((HandGame) r.board).publicInfo(), canBeat)) arena.sound(r, cue);
                 else
                     arena.sound(
                             r,

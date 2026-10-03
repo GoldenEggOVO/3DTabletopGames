@@ -17,6 +17,65 @@ import java.util.*;
 
 class TableSoundsTest {
     @Test
+    void cardDrawingPassingAndYachtScoringHaveDifferentNativeCues() {
+        assertNotEquals(TableSounds.move("color-eight", 0, "draw", List.of(), List.of()),
+                TableSounds.move("color-eight", 0, "play:card", List.of(), List.of()));
+        assertNotEquals(TableSounds.move("yacht", 0, "score:yacht", List.of(), List.of()),
+                TableSounds.move("yacht", 0, "score:ones", List.of(), List.of()));
+    }
+
+    @Test
+    void landlordSoundsDistinguishEveryAcceptedCombinationAndPassReason() {
+        var cues = new HashSet<TableSounds.Cue>();
+        for (var type : DoudizhuCombination.Type.values()) {
+            var cue = TableSounds.cards("doudizhu", "play:cards", Map.of(),
+                    Map.of("combination", type.name()), true).getFirst();
+            assertTrue(cues.add(cue), type.name());
+        }
+        assertEquals("doudizhu.bomb", TableSounds.cards("doudizhu", "play:cards", Map.of(),
+                Map.of("combination", "BOMB"), true).getFirst().resource());
+        assertNotEquals(TableSounds.cards("doudizhu", "pass", Map.of(), Map.of(), true),
+                TableSounds.cards("doudizhu", "pass", Map.of(), Map.of(), false));
+        assertNotEquals(TableSounds.cards("doudizhu", "bid:2", Map.of("bid", "0"), Map.of(), true),
+                TableSounds.cards("doudizhu", "bid:2", Map.of("bid", "1"), Map.of(), true));
+    }
+
+    @Test
+    void liarsChallengeUsesGunshotOnlyWhenSomeoneWasEliminated() {
+        var before = Map.of("alive.0", "true", "alive.1", "true");
+        var live = TableSounds.cards("liars-bar", "challenge", before, before, true);
+        var shot = TableSounds.cards("liars-bar", "challenge", before,
+                Map.of("alive.0", "false", "alive.1", "true"), true);
+        assertEquals("liars-bar.challenge", live.getFirst().resource());
+        assertNull(live.getLast().resource());
+        assertEquals("liars-bar.shot", shot.getLast().resource());
+        assertTrue(shot.getLast().delayTicks() >= 20);
+    }
+
+    @Test
+    void mixedCardViewersHearVoiceOrNativeEffectWithoutDuplicatingEither() {
+        var plugin = mock(Tabletop3D.class);
+        when(plugin.getConfig()).thenReturn(new YamlConfiguration());
+        plugin.pack = mock(TabletopPack.class);
+        var world = mock(World.class);
+        var at = new Location(world, 0, 80, 0);
+        var nativePlayer = mock(org.bukkit.entity.Player.class);
+        var packedPlayer = mock(org.bukkit.entity.Player.class);
+        when(world.getPlayers()).thenReturn(List.of(nativePlayer, packedPlayer));
+        for (var player : List.of(nativePlayer, packedPlayer)) {
+            when(player.getLocation()).thenReturn(at);
+            when(plugin.allowed(player)).thenReturn(true);
+        }
+        when(plugin.pack.packed(packedPlayer)).thenReturn(true);
+        var cue = TableSounds.cards("doudizhu", "play:cards", Map.of(),
+                Map.of("combination", "BOMB"), true).getFirst();
+        TableSounds.play(plugin, at, cue, "doudizhu");
+        verify(packedPlayer).playSound(at, "tabletop3d:doudizhu.bomb", SoundCategory.BLOCKS, cue.volume(), 1f);
+        verify(nativePlayer).playSound(at, cue.sound(), SoundCategory.BLOCKS, cue.volume(), cue.pitch());
+        verify(packedPlayer, never()).playSound(any(Location.class), any(Sound.class), any(SoundCategory.class), anyFloat(), anyFloat());
+        verify(world, never()).playSound(any(Location.class), any(Sound.class), any(SoundCategory.class), anyFloat(), anyFloat());
+    }
+    @Test
     void mixedViewersEachHearOnlyTheirOwnMahjongSound() {
         var plugin = mock(Tabletop3D.class);
         when(plugin.getConfig()).thenReturn(new YamlConfiguration());

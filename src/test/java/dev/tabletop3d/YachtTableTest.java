@@ -10,6 +10,36 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class YachtTableTest {
+    @Test void packedDieFacesFollowTheSameWorldNormalsAsNativeDice() throws Exception {
+        var f = new TableViewTest.Fixture("yacht");
+        f.plugin.pack = new TabletopPack(f.plugin, () -> true, id -> new org.bukkit.inventory.ItemStack(org.bukkit.Material.PAPER));
+        var audience = new TableAudience(f.plugin, f.view.origin);
+        var die = new YachtDie(f.plugin, f.room, f.view.origin, new org.bukkit.NamespacedKey("servergames", "board-cell"),
+                audience, true, .18, "die0");
+        var item = (org.bukkit.entity.ItemDisplay) TableViewTest.field(die, "packed");
+        for (int face = 1; face <= 6; face++) {
+            clearInvocations(item);
+            var pose = DiceMotion.rest(.18, face);
+            die.pose(pose);
+            var transform = org.mockito.ArgumentCaptor.forClass(org.bukkit.util.Transformation.class);
+            verify(item).setTransformation(transform.capture());
+            for (var axis : java.util.List.of(new org.joml.Vector3f(1,0,0),new org.joml.Vector3f(0,1,0),new org.joml.Vector3f(0,0,1))) {
+                var expected = pose.rotation().transform(new org.joml.Vector3f(axis));
+                var actual = transform.getValue().getLeftRotation().transform(new org.joml.Vector3f(axis));
+                assertTrue(expected.distance(actual) < .001, "Face " + face + " has a reversed normal");
+            }
+        }
+        die.close(); f.view.close();
+    }
+    @Test void scoreStandHasDirectRowsAndIsSeparateFromDiceControls() {
+        var f = new TableViewTest.Fixture("yacht", "roll");
+        assertHit(f, -1.65, -.80, "@score:ones");
+        assertHit(f, -1.65, .50, "@score:yacht");
+        assertHit(f, -1.65, .88, "@scores");
+        assertHit(f, .45, .82, "@roll");
+        assertTrue(TablePlacement.overlaps(0, 80, 0, false, 2.45, -3.3, 80, 0, false, 1.125));
+        f.view.close();
+    }
     @org.junit.jupiter.api.io.TempDir(factory = WorkspaceTempFactory.class) java.nio.file.Path temp;
     @BeforeEach void setup() { MockBukkit.mock(); }
     @AfterEach void close() { MockBukkit.unmock(); }
@@ -59,8 +89,8 @@ class YachtTableTest {
     @Test void controlsHaveBoundedHitsAndIdleTicksDoNotResendDiceTransforms() {
         var f = new TableViewTest.Fixture("yacht", "roll");
         assertHit(f, .45, .82, "@roll");
-        assertHit(f, -.78, -.85, "@score:ones");
-        assertHit(f, -.70, .82, "@scores");
+        assertHit(f, -1.65, -.80, "@score:ones");
+        assertHit(f, -1.65, .88, "@scores");
         assertNull(f.view.hitPiece(f.view.origin.clone().add(0, 8, 0), new Vector(0, -1, 0)));
         for (Entity entity : f.entities) clearInvocations(entity);
         for (int i = 0; i < 100; i++) f.view.tick();

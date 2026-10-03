@@ -265,6 +265,7 @@ public final class DoudizhuGame implements SelectedHandGame {
         info.put("landlord", Integer.toString(bidders < 3 ? -1 : landlord));
         info.put("bid", Integer.toString(bid));
         info.put("multiplier", Integer.toString(multiplier));
+        info.put("combination", trick == null ? "" : trick.getFirst().type().name());
         for (int seat = 0; seat < 3; seat++)
             info.put("score." + seat, Integer.toString(scores[seat]));
         return Map.copyOf(info);

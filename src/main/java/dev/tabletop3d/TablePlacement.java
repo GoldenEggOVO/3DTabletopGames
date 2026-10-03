@@ -9,7 +9,7 @@ final class TablePlacement {
     }
     static boolean overlaps(double x,double y,double z,boolean tray,double halfWidth,double otherX,double otherY,double otherZ,boolean otherTray,double otherHalfWidth){
         if(Math.abs(y-otherY)>=3)return false;
-        if(Math.abs(x-otherX)<3&&Math.abs(z-otherZ)<3)return true;
+        if(Math.abs(x-otherX)<Math.max(3,halfWidth+otherHalfWidth)&&Math.abs(z-otherZ)<3)return true;
         // Retain the original board/seat clearance; add only the side stand's footprint.
         if(tray&&Math.abs(x+2-otherX)<otherHalfWidth+.925&&Math.abs(z-otherZ)<otherHalfWidth+.925)return true;
         if(otherTray&&Math.abs(otherX+2-x)<halfWidth+.925&&Math.abs(z-otherZ)<halfWidth+.925)return true;
