@@ -124,7 +124,8 @@ class DiceTrayTest {
         var f=new TableViewTest.Fixture("chess");f.view.close();f.entities.clear();
         f.plugin.getConfig().set("rendering.mode","mixed");
         f.plugin.getConfig().set("rendering.resource-pack.url","https://example.org/tabletop.zip");
-        when(f.player.getPersistentDataContainer()).thenReturn(((org.mockbukkit.mockbukkit.ServerMock)org.bukkit.Bukkit.getServer()).addPlayer().getPersistentDataContainer());
+        var data=((org.mockbukkit.mockbukkit.ServerMock)org.bukkit.Bukkit.getServer()).addPlayer().getPersistentDataContainer();
+        when(f.player.getPersistentDataContainer()).thenReturn(data);
         when(f.player.isOnline()).thenReturn(true);when(f.player.getLocation()).thenReturn(f.view.origin);
         when(f.world.getPlayers()).thenReturn(List.of(f.player));when(f.plugin.allowed(f.player)).thenReturn(true);
         f.plugin.pack=new TabletopPack(f.plugin,()->true,id->new org.bukkit.inventory.ItemStack(org.bukkit.Material.PAPER));
@@ -134,7 +135,8 @@ class DiceTrayTest {
     private static Player nativePlayer(TableViewTest.Fixture f) {
         Player player=mock(Player.class);when(player.isOnline()).thenReturn(true);when(player.getLocation()).thenReturn(f.view.origin);
         when(f.plugin.allowed(player)).thenReturn(true);when(player.getUniqueId()).thenReturn(java.util.UUID.randomUUID());
-        when(player.getPersistentDataContainer()).thenReturn(((org.mockbukkit.mockbukkit.ServerMock)org.bukkit.Bukkit.getServer()).addPlayer().getPersistentDataContainer());
+        var data=((org.mockbukkit.mockbukkit.ServerMock)org.bukkit.Bukkit.getServer()).addPlayer().getPersistentDataContainer();
+        when(player.getPersistentDataContainer()).thenReturn(data);
         return player;
     }
 
