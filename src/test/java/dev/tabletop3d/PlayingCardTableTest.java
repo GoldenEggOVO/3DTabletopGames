@@ -106,7 +106,9 @@ class PlayingCardTableTest {
         f.view.tick();
         for (Object card : ownCards(f).values()) {
             var parts = (List<Entity>) get(card, "parts");
-            assertEquals(5, parts.size(), "A native card must use one body and four seamless artwork planes");
+            String face = (String) get(get(card, "spec"), "face");
+            assertEquals(face.startsWith("joker_") ? 5 : 6, parts.size(),
+                    "Standard cards use six heads; jokers retain their text model");
             for (Entity part : parts) {
                 verify(part).setVisibleByDefault(false);
                 verify(f.player).showEntity(f.plugin, part);
@@ -208,23 +210,23 @@ class PlayingCardTableTest {
     }
 
     @Test
-    void nativeFacesUseFourIdenticalCasinoGlyphPlanesAndOneOpaqueBody() {
+    void nativeFacesUseSignedHeadSkinsWithoutGlyphPlanes() {
         var f = new TableViewTest.Fixture("liars-bar", 4);
         owner(f, false);
         Object card = ownCards(f).values().iterator().next();
         var parts = (List<Entity>) get(card, "parts");
-        assertEquals(5, parts.size());
-        assertInstanceOf(BlockDisplay.class, parts.getFirst());
-        var text = org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
-        net.kyori.adventure.text.Component face = null;
-        for (Entity part : parts.subList(1, parts.size())) {
-            var plane = assertInstanceOf(TextDisplay.class, part);
-            verify(plane).text(text.capture());
-            if (face == null) face = text.getValue();
-            else assertSame(face, text.getValue(), "Each plane must fill gaps with the same pixel colors");
-            verify(plane).setSeeThrough(false);
-            verify(plane).setShadowed(false);
-            assertEquals(net.kyori.adventure.key.Key.key("minecraft:uniform"), text.getValue().font());
+        assertEquals(6, parts.size());
+        var item = org.mockito.ArgumentCaptor.forClass(ItemStack.class);
+        for (Entity part : parts) {
+            var head = assertInstanceOf(ItemDisplay.class, part);
+            verify(head).setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.NONE);
+            verify(head).setItemStack(item.capture());
+            assertEquals(Material.PLAYER_HEAD, item.getValue().getType());
+            var meta = assertInstanceOf(org.bukkit.inventory.meta.SkullMeta.class, item.getValue().getItemMeta());
+            var property = meta.getPlayerProfile().getProperties().stream()
+                    .filter(value -> value.getName().equals("textures")).findFirst().orElseThrow();
+            assertNotNull(property.getSignature(), "Generated Mojang signatures must be retained");
+            assertFalse(property.getValue().isBlank());
         }
         f.view.close();
     }
@@ -245,17 +247,13 @@ class PlayingCardTableTest {
     }
 
     @Test
-    void nativeFlatInkSitsAboveTheWhiteCardBody() {
+    void nativeFlatHeadsHaveNoCoplanarGlyphOverlays() {
         var f = new TableViewTest.Fixture("liars-bar", 4);
         owner(f, false);
         var cards = (Map<String, Object>) get(table(f), "publicCards");
         var parts = (List<Entity>) get(cards.get("native:declaration"), "parts");
-        Entity body = parts.getFirst();
-        double bodyTop = f.transforms.get(body).getTranslation().y
-                + f.transforms.get(body).getScale().y;
-        for (Entity ink : parts.subList(1, parts.size()))
-            assertTrue(f.transforms.get(ink).getTranslation().y > bodyTop + .0001,
-                    "Glyph artwork must project above the card body without coplanar faces");
+        assertEquals(6, parts.size());
+        for (Entity head : parts) assertInstanceOf(ItemDisplay.class, head);
         f.view.close();
     }
 
@@ -290,11 +288,15 @@ class PlayingCardTableTest {
                 Object card = cards.values().iterator().next();
                 var parts = (List<Entity>) get(card, "parts");
                 Location body = parts.getFirst().getLocation();
-                assertInstanceOf(BlockDisplay.class, parts.getFirst());
-                assertTrue(parts.subList(1, parts.size()).stream().allMatch(TextDisplay.class::isInstance));
+                String face = (String) get(get(card, "spec"), "face");
+                if (face.startsWith("joker_")) {
+                    assertEquals(5, parts.size());
+                    assertInstanceOf(BlockDisplay.class, parts.getFirst());
+                } else {
+                    assertEquals(6, parts.size());
+                    assertTrue(parts.stream().allMatch(ItemDisplay.class::isInstance));
+                }
                 for (Entity part : parts) assertEquals(body.getYaw(), part.getLocation().getYaw());
-                assertTrue(fixture.transforms.get(parts.get(1)).getTranslation().z > .001,
-                        "Glyph ink must face the owning seat");
                 double angle = Math.PI * 2 * seat / capacity;
                 var normal = new org.bukkit.util.Vector(Math.sin(angle), 0, Math.cos(angle));
                 var eye = body.clone().add(normal.clone().multiply(1.5)).add(0, .125, 0);

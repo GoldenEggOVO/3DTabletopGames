@@ -83,32 +83,19 @@ final class PlayingCardTable implements AutoCloseable {
                                         });
                 parts.add(item);
                 show(item, viewer);
-            } else if (PlayingCardArt.boxes(spec.face) != null) {
-                var paper = PlayingCardArt.boxes(spec.face).getFirst();
-                var body = origin.getWorld().spawn(at, BlockDisplay.class, d -> {
-                    configure(d, viewer, false);
-                    d.setBlock((spec.face.equals("back") ? Material.BLUE_CONCRETE
-                            : Material.valueOf(paper.material())).createBlockData());
-                    d.setTransformation(paper.pose(WIDTH, spec.standing, spec.face.equals("back")));
-                });
-                parts.add(body);
-                show(body, viewer);
-                for (int layer = 0; layer < 4; layer++) {
-                    final int plane = layer;
-                    var part = origin.getWorld().spawn(at, TextDisplay.class, d -> {
+            } else if (PlayingCardHeads.tiles(spec.face) != null) {
+                var textures = PlayingCardHeads.tiles(spec.face);
+                for (int tile = 0; tile < textures.size(); tile++) {
+                    final int index = tile;
+                    var head = origin.getWorld().spawn(at, ItemDisplay.class, d -> {
                         configure(d, viewer, false);
-                        d.setBackgroundColor(Color.fromARGB(0));
-                        d.setDefaultBackground(false);
-                        d.setShadowed(false);
-                        d.setSeeThrough(false);
-                        d.setAlignment(TextDisplay.TextAlignment.LEFT);
-                        d.setLineWidth(PlayingCardRaster.COLUMNS * 5 + 1);
-                        d.text(PlayingCardRaster.face(spec.face));
-                        d.setTransformation(PlayingCardRaster.pose(WIDTH, spec.standing,
-                                spec.face.equals("back"), plane));
+                        d.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.NONE);
+                        d.setItemStack(PlayingCardHeads.item(textures.get(index)));
+                        d.setTransformation(PlayingCardHeads.pose(WIDTH, spec.standing,
+                                spec.face.equals("back"), index));
                     });
-                    parts.add(part);
-                    show(part, viewer);
+                    parts.add(head);
+                    show(head, viewer);
                 }
             } else {
                 double h = spec.standing ? HEIGHT : .008, depth = spec.standing ? .008 : HEIGHT;

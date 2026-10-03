@@ -341,10 +341,25 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 List<org.bukkit.entity.Entity> privateParts = new ArrayList<>();
                 for (Object card : cards.values()) {
                     List<?> parts = (List<?>)field(card, "parts");
-                    require(parts.size() <= 5, "new-game card display budget");
+                    require(parts.size() <= 6, "new-game card display budget");
+                    String face = (String)field(field(card, "spec"), "face");
+                    boolean nativeHead = parts.getFirst() instanceof org.bukkit.entity.ItemDisplay item
+                            && item.getItemStack().getType() == org.bukkit.Material.PLAYER_HEAD;
+                    if (nativeHead) require(parts.size() == 6, "native card has all six skin tiles");
                     for (Object entity : parts) {
                         var part = (org.bukkit.entity.Entity)entity;
                         require(part.isValid() && !part.isPersistent() && !part.isVisibleByDefault(), "new-game face private at spawn");
+                        if (nativeHead) {
+                            var head = (org.bukkit.entity.ItemDisplay)part;
+                            require(head.getItemDisplayTransform() == org.bukkit.entity.ItemDisplay.ItemDisplayTransform.NONE,
+                                    "native head uses the verified NONE transform");
+                            var meta = (org.bukkit.inventory.meta.SkullMeta)head.getItemStack().getItemMeta();
+                            require(meta.getPlayerProfile().getProperties().stream().anyMatch(property ->
+                                    property.getName().equals("textures") && property.getSignature() != null),
+                                    "native head retains the signed Mojang property");
+                        } else if (!face.startsWith("joker_")) {
+                            require(parts.size() == 1, "non-native standard card uses its packed model");
+                        }
                         privateParts.add(part);
                     }
                 }
