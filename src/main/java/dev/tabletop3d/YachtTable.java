@@ -29,6 +29,8 @@ final class YachtTable implements AutoCloseable {
     private final TextDisplay[] categories = new TextDisplay[12];
     private final TextDisplay rollLabel, sheetLabel, headerLabel;
     private final TextDisplay[][] scores;
+    private final TextDisplay[] headers;
+    private List<Room.Seat> roster = List.of();
     private final BlockDisplay activeColumn;
     private final TextDisplay[] summaryLabels = new TextDisplay[3];
     static final double SCORE_X = -1.65;
@@ -49,10 +51,9 @@ final class YachtTable implements AutoCloseable {
                     .append(Language.component("score.category." + YachtGame.CATEGORIES.get(i))).color(NamedTextColor.BLACK));
         }
         scores = new TextDisplay[room.capacity][15];
+        headers = new TextDisplay[room.capacity];
         for (int seat = 0; seat < room.capacity; seat++) {
-            String name = seat < room.seats.size() ? room.seats.get(seat).name() : "";
-            String shortName = name.codePoints().limit(5).collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
-            label(columnX(seat), .034, -.94, .09f).text(Component.text((seat + 1) + "\n" + shortName).color(NamedTextColor.BLACK));
+            headers[seat] = label(columnX(seat), .034, -.94, .09f);
             for (int row = 0; row < 15; row++) scores[seat][row] = label(columnX(seat), .034, -.80 + row * .10, .14f);
         }
         summaryLabels[0] = label(-1.99, .034, -.20, .12f);
@@ -74,6 +75,14 @@ final class YachtTable implements AutoCloseable {
     void sync() {
         if (closed) return;
         layers();
+        if (!roster.equals(room.seats)) {
+            roster = List.copyOf(room.seats);
+            for (int seat = 0; seat < headers.length; seat++) {
+                String name = seat < roster.size() ? roster.get(seat).name() : "";
+                String shortName = name.substring(0, name.offsetByCodePoints(0, Math.min(5, name.codePointCount(0, name.length()))));
+                headers[seat].text(Component.text((seat + 1) + "\n" + shortName).color(NamedTextColor.BLACK));
+            }
+        }
         if (board == room.board && revision == room.revision) {
             if (language != Language.generation()) { language = Language.generation(); refreshLabels(); }
             return;

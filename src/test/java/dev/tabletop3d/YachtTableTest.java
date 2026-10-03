@@ -10,6 +10,25 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class YachtTableTest {
+    @Test void scoreHeadersFollowLateJoinsAndSeatReorderingWithoutBoardChanges() throws Exception {
+        var f = new TableViewTest.Fixture("yacht");
+        f.room.seats.clear();
+        f.room.seats.add(new Room.Seat(java.util.UUID.randomUUID(), "Alpha", false));
+        f.view.tick();
+        Object table = TableViewTest.field(f.view, "yachtTable");
+        var headers = (org.bukkit.entity.TextDisplay[]) TableViewTest.field(table, "headers");
+        clearInvocations(headers);
+        f.room.seats.add(new Room.Seat(java.util.UUID.randomUUID(), "Bravo", false));
+        f.view.tick();
+        var text = org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
+        verify(headers[1]).text(text.capture());
+        assertTrue(dev.tabletop3d.ui.MessageText.plain(text.getValue()).contains("Bravo"));
+        java.util.Collections.swap(f.room.seats, 0, 1);
+        f.view.tick();
+        verify(headers[0], atLeastOnce()).text(text.capture());
+        assertTrue(dev.tabletop3d.ui.MessageText.plain(text.getValue()).contains("Bravo"));
+        f.view.close();
+    }
     @Test void packedDieFacesFollowTheSameWorldNormalsAsNativeDice() throws Exception {
         var f = new TableViewTest.Fixture("yacht");
         f.plugin.pack = new TabletopPack(f.plugin, () -> true, id -> new org.bukkit.inventory.ItemStack(org.bukkit.Material.PAPER));
