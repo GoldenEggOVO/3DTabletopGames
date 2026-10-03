@@ -21,10 +21,8 @@ final class TableArt {
             case "chess", "draughts" -> chess(g,t);
             case "reversi" -> reversi(g,t);
             case "gomoku", "go", "go9", "go13" -> grid(g,t,false);
-            case "yacht" -> yacht(g,t);
             case "xiangqi" -> grid(g,t,true);
             case "checkers" -> checkers(g,t);
-            case "aeroplane" -> flight(g,t);
             case "ludo" -> ludo(g,t);
             default -> throw new IllegalArgumentException(t.kind);
         }
@@ -53,7 +51,6 @@ final class TableArt {
         }
     }
     static void reversi(Graphics2D g,TableGeometry t){g.setColor(new Color(0x27664d));g.fillRect(11,11,234,234);g.setColor(new Color(0x173f35));double h=t.spacing*64;for(Cell c:t.cells)g.drawRect((int)Math.round(t.px(c)-h),(int)Math.round(t.pz(c)-h),(int)Math.round(h*2),(int)Math.round(h*2));for(int x:new int[]{2,6})for(int y:new int[]{2,6})dot(g,TableGeometry.pixel((x-4)*t.spacing),TableGeometry.pixel((y-4)*t.spacing),2,0xc3b67e);}
-    static void yacht(Graphics2D g,TableGeometry t){g.setColor(new Color(0x214f47));g.fillRect(11,11,234,234);g.setColor(new Color(0xc9ac72));g.drawRoundRect(17,17,221,221,12,12);g.setFont(new Font(Font.SANS_SERIF,Font.BOLD,14));g.drawString("YACHT DICE",79,52);for(Cell c:t.cells){int x=t.px(c),z=t.pz(c);g.drawRoundRect(x-19,z-19,38,38,5,5);g.drawString(""+(c.x()/2+1),x-4,z+42);}g.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,10));g.drawString("5 DICE   /   3 ROLLS   /   12 ROUNDS",41,212);}
     static void chess(Graphics2D g,TableGeometry t) {
         double h=t.spacing*128/2;
         for(Cell c:t.cells){g.setColor(new Color(((c.x()+c.y())&1)==0?0x6e8778:0xf0dec0));
@@ -77,20 +74,6 @@ final class TableArt {
         if(c.y()<=7&&c.x()>=14+c.y())return 4;
         return -1;
     }
-    static void flight(Graphics2D g,TableGeometry t) {
-        double s=t.spacing*128;
-        for(int color=0;color<4;color++){
-            final int c=color;List<Cell> base=t.cells.stream().filter(p->p.id().startsWith("ba"+c)).toList();
-            int minX=base.stream().mapToInt(t::px).min().orElse(0),minY=base.stream().mapToInt(t::pz).min().orElse(0);
-            g.setColor(new Color(COLORS[color]));g.fillRoundRect((int)(minX-s*.8),(int)(minY-s*.8),(int)(s*3.6),(int)(s*3.6),12,12);
-        }
-        for(Cell c:t.cells){int color=GameWorld.routeColor(c.id());dot(g,t.px(c),t.pz(c),s*.47,color<0?0xd3c29c:COLORS[color]);
-            dot(g,t.px(c),t.pz(c),s*.32,0xf4e9cc);
-            if(c.id().startsWith("go"))dot(g,t.px(c),t.pz(c),s*.18,COLORS[color]);
-            if(c.id().startsWith("sk")){g.setColor(new Color(COLORS[color]));g.fillRect(t.px(c)-1,t.pz(c)-1,3,3);}
-        }
-    }
-    static void dot(Graphics2D g,int x,int y,double radius,int color){g.setColor(new Color(color));g.fillOval((int)Math.round(x-radius),(int)Math.round(y-radius),(int)Math.round(radius*2),(int)Math.round(radius*2));}
     static void ludo(Graphics2D g,TableGeometry t){
         double s=t.spacing*128;
         g.setColor(new Color(0xf1ead8));g.fillRect(11,11,234,234);
@@ -111,4 +94,5 @@ final class TableArt {
         }
         g.setColor(new Color(0xc7a06a));g.fillOval(122,122,12,12);
     }
+    static void dot(Graphics2D g,int x,int y,double radius,int color){g.setColor(new Color(color));g.fillOval((int)Math.round(x-radius),(int)Math.round(y-radius),(int)Math.round(radius*2),(int)Math.round(radius*2));}
 }

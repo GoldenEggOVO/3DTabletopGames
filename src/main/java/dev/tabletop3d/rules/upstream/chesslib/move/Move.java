@@ -22,7 +22,6 @@ import dev.tabletop3d.rules.upstream.chesslib.BoardEventType;
 import dev.tabletop3d.rules.upstream.chesslib.Piece;
 import dev.tabletop3d.rules.upstream.chesslib.Side;
 import dev.tabletop3d.rules.upstream.chesslib.Square;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * The definition of a chess move, that is, a piece movement from its starting square (the origin square) to a
@@ -145,7 +144,7 @@ public class Move implements BoardEvent {
      */
     @Override
     public String toString() {
-        String promo = StringUtils.EMPTY;
+        String promo = "";
         if (!Piece.NONE.equals(promotion)) {
             promo = promotion.getFenSymbol();
         }

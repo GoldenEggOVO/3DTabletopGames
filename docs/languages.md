@@ -26,7 +26,7 @@ Keep placeholder names such as `{player}`, `{game}`, `{number}`. Translations ma
 
 ## Upgrade existing files
 
-Use the offline [upgrade tool](migration.md) before replacing an older build. It converts `lang`, `en`, wrapped `messages` and phrase translations into the current directory and named templates. Unmatched custom text is retained in its report. Runtime code performs no phrase matching, key-hash translation or legacy directory migration.
+Use the current semantic catalog when updating. Retired-format converters are not bundled; runtime code performs no phrase matching, key-hash translation or legacy directory migration.
 
 ## Menu layouts
 

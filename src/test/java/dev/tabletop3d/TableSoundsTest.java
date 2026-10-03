@@ -128,7 +128,7 @@ class TableSoundsTest {
         f.room.board = f.room.newBoard();
         for (var event : f.room.history) {
             var record = event.getAsJsonObject();
-            f.room.board.applyRecorded(record.get("seat").getAsInt(), record.get("action").getAsString());
+            f.room.board.apply(record.get("seat").getAsInt(), record.get("action").getAsString());
         }
         f.view.sync();
         verify(f.world, never())
@@ -144,10 +144,9 @@ class TableSoundsTest {
     }
 
     @Test
-    void everyCatalogGameAndLegacyFlightHasABoundedNativeMoveSound() {
+    void everyCatalogGameHasABoundedNativeMoveSound() {
         Set<Sound> palette = new HashSet<>();
         var kinds = new ArrayList<>(Tabletop3D.GAMES);
-        kinds.add("aeroplane");
         for (String kind : kinds) {
             BoardGame game = GameFactory.create(kind, Tabletop3D.defaultCapacity(kind), 0);
             int seat = game.currentPlayer();

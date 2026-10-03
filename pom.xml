@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dev.tabletop3d</groupId>
     <artifactId>3dtabletop</artifactId>
-    <version>1.10.0-SNAPSHOT</version>
+    <version>1.10.1-SNAPSHOT</version>
     <licenses>
         <license>
             <name>GPL-3.0-or-later</name>
@@ -26,11 +26,6 @@
             <artifactId>paper-api</artifactId>
             <version>26.2.build.111-stable</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

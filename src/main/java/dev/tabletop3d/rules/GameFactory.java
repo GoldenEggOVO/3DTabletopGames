@@ -15,7 +15,7 @@ public final class GameFactory {
         if (game == null) throw new RuleViolation("error.game-type-cannot-be-empty", "Game type cannot be empty");
         game = game.toLowerCase(Locale.ROOT);
         options = GameOptions.validate(game, options);
-        return switch (game.toLowerCase(Locale.ROOT)) {
+        return switch (game) {
             case "mahjong" -> new MahjongGame(players, seed, options);
             case "doudizhu" -> new DoudizhuGame(players, seed);
             case "liars-bar" -> new LiarsBarGame(players, seed);
@@ -50,7 +50,7 @@ public final class GameFactory {
                 requireTwo(players);
                 yield new ReversiGame();
             }
-            case "go", "go19" -> {
+            case "go" -> {
                 requireTwo(players);
                 yield new GoGame(19);
             }
@@ -63,8 +63,7 @@ public final class GameFactory {
                 yield new GoGame(13);
             }
             case "yacht" -> new YachtGame(players, seed);
-            case "aeroplane", "flying" -> new AeroplaneGame(players, seed);
-            case "checkers", "chinese-checkers" ->
+            case "checkers" ->
                     new ChineseCheckersGame(
                             players,
                             new ChineseCheckersOptions(

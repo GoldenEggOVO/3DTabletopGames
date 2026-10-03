@@ -1,23 +1,16 @@
-# Upgrade from the current 1.8.10 test build
+# Updating the current Tabletop build
 
-1.9 reads the current `3dtabletop` directory directly. Automatic ServerBoards copying, legacy language aliases, old stock-menu replacement, AuthMe and Geyser/Floodgate integrations have been removed. CraftEngine remains optional.
+1.10.1 keeps the current `3dtabletop` configuration, semantic `languages/` catalogs, editable menus and schema 1 room data. CraftEngine remains optional. Old ServerBoards imports, 1.8.10 language converters, retired Aeroplane games and old game aliases are no longer supported.
 
-## Prepare offline
+1. Stop the server cleanly and back up the complete plugin directory.
+2. Check the room file against the exact candidate shaded JAR:
 
-Stop the server cleanly and back up its complete plugin data directory. From the source package, run Python 3.11+ with PyYAML installed:
+   ```sh
+   java -cp target/3dtabletop-1.10.1-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifier /backup/3dtabletop/rooms.json
+   ```
 
-```sh
-python tools/upgrade_current_data.py /backup/3dtabletop /staging/3dtabletop
-```
+3. Replace the plugin with the new shaded JAR. Preserve current rooms, menus, custom language values and other plugins.
+4. Use the matching delivered resource pack when pack rendering is enabled. The plugin supplies the pack hash and ID; configuration only supplies its URL.
+5. Start the server and verify saved rooms, menus and player interactions. Keep the complete backup for rollback.
 
-The output must be a new separate directory. The tool never edits its input. It converts current Color Eight `rulesVersion: 2` records from `lastcard` to `color-eight`, retaining physical IDs, seed, seats, anchors, revision and every action. Only obsolete finish options and display reason labels change. Already accepted exhausted-deck draw/pass records retain their recorded meaning during replay.
-
-Language files become complete named templates under `languages/`. Matched custom values and custom menu captions remain. Unmatched customized fragments remain in `upgrade-report.json` and the copied original files; review them and fill the corresponding complete templates. Unknown rules versions stop conversion before output is created. Finish such older games with their original build.
-
-Validate staged rooms against the exact new JAR:
-
-```sh
-java -cp target/3dtabletop-1.9.0-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifier /staging/3dtabletop/rooms.json
-```
-
-Only install the staged directory after passing replay and language validation. Replace the old plugin JAR with the shaded new JAR, install the matching independent resource pack and URL/SHA-1, then start the server. Keep the original backup for rollback. Other plugins and resource packs remain separate.
+Recorded actions use the same validation as live actions. Historical Color Eight exhausted-deck passes or draws are no longer accepted. Finish retired games with their previous build before upgrading; they are not converted into a different game. Use a previous source revision for a one-time legacy conversion, then validate the resulting current-format data before installation.

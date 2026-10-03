@@ -41,19 +41,15 @@ class VisualCleanupTest {
         f.view.close();
     }
 
-    @Test void ludoPawnsHaveNoNumberDisplaysWhileLegacyPlanesKeepTheirNumbers() throws Exception {
-        for(String kind:List.of("ludo","aeroplane")) {
+    @Test void ludoPawnsHaveNoNumberDisplays() throws Exception {
+        for(String kind:List.of("ludo")) {
             var f=new TableViewTest.Fixture(kind);
             Map<?,?> tokens=(Map<?,?>)TableViewTest.field(f.view,"tokens");
             assertFalse(tokens.isEmpty());
             for(var entry:tokens.entrySet()) {
                 List<?> parts=(List<?>)TableViewTest.field(entry.getValue(),"parts");
                 List<?> labels=parts.stream().filter(TextDisplay.class::isInstance).toList();
-                assertEquals(kind.equals("ludo")?0:1,labels.size());
-                if(!labels.isEmpty()) {
-                    String id=(String)entry.getKey();
-                    assertEquals(id.substring(id.indexOf(':')+1),text((TextDisplay)labels.getFirst()));
-                }
+                assertEquals(0,labels.size());
             }
             f.view.close();
             for(Entity entity:f.entities)verify(entity).remove();

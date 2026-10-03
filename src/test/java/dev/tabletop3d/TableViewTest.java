@@ -93,7 +93,7 @@ class TableViewTest {
 
     @Test
     void hoveringTheDieStopsSayingRollingWhenTheAnimationFinishes() {
-        Fixture f = new Fixture("aeroplane");
+        Fixture f = new Fixture("ludo");
         f.move("roll");
         f.view.cursor(f.player, null, "@roll");
         var capture = org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
@@ -154,7 +154,7 @@ class TableViewTest {
 
     @Test
     void idleTablesDoNotReadRuleStateOrResendDiceLabels() throws Exception {
-        for (String kind : List.of("chess", "aeroplane")) {
+        for (String kind : List.of("chess", "ludo")) {
             Fixture f = new Fixture(kind);
             f.room.board = spy(f.room.board);
             f.view.sync();
@@ -205,7 +205,7 @@ class TableViewTest {
 
     @Test
     void diceLabelUpdatesOnRollCompletionAndThenRemainsIdle() throws Exception {
-        Fixture f = new Fixture("aeroplane");
+        Fixture f = new Fixture("ludo");
         f.move("roll");
         TextDisplay label = (TextDisplay) field(field(f.view, "diceTray"), "label");
         var capture = org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
@@ -216,7 +216,7 @@ class TableViewTest {
         String next =
                 f.room.board.publicInfo().get("pendingRoll").equals("0")
                         ? "Click to Roll"
-                        : "Choose a plane";
+                        : "Choose a highlighted pawn";
         assertEquals(next, dev.tabletop3d.ui.MessageText.plain(capture.getValue()));
         clearInvocations(label);
         for (int i = 0; i < 20; i++) f.view.tick();

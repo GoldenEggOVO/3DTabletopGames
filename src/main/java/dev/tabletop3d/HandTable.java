@@ -1862,34 +1862,6 @@ final class HandTable implements AutoCloseable {
         return selected;
     }
 
-    static String faceLabel(String face, boolean mahjong) {
-        if (face.isEmpty() || face.equals("back")) return "";
-        if (!mahjong)
-            return face.equals("wild")
-                    ? "8"
-                    : face.equals("swap")
-                            ? "Swap"
-                            : switch (face.substring(1)) {
-                                case "Skip" -> "X";
-                                case "Reverse" -> "<>";
-                                case "Draw1" -> "+1";
-                                default -> face.substring(1);
-                            };
-        if (face.charAt(0) == 'z')
-            return switch (face.substring(1)) {
-                case "1" -> "E";
-                case "2" -> "S";
-                case "3" -> "W";
-                case "4" -> "N";
-                case "5" -> "Wh";
-                case "6" -> "G";
-                case "7" -> "R";
-                default -> "?";
-            };
-        if (face.charAt(0) == 'f') return "F" + face.substring(1);
-        return (face.charAt(1) == '0' ? "5" : face.substring(1)) + face.charAt(0);
-    }
-
     @Override
     public void close() {
         if (closed) return;

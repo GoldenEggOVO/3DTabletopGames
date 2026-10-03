@@ -30,21 +30,6 @@
     "validation": "source downloaded for inspection; not built or deployed"
   },
   {
-    "repository": "kan01234/aeroplanes-chess",
-    "url": "https://github.com/kan01234/aeroplanes-chess",
-    "commit": "148397f4fc846d98779c367849e2875726d47b3b",
-    "commit_date": "2019-02-18T04:22:39Z",
-    "checked_at": "2026-09-08T08:06:14.679132+00:00",
-    "branch": "master",
-    "license_spdx": "MIT",
-    "archived": false,
-    "stars": 1,
-    "language": "Java",
-    "archive_url": "https://codeload.github.com/kan01234/aeroplanes-chess/zip/148397f4fc846d98779c367849e2875726d47b3b",
-    "archive_sha256": "be1f984a7d25c49dc3edaf92aff44f2193486be1b8d489ab5f55c223e7dc9f9a",
-    "validation": "source downloaded for inspection; not built or deployed"
-  },
-  {
     "repository": "hongsenliu/chinese-checkers",
     "url": "https://github.com/hongsenliu/chinese-checkers",
     "commit": "abf2fc6aeeb94b14a37d13abd223ed935b450a3a",

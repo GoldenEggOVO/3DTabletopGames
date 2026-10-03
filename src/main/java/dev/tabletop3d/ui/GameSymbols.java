@@ -47,10 +47,6 @@ public final class GameSymbols {
     public static final String RED = "\u7ea2";
     public static final String YELLOW = "\u9ec4";
     public static final String BLACK = "\u9ed1";
-    public static final String FINISH = "\u7ec8";
-    public static final String HANGAR = "\u5e93";
-    public static final String TAKEOFF = "\u8d77";
-    public static final String AIRPLANE = "\u673a";
 
     public static final String NUMERALS =
             ONE + TWO + THREE + FOUR + FIVE + SIX + SEVEN + EIGHT + NINE;

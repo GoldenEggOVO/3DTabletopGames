@@ -26,12 +26,10 @@ class LudoPresentationTest {
     }
 
     @Test
-    void catalogReplacesNewFlightWithLudoButLegacyNamesRemainReadable() {
+    void catalogOffersLudoWithItsCurrentCapacity() {
         assertTrue(Tabletop3D.GAMES.contains("ludo"));
         assertFalse(Tabletop3D.GAMES.contains("aeroplane"));
         assertEquals(4, Tabletop3D.defaultCapacity("ludo"));
-        assertTrue(
-                dev.tabletop3d.ui.MessageText.plain(RoomText.game("aeroplane")).contains("Legacy"));
     }
 
     @Test

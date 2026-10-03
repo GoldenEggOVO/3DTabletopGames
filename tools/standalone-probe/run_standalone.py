@@ -89,21 +89,6 @@ for number, marker in boot_steps:
     snapshot_mode = bool(args.rooms_snapshot and number > 1)
     if snapshot_mode:
         marker = "BOARDS_SNAPSHOT_RESTORE_PASS"
-    if number == 3:
-        sys_path = str(project / 'tools')
-        import sys
-        sys.path.insert(0, sys_path)
-        from upgrade_current_data import convert
-        current = plugins / '3dtabletop'
-        staged = runtime / 'converted-data'
-        convert(current, staged)
-        backup = runtime / 'pre-conversion-data'
-        shutil.copytree(current, backup)
-        for file in staged.rglob('*'):
-            if file.is_file():
-                target = current / file.relative_to(staged)
-                target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(file, target)
     boot_stdout = runtime / f"boot-{number}.stdout.log"
     with boot_stdout.open("w", encoding="utf-8") as output:
         server = subprocess.Popen([shutil.which("java"), "-Xms512M", "-Xmx2G", "-XX:TieredStopAtLevel=1",
@@ -138,8 +123,7 @@ for number, marker in boot_steps:
                     server.wait()
         log = (runtime / "logs/latest.log").read_text(encoding="utf-8", errors="replace")
         (runtime / f"boot-{number}.log").write_text(log, encoding="utf-8")
-        converted = number != 3 or (backup.is_dir() and (current / "upgrade-report.json").is_file())
-        boots.append({"boot": number, "pass": found and converted and server.returncode == 0 and (not args.craftengine_jar or "BOARDS_CRAFTENGINE_PASS" in log),
+        boots.append({"boot": number, "pass": found and server.returncode == 0 and (not args.craftengine_jar or "BOARDS_CRAFTENGINE_PASS" in log),
                       "exit_code": server.returncode,
                       "markers": [line for line in log.splitlines()
                                   if "BOARDS_" in line or "Error occurred while enabling" in line]})

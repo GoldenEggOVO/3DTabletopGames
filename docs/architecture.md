@@ -6,9 +6,9 @@
 - `src/main/java/dev/tabletop3d/ui/`: shared Component formatting and label fitting, adapted from 3DCasinoGames.
 - `src/main/java/dev/tabletop3d/rules/`: bundled rules and preserved upstream sources.
 - `src/main/resources/`: metadata, configuration, language, Dialog layouts and notices.
-- `src/test/`: Java behavior tests. `tests/`: Python migration tests.
+- `src/test/`: Java behavior tests.
 - `tools/standalone-probe/`: isolated loopback server probe.
-- `tools/`: migration and local packaging utilities.
+- `tools/`: resource validation and local packaging utilities.
 - `docs/`: installation, migration, language, architecture and verification guides.
 - `target/`, `deliverables/`: ignored generated artifacts and local acceptance packages.
 
@@ -18,7 +18,7 @@
 
 Connect Four uses five strips per vertical disc, rack supports, and a 12-tick vertical drop with a small contact bounce. Restored discs spawn directly at their rule positions. Reversi uses four blocks per two-sided piece; a 10-tick rotation changes the upper face without replacing the entities. Rapid updates start from the current visual angle and converge on the newest owner. No animation state is persisted.
 
-Both renderers keep their own plugin lifecycle. The text utilities are included in the Tabletop JAR; no dependency on Casino or a shared runtime plugin is introduced. Room data stays at schema 1.
+The Tabletop renderer has its own plugin lifecycle. The text utilities are included in the Tabletop JAR; no dependency on Casino or a shared runtime plugin is introduced. Room data stays at schema 1.
 
 `TableView` caches display inputs (board identity/revision, phase, seats, capacity, result and language generation) before building title Components. Dice labels refresh when their state changes. A bounded set contains only currently moving/flipping pieces; completion and removal take pieces out of that set. The existing two-server-tick rendering cadence and animation lengths are unchanged. These changes reduce idle work; they are not a measured server-capacity claim.
 
@@ -26,11 +26,11 @@ Both renderers keep their own plugin lifecycle. The text utilities are included 
 
 `GameMenus` owns single-use sessions bound to player, world and expiry. `GameMenuLayouts` binds only server actions to editable layouts. `BoardWindow` renders native Paper Dialog; permissions are checked again on callbacks.
 
-`Language.component(key, pairs)` formats named UI messages through `ui.MessageText`. `RoomText` supplies shared game/seat/phase/roster/outcome presentation. Dynamic arguments are Components/literal values. Old translation overrides are applied to templates at load time, before parameters exist. `Language.legacy`/`Language.text` remain the compatibility boundary for old source phrases, rule descriptions and stored outcomes. `ui.LabelLayout` fits table text without discarding the lower instruction lines.
+`Language.component(key, pairs)` formats named UI messages through `ui.MessageText`. `RoomText` supplies shared game/seat/phase/roster/outcome presentation. Dynamic arguments are Components/literal values. Current semantic templates are loaded from `languages/`; unknown keys and incompatible placeholders are reported. Styling supports MiniMessage and standard color codes. `ui.LabelLayout` fits table text without discarding the lower instruction lines.
 
 ## Extension boundaries
 
-AuthMe and ServerMenu command forwarding are optional. Rules, occupancy and saves do not use ServerGames services. Model work in this batch is limited to Connect Four and Reversi; other game geometry remains intact.
+CraftEngine is the optional resource-model bridge. Vanilla rendering and native Paper Dialog menus run independently. No AuthMe, Geyser, Casino, ServerGames or ServerMenu runtime dependency is required.
 
 ## Interaction updates in 1.5.0
 

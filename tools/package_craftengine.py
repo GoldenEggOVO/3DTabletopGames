@@ -74,8 +74,6 @@ with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as z:
         z.write(ROOT / name, name)
     for p in sorted((ROOT / "docs").rglob("*.md")):
         z.write(p, p.relative_to(ROOT).as_posix())
-    z.write(ROOT / "tools/upgrade_current_data.py", "tools/upgrade_current_data.py")
-    z.write(ROOT / "tools/upgrade/language-map-1.8.10.json", "tools/upgrade/language-map-1.8.10.json")
     for p in sorted((ROOT / "src/main/resources").rglob("*.yml")):
         if p.parent.name in ("languages", "menus"):
             z.write(p, p.relative_to(ROOT).as_posix())

@@ -21,11 +21,6 @@ public interface BoardGame {
 
     void apply(int seat, String action);
 
-    /** Replay a previously accepted event, preserving supported historical transitions. */
-    default void applyRecorded(int seat, String action) {
-        apply(seat, action);
-    }
-
     Map<String, String> publicInfo();
 
     default List<RuleMessage> messages() {

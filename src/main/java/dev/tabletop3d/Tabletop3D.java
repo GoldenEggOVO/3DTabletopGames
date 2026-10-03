@@ -57,10 +57,6 @@ public final class Tabletop3D extends JavaPlugin
     private boolean loaded = false;
     private int pulse = 0;
 
-    File jarFile() {
-        return getFile();
-    }
-
     @Override
     public void onEnable() {
         try {
@@ -119,10 +115,6 @@ public final class Tabletop3D extends JavaPlugin
         if (comfort != null) comfort.release(player);
         if (menus != null) menus.forget(player);
         if (arena != null) arena.clearSelection(player);
-    }
-
-    public boolean hasActiveGame(Player player) {
-        return room(player) != null;
     }
 
     boolean mainMenuAvailable() {
@@ -187,9 +179,7 @@ public final class Tabletop3D extends JavaPlugin
                         Language.component(
                                 "chat.status",
                                 "rooms",
-                                rooms.size(),
-                                "world",
-                                arena.world != null));
+                                rooms.size()));
             return true;
         }
         if (!allowed(p)) {
@@ -313,7 +303,7 @@ public final class Tabletop3D extends JavaPlugin
             case "checkers", "texas-holdem" -> 6;
             case "doudizhu" -> 3;
             case "liars-bar" -> 4;
-            case "ludo", "aeroplane", "color-eight", "mahjong" -> 4;
+            case "ludo", "color-eight", "mahjong" -> 4;
             default -> 2;
         };
     }
@@ -326,7 +316,7 @@ public final class Tabletop3D extends JavaPlugin
             case "texas-holdem" -> n >= 2 && n <= 6;
             case "checkers" -> Set.of(2, 3, 4, 6).contains(n);
             case "color-eight" -> n >= 2 && n <= 5;
-            case "ludo", "aeroplane", "yacht" -> n >= 2 && n <= 4;
+            case "ludo", "yacht" -> n >= 2 && n <= 4;
             case "gomoku",
                     "xiangqi",
                     "chess",
@@ -347,7 +337,7 @@ public final class Tabletop3D extends JavaPlugin
 
     void create(Player p, String kind, int capacity, Map<String, String> options) {
         if (!allowed(p))
-            throw new RuleViolation("error.log-in-and-obtain-board-game-permission", "Log in and obtain board game permission first");
+            throw new RuleViolation("error.board-game-permission-required", "Board game permission required");
         if (!coordinator.reserve(p.getUniqueId(), kind))
             throw new RuleViolation("error.leave-your-current-game-first", "Leave your current game first");
         try {
@@ -370,10 +360,6 @@ public final class Tabletop3D extends JavaPlugin
 
     void createReserved(Player p, String kind, int capacity, Map<String, String> options) {
         if (pack != null) pack.require(p, kind);
-        if (Set.of("uno", "aeroplane", "flying").contains(kind))
-            throw new RuleViolation(
-                    "error.this-game-is-temporarily-disabled-choose-another",
-                    "This game is temporarily disabled. Choose another game from the menu.");
         if (!capacityValid(kind, capacity))
             throw new RuleViolation("error.unsupported-game-or-player-count", "Unsupported game or player count");
         if (room(p) != null)
@@ -386,7 +372,7 @@ public final class Tabletop3D extends JavaPlugin
         rooms.values().forEach(r -> used.add(r.table));
         while (used.contains(index)) index++;
         Room r = new Room(UUID.randomUUID(), kind, capacity, random.nextLong(), index, options);
-        r.sideTray = Set.of("ludo", "aeroplane").contains(kind);
+        r.sideTray = kind.equals("ludo");
         arena.anchor(r, p.getLocation());
         r.join(p.getUniqueId(), p.getName());
         rooms.put(r.id, r);
@@ -536,7 +522,7 @@ public final class Tabletop3D extends JavaPlugin
             r.board = r.newBoard();
             for (JsonElement e : r.history) {
                 JsonObject j = e.getAsJsonObject();
-                r.board.applyRecorded(j.get("seat").getAsInt(), j.get("action").getAsString());
+                r.board.apply(j.get("seat").getAsInt(), j.get("action").getAsString());
             }
             r.phase = r.completed || r.board.finished() ? Room.Phase.FINISHED : Room.Phase.PLAYING;
             r.busy = false;
@@ -724,14 +710,6 @@ public final class Tabletop3D extends JavaPlugin
         save();
         if (comfort != null) comfort.sync();
         menus.main(p);
-    }
-
-    void returnFromArena(Player p) {
-        Location back = returns.get(p.getUniqueId());
-        if (back != null && back.getWorld() != null && p.getWorld().equals(arena.world)) {
-            if (p.teleport(back)) returns.remove(p.getUniqueId());
-        } else if (back != null && !p.getWorld().equals(arena.world))
-            returns.remove(p.getUniqueId());
     }
 
     void abort(Room r, String reason) {

@@ -143,39 +143,14 @@ public class GameContext {
     protected File blackRookoooFile;
 
     /**
-     * The game mode.
-     */
-    protected GameMode gameMode;
-    /**
      * The type of the chess variation.
      */
     protected VariationType variationType;
-    /**
-     * The chess event.
-     */
-    protected Event event;
 
-    /**
-     * Constructs a new game context using the default game mode and chess variation.
-     * <p>
-     * Same as invoking {@code new GameContext(GameMode.HUMAN_VS_HUMAN, VariationType.NORMAL)}.
-     */
+    /** Constructs the standard chess context. */
     public GameContext() {
-        this(GameMode.HUMAN_VS_HUMAN, VariationType.NORMAL);
-    }
-
-    /**
-     * Constructs a new game context using the provided game mode and chess variation.
-     *
-     * @param gameMode      the game mode
-     * @param variationType the chess variation
-     */
-    public GameContext(GameMode gameMode, VariationType variationType) {
-        setGameMode(gameMode);
-        setVariationType(variationType);
-        if (variationType.equals(VariationType.NORMAL)) {
-            loadDefaults();
-        }
+        setVariationType(VariationType.NORMAL);
+        loadDefaults();
     }
 
     private static long squareListToBb(List<Square> list) {
@@ -657,24 +632,6 @@ public class GameContext {
     }
 
     /**
-     * Returns the game mode.
-     *
-     * @return the game mode
-     */
-    public GameMode getGameMode() {
-        return gameMode;
-    }
-
-    /**
-     * Sets the game mode.
-     *
-     * @param gameMode the game mode to set
-     */
-    public void setGameMode(GameMode gameMode) {
-        this.gameMode = gameMode;
-    }
-
-    /**
      * Returns the type of the chess variation.
      *
      * @return the type of the chess variation
@@ -1026,21 +983,4 @@ public class GameContext {
                 getWhiteoooAllSquaresBb() : getBlackoooAllSquaresBb();
     }
 
-    /**
-     * Returns the chess event.
-     *
-     * @return the chess event
-     */
-    public Event getEvent() {
-        return event;
-    }
-
-    /**
-     * Sets the chess event.
-     *
-     * @param event the chess event to set
-     */
-    public void setEvent(Event event) {
-        this.event = event;
-    }
 }

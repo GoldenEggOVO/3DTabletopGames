@@ -14,7 +14,7 @@ class RoomStoreTest {
     @Test
     void currentRoomsRoundTripIdentityOptionsSeatsAndReplay() throws Exception {
         List<Room> originals = new ArrayList<>();
-        for (String kind : List.of("mahjong", "color-eight", "chess", "ludo", "doudizhu", "liars-bar", "texas-holdem")) {
+        for (String kind : Tabletop3D.GAMES) {
             int capacity = Tabletop3D.defaultCapacity(kind);
             Room room = new Room(UUID.randomUUID(), kind, capacity, 42, originals.size());
             room.join(UUID.randomUUID(), "<red>literal name");
@@ -55,7 +55,7 @@ class RoomStoreTest {
             var replay = after.newBoard();
             for (var element : after.history) {
                 var move = element.getAsJsonObject();
-                replay.applyRecorded(move.get("seat").getAsInt(), move.get("action").getAsString());
+                replay.apply(move.get("seat").getAsInt(), move.get("action").getAsString());
             }
             assertEquals(before.board.cells(), replay.cells());
             assertEquals(before.board.publicInfo(), replay.publicInfo());

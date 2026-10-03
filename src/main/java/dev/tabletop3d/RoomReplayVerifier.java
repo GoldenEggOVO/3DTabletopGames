@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/** Offline check that a migration candidate can be replayed by this exact rules build. */
+/** Offline check that a current-format room file can be replayed by this exact rules build. */
 public final class RoomReplayVerifier {
     private RoomReplayVerifier() {}
 
@@ -31,7 +31,7 @@ public final class RoomReplayVerifier {
                 for (JsonElement event : room.getAsJsonArray("history")) {
                     JsonObject move = event.getAsJsonObject();
                     try {
-                        game.applyRecorded(
+                        game.apply(
                                 move.get("seat").getAsInt(), move.get("action").getAsString());
                     } catch (RuntimeException ex) {
                         throw new IllegalArgumentException(

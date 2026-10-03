@@ -14,10 +14,7 @@ final class RoomText {
     private RoomText() {}
 
     static Component game(String kind) {
-        if (kind.equals("color-eight")) return Language.component("game.color-eight");
-        if (kind.equals("aeroplane"))
-            return Language.component("game.legacy", "game", Language.component("game.aeroplane"));
-        return Tabletop3D.GAMES.contains(kind) || Set.of("yacht", "aeroplane").contains(kind)
+        return Tabletop3D.GAMES.contains(kind)
                 ? Language.component("game." + kind)
                 : Component.text(kind);
     }

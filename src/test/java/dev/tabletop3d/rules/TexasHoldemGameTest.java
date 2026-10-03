@@ -107,7 +107,7 @@ class TexasHoldemGameTest {
         for (String action : List.of("call", "check")) {
             int seat = game.currentPlayer();
             game.apply(seat, action);
-            replay.applyRecorded(seat, action);
+            replay.apply(seat, action);
         }
         assertEquals("flop", game.publicInfo().get("phase"));
         assertEquals(1 - dealer, game.currentPlayer());
@@ -168,7 +168,7 @@ class TexasHoldemGameTest {
                 String action = legal.contains("all-in") ? "all-in" : legal.getFirst();
                 int seat = game.currentPlayer();
                 game.apply(seat, action);
-                replay.applyRecorded(seat, action);
+                replay.apply(seat, action);
                 var info = game.publicInfo();
                 assertEquals(
                         6000,

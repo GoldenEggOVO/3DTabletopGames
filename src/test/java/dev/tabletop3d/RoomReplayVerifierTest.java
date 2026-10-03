@@ -42,19 +42,19 @@ class RoomReplayVerifierTest {
     }
 
     @Test
-    void identifiesTheFirstUnreplayableLegacyMove() {
+    void identifiesTheFirstUnreplayableMove() {
         var source =
                 JsonParser.parseString(
                                 """
-                                {"rooms":[{"id":"legacy-flight","kind":"aeroplane","capacity":4,"seed":1003,
-                                "history":[{"seat":0,"action":"roll"},{"seat":0,"action":"move:0:to0"},
-                                {"seat":0,"action":"roll"},{"seat":0,"action":"move:0:sk7"}]}]}
+                                {"rooms":[{"id":"invalid-moves","kind":"connectfour","capacity":2,"seed":1003,
+                                "history":[{"seat":0,"action":"drop:0"},{"seat":1,"action":"drop:1"},
+                                {"seat":0,"action":"drop:0"},{"seat":0,"action":"drop:0"}]}]}
                                 """)
                         .getAsJsonObject();
         var error =
                 assertThrows(
                         IllegalArgumentException.class, () -> RoomReplayVerifier.verify(source));
-        assertTrue(error.getMessage().contains("legacy-flight"));
+        assertTrue(error.getMessage().contains("invalid-moves"));
         assertTrue(error.getMessage().contains("event 3"));
     }
 }

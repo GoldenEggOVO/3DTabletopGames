@@ -1,6 +1,5 @@
 package dev.tabletop3d;
 
-import dev.tabletop3d.ui.GameSymbols;
 
 import dev.tabletop3d.rules.BoardGame;
 import dev.tabletop3d.rules.Cell;
@@ -8,34 +7,21 @@ import dev.tabletop3d.rules.RuleViolation;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.*;
+import org.bukkit.event.block.Action;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
-import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.*;
-import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.util.Vector;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
 import java.util.*;
 
 /** Public boards only: private card views never enter this renderer. */
 final class GameWorld implements Listener, AutoCloseable {
-    private static final String OWNER_MARKER = "3dtabletop arena v1\n";
-    private static final String LEGACY_OWNER_MARKER = "ServerBoards arena v1\n";
-    private static final TextColor[] COLORS = {
-        TextColor.color(0xdd6256), TextColor.color(0x5ab7e1), TextColor.color(0x61c68d),
-        TextColor.color(0xefbf57), TextColor.color(0xb796e9), TextColor.color(0xf0e7d2)
-    };
     private final Tabletop3D plugin;
-    World world;
     private final NamespacedKey tag;
     private final Map<UUID, TableView> views = new HashMap<>();
     private final TableMaps maps;
@@ -43,7 +29,6 @@ final class GameWorld implements Listener, AutoCloseable {
     private org.bukkit.scheduler.BukkitTask pointerTask;
     private final Map<UUID, Pick> selections = new HashMap<>();
     private final Map<Integer, Set<Chunk>> tableChunks = new HashMap<>();
-    private final Set<Long> lobbyChunks = new HashSet<>();
 
     record Pick(UUID room, long revision, String source, List<String> actions) {}
 
@@ -56,12 +41,7 @@ final class GameWorld implements Listener, AutoCloseable {
             return (cell.y() - midY) * zUnit;
         }
 
-        double hitWidth(String kind) {
-            return kind.equals("checkers") ? xUnit * 1.65 : Math.min(xUnit, zUnit) * .88;
-        }
     }
-
-    record Paint(Component text, Color background, boolean selected) {}
 
     GameWorld(Tabletop3D plugin) {
         this.plugin = plugin;
@@ -73,87 +53,6 @@ final class GameWorld implements Listener, AutoCloseable {
     void initialize() {
         // Portable rooms own their world anchors; no dedicated dimension is created.
         pointerTask = Bukkit.getScheduler().runTaskTimer(plugin, this::pointers, 2, 2);
-    }
-
-    static Path dimensionFolder(Path levelDirectory, NamespacedKey key) {
-        return levelDirectory
-                .toAbsolutePath()
-                .normalize()
-                .resolve("dimensions")
-                .resolve(key.getNamespace())
-                .resolve(key.getKey())
-                .normalize();
-    }
-
-    /** Read-only: never adopts an existing directory or triggers legacy migration. */
-    static UUID preflightOwner(Path legacy, Path dimension) {
-        if (!legacy.equals(dimension) && Files.exists(legacy, LinkOption.NOFOLLOW_LINKS)) {
-            readOwner(legacy); // Unmarked old worlds fail before CraftBukkit can migrate them.
-            throw new IllegalStateException("Legacy board world directory detected; back up and migrate it manually. The plugin will not move the world automatically");
-        }
-        if (!Files.exists(dimension, LinkOption.NOFOLLOW_LINKS)) return null;
-        return readOwner(dimension);
-    }
-
-    static UUID readOwner(Path folder) {
-        Path marker = folder.resolve(".servergames-owner");
-        if (Files.isSymbolicLink(folder)
-                || !Files.isDirectory(folder, LinkOption.NOFOLLOW_LINKS)
-                || !Files.isRegularFile(marker, LinkOption.NOFOLLOW_LINKS))
-            throw new IllegalStateException("Existing world is not owned by this plugin. It was not changed; configure a new empty world name");
-        try {
-            String value = Files.readString(marker, StandardCharsets.UTF_8);
-            String prefix =
-                    value.startsWith(OWNER_MARKER)
-                            ? OWNER_MARKER
-                            : value.startsWith(LEGACY_OWNER_MARKER) ? LEGACY_OWNER_MARKER : null;
-            if (prefix == null) throw new IllegalStateException("Board world ownership marker is invalid; world unchanged");
-            return UUID.fromString(value.substring(prefix.length()));
-        } catch (IOException | IllegalArgumentException ex) {
-            throw new IllegalStateException("Cannot verify board world ownership; world unchanged", ex);
-        }
-    }
-
-    private static final class VoidGenerator extends ChunkGenerator {
-        @Override
-        public Location getFixedSpawnLocation(World world, Random random) {
-            return new Location(world, 0, 80, 0);
-        }
-
-        @Override
-        public boolean shouldGenerateNoise() {
-            return false;
-        }
-
-        @Override
-        public boolean shouldGenerateSurface() {
-            return false;
-        }
-
-        @Override
-        public boolean shouldGenerateBedrock() {
-            return false;
-        }
-
-        @Override
-        public boolean shouldGenerateCaves() {
-            return false;
-        }
-
-        @Override
-        public boolean shouldGenerateDecorations() {
-            return false;
-        }
-
-        @Override
-        public boolean shouldGenerateMobs() {
-            return false;
-        }
-
-        @Override
-        public boolean shouldGenerateStructures() {
-            return false;
-        }
     }
 
     Location center(int index) {
@@ -212,14 +111,6 @@ final class GameWorld implements Listener, AutoCloseable {
         r.anchorZ = snapped.getZ();
     }
 
-    Location externalPlatform(int index) {
-        if (world == null || index < 0 || index >= 5)
-            throw new RuleViolation("error.invalid-card-table-number", "Invalid card table number");
-        Location center = new Location(world, -64 - index * 32 + .5, 80, -32 + .5);
-        lobbyChunks.addAll(floor(center, 11));
-        return center;
-    }
-
     void platform(int index) {
 
         if (index < 0 || index > 127) throw new RuleViolation("error.invalid-table-number", "Invalid table number");
@@ -233,39 +124,6 @@ final class GameWorld implements Listener, AutoCloseable {
         tableChunks.put(index, chunks);
     }
 
-    private Set<Long> floor(Location center, int radius) {
-        Set<Long> chunks = new HashSet<>();
-        for (int x = -radius; x <= radius; x++)
-            for (int z = -radius; z <= radius; z++) {
-                var block = world.getBlockAt(center.getBlockX() + x, 79, center.getBlockZ() + z);
-                // Never replace a block, including later administrator builds in our own arena.
-                if (block.getType().isAir())
-                    block.setType(
-                            Math.abs(x) == radius || Math.abs(z) == radius
-                                    ? Material.DEEPSLATE_TILES
-                                    : ((x + z) & 1) == 0
-                                            ? Material.SMOOTH_STONE
-                                            : Material.POLISHED_ANDESITE,
-                            false);
-                chunks.add(chunkKey(block.getX() >> 4, block.getZ() >> 4));
-            }
-        for (long key : chunks)
-            world.getChunkAt(chunkX(key), chunkZ(key)).addPluginChunkTicket(plugin);
-        return Set.copyOf(chunks);
-    }
-
-    private static long chunkKey(int x, int z) {
-        return ((long) x << 32) | (z & 0xffffffffL);
-    }
-
-    private static int chunkX(long key) {
-        return (int) (key >> 32);
-    }
-
-    private static int chunkZ(long key) {
-        return (int) key;
-    }
-
     Location seatLocation(Room room, int seat) {
         Location c = center(room.table);
         double angle = 2 * Math.PI * Math.max(0, seat) / Math.max(2, room.capacity);
@@ -274,7 +132,7 @@ final class GameWorld implements Listener, AutoCloseable {
             dx = -dx;
             dz = -dz;
         }
-        if (Set.of("aeroplane", "ludo").contains(room.kind)) {
+        if (room.kind.equals("ludo")) {
             int[] colors =
                     room.capacity == 2
                             ? new int[] {0, 2}
@@ -426,79 +284,6 @@ final class GameWorld implements Listener, AutoCloseable {
         }
     }
 
-    static Paint paint(String kind, Cell cell, Map<String, String> info, boolean selected) {
-        boolean empty = cell.owner() < 0;
-        int colorId = actualColor(info, cell.owner());
-        TextColor ink =
-                empty ? TextColor.color(0x778b87) : COLORS[Math.floorMod(colorId, COLORS.length)];
-        int background = 0x233b36;
-        String glyph = empty ? "·" : cell.piece(), coordinate = coordinate(kind, cell);
-        switch (kind) {
-            case "gomoku" -> {
-                background = 0xcba674;
-                ink =
-                        cell.owner() == 0
-                                ? TextColor.color(0x211a16)
-                                : cell.owner() == 1
-                                        ? TextColor.color(0xfff9e9)
-                                        : TextColor.color(0x785a37);
-                glyph = empty ? "┼" : cell.owner() == 0 ? "●" : "○";
-            }
-            case "xiangqi" -> {
-                background = cell.y() == 4 || cell.y() == 5 ? 0xcbbd95 : 0xd8bb89;
-                ink = cell.owner() == 0 ? TextColor.color(0xae3128) : TextColor.color(0x26333f);
-                glyph = empty ? "＋" : cell.piece();
-            }
-            case "chess" -> {
-                background = ((cell.x() + cell.y()) & 1) == 0 ? 0xb49166 : 0xe0c79f;
-                ink = cell.owner() == 0 ? TextColor.color(0xfff6db) : TextColor.color(0x2e2630);
-                glyph = empty ? "·" : (cell.owner() == 0 ? GameSymbols.WHITE : GameSymbols.BLACK) + cell.piece();
-            }
-            case "checkers" -> {
-                background = empty ? 0x2d4c43 : 0x283b35;
-                glyph = empty ? "○" : "●";
-            }
-            case "aeroplane" -> {
-                int route = routeColor(cell.id());
-                background = tint(route >= 0 ? COLORS[route % 4].value() : 0x475b54, .3);
-                ink = empty && route >= 0 ? COLORS[route % 4] : ink;
-                glyph =
-                        empty
-                                ? cell.id().startsWith("go")
-                                        ? GameSymbols.FINISH
-                                        : cell.id().startsWith("ba")
-                                                ? GameSymbols.HANGAR
-                                                : cell.id().startsWith("to") ? GameSymbols.TAKEOFF : "·"
-                                : cell.piece().replace("✈", GameSymbols.AIRPLANE);
-            }
-            case "ludo" -> {
-                background = 0xe8decb;
-                glyph = empty ? "·" : cell.piece();
-            }
-            default -> {}
-        }
-        Color panel =
-                selected
-                        ? Color.fromARGB(250, 173, 125, 43)
-                        : Color.fromARGB(
-                                235,
-                                background >> 16 & 255,
-                                background >> 8 & 255,
-                                background & 255);
-        Component text =
-                Component.text(" " + Language.glyph(glyph) + " ", ink)
-                        .decorate(TextDecoration.BOLD)
-                        .append(Component.newline())
-                        .append(
-                                Component.text(
-                                                coordinate,
-                                                empty
-                                                        ? TextColor.color(0x718277)
-                                                        : TextColor.color(0x839486))
-                                        .decoration(TextDecoration.BOLD, false));
-        return new Paint(text, panel, selected);
-    }
-
     static int actualColor(Map<String, String> info, int owner) {
         if (owner < 0) return -1;
         try {
@@ -509,25 +294,6 @@ final class GameWorld implements Listener, AutoCloseable {
         } catch (NumberFormatException ignored) {
         }
         return owner;
-    }
-
-    static int routeColor(String id) {
-        try {
-            if (id.startsWith("sk")) return Integer.parseInt(id.substring(2)) % 4;
-            if (id.startsWith("ba")
-                    || id.startsWith("to")
-                    || id.startsWith("ld")
-                    || id.startsWith("go")) return Character.digit(id.charAt(2), 10);
-        } catch (RuntimeException ignored) {
-        }
-        return -1;
-    }
-
-    private static int tint(int rgb, double fraction) {
-        int r = (int) ((rgb >> 16 & 255) * fraction + 21),
-                g = (int) ((rgb >> 8 & 255) * fraction + 24),
-                b = (int) ((rgb & 255) * fraction + 22);
-        return r << 16 | g << 8 | b;
     }
 
     static String coordinate(String kind, Cell cell) {
@@ -553,22 +319,6 @@ final class GameWorld implements Listener, AutoCloseable {
         if (kind.equals("yacht"))
             return dev.tabletop3d.ui.MessageText.plain(
                     Language.component("board.die", "number", cell.x() / 2 + 1));
-        if (kind.equals("aeroplane")) {
-            if (cell.id().startsWith("sk"))
-                return String.valueOf(Integer.parseInt(cell.id().substring(2)) + 1);
-            if (cell.id().startsWith("ld"))
-                return dev.tabletop3d.ui.MessageText.plain(
-                        Language.component(
-                                "board.flight.landing",
-                                "number",
-                                Character.digit(cell.id().charAt(4), 10) + 1));
-            if (cell.id().startsWith("go"))
-                return dev.tabletop3d.ui.MessageText.plain(Language.component("board.finish"));
-            if (cell.id().startsWith("to"))
-                return dev.tabletop3d.ui.MessageText.plain(
-                        Language.component("board.flight.takeoff"));
-            return dev.tabletop3d.ui.MessageText.plain(Language.component("board.flight.hangar"));
-        }
         return cell.id();
     }
 
@@ -585,7 +335,7 @@ final class GameWorld implements Listener, AutoCloseable {
                         action -> {
                             String[] parts = action.split(":");
                             if (parts.length < 3 || !parts[0].equals("move")) return false;
-                            if (!Set.of("aeroplane", "ludo").contains(board.id()))
+                            if (!board.id().equals("ludo"))
                                 return parts[1].equals(source);
                             try {
                                 int plane = Integer.parseInt(parts[1]);
@@ -845,7 +595,7 @@ final class GameWorld implements Listener, AutoCloseable {
             TableSounds.select(plugin, player);
             player.sendActionBar(
                     Language.component("hint.selected").colorIfAbsent(NamedTextColor.GREEN));
-        } else if (Set.of("aeroplane", "ludo").contains(room.kind)
+        } else if (room.kind.equals("ludo")
                 && room.board.legalActions(seat).contains("roll"))
             plugin.tell(player, Language.component("chat.roll-first"));
         else if (Set.of("gomoku", "go", "go9", "go13", "reversi", "connectfour")
@@ -884,31 +634,6 @@ final class GameWorld implements Listener, AutoCloseable {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
-    public void hurt(EntityDamageEvent e) {
-        if (world != null && e.getEntity().getWorld().equals(world)) e.setCancelled(true);
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void build(BlockPlaceEvent e) {
-        if (world != null
-                && e.getBlock().getWorld().equals(world)
-                && !e.getPlayer().hasPermission("3dtabletop.admin")) e.setCancelled(true);
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void breakBlock(BlockBreakEvent e) {
-        if (world != null
-                && e.getBlock().getWorld().equals(world)
-                && !e.getPlayer().hasPermission("3dtabletop.admin")) e.setCancelled(true);
-    }
-
-    @EventHandler
-    public void voidFall(PlayerMoveEvent e) {
-        if (world != null && e.getPlayer().getWorld().equals(world) && e.getPlayer().getY() < 60)
-            e.getPlayer().teleport(world.getSpawnLocation());
-    }
-
     @EventHandler
     public void quit(PlayerQuitEvent e) {
         clearSelection(e.getPlayer());
@@ -940,9 +665,7 @@ final class GameWorld implements Listener, AutoCloseable {
         Set<Chunk> chunks = tableChunks.remove(room.table);
         if (chunks != null)
             for (Chunk chunk : chunks)
-                if (!(chunk.getWorld().equals(world)
-                                && lobbyChunks.contains(chunkKey(chunk.getX(), chunk.getZ())))
-                        && tableChunks.values().stream().noneMatch(set -> set.contains(chunk)))
+                if (tableChunks.values().stream().noneMatch(set -> set.contains(chunk)))
                     chunk.removePluginChunkTicket(plugin);
     }
 
@@ -954,7 +677,6 @@ final class GameWorld implements Listener, AutoCloseable {
         selections.clear();
         clicks.clear();
         tableChunks.clear();
-        lobbyChunks.clear();
         for (World w : Bukkit.getWorlds()) w.removePluginChunkTickets(plugin);
     }
 }

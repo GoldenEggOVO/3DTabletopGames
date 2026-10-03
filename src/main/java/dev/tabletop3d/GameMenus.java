@@ -233,7 +233,7 @@ final class GameMenus implements AutoCloseable {
                     case "color-eight" -> new int[] {2, 3, 4, 5};
                     case "liars-bar" -> new int[] {2, 3, 4};
                     case "texas-holdem" -> new int[] {2, 3, 4, 5, 6};
-                    case "ludo", "aeroplane", "yacht" -> new int[] {2, 3, 4};
+                    case "ludo", "yacht" -> new int[] {2, 3, 4};
                     default -> new int[] {Tabletop3D.defaultCapacity(kind)};
                 };
         if (sizes.length > 1)
@@ -806,8 +806,7 @@ final class GameMenus implements AutoCloseable {
                                     games(p, r.kind);
                                     return;
                                 }
-                                if (!p.getWorld().equals(plugin.arena.world))
-                                    plugin.returns.putIfAbsent(p.getUniqueId(), p.getLocation());
+                                plugin.returns.putIfAbsent(p.getUniqueId(), p.getLocation());
                                 p.teleport(plugin.arena.seatLocation(r, 0));
                             }));
         show(
@@ -1070,7 +1069,6 @@ final class GameMenus implements AutoCloseable {
                 Set.of("go9", "go13").contains(kind)
                         ? "go"
                         : Tabletop3D.GAMES.contains(kind)
-                                        || Set.of("yacht", "aeroplane").contains(kind)
                                 ? kind
                                 : "default";
         Component text =

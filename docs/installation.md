@@ -9,11 +9,11 @@ Stop the server before replacing the plugin. Back up worlds and `plugins/3dtable
 ## Commands and games
 
 See the [command table](../README.md#commands-and-permissions). Game IDs:
-`xiangqi`, `gomoku`, `chess`, `ludo`, `checkers`, `draughts`, `reversi`, `go`, `go9`, `go13`, `connectfour`, `color-eight`, `mahjong`.
+`xiangqi`, `gomoku`, `chess`, `ludo`, `checkers`, `draughts`, `reversi`, `go`, `go9`, `go13`, `connectfour`, `color-eight`, `mahjong`, `yacht`, `doudizhu`, `liars-bar`, `texas-holdem`.
 
 `go` is 19×19. Example: `/3dtabletop create connectfour` followed by `/3dtabletop bots` to fill empty seats. A move such as `drop:3` uses zero-based column indices. Menu actions recheck player permissions, room state, turn and revision.
 
-The `create` command uses standard rules; use the native game setup page to change rules before creating a room. `mahjong` always has four seats and defaults to Riichi. Last Card supports two to four players. Tab actions never expose another player's concealed-hand actions.
+The `create` command uses standard rules; use the native game setup page to change rules before creating a room. `mahjong` always has four seats and defaults to Riichi. Color Eight supports two to five players. Tab actions never expose another player's concealed-hand actions.
 
 Sneak-right-click a table to join or open its room menu, including the upper Connect Four rack. New table centers need at least three blocks of separation along X or Z, or three blocks vertically; this does not relocate existing saved tables. A seated, authorized player receives collision and hunger protection within six blocks of their own table. Walking away restores the original collision setting within one second; changing worlds or disconnecting restores it immediately.
 
@@ -35,12 +35,10 @@ Restart after configuration or language changes. Layout files are read when open
 
 Sounds use Minecraft's **Blocks** sound category and require no resource pack. Nearby players hear table actions; turn prompts reach only the eligible seated human within eight blocks in the same world. Existing config files may omit both sound keys and use the defaults. Non-finite volume values mute sounds. Re-rendering, startup replay and rejected actions do not emit move sounds.
 
-## Optional integrations
+## Optional resource models
 
-AuthMe adds a login gate when present. ServerMenu may provide an external entry by dispatching `/3dtabletop menu`; Tabletop offers a return button when `servermenu:servermenu` is available. Neither ServerMenu nor ServerGames is required.
-
-Old ServerGames 2.0.3 and ServerMenu 0.7.1 forward to `serverboards:boards`, which is no longer registered. Update those forwarders separately. Tabletop does not register the old namespace or a GameCoordinator provider.
+CraftEngine provides the optional custom item models. `rendering.mode` selects vanilla, resource-pack or mixed rendering. Current gameplay and native Dialog menus work without other plugins. See [resource-pack setup](craftengine.zh-CN.md).
 
 ## Local acceptance build
 
-Install `3dtabletop-1.7.3-SNAPSHOT.jar` on an isolated server first. Check rule selection, private hands from every seat and a spectator, card hover and deck draws, Last Card color changes, Mahjong calls, dice travel/landing and restart recovery. Also check Mahjong lifted selection/unseen-copy labels, all four Shift focus positions and return behavior, real countdowns, tabletop call combinations, riichi sticks, sound balance, existing board interactions and custom text. Preserve your backup when comparing with a published build.
+Install `3dtabletop-1.10.1-SNAPSHOT.jar` on an isolated server first. Check rule selection, private hands from every seat and a spectator, card hover and deck draws, Color Eight color changes, Mahjong calls, dice travel/landing and restart recovery. Also check Mahjong lifted selection/unseen-copy labels, all four Ctrl focus positions and return behavior, real countdowns, tabletop call combinations, riichi sticks, sound balance, existing board interactions and custom text. Preserve your backup when comparing with a published build.

@@ -27,7 +27,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang3.StringUtils;
 
 import static dev.tabletop3d.rules.upstream.chesslib.Bitboard.extractLsb;
 import static dev.tabletop3d.rules.upstream.chesslib.Constants.emptyMove;
@@ -36,7 +35,6 @@ import dev.tabletop3d.rules.upstream.chesslib.game.GameContext;
 import dev.tabletop3d.rules.upstream.chesslib.game.VariationType;
 import dev.tabletop3d.rules.upstream.chesslib.move.Move;
 import dev.tabletop3d.rules.upstream.chesslib.move.MoveGenerator;
-import dev.tabletop3d.rules.upstream.chesslib.move.MoveList;
 import dev.tabletop3d.rules.upstream.chesslib.util.XorShiftRandom;
 
 /**
@@ -163,26 +161,6 @@ public class Board implements Cloneable, BoardEvent {
 
     private static IntStream sevenToZero() {
         return IntStream.iterate(7, i -> i - 1).limit(8);
-    }
-
-    /**
-     * Executes a move on the board, specified in Short Algebraic Notation (SAN). It returns {@code true} if the
-     * operation has been successful and the position changed after the move. It performs a full validation of the board
-     * status to assess the outcome of the operation.
-     * <p>
-     * <b>N.B.</b>: the method does not check whether the move is legal or not according to the standard chess rules,
-     * but rather if the resulting configuration is valid. For instance, it is totally fine to move the king by two or
-     * more squares, or a rook beyond its friendly pieces, as long as the position obtained after the move does not
-     * violate any chess constraint.
-     *
-     * @param move the move to execute in SAN notation, such as {@code Nc3}
-     * @return {@code true} if the move was successful and the resulting position is valid
-     */
-    public boolean doMove(final String move) {
-
-        MoveList moves = new MoveList(this.getFen());
-        moves.addSanMove(move, true, true);
-        return doMove(moves.removeLast(), true);
     }
 
     /**
@@ -864,7 +842,7 @@ public class Board implements Cloneable, BoardEvent {
 
         sideToMove = state.toLowerCase().charAt(0) == 'w' ? Side.WHITE : Side.BLACK;
 
-        String[] flags = state.split(StringUtils.SPACE);
+        String[] flags = state.split(" ");
         String castlingField = flags.length >= 2 ? flags[1] : "-";
 
         // Detect Chess960: Shredder-FEN uses file letters (A-H, a-h) for castling rights
@@ -1155,7 +1133,7 @@ public class Board implements Cloneable, BoardEvent {
             fen.append(" b");
         }
 
-        String rights = StringUtils.EMPTY;
+        String rights = "";
         if (context.getVariationType() == VariationType.CHESS960) {
             // Shredder-FEN: use file letters for castling rights
             if (CastleRight.KING_AND_QUEEN_SIDE.equals(castleRight.get(Side.WHITE))
@@ -1206,10 +1184,10 @@ public class Board implements Cloneable, BoardEvent {
             }
         }
 
-        if (StringUtils.isEmpty(rights)) {
+        if (rights.isEmpty()) {
             fen.append(" -");
         } else {
-            fen.append(StringUtils.SPACE + rights);
+            fen.append(" " + rights);
         }
 
         if (Square.NONE.equals(getEnPassant())
@@ -1217,14 +1195,14 @@ public class Board implements Cloneable, BoardEvent {
                 && !pawnCanBeCapturedEnPassant())) {
             fen.append(" -");
         } else {
-            fen.append(StringUtils.SPACE);
+            fen.append(" ");
             fen.append(getEnPassant().toString().toLowerCase());
         }
 
         if (includeCounters) {
-            fen.append(StringUtils.SPACE);
+            fen.append(" ");
             fen.append(getHalfMoveCounter());
-            fen.append(StringUtils.SPACE);
+            fen.append(" ");
             fen.append(getMoveCounter());
         }
 
@@ -1828,9 +1806,9 @@ public class Board implements Cloneable, BoardEvent {
      * @see Board#getZobristKey()
      */
     public String getPositionId() {
-        String[] parts = this.getFen(false).split(StringUtils.SPACE);
-        return parts[0] + StringUtils.SPACE + parts[1] + StringUtils.SPACE + parts[2] +
-                StringUtils.SPACE + (this.getEnPassantTarget() != Square.NONE ? parts[3] : "-");
+        String[] parts = this.getFen(false).split(" ");
+        return parts[0] + " " + parts[1] + " " + parts[2] +
+                " " + (this.getEnPassantTarget() != Square.NONE ? parts[3] : "-");
     }
 
     /**

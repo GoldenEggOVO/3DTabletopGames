@@ -17,7 +17,6 @@
 
 package dev.tabletop3d.rules.upstream.chesslib;
 
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * The files in a board. A <i>file</i> is a column in the chessboard, and it is identified as a letter from {@code A} to
@@ -62,7 +61,7 @@ public enum File {
     /**
      * Special value that represents no file in particular.
      */
-    NONE(StringUtils.EMPTY);
+    NONE("");
 
     public static final File[] allFiles = values();
 

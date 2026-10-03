@@ -386,7 +386,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         Method play=sounds.getDeclaredMethod("play",plugin.getClass(),Location.class,cueType);play.setAccessible(true);
         Method nativeSound=cueType.getDeclaredMethod("sound");nativeSound.setAccessible(true);
         Location at=new Location(world,8,84,0);int games=0,cues=0;
-        for(String kind:List.of("chess","xiangqi","gomoku","checkers","draughts","reversi","go9","go13","go","connectfour","ludo","aeroplane")){
+        for(String kind:List.of("chess","xiangqi","gomoku","checkers","draughts","reversi","go9","go13","go","connectfour","ludo","yacht")){
             BoardGame game=GameFactory.create(kind,2,1);var before=game.cells();String action=game.legalActions(0).getFirst();game.apply(0,action);
             Object cue=move.invoke(null,kind,0,action,before,game.cells());play.invoke(null,plugin,at,cue);games++;
         }
@@ -426,7 +426,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             require(Set.of("PLAYING","FINISHED").contains(field(room,"phase").toString()),"restored active or finished phase");events+=before.size();
         }
         Set<String> expected=new HashSet<>();for(JsonElement room:source.getAsJsonArray("rooms"))expected.add(room.getAsJsonObject().get("kind").getAsString());
-        require(kinds.equals(expected),"all snapshot kinds including legacy flight");
+        require(kinds.equals(expected),"all current snapshot kinds");
         require(((Map<?,?>)field(field(plugin,"arena"),"views")).size()==restored.size(),"one model per restored room");
         getLogger().info("BOARDS_SNAPSHOT_RESTORE_PASS rooms="+restored.size()+" saved_events="+events+" kinds="+kinds.size());
     }

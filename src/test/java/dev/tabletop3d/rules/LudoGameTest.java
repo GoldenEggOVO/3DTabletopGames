@@ -51,9 +51,7 @@ class LudoGameTest {
             }
         }
     }
-    @Test void legacyFlightKeepsItsOwnIdentityAndRules(){
-        BoardGame old=GameFactory.create("aeroplane",2,0);assertEquals("aeroplane",old.id());
-        assertTrue(old.publicInfo().get("rulesVariant").startsWith("aeroplane-"));
+    @Test void unsupportedPlayerCountsAreRejected(){
         assertThrows(IllegalArgumentException.class,()->game(1,0));assertThrows(IllegalArgumentException.class,()->game(5,0));
     }
 }

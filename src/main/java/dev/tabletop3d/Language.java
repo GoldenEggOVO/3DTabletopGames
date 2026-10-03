@@ -135,8 +135,7 @@ final class Language {
                     String baseline = ENGLISH.get(key);
                     if (baseline == null)
                         throw new IllegalArgumentException(
-                                "Unknown message key; convert old catalogs with the standalone"
-                                    + " upgrade tool");
+                                "Unknown message key; use the current languages catalog");
                     if (!(entry.getValue() instanceof String value))
                         throw new IllegalArgumentException("Expected a string");
                     if (!MessageText.placeholders(baseline)

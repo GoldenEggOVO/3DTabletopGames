@@ -160,24 +160,7 @@ public final class ColorEightGame implements HandGame {
 
     @Override
     public void apply(int seat, String action) {
-        apply(seat, action, false);
-    }
-
-    @Override
-    public void applyRecorded(int seat, String action) {
-        apply(seat, action, true);
-    }
-
-    private void apply(int seat, String action, boolean recorded) {
-        // Older Color Eight histories allowed draw/pass after exhaustion; replay their unchanged
-        // state transition.
-        boolean recordedDraw =
-                recorded
-                        && !finished()
-                        && seat == current
-                        && pendingColor < 0
-                        && ("pass".equals(action) || "draw".equals(action) && !drawn);
-        if (!recordedDraw && (action == null || !legalActions(seat).contains(action)))
+        if (action == null || !legalActions(seat).contains(action))
             throw new RuleViolation("error.color-eight.action", "Invalid Color Eight action");
         if (action.startsWith("choose:")) {
             pendingColor = Integer.parseInt(action.substring(7));

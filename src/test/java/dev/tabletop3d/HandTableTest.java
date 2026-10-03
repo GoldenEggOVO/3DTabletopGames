@@ -154,7 +154,6 @@ class HandTableTest {
         for (Entity part : kong) verify(part, never()).setVisibleByDefault(false);
         f.table.show(f.owner);
         for (Entity part : kong) verify(f.owner, never()).hideEntity(f.plugin, part);
-        assertEquals("", HandTable.faceLabel("back", true));
     }
 
     @Test
@@ -260,15 +259,13 @@ class HandTableTest {
     }
 
     @Test
-    void largeHandsStayOnTheTableAndMahjongFaceDiffersFromPurpleCard() {
+    void largeHandsStayOnTheTable() {
         for (int players : new int[] {2, 3, 4, 5})
             for (int seat = 0; seat < players; seat++)
                 for (int i = 0; i < 54; i++) {
                     var pose = HandTable.handPose(seat, players, i, 54, false);
                     assertTrue(Math.hypot(pose.x(), pose.z()) + .09 < RoundCardTable.RADIUS);
                 }
-        assertNotEquals(HandTable.faceLabel("p1", false), HandTable.faceLabel("p1", true));
-        assertEquals("5m", HandTable.faceLabel("m0", true));
     }
 
     @Test

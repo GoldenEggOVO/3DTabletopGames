@@ -21,7 +21,7 @@ public final class GuangdongRules {
         if(melds.isEmpty()&&sevenPairs&&HandSolver.sevenPairs(counts,0,true))return "SEVEN_PAIRS";
         return standard&&!HandSolver.solve(counts,0,4-melds.size()).isEmpty()?"STANDARD":null;
     }
-    private static String option(Map<String,String> options,String key,String fallback){return options.getOrDefault("guangdong."+key,options.getOrDefault(key,fallback));}
+    private static String option(Map<String,String> options,String key,String fallback){return options.getOrDefault(key,fallback);}
     private static boolean flag(Map<String,String> options,String key,boolean fallback) {
         return switch(option(options,key,Boolean.toString(fallback))){case "true"->true;case "false"->false;default->throw new IllegalArgumentException("Invalid Guangdong flag: "+key);};
     }

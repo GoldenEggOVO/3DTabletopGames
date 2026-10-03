@@ -61,5 +61,5 @@ public final class SichuanRules {
         }
         return best;
     }
-    private static String option(Map<String,String> options,String key,String fallback){return options.getOrDefault("sichuan."+key,options.getOrDefault(key,fallback));}
+    private static String option(Map<String,String> options,String key,String fallback){return options.getOrDefault(key,fallback);}
 }

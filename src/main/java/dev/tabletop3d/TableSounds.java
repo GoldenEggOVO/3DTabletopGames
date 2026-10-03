@@ -104,20 +104,20 @@ final class TableSounds {
             return CONFIRM;
         if (kind.equals("reversi")) return FLIP;
         if (opponents(kind, seat, before) > opponents(kind, seat, after)) return CAPTURE;
-        if ((kind.equals("ludo") || kind.equals("aeroplane")) && action.matches("move:\\d+:go\\d+"))
+        if (kind.equals("ludo") && action.matches("move:\\d+:go\\d+"))
             return HOME;
         return switch (kind) {
             case "xiangqi" -> XIANGQI;
             case "gomoku", "go", "go9", "go13" -> STONE;
             case "checkers" -> HOP;
             case "connectfour" -> DROP;
-            case "ludo", "aeroplane" -> PAWN;
+            case "ludo" -> PAWN;
             default -> WOOD;
         };
     }
 
     private static int opponents(String kind, int seat, List<Cell> cells) {
-        boolean race = kind.equals("ludo") || kind.equals("aeroplane");
+        boolean race = kind.equals("ludo");
         int count = 0;
         for (Cell cell : cells)
             if (cell.owner() >= 0 && cell.owner() != seat) {

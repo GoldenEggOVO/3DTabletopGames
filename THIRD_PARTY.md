@@ -6,10 +6,9 @@ Original notices and exact source provenance are retained under [`src/main/resou
 
 - NucleoidMC/Gomoku — MIT.
 - jwang541/Xiangqi — MIT.
-- kan01234/aeroplanes-chess — MIT.
 - hongsenliu/chinese-checkers — GPL-3.0-or-later.
 - bhlangonijr/chesslib — Apache-2.0.
-- Apache Commons Lang and Gson — Apache-2.0 runtime libraries included in the shaded JAR.
+- Gson — Apache-2.0 runtime libraries included in the shaded JAR.
 
 `ui/MessageText.java` and `ui/LabelLayout.java` are adapted from GoldenEggOVO/3DCasinoGames, revision `a4ddd20`, under its GPL-3.0 license. Tabletop's label fitting retains all status lines. These are bundled source utilities; installing Casino is not required.
 

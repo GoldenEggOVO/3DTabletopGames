@@ -128,13 +128,13 @@ Saved older rooms retain their original world position and compact dice presenta
 ## Saved rooms and compatibility
 
 - Schema 1 room files retain their IDs, seats, seeds, action history and world anchors. New records also store the selected rules, host identity and dice-stand layout.
-- Missing option fields use the legacy defaults. Existing Ludo histories keep automatic first-pawn deployment, no blocking, exact arrival and first-place completion.
+- Missing option fields use the standard defaults. Ludo histories keep automatic first-pawn deployment, no blocking, exact arrival and first-place completion.
 - Recovery replays the saved game with its saved options. Rematches keep the rules and host while using a fresh shuffle/dice sequence and a fresh random first-seat choice where selected.
 - Unknown rule options or unsupported rule versions are rejected instead of silently changing a saved game.
 - Existing language and menu customizations are preserved; missing text falls back to bundled English.
-- Original 1.7.0 stock setup, room and hand templates use the new layout in memory after content matching, without changing installed file bytes. Customized layouts keep their ordering and styles; back up and manually merge new templates when desired. Schema 1 and the four remaining Mahjong profiles keep their rules; removed-profile saves are rejected as described in migration.
+- Customized layouts keep their ordering and styles; back up and manually merge new templates when desired. Schema 1 and the four remaining Mahjong profiles keep their rules. Retired games are rejected as described in the update guide.
 
-See [migration](migration.md) for upgrades and older room imports. The [Nintendo game catalog](https://www.nintendo.com/jp/switch/as7ta/games/index.html) is a primary reference for the collection; the linked GameFAQs pages are independent play guides, not Nintendo's official rule specification. This plugin's documented rules and selectable values define its supported modes.
+See [migration](migration.md) for current-format updates. The [Nintendo game catalog](https://www.nintendo.com/jp/switch/as7ta/games/index.html) is a primary reference for the collection; the linked GameFAQs pages are independent play guides, not Nintendo's official rule specification. This plugin's documented rules and selectable values define its supported modes.
 
 ### Mahjong table information and focus
 

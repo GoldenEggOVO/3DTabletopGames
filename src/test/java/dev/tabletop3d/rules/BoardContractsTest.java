@@ -10,11 +10,11 @@ class BoardContractsTest {
         assertThrows(IllegalArgumentException.class, () -> GameFactory.create("xiangqi", 1, 0));
         assertThrows(IllegalArgumentException.class, () -> GameFactory.create("chess", 4, 0));
         assertThrows(IllegalArgumentException.class, () -> GameFactory.create("checkers", 5, 0));
-        assertThrows(IllegalArgumentException.class, () -> GameFactory.create("aeroplane", 6, 0));
+        assertThrows(IllegalArgumentException.class, () -> GameFactory.create("ludo", 6, 0));
         assertThrows(IllegalArgumentException.class, () -> GameFactory.create("unknown", 2, 0));
     }
     @Test void immutablePublicViewsAndRejectedActionsNeverMutate() {
-        for (String id : List.of("gomoku", "xiangqi", "checkers", "aeroplane", "chess")) {
+        for (String id : List.of("gomoku", "xiangqi", "checkers", "ludo", "chess")) {
             BoardGame game = GameFactory.create(id, 2, 17);
             List<Cell> before = game.cells(); Map<String,String> info = game.publicInfo();
             List<Cell> savedSnapshot = new ArrayList<>(before);
@@ -34,8 +34,8 @@ class BoardContractsTest {
             assertEquals(savedSnapshot, before, "previous views must remain frozen after a legal action");
         }
     }
-    @Test void deterministicFlightReplayIncludesDiceAndRejectedRollDoesNotConsumeEntropy() {
-        BoardGame a = GameFactory.create("aeroplane", 4, 98), b = GameFactory.create("aeroplane", 4, 98);
+    @Test void deterministicLudoReplayIncludesDiceAndRejectedRollDoesNotConsumeEntropy() {
+        BoardGame a = GameFactory.create("ludo", 4, 98), b = GameFactory.create("ludo", 4, 98);
         for (int i = 0; i < 200 && !a.finished(); i++) {
             String action = a.legalActions(a.currentPlayer()).getFirst();
             assertThrows(IllegalArgumentException.class, () -> a.apply(-1, "roll"));

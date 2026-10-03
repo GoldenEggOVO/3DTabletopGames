@@ -20,7 +20,7 @@ jar = project / "target" / f"3dtabletop-{version}.jar"
 digest = hashlib.sha256(jar.read_bytes()).hexdigest()
 receipt = json.loads(args.receipt.read_text(encoding="utf-8"))
 if not receipt.get("pass") or len(receipt.get("boots", [])) != 3 or not all(b.get("pass") for b in receipt["boots"]):
-    raise SystemExit("Passing clean create/restart/converted-data receipt required")
+    raise SystemExit("Passing clean create/restart/restart receipt required")
 if receipt.get("jar_sha256") != digest or receipt.get("version") != version:
     raise SystemExit("Runtime receipt must match this exact JAR")
 soak = None
@@ -91,8 +91,6 @@ with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as archive:
         archive.write(project / name, name)
     for path in sorted((project / "docs").rglob("*.md")):
         archive.write(path, path.relative_to(project).as_posix())
-    archive.write(project / "tools/upgrade_current_data.py", "tools/upgrade_current_data.py")
-    archive.write(project / "tools/upgrade/language-map-1.8.10.json", "tools/upgrade/language-map-1.8.10.json")
     for path in sorted((project / "src/main/resources").rglob("*.yml")):
         if path.parent.name in ("languages", "menus"):
             archive.write(path, path.relative_to(project).as_posix())

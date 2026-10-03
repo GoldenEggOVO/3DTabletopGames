@@ -1037,7 +1037,7 @@ public final class MahjongGame implements HandGame {
     }
 
     private String option(String key, String fallback) {
-        return options.getOrDefault(profile + "." + key, options.getOrDefault(key, fallback));
+        return options.getOrDefault(key, fallback);
     }
 
     private int responsibleSeat(int winner, RiichiScore.Score score) {

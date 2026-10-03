@@ -150,12 +150,6 @@ class LanguageTest {
                 assertTrue(Language.reload(temp, locale, message -> fail(message)));
                 assertEquals(catalog.get("board.die").replace("{number}", "2"),
                         GameWorld.coordinate("yacht", new dev.tabletop3d.rules.Cell("die", 2, 0, "", -1)));
-                assertEquals(catalog.get("board.flight.landing").replace("{number}", "2"),
-                        GameWorld.coordinate("aeroplane", new dev.tabletop3d.rules.Cell("ld001", 0, 0, "", -1)));
-                assertEquals(catalog.get("board.flight.takeoff"),
-                        GameWorld.coordinate("aeroplane", new dev.tabletop3d.rules.Cell("to00", 0, 0, "", -1)));
-                assertEquals(catalog.get("board.flight.hangar"),
-                        GameWorld.coordinate("aeroplane", new dev.tabletop3d.rules.Cell("ba00", 0, 0, "", -1)));
             }
         } finally {
             Language.reload(temp, "en_US", message -> fail(message));

@@ -64,7 +64,7 @@ class LiarsBarGameTest {
                 String action = legal.getFirst();
                 if (step % 3 == 0 && legal.contains("challenge")) action = "challenge";
                 game.apply(seat, action);
-                replay.applyRecorded(seat, action);
+                replay.apply(seat, action);
                 assertEquals(game.publicInfo(), replay.publicInfo());
                 for (int i = 0; i < 4; i++) assertEquals(game.hand(i), replay.hand(i));
                 assertTrue(

@@ -28,11 +28,9 @@ class TabletopTest {
                     "xiangqi",
                     "gomoku",
                     "checkers",
-                    "aeroplane",
                     "ludo",
                     "draughts",
                     "reversi",
-                    "yacht",
                     "go9",
                     "go13",
                     "go");
@@ -94,7 +92,6 @@ class TabletopTest {
     void originalModelsHaveBoundedEntityCountsAndFitTheirCells() throws Exception {
         for (String kind : KINDS) {
             BoardGame game = GameFactory.create(kind, kind.equals("checkers") ? 6 : 2, 0);
-            if (kind.equals("yacht")) game.apply(0, "roll");
             if (kind.startsWith("go")) game.apply(0, "place:0,0");
             for (Cell c : game.cells())
                 if (c.owner() >= 0) {
@@ -102,7 +99,7 @@ class TabletopTest {
                     assertFalse(parts.isEmpty());
                     assertTrue(parts.size() <= 10, kind + " " + c.piece() + " " + parts.size());
                     for (var p : parts) {
-                        double limit = kind.equals("yacht") ? 1 : .5;
+                        double limit = .5;
                         assertTrue(Math.abs(p.x()) + p.w() / 2 < limit);
                         assertTrue(Math.abs(p.z()) + p.d() / 2 < limit);
                         assertTrue(p.y() >= 0 && p.h() > 0 && p.w() > 0 && p.d() > 0);
@@ -139,7 +136,7 @@ class TabletopTest {
             BoardGame game =
                     GameFactory.create(
                             kind,
-                            kind.equals("checkers") ? 6 : kind.equals("aeroplane") ? 4 : 2,
+                            kind.equals("checkers") ? 6 : kind.equals("ludo") ? 4 : 2,
                             0);
             TableGeometry t = new TableGeometry(kind, game.cells());
             var image = TableArt.draw(t);
@@ -425,7 +422,6 @@ class TabletopTest {
             set(arena, "views", new HashMap<>(Map.of(room.id, view)));
             set(arena, "clicks", clicks);
             set(arena, "selections", new HashMap<>());
-            arena.world = world;
             when(plugin.allowed(player)).thenReturn(true);
             when(plugin.room(player)).thenReturn(room);
             when(player.getUniqueId()).thenReturn(id);

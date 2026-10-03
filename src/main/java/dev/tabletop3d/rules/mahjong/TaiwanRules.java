@@ -64,7 +64,7 @@ public final class TaiwanRules {
     public int payment(Score score,boolean dealerInvolved,int streak){return base+perTai*(score.tai()+(dealerInvolved?dealerTai+streakTai*streak:0));}
     private void add(Map<String,Integer> values,String key,boolean condition,int points){if(condition)values.put(key,number("pattern-tai."+key,points));}
     private int number(String key,int fallback) {
-        int value=Integer.parseInt(options.getOrDefault("taiwan."+key,options.getOrDefault(key,Integer.toString(fallback))));
+        int value=Integer.parseInt(options.getOrDefault(key,Integer.toString(fallback)));
         if(value<0||value>1_000_000)throw new IllegalArgumentException("Invalid Taiwan score option: "+key);return value;
     }
 }

@@ -222,17 +222,15 @@ class ColorEightGameTest {
     }
 
     @Test
-    void previouslyRecordedExhaustedPassesReplayButLivePassesAreRejected() throws Exception {
+    void exhaustedDrawsAndPassesCannotBypassLegalActions() throws Exception {
         var g = position(0, new int[] {1, 13}, new int[] {24});
         hands(g).get(1).addAll(cards(g, "deck"));
         cards(g, "deck").clear();
         assertThrows(IllegalArgumentException.class, () -> g.apply(0, "pass"));
-        assertThrows(IllegalArgumentException.class, () -> g.applyRecorded(1, "pass"));
-        g.applyRecorded(0, "draw");
+        assertThrows(IllegalArgumentException.class, () -> g.apply(1, "pass"));
+        assertThrows(IllegalArgumentException.class, () -> g.apply(0, "draw"));
         assertEquals(0, g.currentPlayer());
         assertFalse(g.legalActions(0).contains("pass"));
-        g.applyRecorded(0, "pass");
-        assertEquals(1, g.currentPlayer());
         assertEquals(2, g.handSize(0));
     }
 

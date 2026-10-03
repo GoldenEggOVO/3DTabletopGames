@@ -1,23 +1,16 @@
-# 从当前 1.8.10 测试版升级
+# 更新当前桌游版本
 
-1.9 只读取当前 `3dtabletop` 数据目录。启动时不再搬运 ServerBoards、转换旧语言格式或替换旧菜单；AuthMe、Geyser/Floodgate 接口已移除，CraftEngine 仍可选。
+1.10.1 保留当前 `3dtabletop` 配置、`languages/` 语义翻译、可编辑菜单和 schema 1 房间存档。CraftEngine 仍是可选集成。旧 ServerBoards 导入、1.8.10 翻译转换、停用飞行棋和旧游戏别名已经移除。
 
-## 停服后准备
+1. 干净停服并备份完整插件目录。
+2. 用实际候选 JAR 校验存档：
 
-先干净停服并备份完整插件数据。解压源码包，使用 Python 3.11 及以上版本并安装 PyYAML：
+   ```sh
+   java -cp target/3dtabletop-1.10.1-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifier /backup/3dtabletop/rooms.json
+   ```
 
-```sh
-python tools/upgrade_current_data.py /backup/3dtabletop /staging/3dtabletop
-```
+3. 更换为新的 shaded JAR，保留当前房间、菜单、自定义翻译与其他插件。
+4. 资源包模式使用同一交付中的 ZIP；配置只需 URL，摘要和身份由插件自动提供。
+5. 启动后检查恢复的房间、菜单与交互，保留完整备份用于回滚。
 
-工具生成独立的新目录，不修改输入。当前彩八 `rulesVersion: 2` 的类型由 `lastcard` 改为 `color-eight`，牌 ID、随机种子、座位、位置、修订号和动作顺序保留。仅移除已失效的结束选项、转换显示用结果标识。已接受的牌堆耗尽 draw/pass 历史仍按当时的结果回放。
-
-语言统一放在 `languages/`，使用完整模板和明确键名。能够对应的自定义翻译和菜单文字保留；无法对应的自定义短语保存在 `upgrade-report.json` 以及复制的原文件中，请据此补到完整模板。未知规则版本会在生成输出前停止；这种旧对局需用原插件完成。
-
-用将要安装的实际 JAR 校验转换后的存档：
-
-```sh
-java -cp target/3dtabletop-1.9.0-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifier /staging/3dtabletop/rooms.json
-```
-
-通过回放和语言校验后再安装新数据目录与 shaded JAR，更新对应的独立资源包及 URL／SHA-1，启动服务器。保留原备份以便回滚。其他插件与资源包独立保留。
+存档动作与实时操作使用同一校验；旧彩八牌堆耗尽后的非法 draw/pass 历史不再接受。停用游戏应先用原版本结束，不会自动转为其他游戏。若需要一次性转换更早数据，可使用旧源码修订中的工具；转换后的当前格式必须先通过验证再安装。

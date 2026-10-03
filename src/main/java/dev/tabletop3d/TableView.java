@@ -181,31 +181,25 @@ final class TableView implements AutoCloseable {
                     d.setRotation(c.owner() == 0 ? 180 : 0, 0);
                 if (Set.of("go", "go9", "go13").contains(room.kind)
                         && part.material() == Material.RED_CONCRETE) deadMarks.add(d);
-                if (Set.of("aeroplane", "ludo").contains(room.kind))
+                if (room.kind.equals("ludo"))
                     d.setRotation(
                             GameWorld.actualColor(room.board.publicInfo(), c.owner()) * 90, 0);
                 parts.add(d);
             }
             if (reversi) poseFlip(flipTo);
-            if (boardAudience.needed(false) && (room.kind.equals("xiangqi") || room.kind.equals("aeroplane"))) {
-                String glyph =
-                        room.kind.equals("xiangqi")
-                                ? c.piece()
-                                : token.id.substring(token.id.indexOf(':') + 1);
+            if (boardAudience.needed(false) && room.kind.equals("xiangqi")) {
+                String glyph = c.piece();
                 TextDisplay label =
                         text(
                                 from.clone()
                                         .add(
                                                 0,
-                                                geometry.spacing
-                                                        * (room.kind.equals("xiangqi")
-                                                                ? .235
-                                                                : .39),
+                                                geometry.spacing * .235,
                                                 0),
                                 Component.text(glyph),
-                                geometry.spacing * (room.kind.equals("xiangqi") ? 1.50 : 1.0),
+                                geometry.spacing * 1.50,
                                 true,
-                                c.owner() == 0 && room.kind.equals("xiangqi")
+                                c.owner() == 0
                                         ? NamedTextColor.DARK_RED
                                         : NamedTextColor.BLACK);
                 if (room.kind.equals("xiangqi") && c.owner() == 0) label.setRotation(180, -90);
@@ -426,7 +420,7 @@ final class TableView implements AutoCloseable {
             furniture.add(river);
             boardAudience.common(river);
         }
-        if (Set.of("aeroplane","ludo").contains(room.kind))
+        if (room.kind.equals("ludo"))
             diceTray = new DiceTray(plugin,room,center,tag,!room.sideTray);
         syncBoardFurniture();
         sync();
@@ -736,7 +730,7 @@ final class TableView implements AutoCloseable {
         List<Token> list = new ArrayList<>();
         for (Cell c : cells.values())
             if (c.owner() >= 0) {
-                if (Set.of("aeroplane", "ludo").contains(room.kind)) {
+                if (room.kind.equals("ludo")) {
                     int stack = 0;
                     for (char digit : c.piece().toCharArray())
                         if (digit >= '1' && digit <= '4')
@@ -812,7 +806,7 @@ final class TableView implements AutoCloseable {
             }
             if (existing != null
                     && existing.valid()
-                    && (Set.of("aeroplane", "ludo").contains(room.kind)
+                    && (room.kind.equals("ludo")
                             || same(existing.token, want))) {
                 old.remove(want.id);
                 boolean moved =
@@ -841,7 +835,7 @@ final class TableView implements AutoCloseable {
             }
             if (source == null
                     && changed
-                    && !Set.of("aeroplane", "ludo", "reversi", "connectfour").contains(room.kind))
+                    && !Set.of("ludo", "reversi", "connectfour").contains(room.kind))
                 for (var e : old.entrySet())
                     if (e.getValue().valid()
                             && same(e.getValue().token, want)
@@ -1297,9 +1291,7 @@ final class TableView implements AutoCloseable {
                             ? blockedHint()
                             : legal
                                     ? direct
-                                            ? room.kind.equals("yacht")
-                                                    ? "hint.hold"
-                                                    : cell.piece().contains("×")
+                                            ? cell.piece().contains("×")
                                                             ? "hint.restore"
                                                             : "hint.act"
                                             : pick == null ? "hint.select" : "hint.place"
