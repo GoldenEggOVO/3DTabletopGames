@@ -119,10 +119,10 @@ class TableViewTest {
         List<Entity> marks = new ArrayList<>();
         for (String id : List.of("0,0", "1,0")) {
             List<Entity> parts = (List<Entity>) field(marked.get(id), "parts");
-            assertEquals(5, parts.size());
+            assertEquals(6, parts.size());
             for (Entity part : parts) if (!stones.contains(part)) marks.add(part);
         }
-        assertEquals(4, marks.size());
+        assertEquals(6, marks.size());
         f.move("dead:0,0");
         for (Entity mark : marks) verify(mark).remove();
         for (Entity stone : stones) verify(stone, never()).remove();

@@ -36,7 +36,7 @@ final class PokerRaiseWindow {
                             if (!(audience instanceof Player actor)
                                     || !actor.getUniqueId().equals(player.getUniqueId())
                                     || !plugin.isEnabled()) return;
-                            String total = response.getText("street-total");
+                            String total = response.getText("street_total");
                             Bukkit.getScheduler()
                                     .runTask(
                                             plugin,
@@ -69,7 +69,7 @@ final class PokerRaiseWindow {
                                 .build());
         var input =
                 DialogInput.text(
-                        "street-total",
+                        "street_total",
                         300,
                         Language.component("cards.poker.raise-total"),
                         true,

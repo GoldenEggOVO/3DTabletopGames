@@ -27,8 +27,8 @@ class TableLobbyTest {
         return new TableLobby.Entry(
                 "test",
                 center,
-                1.5,
-                1.03125,
+                "mahjong",
+                false,
                 Room.Phase.LOBBY,
                 names,
                 capacity,
@@ -47,7 +47,7 @@ class TableLobbyTest {
         World w = mock(World.class), other = mock(World.class);
         var e = entry(new Location(w, 0, 80, 0), List.of(), 4);
         assertEquals(
-                1.96875, TableLobby.hit(e, new Location(w, 0, 83, 0), new Vector(0, -1, 0)), 1e-6);
+                1.90375, TableLobby.hit(e, new Location(w, 0, 83, 0), new Vector(0, -1, 0)), 1e-6);
         assertEquals(
                 Double.POSITIVE_INFINITY,
                 TableLobby.hit(e, new Location(w, 2, 83, 0), new Vector(0, -1, 0)));
@@ -143,8 +143,8 @@ class TableLobbyTest {
                 new TableLobby.Entry(
                         "test",
                         new Location(world, 0, 80, 0),
-                        1.5,
-                        1.03,
+                        "mahjong",
+                        false,
                         Room.Phase.LOBBY,
                         List.of("A"),
                         2,
@@ -164,8 +164,8 @@ class TableLobbyTest {
                 new TableLobby.Entry(
                         "test",
                         target.center(),
-                        1.5,
-                        1.03,
+                        "mahjong",
+                        false,
                         Room.Phase.LOBBY,
                         List.of("A", "B"),
                         2,
@@ -209,8 +209,8 @@ class TableLobbyTest {
                 new TableLobby.Entry(
                         "fresh",
                         new Location(world, 0, 80, 0),
-                        1.5,
-                        1.03,
+                        "mahjong",
+                        false,
                         Room.Phase.LOBBY,
                         List.of(),
                         2,
@@ -235,8 +235,8 @@ class TableLobbyTest {
                 new TableLobby.Entry(
                         "test",
                         new Location(world, 0, 80, 0),
-                        1.5,
-                        1.03,
+                        "mahjong",
+                        false,
                         Room.Phase.PLAYING,
                         List.of("A"),
                         4,
@@ -267,8 +267,8 @@ class TableLobbyTest {
                 new TableLobby.Entry(
                         "focus-lobby",
                         new Location(world, 0, 80, 0),
-                        1.5,
-                        1.03,
+                        "mahjong",
+                        false,
                         Room.Phase.LOBBY,
                         List.of("A"),
                         4,

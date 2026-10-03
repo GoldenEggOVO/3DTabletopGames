@@ -93,6 +93,29 @@ class PlayingCardTableTest {
         return (Map<String, Object>) get(views.get(fixture.player.getUniqueId()), "cards");
     }
 
+    @Test
+    void nativePrivateCardsKeepTheEntityBudgetAndNeverPublishFacesToOtherPlayers() {
+        var f = new TableViewTest.Fixture("liars-bar", 4);
+        owner(f, false);
+        var spectator = mock(Player.class);
+        when(spectator.isOnline()).thenReturn(true);
+        when(spectator.getWorld()).thenReturn(f.world);
+        when(spectator.getLocation()).thenReturn(f.view.origin.clone().add(0, 0, 2));
+        when(f.plugin.allowed(spectator)).thenReturn(true);
+        when(f.world.getPlayers()).thenReturn(List.of(f.player, spectator));
+        f.view.tick();
+        for (Object card : ownCards(f).values()) {
+            var parts = (List<Entity>) get(card, "parts");
+            assertEquals(5, parts.size(), "A native card must use one body and four seamless artwork planes");
+            for (Entity part : parts) {
+                verify(part).setVisibleByDefault(false);
+                verify(f.player).showEntity(f.plugin, part);
+                verify(spectator, never()).showEntity(f.plugin, part);
+            }
+        }
+        f.view.close();
+    }
+
     private Location body(Object card) {
         return ((List<Entity>) get(card, "parts")).getFirst().getLocation();
     }
@@ -185,21 +208,24 @@ class PlayingCardTableTest {
     }
 
     @Test
-    void nativeFacesUseBlackjackBlocksForBothCornerIndicesAndCentralArt() {
+    void nativeFacesUseFourIdenticalCasinoGlyphPlanesAndOneOpaqueBody() {
         var f = new TableViewTest.Fixture("liars-bar", 4);
         owner(f, false);
         Object card = ownCards(f).values().iterator().next();
         var parts = (List<Entity>) get(card, "parts");
-        assertTrue(parts.size() > 50);
-        assertTrue(parts.stream().allMatch(BlockDisplay.class::isInstance));
-        var ink = parts.subList(1, parts.size()).stream().map(f.transforms::get).toList();
-        assertTrue(ink.stream().anyMatch(p -> p.getTranslation().x < -.05 && p.getTranslation().y > .16),
-                "The upper left corner must retain the Blackjack rank and suit artwork");
-        assertTrue(ink.stream().anyMatch(p -> p.getTranslation().x > .05 && p.getTranslation().y < .06),
-                "The lower right corner must retain its inverted artwork");
-        assertTrue(ink.stream().anyMatch(p -> Math.abs(p.getTranslation().x) < .04
-                        && p.getTranslation().y > .07 && p.getTranslation().y < .15),
-                "The card centre must contain physical suit or face-card artwork");
+        assertEquals(5, parts.size());
+        assertInstanceOf(BlockDisplay.class, parts.getFirst());
+        var text = org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
+        net.kyori.adventure.text.Component face = null;
+        for (Entity part : parts.subList(1, parts.size())) {
+            var plane = assertInstanceOf(TextDisplay.class, part);
+            verify(plane).text(text.capture());
+            if (face == null) face = text.getValue();
+            else assertSame(face, text.getValue(), "Each plane must fill gaps with the same pixel colors");
+            verify(plane).setSeeThrough(false);
+            verify(plane).setShadowed(false);
+            assertEquals(net.kyori.adventure.key.Key.key("minecraft:uniform"), text.getValue().font());
+        }
         f.view.close();
     }
 
@@ -229,7 +255,7 @@ class PlayingCardTableTest {
                 + f.transforms.get(body).getScale().y;
         for (Entity ink : parts.subList(1, parts.size()))
             assertTrue(f.transforms.get(ink).getTranslation().y > bodyTop + .0001,
-                    "Block artwork must project above the card body without coplanar faces");
+                    "Glyph artwork must project above the card body without coplanar faces");
         f.view.close();
     }
 
@@ -264,10 +290,11 @@ class PlayingCardTableTest {
                 Object card = cards.values().iterator().next();
                 var parts = (List<Entity>) get(card, "parts");
                 Location body = parts.getFirst().getLocation();
-                assertTrue(parts.stream().allMatch(BlockDisplay.class::isInstance));
+                assertInstanceOf(BlockDisplay.class, parts.getFirst());
+                assertTrue(parts.subList(1, parts.size()).stream().allMatch(TextDisplay.class::isInstance));
                 for (Entity part : parts) assertEquals(body.getYaw(), part.getLocation().getYaw());
                 assertTrue(fixture.transforms.get(parts.get(1)).getTranslation().z > .001,
-                        "Physical ink must face the owning seat");
+                        "Glyph ink must face the owning seat");
                 double angle = Math.PI * 2 * seat / capacity;
                 var normal = new org.bukkit.util.Vector(Math.sin(angle), 0, Math.cos(angle));
                 var eye = body.clone().add(normal.clone().multiply(1.5)).add(0, .125, 0);

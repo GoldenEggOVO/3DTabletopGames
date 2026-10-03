@@ -7,6 +7,25 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class HandModelsTest {
+    @Test void overlappingNativePartsNeverShareTheSameSurfacePlane(){
+        List<List<HandModels.Part>> meshes=new ArrayList<>();meshes.add(HandModels.cardBody());
+        for(char color:new char[]{'r','b','y','p'})for(String value:List.of("1","2","3","4","5","6","7","9","10","Draw1","Skip","Reverse"))meshes.add(HandModels.of(false,color+value));
+        for(String face:List.of("back","wild","swap"))meshes.add(HandModels.of(false,face));
+        for(char suit:new char[]{'m','p','s'})for(int n=0;n<=9;n++)meshes.add(HandModels.of(true,""+suit+n));
+        for(int n=1;n<=7;n++)meshes.add(HandModels.of(true,"z"+n));
+        for(int n=1;n<=8;n++)meshes.add(HandModels.of(true,"f"+n));
+        for(var parts:meshes)for(var part:parts){
+            assertTrue(part.relief()-part.layer()*.0008<=.0022+1e-9,"Native relief must remain bounded: "+part);
+            assertTrue(part.plane()<=5,"Fine relief must stay within the next artwork layer: "+part);
+        }
+        for(var parts:meshes)for(int i=0;i<parts.size();i++)for(int j=i+1;j<parts.size();j++){
+            var a=parts.get(i);var b=parts.get(j);
+            if(Math.abs(a.relief()-b.relief())>1e-9)continue;
+            Area overlap=area(a);overlap.intersect(area(b));
+            assertTrue(overlap.isEmpty()||overlap.getBounds2D().getWidth()<.001||overlap.getBounds2D().getHeight()<.001,
+                    "Overlapping native surfaces: "+a+" / "+b);
+        }
+    }
     @Test void detailedPatternsUseFewerNativeEntitiesWithoutShrinkingFaces(){
         assertTrue(HandModels.cardBody().size()<=18);
         assertTrue(HandModels.of(true,"p9").size()<=140);
@@ -18,7 +37,7 @@ class HandModelsTest {
             var parts=HandModels.of(!Set.of("swap","wild").contains(face),face);
             for(int i=0;i<parts.size();i++)for(int j=i+1;j<parts.size();j++){
                 var a=parts.get(i);var b=parts.get(j);
-                if(a.layer()!=b.layer()||a.material()==b.material())continue;
+                if(Math.abs(a.relief()-b.relief())>1e-9||a.material()==b.material())continue;
                 Area overlap=area(a);overlap.intersect(area(b));
                 assertTrue(overlap.isEmpty()||overlap.getBounds2D().getWidth()<.001||overlap.getBounds2D().getHeight()<.001,face+" coplanar colors: "+a+" / "+b);
             }

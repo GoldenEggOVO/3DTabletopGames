@@ -60,6 +60,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             command.execute(player, "3dtabletop", new String[0]);
             require(dialogs.get() == before + 1, "native catalog opened");
             Object menus = field(boards, "menus");
+            pokerRaiseProbe(boards, menus, world);
             menuExperienceProbe(boards,menus,player);
             command.execute(player, "3dtabletop", new String[0]);
             Map<?, ?> sessions = (Map<?, ?>) field(menus, "sessions");
@@ -338,10 +339,14 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 Map<?, ?> cards = (Map<?, ?>)field(own, "cards");
                 require(cards.size() == ((HandGame)board.get(room)).handSize(0), "new-game complete own hand");
                 List<org.bukkit.entity.Entity> privateParts = new ArrayList<>();
-                for (Object card : cards.values()) for (Object entity : (List<?>)field(card, "parts")) {
-                    var part = (org.bukkit.entity.Entity)entity;
-                    require(part.isValid() && !part.isPersistent() && !part.isVisibleByDefault(), "new-game face private at spawn");
-                    privateParts.add(part);
+                for (Object card : cards.values()) {
+                    List<?> parts = (List<?>)field(card, "parts");
+                    require(parts.size() <= 5, "new-game card display budget");
+                    for (Object entity : parts) {
+                        var part = (org.bukkit.entity.Entity)entity;
+                        require(part.isValid() && !part.isPersistent() && !part.isVisibleByDefault(), "new-game face private at spawn");
+                        privateParts.add(part);
+                    }
                 }
                 Object first = cards.values().iterator().next();
                 var body = (org.bukkit.entity.Entity)((List<?>)field(first, "parts")).getFirst();
@@ -429,6 +434,41 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         require(kinds.equals(expected),"all current snapshot kinds");
         require(((Map<?,?>)field(field(plugin,"arena"),"views")).size()==restored.size(),"one model per restored room");
         getLogger().info("BOARDS_SNAPSHOT_RESTORE_PASS rooms="+restored.size()+" saved_events="+events+" kinds="+kinds.size());
+    }
+
+    /** Validate the raise input against the real Paper dialog provider. */
+    @SuppressWarnings("unchecked")
+    private void pokerRaiseProbe(Plugin plugin, Object menus, World world) throws Exception {
+        ClassLoader loader = plugin.getClass().getClassLoader();
+        Class<?> roomType = Class.forName("dev.tabletop3d.Room", true, loader);
+        Class<?> factory = Class.forName("dev.tabletop3d.rules.GameFactory", true, loader);
+        var constructor = roomType.getDeclaredConstructor(UUID.class, String.class, int.class, long.class, int.class);
+        constructor.setAccessible(true);
+        UUID id = UUID.randomUUID();
+        Object room = constructor.newInstance(id, "texas-holdem", 2, 1L, 998);
+        Object game = factory.getMethod("create", String.class, int.class, long.class).invoke(null, "texas-holdem", 2, 1L);
+        int turn = (int) call(game, "currentPlayer", new Class<?>[0]);
+        AtomicInteger shown = new AtomicInteger();
+        Player actor = player(world, shown, true);
+        Player other = player(world, shown, true, UUID.randomUUID());
+        for (int seat = 0; seat < 2; seat++) {
+            Player seated = seat == turn ? actor : other;
+            call(room, "join", new Class<?>[]{UUID.class, String.class}, seated.getUniqueId(), seated.getName());
+        }
+        var board = roomType.getDeclaredField("board");
+        board.setAccessible(true);
+        board.set(room, game);
+        Map<UUID, Object> rooms = (Map<UUID, Object>) field(plugin, "rooms");
+        rooms.put(id, room);
+        try {
+            call(menus, "pokerRaise", new Class<?>[]{Player.class, roomType, long.class}, actor, room, 0L);
+            require(shown.get() == 1, "legal Raise opens a native input dialog");
+            call(menus, "pokerRaise", new Class<?>[]{Player.class, roomType, long.class}, other, room, 0L);
+            require(shown.get() == 1, "non-acting seat cannot open Raise");
+            getLogger().info("BOARDS_POKER_RAISE_PASS legal-dialog=opened other-seat=rejected");
+        } finally {
+            rooms.remove(id);
+        }
     }
 
     /** Build and navigate real Dialog objects while keeping synthetic rooms out of saves. */
@@ -562,7 +602,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 if(kind.equals("go9")){
                     Object stone=current.get("0,0");
                     @SuppressWarnings("unchecked") List<org.bukkit.entity.Entity> parts=(List<org.bukkit.entity.Entity>)field(stone,"parts");
-                    require(parts.size()==5,"Go stone plus two dead marks");
+                    require(parts.size()==6,"Go stone plus three non-overlapping dead marks");
                     List<org.bukkit.entity.Entity> marks=List.copyOf(parts.subList(3,5));
                     gameType.getMethod("apply",int.class,String.class).invoke(game,0,"dead:0,0");revision.setLong(room,revision.getLong(room)+1);call(view,"sync",new Class<?>[0]);
                     require(current.get("0,0")==stone&&parts.size()==3,"Go unmark keeps stone");

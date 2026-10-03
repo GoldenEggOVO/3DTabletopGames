@@ -127,12 +127,12 @@ class HandInteractionTest {
         f.table.hover(f.owner, "c");
         for (int i = 0; i < 20; i++) f.table.tick();
         assertEquals(
-                f.origin.getY() + .017 + HandTable.CARD_LIFT,
+                f.origin.getY() + .017 + HandTable.handPose(0, 2, 2, 3, false).lift() + HandTable.CARD_LIFT,
                 card.getLocation().getY(),
                 1e-6,
                 "Hover during a draw must not be lost when the card arrives");
         f.table.hover(f.owner, "c");
         for (int i = 0; i < 4; i++) f.table.tick();
-        assertEquals(f.origin.getY() + .017 + HandTable.CARD_LIFT, card.getLocation().getY(), 1e-6);
+        assertEquals(f.origin.getY() + .017 + HandTable.handPose(0, 2, 2, 3, false).lift() + HandTable.CARD_LIFT, card.getLocation().getY(), 1e-6);
     }
 }

@@ -45,6 +45,7 @@ final class HandTable implements AutoCloseable {
     private long revision = -1, language = -1;
     private boolean closed;
     static final double CARD_LIFT = .085;
+    private static final double CARD_SURFACE_SEPARATION = .0011;
 
     record Pose(double x, double z, float yaw, double lift) {
         Pose(double x, double z, float yaw) {
@@ -215,12 +216,12 @@ final class HandTable implements AutoCloseable {
             double sy, sz;
             if (spec.standing()) {
                 y = h - part.y() / 48 * h;
-                z = body ? 0 : d / 2 + .003 + part.layer() * .0008;
+                z = body ? part.relief() : d / 2 + .003 + part.relief();
                 sy = ph;
                 sz = body ? d : .001;
                 rotation = new Quaternionf().rotateZ((float) -part.roll());
             } else {
-                y = body ? h / 2 : .014 + part.layer() * .0008;
+                y = body ? h / 2 + part.relief() : .014 + part.relief();
                 z = (part.y() / 48 - .5) * d;
                 sy = body ? h : .002;
                 sz = ph;
@@ -685,7 +686,8 @@ final class HandTable implements AutoCloseable {
         if (!mahjong) {
             double centered = index - (count - 1) / 2.0,
                     unit = Math.min(.15, (players == 5 ? 1.18 : 1.50) / Math.max(1, count - 1));
-            return seatPose(seat, players, centered * unit, 1.02 + index * .0025);
+            Pose pose = seatPose(seat, players, centered * unit, 1.02 + index * .0025);
+            return new Pose(pose.x(), pose.z(), pose.yaw(), index * CARD_SURFACE_SEPARATION);
         }
         int columns = mahjong ? 17 : 18,
                 row = index / columns,

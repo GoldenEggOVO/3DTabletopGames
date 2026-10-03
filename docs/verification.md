@@ -1,5 +1,16 @@
 # Verification and acceptance
 
+## 1.10.4-SNAPSHOT — 桌面交互与原版卡牌
+
+- JDK 25 / Maven package：617 项 Java 测试通过，零失败、错误或跳过；19 项资源包检查通过。
+- 原版和 CraftEngine 各三次独立 Purpur 26.2 启动通过，包含真实 Raise 输入框、其他座位限制、私有手牌、五实体上限及重启恢复。CraftEngine 注册 234 个模型。
+- 60 秒运行检查覆盖 20 种场景、21 份回放；关闭后桌游实体归零。
+- 桌面菜单回归覆盖空桌面、桌沿、骰盘、双桌、距离、遮挡和潜行挥手／右键事件顺序。
+- 使用本地 Minecraft 26.2 客户端字体与渲染矩阵核对四层文字贴面；离线像素重建保留主体及双角标，微小牌背菱形存在量化变化。公开标准牌背从每张 327 个实体降至 5 个。
+- 客户端画面、声音和 FPS 尚未实测；实体减少不代表字体绘制成本或 FPS 按比例改善。未发布 Release。
+
+验证 JAR SHA-256：`fd5883ef51917e97df814a04f0a005b513156ddc9549c7a3906a73bc884936d9`。
+
 ## Local build: 1.9.4-SNAPSHOT - Riichi assistance and simpler room navigation
 
 - JDK 25 / Maven package: **549 tests passed**, zero failures, errors or skipped tests. Python resource-pack tools: **14 tests passed**.

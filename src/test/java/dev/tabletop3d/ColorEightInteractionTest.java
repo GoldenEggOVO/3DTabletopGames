@@ -74,6 +74,61 @@ class ColorEightInteractionTest {
                 f.origin.getY() + .017 + first.lift(),
                 f.entities.get(start).getLocation().getY(),
                 1e-6);
+        f.table.hover(f.owner, null);
+        for (int i = 0; i < 5; i++) f.table.tick();
+        double baseline = f.origin.getY() + .017 + HandTable.handPose(0, 2, 27, 54, false).lift();
+        for (Entity part : cards) assertEquals(baseline, part.getLocation().getY(), 1e-6);
+    }
+
+    @Test
+    void adjacentCardBodiesHaveDifferentTopAndBottomPlanesWithoutSinkingIntoTheTable() {
+        for (int players = 2; players <= 5; players++)
+            for (int seat = 0; seat < players; seat++)
+                for (int count : new int[] {2, 8, 54, 108}) {
+                    var first = HandTable.handPose(seat, players, 0, count, false);
+                    assertEquals(0, first.lift(), 1e-9);
+                    for (int i = 1; i < count; i++) {
+                        var previous = HandTable.handPose(seat, players, i - 1, count, false);
+                        var next = HandTable.handPose(seat, players, i, count, false);
+                        assertTrue(next.lift() - previous.lift() >= .0006 - 1e-9,
+                                "Overlapping bodies need separate horizontal surface planes");
+                        assertTrue(next.lift() < .125, "The diagonal lift stays below half a card");
+                    }
+                }
+    }
+
+    @Test
+    void denseHandBodiesDoNotShareOverlappingHorizontalFaces() {
+        record Surface(int card, double x, double y, double z, double width, double depth) {}
+        List<Surface> surfaces = new ArrayList<>();
+        for (int i = 0; i < 54; i++) {
+            var pose = HandTable.handPose(0, 2, i, 54, false);
+            for (var part : HandModels.cardBody()) {
+                double cos = Math.cos(part.roll()), sin = Math.sin(part.roll());
+                if (Math.abs(cos * sin) > 1e-9) continue;
+                double width = Math.abs(cos) * part.w() / 32 * .168
+                        + Math.abs(sin) * part.h() / 48 * .25;
+                double height = Math.abs(sin) * part.w() / 32 * .168
+                        + Math.abs(cos) * part.h() / 48 * .25;
+                double x = pose.x() + (part.x() / 32 - .5) * .168;
+                double center = pose.lift() + .25 - part.y() / 48 * .25;
+                for (int side : new int[] {-1, 1})
+                    surfaces.add(new Surface(i, x, center + side * height / 2,
+                            pose.z() + part.relief(), width, .008));
+            }
+        }
+        for (int i = 0; i < surfaces.size(); i++)
+            for (int j = i + 1; j < surfaces.size(); j++) {
+                var a = surfaces.get(i);
+                var b = surfaces.get(j);
+                if (a.card() == b.card() || Math.abs(a.y() - b.y()) > 1e-9) continue;
+                double x = Math.min(a.x() + a.width() / 2, b.x() + b.width() / 2)
+                        - Math.max(a.x() - a.width() / 2, b.x() - b.width() / 2);
+                double z = Math.min(a.z() + a.depth() / 2, b.z() + b.depth() / 2)
+                        - Math.max(a.z() - a.depth() / 2, b.z() - b.depth() / 2);
+                assertTrue(x <= 1e-9 || z <= 1e-9,
+                        "Coplanar horizontal card bodies: " + a + " / " + b);
+            }
     }
 
     @Test
@@ -87,7 +142,7 @@ class ColorEightInteractionTest {
                     for (int i = 0; i < count; i++) {
                         var pose = HandTable.handPose(seat, players, i, count, false);
                         assertEquals(-Math.toDegrees(angle), pose.yaw(), .0001);
-                        assertEquals(0, pose.lift());
+                        assertTrue(pose.lift() >= 0, "Cards cannot sink into the table");
                         if (i > 0) {
                             var previous = HandTable.handPose(seat, players, i - 1, count, false);
                             Vector delta =
@@ -224,6 +279,29 @@ class ColorEightInteractionTest {
         assertEquals(30000, plugin.turnWaitMillis(room));
         room.offline.put(human, 0L);
         assertEquals(30000, plugin.turnWaitMillis(room));
+    }
+
+    @Test
+    void circularFurnitureSeparatesOverlappingTexturedPlanesWithinABoundedRelief() {
+        var parts = RoundCardTable.parts();
+        double highestWood = parts.stream()
+                .filter(p -> p.material() == org.bukkit.Material.STRIPPED_DARK_OAK_WOOD)
+                .mapToDouble(p -> p.y() + p.h()).max().orElseThrow();
+        double lowestCloth = parts.stream()
+                .filter(p -> p.material() == org.bukkit.Material.GREEN_TERRACOTTA)
+                .mapToDouble(p -> p.y() + p.h()).min().orElseThrow();
+        assertTrue(lowestCloth - highestWood >= .001,
+                "Every felt strip must cover the wooden surface below it");
+        for (int i = 0; i < parts.size(); i++)
+            for (int j = i + 1; j < parts.size(); j++) {
+                var a = parts.get(i);
+                var b = parts.get(j);
+                if (a.material() != b.material()) continue;
+                assertTrue(Math.abs(a.y() - b.y()) >= .0005 - 1e-9,
+                        "Overlapping round bars need a resolvable depth separation");
+                assertTrue(Math.abs(a.y() - b.y()) < .015,
+                        "Furniture relief must remain below 1.5 cm");
+            }
     }
 
     @Test

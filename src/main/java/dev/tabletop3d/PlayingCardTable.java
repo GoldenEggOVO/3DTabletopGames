@@ -84,11 +84,28 @@ final class PlayingCardTable implements AutoCloseable {
                 parts.add(item);
                 show(item, viewer);
             } else if (PlayingCardArt.boxes(spec.face) != null) {
-                for (var box : PlayingCardArt.boxes(spec.face)) {
-                    var part = origin.getWorld().spawn(at, BlockDisplay.class, d -> {
+                var paper = PlayingCardArt.boxes(spec.face).getFirst();
+                var body = origin.getWorld().spawn(at, BlockDisplay.class, d -> {
+                    configure(d, viewer, false);
+                    d.setBlock((spec.face.equals("back") ? Material.BLUE_CONCRETE
+                            : Material.valueOf(paper.material())).createBlockData());
+                    d.setTransformation(paper.pose(WIDTH, spec.standing, spec.face.equals("back")));
+                });
+                parts.add(body);
+                show(body, viewer);
+                for (int layer = 0; layer < 4; layer++) {
+                    final int plane = layer;
+                    var part = origin.getWorld().spawn(at, TextDisplay.class, d -> {
                         configure(d, viewer, false);
-                        d.setBlock(Material.valueOf(box.material()).createBlockData());
-                        d.setTransformation(box.pose(WIDTH, spec.standing, spec.face.equals("back")));
+                        d.setBackgroundColor(Color.fromARGB(0));
+                        d.setDefaultBackground(false);
+                        d.setShadowed(false);
+                        d.setSeeThrough(false);
+                        d.setAlignment(TextDisplay.TextAlignment.LEFT);
+                        d.setLineWidth(PlayingCardRaster.COLUMNS * 5 + 1);
+                        d.text(PlayingCardRaster.face(spec.face));
+                        d.setTransformation(PlayingCardRaster.pose(WIDTH, spec.standing,
+                                spec.face.equals("back"), plane));
                     });
                     parts.add(part);
                     show(part, viewer);

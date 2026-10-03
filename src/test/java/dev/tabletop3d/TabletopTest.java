@@ -109,6 +109,22 @@ class TabletopTest {
     }
 
     @Test
+    void reversiFacesAndDeadStoneCrossHaveNoOverlappingTopSurfaces() {
+        for (var parts : List.of(TableModels.reversi(), TableModels.deadStoneMarks()))
+            for (int i = 0; i < parts.size(); i++)
+                for (int j = i + 1; j < parts.size(); j++) {
+                    var a = parts.get(i);
+                    var b = parts.get(j);
+                    if (Math.abs(a.y() + a.h() - b.y() - b.h()) > 1e-9) continue;
+                    double x = Math.min(a.x() + a.w() / 2, b.x() + b.w() / 2)
+                            - Math.max(a.x() - a.w() / 2, b.x() - b.w() / 2);
+                    double z = Math.min(a.z() + a.d() / 2, b.z() + b.d() / 2)
+                            - Math.max(a.z() - a.d() / 2, b.z() - b.d() / 2);
+                    assertTrue(x <= 1e-9 || z <= 1e-9, "Coplanar native cross surfaces");
+                }
+    }
+
+    @Test
     void stoneDiscsKeepThreePartsWithoutOverlappingVolumesOrTopFaces() {
         List<TableModels.Part> parts = new ArrayList<>();
         TableModels.disc(parts, Material.BLACK_CONCRETE, .76, .13);
@@ -469,6 +485,7 @@ class TabletopTest {
             set(view, "room", room);
             set(view, "origin", new Location(world, 0, .85, 0));
             set(view, "geometry", new TableGeometry("gomoku", room.board.cells()));
+            doCallRealMethod().when(view).menuHit(any(), any());
             set(arena, "plugin", plugin);
             set(arena, "views", new HashMap<>(Map.of(room.id, view)));
             set(arena, "clicks", clicks);

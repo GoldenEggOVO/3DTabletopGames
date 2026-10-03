@@ -461,7 +461,7 @@ final class TableView implements AutoCloseable {
                             0,
                             -.05,
                             v,
-                            width - .03,
+                            width - .23,
                             .11,
                             .10,
                             null));
@@ -603,7 +603,7 @@ final class TableView implements AutoCloseable {
                                         0,
                                         -.05,
                                         v,
-                                        width - .03,
+                                        width - .23,
                                         .11,
                                         .10,
                                         null));
@@ -1121,6 +1121,10 @@ final class TableView implements AutoCloseable {
     }
 
     record Hit(String cell, double distance) {}
+
+    double menuHit(Location eye, org.bukkit.util.Vector direction) {
+        return TableGeometry.menuHit(room.kind, room.sideTray, origin, eye, direction);
+    }
 
     Hit hitPiece(Location eye, org.bukkit.util.Vector direction) {
         if (yachtTable != null) return yachtTable.hit(eye, direction);

@@ -5,7 +5,6 @@ import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import java.util.*;
@@ -16,8 +15,8 @@ final class TableLobby implements Listener, AutoCloseable {
     record Entry(
             String id,
             Location center,
-            double radius,
-            double height,
+            String kind,
+            boolean sideTray,
             Room.Phase phase,
             List<String> names,
             int capacity,
@@ -52,8 +51,8 @@ final class TableLobby implements Listener, AutoCloseable {
                     new Entry(
                             "board:" + r.id,
                             c,
-                            Set.of("color-eight","doudizhu","liars-bar","texas-holdem").contains(r.kind) ? 1.5 : 1.1,
-                            TableGeometry.SURFACE + (r.kind.equals("connectfour") ? 1.85 : 0),
+                            r.kind,
+                            r.sideTray,
                             r.phase,
                             r.seats.stream().map(Room.Seat::name).toList(),
                             r.capacity,
@@ -86,20 +85,8 @@ final class TableLobby implements Listener, AutoCloseable {
     }
 
     static double hit(Entry e, Location eye, Vector direction) {
-        if (!Objects.equals(e.center.getWorld(), eye.getWorld())) return Double.POSITIVE_INFINITY;
-        var c = e.center;
-        var box =
-                new BoundingBox(
-                        c.getX() - e.radius,
-                        c.getY(),
-                        c.getZ() - e.radius,
-                        c.getX() + e.radius,
-                        c.getY() + e.height,
-                        c.getZ() + e.radius);
-        var hit = box.rayTrace(eye.toVector(), direction, TableGeometry.REACH);
-        return hit == null
-                ? Double.POSITIVE_INFINITY
-                : hit.getHitPosition().distance(eye.toVector());
+        return TableGeometry.menuHit(e.kind,e.sideTray,
+                e.center.clone().add(0,TableGeometry.SURFACE,0),eye,direction);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -132,15 +119,6 @@ final class TableLobby implements Listener, AutoCloseable {
             }
         }
         if (target == null) return false;
-        var block =
-                p.getWorld()
-                        .rayTraceBlocks(
-                                eye,
-                                dir,
-                                Math.max(.001, nearest - .05),
-                                FluidCollisionMode.NEVER,
-                                true);
-        if (block != null) return false;
         long now = System.nanoTime();
         if (now - clicks.getOrDefault(p.getUniqueId(), 0L) < 250_000_000L) return true;
         clicks.put(p.getUniqueId(), now);

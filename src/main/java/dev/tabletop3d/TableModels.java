@@ -57,7 +57,7 @@ final class TableModels {
         }
     }
     static List<Part> deadStoneMarks(){
-        return List.of(new Part(0,.16,0,.65,.035,.10,Material.RED_CONCRETE),new Part(0,.16,0,.10,.035,.65,Material.RED_CONCRETE));
+        return List.of(new Part(0,.16,0,.65,.035,.10,Material.RED_CONCRETE),new Part(0,.16,-.1875,.10,.035,.275,Material.RED_CONCRETE),new Part(0,.16,.1875,.10,.035,.275,Material.RED_CONCRETE));
     }
     /** Five horizontal strips approximate a round vertical chip, in world block units. */
     static List<Part> connectFour(int owner) {
@@ -74,7 +74,7 @@ final class TableModels {
             Material material=side==0?Material.WHITE_CONCRETE:Material.BLACK_CONCRETE;
             double y=side*.065;
             box(parts,0,y,0,.52,.065,.76,material);
-            box(parts,0,y,0,.76,.065,.52,material);
+            for(double x:new double[]{-.32,.32})box(parts,x,y,0,.12,.065,.52,material);
         }
         return List.copyOf(parts);
     }

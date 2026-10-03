@@ -172,7 +172,8 @@ class YachtTableTest {
         when(f.player.isSneaking()).thenReturn(true);
         when(f.plugin.allowed(f.player)).thenReturn(true);
         when(f.plugin.room(f.player)).thenReturn(f.room);
-        var entry = new TableLobby.Entry("board:" + f.room.id, f.view.origin, 1.1, TableGeometry.SURFACE,
+        var entry = new TableLobby.Entry("board:" + f.room.id,
+                f.view.origin.clone().subtract(0, TableGeometry.SURFACE, 0), "yacht", false,
                 Room.Phase.PLAYING, java.util.List.of("Player"), 2, java.util.Set.of(playerId),
                 p -> fail("Seated player must not join again"), p -> f.plugin.menus.room(p, f.room));
         doReturn(java.util.List.of(entry)).when(f.plugin.tableLobby).collect();

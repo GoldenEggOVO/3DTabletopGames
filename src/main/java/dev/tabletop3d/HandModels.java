@@ -2,27 +2,54 @@ package dev.tabletop3d;
 
 import dev.tabletop3d.ui.GameSymbols;
 
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Material;
 
 /** Original native cuboid artwork. Coordinates are centers on a 32 by 48 face. */
 final class HandModels {
-    record Part(double x,double y,double w,double h,double roll,int layer,Material material) {}
+    record Part(double x,double y,double w,double h,double roll,int layer,Material material,int plane) {
+        Part(double x,double y,double w,double h,double roll,int layer,Material material){this(x,y,w,h,roll,layer,material,0);}
+        double relief(){return layer*.0012+plane*.0002;}
+    }
     private record Face(boolean mahjong,String value) {}
     private static final Map<Face,List<Part>> CACHE=new ConcurrentHashMap<>();
     private static final Material CREAM=Material.SMOOTH_QUARTZ,INK=Material.BLACK_CONCRETE,
         RED=Material.RED_CONCRETE,BLUE=Material.BLUE_CONCRETE,GREEN=Material.GREEN_CONCRETE;
+    private static final List<Part> CARD_BODY;
+    static {
+        List<Part> parts=new ArrayList<>();rounded(parts,16,24,32,48,2,0,CREAM);CARD_BODY=separatePlanes(parts);
+    }
 
     static List<Part> of(boolean mahjong,String face){
         return CACHE.computeIfAbsent(new Face(mahjong,face.isEmpty()?"back":face),key->{
             List<Part> parts=new ArrayList<>();
             if(key.mahjong())tile(parts,key.value());else card(parts,key.value());
-            return List.copyOf(parts);
+            return separatePlanes(parts);
         });
     }
     static List<Part> cardBody(){
-        List<Part> parts=new ArrayList<>();rounded(parts,16,24,32,48,2,0,CREAM);return List.copyOf(parts);
+        return CARD_BODY;
+    }
+    private static List<Part> separatePlanes(List<Part> source){
+        // Reuse a relief plane for disjoint strokes; intersecting strokes get distinct depths.
+        List<Part> parts=new ArrayList<>();List<Area> footprints=new ArrayList<>();
+        for(Part part:new LinkedHashSet<>(source)){
+            AffineTransform transform=AffineTransform.getTranslateInstance(part.x(),part.y());transform.rotate(part.roll());
+            Area footprint=new Area(transform.createTransformedShape(new Rectangle2D.Double(-part.w()/2,-part.h()/2,part.w(),part.h())));
+            BitSet occupied=new BitSet();
+            for(int i=0;i<parts.size();i++){
+                Part previous=parts.get(i);if(previous.layer()!=part.layer())continue;
+                Area overlap=new Area(footprint);overlap.intersect(footprints.get(i));
+                if(!overlap.isEmpty()&&overlap.getBounds2D().getWidth()>=.001&&overlap.getBounds2D().getHeight()>=.001)occupied.set(previous.plane());
+            }
+            parts.add(new Part(part.x(),part.y(),part.w(),part.h(),part.roll(),part.layer(),part.material(),occupied.nextClearBit(0)));
+            footprints.add(footprint);
+        }
+        return List.copyOf(parts);
     }
     private static void box(List<Part> p,double x,double y,double w,double h,double roll,int layer,Material m){
         p.add(new Part(x,y,w,h,roll,layer,m));
