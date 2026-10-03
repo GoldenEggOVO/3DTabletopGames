@@ -2,6 +2,9 @@
 
 ## 1.10.0-SNAPSHOT (unreleased)
 
+- Separate flat and upright playing-card layers and keep hover targets stationary; selecting a hovered card no longer adds another lift.
+- Put playing-card controls between the player and their hand, centre Doudizhu bottom cards, remove hand-count captions, and move seat information inward.
+- Give native playing cards a thin border, cream face, red/black indices and an inverted lower corner using five displays per face.
 - Add optional packed boards and pieces for the other board games, including 3D chess pieces and a Connect Four rack with transparent holes.
 - Add original shared playing cards and dedicated Doudizhu, Liar's Bar and Texas Hold'em tables.
 - Add private multi-card selection, bidding/challenge/betting controls, compact poker chips and dealer markers, bots and deterministic room replay for all three new games.

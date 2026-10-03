@@ -18,6 +18,7 @@ import java.util.*;
 /** Standard cards share rendering and selection; each pure engine owns its legal controls. */
 final class PlayingCardTable implements AutoCloseable {
     private static final double WIDTH = .168, HEIGHT = .25;
+    private static final double CARD_LAYER = .012, CARD_LIFT = .085;
     private final Tabletop3D plugin;
     private final Room room;
     private final Location origin;
@@ -89,22 +90,61 @@ final class PlayingCardTable implements AutoCloseable {
                                 at,
                                 spec.face.equals("back")
                                         ? Material.BLUE_TERRACOTTA
-                                        : Material.SMOOTH_QUARTZ,
+                                        : Material.BLACK_CONCRETE,
                                 WIDTH,
                                 h,
                                 depth,
                                 viewer);
                 parts.add(body);
                 if (!spec.face.equals("back")) {
-                    var label =
+                    Location inset = faceLocation(at, spec.standing);
+                    if (spec.standing) inset.add(0, -.076, 0);
+                    else inset.add(0, -.003, 0);
+                    parts.add(
+                            block(
+                                    inset,
+                                    Material.SMOOTH_QUARTZ,
+                                    WIDTH - .008,
+                                    spec.standing ? HEIGHT - .008 : .003,
+                                    spec.standing ? .003 : HEIGHT - .008,
+                                    viewer));
+                    Component face =
+                            PlayingCardText.face(spec.face)
+                                    .colorIfAbsent(
+                                            spec.face.startsWith("hearts_")
+                                                            || spec.face.startsWith("diamonds_")
+                                                            || spec.face.equals("joker_big")
+                                                    ? NamedTextColor.RED
+                                                    : NamedTextColor.DARK_GRAY);
+                    parts.add(
                             text(
-                                    faceLocation(at, spec.standing),
-                                    PlayingCardText.face(spec.face)
-                                            .colorIfAbsent(NamedTextColor.DARK_GRAY),
-                                    .15f,
+                                    cardLabelLocation(at, spec.standing, 0, .5),
+                                    face,
+                                    spec.face.startsWith("joker_") ? .09f : .16f,
                                     viewer,
-                                    !spec.standing);
-                    parts.add(label);
+                                    !spec.standing));
+                    for (int corner = 0; corner < 2; corner++) {
+                        var label =
+                                text(
+                                        cardLabelLocation(
+                                                at,
+                                                spec.standing,
+                                                corner == 0 ? -.30 : .30,
+                                                corner == 0 ? .84 : .16),
+                                        face,
+                                        .05f,
+                                        viewer,
+                                        !spec.standing);
+                        if (corner == 1) {
+                            label.setTransformation(
+                                    new Transformation(
+                                            new Vector3f(),
+                                            new Quaternionf().rotateZ((float) Math.PI),
+                                            new Vector3f(.05f),
+                                            new Quaternionf()));
+                        }
+                        parts.add(label);
+                    }
                 }
             }
         }
@@ -161,8 +201,7 @@ final class PlayingCardTable implements AutoCloseable {
         publicEntities.add(status);
         status.setBillboard(Display.Billboard.CENTER);
         for (int seat = 0; seat < room.capacity; seat++) {
-            var label =
-                    text(at(seatPose(seat, 0, 1.19, .38)), Component.empty(), .17f, null, false);
+            var label = text(at(seatPose(seat, 0, .78, .38)), Component.empty(), .17f, null, false);
             audience.common(label);
             publicEntities.add(label);
             seatLabels.add(label);
@@ -187,7 +226,10 @@ final class PlayingCardTable implements AutoCloseable {
     private Pose handPose(int seat, int index, int count, double lift) {
         double unit = Math.min(.15, (room.capacity >= 5 ? 1.06 : 1.50) / Math.max(1, count - 1));
         return seatPose(
-                seat, (index - (count - 1) / 2.0) * unit, 1.02 + index * .0025, .017 + lift);
+                seat,
+                (index - (count - 1) / 2.0) * unit,
+                1.02 + (index - (count - 1) / 2.0) * CARD_LAYER,
+                .017 + lift);
     }
 
     private Location at(Pose pose) {
@@ -200,6 +242,17 @@ final class PlayingCardTable implements AutoCloseable {
         if (!standing) return location.clone().add(0, .01, 0);
         double yaw = Math.toRadians(location.getYaw());
         return location.clone().add(-Math.sin(yaw) * .007, .08, Math.cos(yaw) * .007);
+    }
+
+    private Location cardLabelLocation(Location location, boolean standing, double x, double y) {
+        double yaw = Math.toRadians(location.getYaw());
+        double tangent = x * WIDTH;
+        double normal = standing ? .009 : (.5 - y) * HEIGHT;
+        return location.clone()
+                .add(
+                        tangent * Math.cos(yaw) - normal * Math.sin(yaw),
+                        standing ? y * HEIGHT : .011,
+                        tangent * Math.sin(yaw) + normal * Math.cos(yaw));
     }
 
     private void configure(Display display, Player viewer, boolean packed) {
@@ -314,7 +367,7 @@ final class PlayingCardTable implements AutoCloseable {
                                             seat,
                                             (index - (cards.size() - 1) / 2.0) * .10,
                                             .52,
-                                            .022),
+                                            .022 + index * CARD_LAYER),
                                     false,
                                     -1);
                         if (room.kind.equals("doudizhu")) continue;
@@ -326,12 +379,16 @@ final class PlayingCardTable implements AutoCloseable {
                                     "exposed:" + seat + ":" + index,
                                     exposed.get(index).face(),
                                     room.kind.equals("texas-holdem")
-                                            ? handPose(seat, index, exposed.size(), 0)
+                                            ? handPose(
+                                                    seat,
+                                                    index,
+                                                    exposed.size(),
+                                                    .015 + index * CARD_LAYER)
                                             : seatPose(
                                                     seat,
                                                     (index - (exposed.size() - 1) / 2.0) * .18,
                                                     .55,
-                                                    .032),
+                                                    .032 + index * CARD_LAYER),
                                     false,
                                     -1);
                     }
@@ -345,7 +402,7 @@ final class PlayingCardTable implements AutoCloseable {
                                     packed,
                                     "bottom:" + index,
                                     cards.get(index).face(),
-                                    new Pose((index - 1) * .27, -.35, 0, .022),
+                                    new Pose((index - 1) * .27, 0, 0, .022),
                                     false,
                                     -1);
                     }
@@ -568,11 +625,7 @@ final class PlayingCardTable implements AutoCloseable {
                 String control = controls.get(index);
                 int columns = Math.min(4, controls.size());
                 Pose pose =
-                        seatPose(
-                                seat,
-                                (index % columns - (columns - 1) / 2.0) * .32,
-                                .79 - (index / columns) * .21,
-                                .03);
+                        seatPose(seat, (index % columns - (columns - 1) / 2.0) * .32, 1.27, .03);
                 var body =
                         block(
                                 at(pose),
@@ -651,8 +704,10 @@ final class PlayingCardTable implements AutoCloseable {
     private void lift(PrivateView view) {
         int index = 0;
         for (var entry : view.cards.entrySet()) {
-            double lift = view.selection.contains(entry.getKey()) ? .055 : 0;
-            if (entry.getKey().equals(view.hover)) lift += .085;
+            double lift =
+                    view.selection.contains(entry.getKey()) || entry.getKey().equals(view.hover)
+                            ? CARD_LIFT
+                            : 0;
             entry.getValue().pose(handPose(view.seat, index++, view.cards.size(), lift));
         }
     }
@@ -684,15 +739,24 @@ final class PlayingCardTable implements AutoCloseable {
                     best = entry.getKey();
                 }
             }
-        else
+        else {
+            int index = 0;
             for (var entry : view.cards.entrySet()) {
+                // A visual lift must never move the target and undo its own hover.
                 double distance =
-                        ray(eye, direction, entry.getValue().spec.pose, WIDTH, HEIGHT, true);
+                        ray(
+                                eye,
+                                direction,
+                                handPose(view.seat, index++, view.cards.size(), 0),
+                                WIDTH,
+                                HEIGHT,
+                                true);
                 if (distance > 0 && distance < nearest) {
                     nearest = distance;
                     best = entry.getKey();
                 }
             }
+        }
         if (best != null
                 && origin.getWorld()
                                 .rayTraceBlocks(

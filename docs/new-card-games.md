@@ -16,6 +16,8 @@ Two to six players, 1,000 chips each and fixed 5/10 blinds. Dealer rotates; head
 
 ## Models and acceptance
 
-Resource-pack tables have smooth solid-color wooden borders and marked play regions. Chess pieces are standing 3D models; Connect Four has transparent rack holes; stones and discs use masked round caps. New public cards use one packed entity each; native faces use a body and text, preserving a working no-pack option. Private faces are hidden before spawn and shown only to their owner. Chip stacks have fixed entity counts rather than one entity per chip.
+Resource-pack tables have smooth solid-color wooden borders and marked play regions. Chess pieces are standing 3D models; Connect Four has transparent rack holes; stones and discs use masked round caps. New public cards use one packed entity each; native faces use two block displays and three text displays for a thin border, cream face, central index and opposite corner indices. Native backs remain one display. Private faces are hidden before spawn and shown only to their owner. Chip stacks have fixed entity counts rather than one entity per chip.
+
+Playing-card controls lie flat between the player and the hand. Upright cards have distinct depth layers; overlapping flat cards have distinct height layers. Hover uses stationary hand targets, and selection and hover share a single lift. Seat captions omit hand counts and sit inward; Doudizhu bottom cards sit at the table centre.
 
 Client acceptance remains required for four/six-seat readability, card overlap and selection, texture orientation, round geometry and mixed nearby viewers. No Release is published by this source update.

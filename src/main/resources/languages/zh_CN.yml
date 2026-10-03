@@ -735,7 +735,7 @@
 "cards.poker.small-blind": " · 小盲"
 "cards.poker.stack": "{chips} 筹码 · 已下 {bet}"
 "cards.poker.status": "第 {hand} 手 · {phase}\n底池 {pot} · 本轮下注 {bet}"
-"cards.seat": "{player} · {count} 张牌"
+"cards.seat": "{player}"
 "error.cards.action": "当前无法进行这个操作。"
 "error.cards.must-play": "领出时不能不出牌。"
 "error.cards.selection": "请选择手里仍持有的不同牌。"

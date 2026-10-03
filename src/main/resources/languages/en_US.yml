@@ -735,7 +735,7 @@
 "cards.poker.small-blind": " · SB"
 "cards.poker.stack": "{chips} chips · Bet {bet}"
 "cards.poker.status": "Hand {hand} · {phase}\nPot {pot} · Street total {bet}"
-"cards.seat": "{player} · {count} cards"
+"cards.seat": "{player}"
 "error.cards.action": "This action is not available now."
 "error.cards.must-play": "You must lead a card group."
 "error.cards.selection": "Select distinct cards that are still in your hand."

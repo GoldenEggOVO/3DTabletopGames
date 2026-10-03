@@ -1,7 +1,5 @@
 package dev.tabletop3d;
 
-import dev.tabletop3d.rules.HandGame;
-
 import net.kyori.adventure.text.Component;
 
 import java.util.*;
@@ -66,11 +64,7 @@ final class PlayingCardText {
         var info = room.board.publicInfo();
         var label =
                 Language.component(
-                        "cards.seat",
-                        "player",
-                        RoomText.player(room.seats.get(seat), seat + 1),
-                        "count",
-                        ((HandGame) room.board).handSize(seat));
+                        "cards.seat", "player", RoomText.player(room.seats.get(seat), seat + 1));
         if (room.kind.equals("texas-holdem"))
             return label.append(Component.newline())
                     .append(

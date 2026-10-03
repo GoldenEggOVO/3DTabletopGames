@@ -84,6 +84,176 @@ class PlayingCardTableTest {
         }
     }
 
+    private PlayingCardTable table(TableViewTest.Fixture fixture) {
+        return (PlayingCardTable) get(fixture.view, "playingTable");
+    }
+
+    private Map<String, Object> ownCards(TableViewTest.Fixture fixture) {
+        var views = (Map<?, ?>) get(table(fixture), "privateViews");
+        return (Map<String, Object>) get(views.get(fixture.player.getUniqueId()), "cards");
+    }
+
+    private Location body(Object card) {
+        return ((List<Entity>) get(card, "parts")).getFirst().getLocation();
+    }
+
+    @Test
+    void aStationaryCursorKeepsItsCardAtTheBottomAndOverlapBoundary() {
+        for (String kind : List.of("doudizhu", "liars-bar", "texas-holdem")) {
+            var f = new TableViewTest.Fixture(kind, kind.equals("doudizhu") ? 3 : 4);
+            owner(f, true);
+            var cards = new ArrayList<>(ownCards(f).values());
+            Location first = body(cards.getFirst()), second = body(cards.get(1));
+            for (double height : List.of(.02, .12)) {
+                Location eye = first.clone().add(0, height, 1.5);
+                if (height == .12) eye.setX((first.getX() + second.getX()) / 2);
+                var direction = new org.bukkit.util.Vector(0, 0, -1);
+                String hit = table(f).handHit(f.player, eye, direction);
+                assertNotNull(hit);
+                for (int tick = 0; tick < 10; tick++) {
+                    table(f).hover(f.player, hit);
+                    assertEquals(hit, table(f).handHit(f.player, eye, direction), kind);
+                }
+                table(f).hover(f.player, null);
+            }
+            f.view.close();
+        }
+    }
+
+    @Test
+    void selectingAHoveredCardDoesNotRaiseItTwice() {
+        var f = new TableViewTest.Fixture("doudizhu", 3);
+        owner(f, true);
+        while (f.room.board.currentPlayer() != 0) f.move("bid:0");
+        f.move("bid:3");
+        var entry = ownCards(f).entrySet().iterator().next();
+        table(f).hover(f.player, entry.getKey());
+        double hovered = body(entry.getValue()).getY();
+        table(f).cardAction(f.player, entry.getKey());
+        assertEquals(hovered, body(entry.getValue()).getY(), 1e-8);
+        table(f).hover(f.player, null);
+        assertEquals(hovered, body(entry.getValue()).getY(), 1e-8);
+        f.view.close();
+    }
+
+    @Test
+    void overlappingCardsHaveSeparatePhysicalLayersAndControlsStayInFront() {
+        for (String kind : List.of("doudizhu", "liars-bar", "texas-holdem")) {
+            var f = new TableViewTest.Fixture(kind, kind.equals("doudizhu") ? 3 : 4);
+            owner(f, false);
+            var cards = new ArrayList<>(ownCards(f).values());
+            for (int i = 1; i < cards.size(); i++)
+                assertTrue(
+                        body(cards.get(i)).getZ() - body(cards.get(i - 1)).getZ() > .008,
+                        "Adjacent upright card volumes must not intersect");
+            var views = (Map<?, ?>) get(table(f), "privateViews");
+            var buttons = (Map<?, List<Entity>>) get(views.get(f.player.getUniqueId()), "buttons");
+            for (var parts : buttons.values())
+                assertTrue(
+                        parts.getFirst().getLocation().getZ() > body(cards.getLast()).getZ() + .085,
+                        "Controls must lie between the player and the hand");
+            if (kind.equals("doudizhu")) {
+                while (f.room.board.currentPlayer() != 0) f.move("bid:0");
+                f.move("bid:3");
+                var hand = ((dev.tabletop3d.rules.HandGame) f.room.board).hand(0);
+                var pair =
+                        hand.stream()
+                                .collect(
+                                        java.util.stream.Collectors.groupingBy(
+                                                p -> p.face().substring(p.face().indexOf('_') + 1)))
+                                .values()
+                                .stream()
+                                .filter(group -> group.size() >= 2)
+                                .findFirst()
+                                .orElseThrow();
+                f.move("play:" + pair.get(0).id() + "," + pair.get(1).id());
+                var publicCards = (Map<String, Object>) get(table(f), "publicCards");
+                Location a = body(publicCards.get("native:play:0:0"));
+                Location b = body(publicCards.get("native:play:0:1"));
+                assertTrue(
+                        b.getY() - a.getY() > .01,
+                        "Overlapping flat faces and card bodies need separate heights");
+                var bottom =
+                        publicCards.entrySet().stream()
+                                .filter(e -> e.getKey().startsWith("native:bottom:"))
+                                .toList();
+                assertEquals(3, bottom.size());
+                for (var entry : bottom) assertEquals(0, body(entry.getValue()).getZ(), 1e-8);
+            }
+            f.view.close();
+        }
+    }
+
+    @Test
+    void nativeFacesHaveAClearBorderAndTwoOppositeCornerIndices() {
+        var f = new TableViewTest.Fixture("liars-bar", 4);
+        owner(f, false);
+        Object card = ownCards(f).values().iterator().next();
+        var parts = (List<Entity>) get(card, "parts");
+        assertEquals(2, parts.stream().filter(BlockDisplay.class::isInstance).count());
+        var labels = parts.stream().filter(TextDisplay.class::isInstance).toList();
+        assertEquals(3, labels.size());
+        var corner = f.transforms.get(labels.getLast());
+        var axis = corner.getLeftRotation().transform(new org.joml.Vector3f(0, 1, 0));
+        assertTrue(axis.y < -.99, "The lower corner must read upside down like a physical card");
+        f.view.close();
+    }
+
+    @Test
+    void pokerShowdownCardsAlsoHaveSeparateFlatLayers() {
+        var f = new TableViewTest.Fixture("texas-holdem", 2);
+        owner(f, true);
+        f.move("all-in");
+        f.move("call");
+        var cards = (Map<String, Object>) get(table(f), "publicCards");
+        Location first = body(cards.get("packed:exposed:0:0"));
+        Location second = body(cards.get("packed:exposed:0:1"));
+        assertTrue(
+                second.getY() - first.getY() > .01,
+                "Revealed overlapping hole cards need distinct heights too");
+        f.view.close();
+    }
+
+    @Test
+    void nativeFlatFaceSitsAboveItsBorderAndBelowThePrintedIndices() {
+        var f = new TableViewTest.Fixture("liars-bar", 4);
+        owner(f, false);
+        var cards = (Map<String, Object>) get(table(f), "publicCards");
+        var parts = (List<Entity>) get(cards.get("native:declaration"), "parts");
+        Entity border = parts.getFirst(), face = parts.get(1), label = parts.get(2);
+        double borderTop =
+                border.getLocation().getY()
+                        + f.transforms.get(border).getTranslation().y
+                        + f.transforms.get(border).getScale().y;
+        double faceTop =
+                face.getLocation().getY()
+                        + f.transforms.get(face).getTranslation().y
+                        + f.transforms.get(face).getScale().y;
+        assertTrue(
+                faceTop > borderTop + .001,
+                "The inset must not share the opaque border's top plane");
+        assertTrue(
+                label.getLocation().getY() > faceTop + .0005,
+                "Printed indices must sit in front of the inset");
+        f.view.close();
+    }
+
+    @Test
+    void seatLabelsDoNotShowRemainingHandCountsAndStayClearOfHands() {
+        var f = new TableViewTest.Fixture("liars-bar", 4);
+        owner(f, false);
+        var labels = (List<TextDisplay>) get(table(f), "seatLabels");
+        var captured =
+                org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
+        verify(labels.getFirst(), atLeastOnce()).text(captured.capture());
+        String text = dev.tabletop3d.ui.MessageText.plain(captured.getValue());
+        assertFalse(text.contains("cards"), text);
+        assertTrue(
+                labels.getFirst().getLocation().getZ() < .9,
+                "Roulette information must sit closer to the table centre than the hand");
+        f.view.close();
+    }
+
     @Test
     void nativeFacesAndRayTargetsFollowEverySeatRotation() {
         for (int capacity : List.of(3, 4, 6)) {
@@ -99,10 +269,15 @@ class PlayingCardTableTest {
                 Object card = cards.values().iterator().next();
                 var parts = (List<Entity>) get(card, "parts");
                 Location body = parts.getFirst().getLocation();
-                Location face = parts.get(1).getLocation();
+                Location face =
+                        parts.stream()
+                                .filter(TextDisplay.class::isInstance)
+                                .findFirst()
+                                .orElseThrow()
+                                .getLocation();
                 double angle = Math.PI * 2 * seat / capacity;
                 var normal = new org.bukkit.util.Vector(Math.sin(angle), 0, Math.cos(angle));
-                assertEquals(.007, face.toVector().subtract(body.toVector()).dot(normal), 1e-8);
+                assertEquals(.009, face.toVector().subtract(body.toVector()).dot(normal), 1e-8);
                 var eye = body.clone().add(normal.clone().multiply(1.5)).add(0, .125, 0);
                 assertEquals(
                         cards.keySet().iterator().next(),
