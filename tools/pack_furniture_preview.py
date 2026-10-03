@@ -11,7 +11,12 @@ OUT=ROOT/'target/pack-preview'
 def rotate(v,rotation):
     if not rotation:return v
     a=math.radians(rotation['angle']);o=rotation['origin'];x,y,z=[v[i]-o[i] for i in range(3)]
-    return (o[0]+x*math.cos(a)+z*math.sin(a),o[1]+y,o[2]-x*math.sin(a)+z*math.cos(a))
+    c,s=math.cos(a),math.sin(a)
+    axis=rotation.get('axis','y')
+    if axis=='x': x,y,z=x,y*c-z*s,y*s+z*c
+    elif axis=='y': x,y,z=x*c+z*s,y,-x*s+z*c
+    else: x,y,z=x*c-y*s,x*s+y*c,z
+    return (o[0]+x,o[1]+y,o[2]+z)
 
 def render(name):
     model=json.loads((ASSETS/f'models/item/{name}.json').read_text())
@@ -27,7 +32,9 @@ def render(name):
         normals={'up':(0,1,0),'down':(0,-1,0),'south':(0,0,1),'north':(0,0,-1),'east':(1,0,0),'west':(-1,0,0)}
         for side,face in part['faces'].items():
             a=math.radians(part.get('rotation',{}).get('angle',0));nx,ny,nz=normals[side]
-            normal=(nx*math.cos(a)+nz*math.sin(a),ny,-nx*math.sin(a)+nz*math.cos(a))
+            rotation=dict(part.get('rotation',{}))
+            if rotation:rotation['origin']=[0,0,0]
+            normal=rotate((nx,ny,nz),rotation)
             if normal[0]*.7+normal[1]*.9+normal[2]<=0:continue
             v=[rotate(p,part.get('rotation')) for p in vertices[side]]
             screen=[(512+(p[0]-p[2])*scale,280+((p[0]+p[2]-16)*.26-(p[1]-8)*.95)*scale) for p in v]
@@ -52,4 +59,4 @@ def render(name):
 
 if __name__=='__main__':
     OUT.mkdir(parents=True,exist_ok=True)
-    for name in ('card_table','mahjong_table','mahjong_panel'):render(name)
+    for name in ('card_table','mahjong_table','mahjong_panel','doudizhu_table','liars_bar_table','texas_holdem_table','board_chess','board_connectfour','chess_white_knight','playing_spades_ace'):render(name)

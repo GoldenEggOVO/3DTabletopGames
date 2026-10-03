@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.10.0-SNAPSHOT (unreleased)
+
+- Add optional packed boards and pieces for the other board games, including 3D chess pieces and a Connect Four rack with transparent holes.
+- Add original shared playing cards and dedicated Doudizhu, Liar's Bar and Texas Hold'em tables.
+- Add private multi-card selection, bidding/challenge/betting controls, compact poker chips and dealer markers, bots and deterministic room replay for all three new games.
+- Preserve current Mahjong/Color Eight interaction and per-player native/packed/mixed rendering. No economy integration or Release publication.
+
+
 ## 1.9.5-SNAPSHOT
 
 - Place Riichi assistance controls in a horizontal row on the owner's front-right apron, below the playing surface; preserve private visibility, brightness and action-bar descriptions.

@@ -92,7 +92,7 @@ final class RoomText {
     }
 
     static Component scores(Room room) {
-        if (!room.kind.equals("mahjong") || room.board == null) return Component.empty();
+        if (!Set.of("mahjong","doudizhu").contains(room.kind) || room.board == null) return Component.empty();
         var info = room.board.publicInfo();
         Component result = Component.empty();
         for (int seat = 0; seat < room.seats.size(); seat++)
@@ -143,6 +143,15 @@ final class RoomText {
     }
 
     static Component outcome(Room room, String outcome) {
+        if (outcome.startsWith("winners:")) {
+            Component names=Component.empty();
+            for(String value:outcome.substring(8).split(",")) {
+                int seat=Integer.parseInt(value);
+                if(!names.equals(Component.empty())) names=names.append(Language.component("room.roster.separator"));
+                names=names.append(player(room.seats.get(seat),seat+1));
+            }
+            return Language.component("result.team-winners","players",names);
+        }
         if (outcome.startsWith("winner:")) {
             try {
                 int seat = Integer.parseInt(outcome.substring(7));

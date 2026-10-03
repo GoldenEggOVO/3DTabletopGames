@@ -14,8 +14,8 @@ class RoomStoreTest {
     @Test
     void currentRoomsRoundTripIdentityOptionsSeatsAndReplay() throws Exception {
         List<Room> originals = new ArrayList<>();
-        for (String kind : List.of("mahjong", "color-eight", "chess", "ludo")) {
-            int capacity = kind.equals("mahjong") ? 4 : 2;
+        for (String kind : List.of("mahjong", "color-eight", "chess", "ludo", "doudizhu", "liars-bar", "texas-holdem")) {
+            int capacity = Tabletop3D.defaultCapacity(kind);
             Room room = new Room(UUID.randomUUID(), kind, capacity, 42, originals.size());
             room.join(UUID.randomUUID(), "<red>literal name");
             room.fillBots();
@@ -59,6 +59,11 @@ class RoomStoreTest {
             }
             assertEquals(before.board.cells(), replay.cells());
             assertEquals(before.board.publicInfo(), replay.publicInfo());
+            if (before.board instanceof dev.tabletop3d.rules.HandGame original) {
+                var restoredHands = (dev.tabletop3d.rules.HandGame) replay;
+                for (int seat = 0; seat < before.capacity; seat++)
+                    assertEquals(original.hand(seat), restoredHands.hand(seat));
+            }
             assertEquals(
                     before.board.legalActions(before.turn()),
                     replay.legalActions(after.turn() < 0 ? before.turn() : after.turn()));

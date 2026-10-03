@@ -528,6 +528,10 @@ class TableViewTest {
         final TableView view;
 
         Fixture(String kind, String... initial) {
+            this(kind,2,initial);
+        }
+
+        Fixture(String kind,int capacity,String... initial) {
             when(plugin.getConfig())
                     .thenReturn(new org.bukkit.configuration.file.YamlConfiguration());
             when(world.spawn(any(Location.class), any(Class.class), any(Consumer.class)))
@@ -582,10 +586,10 @@ class TableViewTest {
                             });
             UUID id = UUID.randomUUID();
             when(player.getUniqueId()).thenReturn(id);
-            room = new Room(UUID.randomUUID(), kind, 2, 0, 0);
+            room = new Room(UUID.randomUUID(), kind, capacity, 0, 0);
             room.join(id, "Owner");
             room.fillBots();
-            room.board = GameFactory.create(kind, 2, 0);
+            room.board = GameFactory.create(kind, capacity, 0);
             room.phase = Room.Phase.PLAYING;
             for (String action : initial) {
                 int seat = room.board.currentPlayer();

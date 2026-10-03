@@ -34,7 +34,10 @@ public final class Tabletop3D extends JavaPlugin
                     "go13",
                     "connectfour",
                     "color-eight",
-                    "mahjong");
+                    "mahjong",
+                    "doudizhu",
+                    "liars-bar",
+                    "texas-holdem");
 
     static String gameName(String kind) {
         return dev.tabletop3d.ui.MessageText.plain(RoomText.game(kind));
@@ -306,7 +309,9 @@ public final class Tabletop3D extends JavaPlugin
 
     static int defaultCapacity(String kind) {
         return switch (kind) {
-            case "checkers" -> 6;
+            case "checkers", "texas-holdem" -> 6;
+            case "doudizhu" -> 3;
+            case "liars-bar" -> 4;
             case "ludo", "aeroplane", "color-eight", "mahjong" -> 4;
             default -> 2;
         };
@@ -315,6 +320,9 @@ public final class Tabletop3D extends JavaPlugin
     static boolean capacityValid(String kind, int n) {
         return switch (kind) {
             case "mahjong" -> n == 4;
+            case "doudizhu" -> n == 3;
+            case "liars-bar" -> n >= 2 && n <= 4;
+            case "texas-holdem" -> n >= 2 && n <= 6;
             case "checkers" -> Set.of(2, 3, 4, 6).contains(n);
             case "color-eight" -> n >= 2 && n <= 5;
             case "ludo", "aeroplane", "yacht" -> n >= 2 && n <= 4;
@@ -361,7 +369,7 @@ public final class Tabletop3D extends JavaPlugin
 
     void createReserved(Player p, String kind, int capacity, Map<String, String> options) {
         if (pack != null) pack.require(p, kind);
-        if (Set.of("uno", "doudizhu", "yacht", "aeroplane", "flying").contains(kind))
+        if (Set.of("uno", "yacht", "aeroplane", "flying").contains(kind))
             throw new RuleViolation(
                     "error.this-game-is-temporarily-disabled-choose-another",
                     "This game is temporarily disabled. Choose another game from the menu.");

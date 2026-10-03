@@ -30,9 +30,9 @@ public final class BoardsSoakProbe extends JavaPlugin {
             Map<UUID,Object> registry=(Map<UUID,Object>)field(boards,"rooms");require(registry.isEmpty(),"fresh fixture required");
             var ctor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class,Map.class);ctor.setAccessible(true);
             List<String> kinds=List.of("chess","xiangqi","gomoku","ludo","checkers","draughts","reversi","go9","go13","go","connectfour","color-eight",
-                "mahjong:riichi","mahjong:guangdong","mahjong:sichuan","mahjong:taiwan");
+                "mahjong:riichi","mahjong:guangdong","mahjong:sichuan","mahjong:taiwan","doudizhu","liars-bar","texas-holdem");
             for(int i=0;i<kinds.size();i++){
-                String label=kinds.get(i),kind=label.split(":")[0];int capacity=kind.equals("checkers")?6:Set.of("ludo","color-eight","mahjong").contains(kind)?4:2;
+                String label=kinds.get(i),kind=label.split(":")[0];int capacity=kind.equals("doudizhu")?3:kind.equals("texas-holdem")?6:kind.equals("checkers")?6:Set.of("ludo","color-eight","mahjong","liars-bar").contains(kind)?4:2;
                 Map<String,String> options=kind.equals("mahjong")?Map.of("profile",label.split(":")[1],"rounds","1"):kind.equals("ludo")?Map.of("blocking","on"):Map.of();
                 Object room=ctor.newInstance(UUID.randomUUID(),kind,capacity,1000L+i,i,options);
                 if(kind.equals("ludo")){Field tray=roomType.getDeclaredField("sideTray");tray.setAccessible(true);tray.setBoolean(room,true);}
@@ -67,6 +67,8 @@ public final class BoardsSoakProbe extends JavaPlugin {
             }
             if(elapsed>=seconds){
                 for(Object room:rooms)replay(room);validateEntities();
+                call(boards,"save",new Class<?>[0]);
+                Files.copy(boards.getDataFolder().toPath().resolve("rooms.json"),getDataFolder().toPath().resolve("recovery-snapshot.json"));
                 for(Object room:rooms)call(boards,"remove",new Class<?>[]{roomType},room);call(boards,"save",new Class<?>[0]);
                 int remaining=ownedEntities().size();require(remaining==0,"owned entities remain after room removal: "+remaining);
                 require(moves.values().stream().allMatch(n->n>0),"every game must make progress");
@@ -91,7 +93,18 @@ public final class BoardsSoakProbe extends JavaPlugin {
             for(String key:List.of("furniture","lastMove"))for(Entity e:(List<Entity>)field(view,key)){require(e.isValid(),"tracked entity is invalid");expected.add(e.getUniqueId());}
             for(Object token:((Map<?,?>)field(view,"tokens")).values())for(Entity e:(List<Entity>)field(token,"parts")){require(e.isValid(),"tracked piece is invalid");expected.add(e.getUniqueId());}
             Object tray=field(view,"diceTray");if(tray!=null)addEntities(expected,(List<Entity>)field(tray,"entities"));
+            Object cards=field(view,"playingTable");if(cards!=null){
+                for(String key:List.of("publicEntities","nativeFurniture","pokerMarkers","dealerMarkers"))addEntities(expected,(List<Entity>)field(cards,key));
+                for(Object card:((Map<?,?>)field(cards,"publicCards")).values())addEntities(expected,(List<Entity>)field(card,"parts"));
+                Entity packed=(Entity)field(cards,"packedFurniture");if(packed!=null)addEntities(expected,List.of(packed));
+                addTurn(expected,field(cards,"turn"));
+                for(Object owner:((Map<?,?>)field(cards,"privateViews")).values()){
+                    for(Object card:((Map<?,?>)field(owner,"cards")).values())addEntities(expected,(List<Entity>)field(card,"parts"));
+                    for(Object button:((Map<?,?>)field(owner,"buttons")).values())addEntities(expected,(List<Entity>)button);
+                }
+            }
             Object hand=field(view,"handTable");if(hand!=null){
+                addTurn(expected,field(hand,"cardTurn"));
                 addEntities(expected,(List<Entity>)field(hand,"furniture"));
                 Object hud=field(hand,"mahjongHud");if(hud!=null)addEntities(expected,(List<Entity>)field(hud,"entities"));
                 Object ring=field(hand,"turnRing");if(ring!=null)for(Object part:(List<?>)field(ring,"parts"))addEntities(expected,List.of((Entity)field(part,"entity")));
@@ -110,6 +123,9 @@ public final class BoardsSoakProbe extends JavaPlugin {
         Set<UUID> actual=ownedEntities();require(actual.equals(expected),"model entity leak or missing part: actual="+actual.size()+" expected="+expected.size());peakEntities=Math.max(peakEntities,actual.size());
     }
     private static void addEntities(Set<UUID> expected,List<Entity> entities){for(Entity entity:entities){require(entity.isValid(),"tracked display is invalid");expected.add(entity.getUniqueId());}}
+    private static void addTurn(Set<UUID> expected,Object turn)throws Exception{
+        if(turn!=null)for(String key:List.of("bar","caption")){Entity entity=(Entity)field(turn,key);if(entity!=null)addEntities(expected,List.of(entity));}
+    }
     private static String label(Object room)throws Exception{
         String kind=(String)field(room,"kind");Object profile=((Map<?,?>)field(room,"options")).get("profile");return kind.equals("mahjong")?kind+":"+(profile==null?"riichi":profile):kind;
     }

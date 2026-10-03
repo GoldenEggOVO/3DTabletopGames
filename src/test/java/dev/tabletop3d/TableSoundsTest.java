@@ -149,7 +149,7 @@ class TableSoundsTest {
         var kinds = new ArrayList<>(Tabletop3D.GAMES);
         kinds.add("aeroplane");
         for (String kind : kinds) {
-            BoardGame game = GameFactory.create(kind, kind.equals("mahjong") ? 4 : 2, 0);
+            BoardGame game = GameFactory.create(kind, Tabletop3D.defaultCapacity(kind), 0);
             int seat = game.currentPlayer();
             List<Cell> before = game.cells();
             String action = game.legalActions(seat).getFirst();

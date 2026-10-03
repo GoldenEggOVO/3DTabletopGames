@@ -235,7 +235,7 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
             for radius,y,height,segments,cap_texture in ((1.5,-.19,.19,96,"top"),(.25,-.95125,.76125,32,"wood"),(.70,-1.03125,.08,48,"wood")):
                 for down,level in ((False,y+height),(True,y)):
                     cap=cube([8-radius*16,8+level*16,8-radius*squash*16],[8+radius*16,8+level*16,8+radius*squash*16])
-                    cap["faces"]={"down" if down else "up":{"uv":[0,0,16,16],"texture":"#"+cap_texture}}
+                    cap["faces"]={"down" if down else "up":{"uv":[0,0,16,16],"texture":"#"+cap_texture+"_cap"}}
                     parts.append(cap)
                 for i in range(segments):
                     a,b=2*math.pi*i/segments,2*math.pi*(i+1)/segments

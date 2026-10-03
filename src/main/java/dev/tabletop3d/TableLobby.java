@@ -52,7 +52,7 @@ final class TableLobby implements Listener, AutoCloseable {
                     new Entry(
                             "board:" + r.id,
                             c,
-                            r.kind.equals("color-eight") ? 1.5 : 1.1,
+                            Set.of("color-eight","doudizhu","liars-bar","texas-holdem").contains(r.kind) ? 1.5 : 1.1,
                             TableGeometry.SURFACE + (r.kind.equals("connectfour") ? 1.85 : 0),
                             r.phase,
                             r.seats.stream().map(Room.Seat::name).toList(),

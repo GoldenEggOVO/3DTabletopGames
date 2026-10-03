@@ -46,6 +46,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             modelProbe(boards, world);
             focusProbe(boards, world);
             handModelProbe(boards, world);
+            playingCardProbe(boards, world);
             PluginCommand command = Objects.requireNonNull(Bukkit.getPluginCommand("3dtabletop:3dtabletop"));
             AtomicInteger dialogs = new AtomicInteger();
             Player player = player(world, dialogs, true);
@@ -301,6 +302,57 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             } finally {call(view,"close",new Class<?>[0]);}
         }
         getLogger().info("BOARDS_HAND_MODELS_PASS games=color-eight,taiwan,riichi private_by_default=true spectator_faces=0 client_visual_test=false");
+    }
+
+    /** Exercise new private hands and real ray targets without persisting synthetic rooms. */
+    private void playingCardProbe(Plugin plugin, World world) throws Exception {
+        ClassLoader loader = plugin.getClass().getClassLoader();
+        Class<?> roomType = Class.forName("dev.tabletop3d.Room", true, loader);
+        Class<?> viewType = Class.forName("dev.tabletop3d.TableView", true, loader);
+        var roomConstructor = roomType.getDeclaredConstructor(UUID.class, String.class, int.class, long.class, int.class);
+        roomConstructor.setAccessible(true);
+        var viewConstructor = viewType.getDeclaredConstructors()[0];
+        viewConstructor.setAccessible(true);
+        for (String kind : List.of("doudizhu", "liars-bar", "texas-holdem")) {
+            int capacity = kind.equals("doudizhu") ? 3 : kind.equals("liars-bar") ? 4 : 6;
+            Object room = roomConstructor.newInstance(UUID.randomUUID(), kind, capacity, 7L, 0);
+            Player owner = player(world, new AtomicInteger(), true);
+            Player spectator = player(world, new AtomicInteger(), true, UUID.randomUUID());
+            call(room, "join", new Class<?>[]{UUID.class, String.class}, owner.getUniqueId(), "CardProbe");
+            call(room, "fillBots", new Class<?>[0]);
+            Field board = roomType.getDeclaredField("board"); board.setAccessible(true);
+            board.set(room, GameFactory.create(kind, capacity, 7L));
+            Field phase = roomType.getDeclaredField("phase"); phase.setAccessible(true);
+            @SuppressWarnings({"rawtypes", "unchecked"}) Object playing = Enum.valueOf((Class)phase.getType(), "PLAYING");
+            phase.set(room, playing);
+            Object view = viewConstructor.newInstance(plugin, room, new Location(world, 8, 83, 0),
+                new org.bukkit.NamespacedKey("3dtabletop", "probe-cards"), field(field(plugin, "arena"), "maps"));
+            try {
+                Object table = field(view, "playingTable");
+                call(table, "show", new Class<?>[]{Player.class}, spectator);
+                Map<?, ?> views = (Map<?, ?>)field(table, "privateViews");
+                require(views.isEmpty(), "new-game spectator cannot request faces");
+                call(table, "show", new Class<?>[]{Player.class}, owner);
+                require(views.size() == 1, "new-game owner private view");
+                Object own = views.get(owner.getUniqueId());
+                Map<?, ?> cards = (Map<?, ?>)field(own, "cards");
+                require(cards.size() == ((HandGame)board.get(room)).handSize(0), "new-game complete own hand");
+                List<org.bukkit.entity.Entity> privateParts = new ArrayList<>();
+                for (Object card : cards.values()) for (Object entity : (List<?>)field(card, "parts")) {
+                    var part = (org.bukkit.entity.Entity)entity;
+                    require(part.isValid() && !part.isPersistent() && !part.isVisibleByDefault(), "new-game face private at spawn");
+                    privateParts.add(part);
+                }
+                Object first = cards.values().iterator().next();
+                var body = (org.bukkit.entity.Entity)((List<?>)field(first, "parts")).getFirst();
+                Location eye = body.getLocation().add(0, .125, 1.5);
+                String hit = (String)call(table, "handHit", new Class<?>[]{Player.class, Location.class, org.bukkit.util.Vector.class}, owner, eye, new org.bukkit.util.Vector(0, 0, -1));
+                require(String.valueOf(cards.keySet().iterator().next()).equals(hit), "new-game upright card ray target");
+                call(view, "clear", new Class<?>[]{Player.class}, owner);
+                require(views.isEmpty() && privateParts.stream().noneMatch(org.bukkit.entity.Entity::isValid), "new-game private displays removed");
+            } finally { call(view, "close", new Class<?>[0]); }
+        }
+        getLogger().info("BOARDS_NEW_CARDS_PASS games=doudizhu,liars-bar,texas-holdem private_by_default=true ray_targets=true client_visual_test=false");
     }
 
     private void craftEngineProbe(Plugin plugin,World world)throws Exception{

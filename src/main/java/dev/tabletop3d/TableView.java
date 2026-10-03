@@ -36,6 +36,7 @@ final class TableView implements AutoCloseable {
     private TextDisplay title;
     private DiceTray diceTray;
     private HandTable handTable;
+    private PlayingCardTable playingTable;
     private final List<Entity> handFurniture = new ArrayList<>();
     private ItemDisplay packedTable;
     private boolean buildingHandFurniture;
@@ -370,6 +371,15 @@ final class TableView implements AutoCloseable {
         this.maps = maps;
         geometry = new TableGeometry(room.kind, room.board.cells());
         origin = center.clone().add(0, TableGeometry.SURFACE, 0);
+        if (room.board instanceof dev.tabletop3d.rules.SelectedHandGame) {
+            playingTable = new PlayingCardTable(plugin, room, origin, tag);
+            title = text(origin.clone().add(0,1.8,0), "", .4, false, NamedTextColor.GOLD);
+            title.setBillboard(Display.Billboard.CENTER);
+            furniture.add(title);
+            playingTable.audience.common(title);
+            sync();
+            return;
+        }
         if (room.board instanceof dev.tabletop3d.rules.HandGame) {
             handTable = new HandTable(plugin, room, origin, tag);
             syncHandFurniture();
@@ -750,6 +760,9 @@ final class TableView implements AutoCloseable {
     void sync() {
         if (boardAudience != null) syncBoardFurniture();
         if (renderedBoard != room.board) pendingTurnSound = false;
+        if (playingTable != null) {
+            playingTable.sync(); renderedBoard=room.board; revision=room.revision; updateTitle(); return;
+        }
         if (handTable != null) {
             handTable.sync();
             renderedBoard = room.board;
@@ -1015,6 +1028,7 @@ final class TableView implements AutoCloseable {
             if (!token.moving()) iterator.remove();
         }
         if (diceTray != null) diceTray.tick();
+        if (playingTable != null) playingTable.sync();
         if (handTable != null) {
             handTable.tick();
             syncHandFurniture();
@@ -1061,7 +1075,7 @@ final class TableView implements AutoCloseable {
     }
 
     String handHit(Player player, Location eye, org.bukkit.util.Vector direction) {
-        return handTable == null ? null : handTable.hit(player, eye, direction);
+        return playingTable != null ? playingTable.handHit(player,eye,direction) : handTable == null ? null : handTable.hit(player, eye, direction);
     }
 
     boolean deckHit(Location eye, org.bukkit.util.Vector direction) {
@@ -1069,7 +1083,7 @@ final class TableView implements AutoCloseable {
     }
 
     String handCallHit(Player player, Location eye, org.bukkit.util.Vector direction) {
-        return handTable == null ? null : handTable.callHit(player, eye, direction);
+        return playingTable != null ? playingTable.callHit(player,eye,direction) : handTable == null ? null : handTable.callHit(player, eye, direction);
     }
 
     void dismissHandCalls(Player player) {
@@ -1093,7 +1107,11 @@ final class TableView implements AutoCloseable {
     }
 
     String cardHandAction(Player player, String id) {
-        return handTable == null ? null : handTable.cardAction(player, id);
+        return playingTable != null ? playingTable.cardAction(player,id) : handTable == null ? null : handTable.cardAction(player, id);
+    }
+
+    String playingAction(Player player,String control) {
+        return playingTable == null ? null : playingTable.action(player,control);
     }
 
     void maintainMahjongPress(Player player) {
@@ -1148,6 +1166,10 @@ final class TableView implements AutoCloseable {
     }
 
     void cursor(Player p, GameWorld.Pick pick, String hover) {
+        if (playingTable != null) {
+            playingTable.hover(p,hover!=null && hover.startsWith("@hand:") ? hover.substring(6) : null);
+            return;
+        }
         if (handTable != null) {
             handTable.hover(
                     p,
@@ -1460,6 +1482,7 @@ final class TableView implements AutoCloseable {
 
     void clear(Player player) {
         if (handTable != null) handTable.clear(player);
+        if (playingTable != null) playingTable.clear(player);
         Overlay old = overlays.remove(player.getUniqueId());
         if (old != null) old.remove();
     }
@@ -1468,15 +1491,17 @@ final class TableView implements AutoCloseable {
     public void close() {
         pendingTurnSound = false;
         if (handTable != null) handTable.close();
+        if (playingTable != null) playingTable.close();
         if (diceTray != null) diceTray.close();
         tokens.values().forEach(TokenView::remove);
         tokens.clear();
         handFurniture.forEach(Entity::remove);
         if (packedTable != null) packedTable.remove();
         if (packedBoard != null) boardAudience.remove(packedBoard);
-        furniture.forEach(entity -> { if (boardAudience == null) entity.remove(); else boardAudience.remove(entity); });
+        furniture.forEach(entity -> { if (playingTable != null) playingTable.audience.remove(entity); else if (boardAudience == null) entity.remove(); else boardAudience.remove(entity); });
         overlays.values().forEach(Overlay::remove);
         overlays.clear();
-        lastMove.forEach(boardAudience::remove);
+        if (boardAudience != null) lastMove.forEach(boardAudience::remove);
+        else lastMove.forEach(Entity::remove);
     }
 }

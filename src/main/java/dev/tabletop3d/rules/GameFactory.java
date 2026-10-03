@@ -17,6 +17,9 @@ public final class GameFactory {
         options = GameOptions.validate(game, options);
         return switch (game.toLowerCase(Locale.ROOT)) {
             case "mahjong" -> new MahjongGame(players, seed, options);
+            case "doudizhu" -> new DoudizhuGame(players, seed);
+            case "liars-bar" -> new LiarsBarGame(players, seed);
+            case "texas-holdem" -> new TexasHoldemGame(players, seed);
             case "color-eight" -> new ColorEightGame(players, seed);
             case "ludo" -> new LudoGame(players, seed, GameOptions.ludo(options));
             case "connectfour" -> {

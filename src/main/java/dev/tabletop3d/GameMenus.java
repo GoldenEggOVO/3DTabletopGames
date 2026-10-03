@@ -231,6 +231,8 @@ final class GameMenus implements AutoCloseable {
                 switch (kind) {
                     case "checkers" -> new int[] {2, 3, 4, 6};
                     case "color-eight" -> new int[] {2, 3, 4, 5};
+                    case "liars-bar" -> new int[] {2, 3, 4};
+                    case "texas-holdem" -> new int[] {2, 3, 4, 5, 6};
                     case "ludo", "aeroplane", "yacht" -> new int[] {2, 3, 4};
                     default -> new int[] {Tabletop3D.defaultCapacity(kind)};
                 };
@@ -504,6 +506,10 @@ final class GameMenus implements AutoCloseable {
         if (r.phase == Room.Phase.FINISHED || r.phase == Room.Phase.PAUSED)
             text = text.append(RoomText.outcome(r, r.result));
         return text;
+    }
+
+    void pokerRaise(Player player,Room room,long revision) {
+        PokerRaiseWindow.open(plugin,player,room,revision);
     }
 
     void room(Player p, Room r) {

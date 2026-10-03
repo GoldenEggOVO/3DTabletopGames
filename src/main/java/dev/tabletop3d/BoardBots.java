@@ -8,6 +8,26 @@ import java.util.*;
 final class BoardBots {
     static String choose(BoardGame board,int seat,Random random){
         List<String> legal=board.legalActions(seat);if(legal.isEmpty())return null;
+        if(board instanceof DoudizhuGame landlord){
+            List<String> plays=legal.stream().filter(a -> a.startsWith("play:")).toList();
+            if(!plays.isEmpty())return plays.stream().max(Comparator.comparingInt(a -> a.split(",").length)).orElseThrow();
+            if(legal.contains("pass"))return "pass";
+            return legal.stream().filter(a -> !a.equals("bid:0")).findFirst().orElse("bid:0");
+        }
+        if(board instanceof LiarsBarGame liar){
+            if(legal.contains("challenge")&&random.nextInt(4)==0)return "challenge";
+            List<String> honest=liar.hand(seat).stream()
+                    .filter(card -> card.face().equals(liar.publicInfo().get("declaration"))||card.face().startsWith("joker_"))
+                    .limit(3).map(HandGame.Piece::id).toList();
+            if(!honest.isEmpty()&&liar.controls(seat).contains("play"))return liar.selectionAction(seat,honest);
+            return legal.get(random.nextInt(legal.size()));
+        }
+        if(board instanceof TexasHoldemGame){
+            if(legal.contains("continue"))return "continue";
+            if(legal.contains("check"))return "check";
+            if(legal.contains("call")&&random.nextInt(5)!=0)return "call";
+            return "fold";
+        }
         if(board instanceof HandGame hand){
             for(String action:List.of("ron","tsumo","declare"))if(legal.contains(action))return action;
             if(board.id().equals("mahjong")){

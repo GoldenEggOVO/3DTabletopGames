@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 
 /** Short native cues emitted by committed actions, never by rendering or replay. */
@@ -90,6 +91,8 @@ final class TableSounds {
 
     static Cue move(String kind, int seat, String action, List<Cell> before, List<Cell> after) {
         if (kind.equals("color-eight")) return action.equals("declare") ? CONFIRM : CARD;
+        if (Set.of("doudizhu","liars-bar","texas-holdem").contains(kind))
+            return action.startsWith("play:") ? CARD : action.equals("pass") || action.equals("fold") ? PASS : CONFIRM;
         if (kind.equals("mahjong"))
             return action.startsWith("discard:")
                     ? TILE_DISCARD

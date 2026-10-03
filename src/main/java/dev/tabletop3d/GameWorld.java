@@ -185,12 +185,12 @@ final class GameWorld implements Listener, AutoCloseable {
                             snapped.getY(),
                             snapped.getZ(),
                             r.sideTray,
-                            Set.of("mahjong", "color-eight").contains(r.kind) ? 1.5 : 1.125,
+                            Set.of("mahjong", "color-eight", "doudizhu", "liars-bar", "texas-holdem").contains(r.kind) ? 1.5 : 1.125,
                             existing.anchorX,
                             existing.anchorY,
                             existing.anchorZ,
                             existing.sideTray,
-                            Set.of("mahjong", "color-eight").contains(existing.kind) ? 1.5 : 1.125))
+                            Set.of("mahjong", "color-eight", "doudizhu", "liars-bar", "texas-holdem").contains(existing.kind) ? 1.5 : 1.125))
                 throw new IllegalArgumentException(
                         dev.tabletop3d.ui.MessageText.plain(
                                 Language.component("error.table-overlap")));
@@ -375,7 +375,7 @@ final class GameWorld implements Listener, AutoCloseable {
                     eye.toVector()
                             .add(direction.clone().multiply(distance))
                             .subtract(view.origin.toVector());
-            double half = Set.of("mahjong", "color-eight").contains(view.room.kind) ? 1.5 : 1.125;
+            double half = 1.5;
             return Math.abs(point.getX()) < half && Math.abs(point.getZ()) < half ? "@menu" : null;
         }
         if (view.geometry.kind.equals("connectfour")) return view.verticalHit(eye, direction);
@@ -677,7 +677,7 @@ final class GameWorld implements Listener, AutoCloseable {
         long now = System.nanoTime(), last = clicks.getOrDefault(player.getUniqueId(), 0L);
         if (now - last < 180_000_000L) return true;
         clicks.put(player.getUniqueId(), now);
-        if (room.kind.equals("color-eight") || room.kind.equals("mahjong")) {
+        if (room.board instanceof dev.tabletop3d.rules.HandGame) {
             if (player.isSneaking() && rightClick) {
                 if (room.kind.equals("mahjong") && plugin.comfort != null)
                     plugin.comfort.release(player);
@@ -719,6 +719,12 @@ final class GameWorld implements Listener, AutoCloseable {
     }
 
     private void pickCell(Player player, Room room, int seat, String cell) {
+        if (cell.startsWith("@call:playing:")) {
+            TableView view=views.get(room.id);
+            String action=view==null ? null : view.playingAction(player,cell.substring(14));
+            if (action!=null) execute(player,room,List.of(action));
+            return;
+        }
         if (cell.startsWith("@call:card:") && room.kind.equals("color-eight")) {
             String action = cell.substring(11);
             if (room.board.legalActions(seat).contains(action))
@@ -768,6 +774,7 @@ final class GameWorld implements Listener, AutoCloseable {
             }
             TableView view = views.get(room.id);
             String action = view == null ? null : view.cardHandAction(player, id);
+            if (room.board instanceof dev.tabletop3d.rules.SelectedHandGame) return;
             if (action != null) execute(player, room, List.of(action));
             else
                 player.sendActionBar(

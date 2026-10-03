@@ -20,6 +20,7 @@ public final class GenerateModeSnapshot {
         add("checkers",3,Map.of("jump-own","forbid","other-camps","forbid","finish","all"));
         add("chess",2,Map.of("first","opponent"));
         add("color-eight",4,Map.of());add("color-eight",5,Map.of());
+        add("doudizhu",3,Map.of());add("liars-bar",4,Map.of());add("texas-holdem",6,Map.of());
         for(String profile:List.of("riichi","guangdong","sichuan","taiwan")){
             Map<String,String> options=new LinkedHashMap<>(Map.of("profile",profile,"rounds","1"));
             options.putAll(switch(profile){

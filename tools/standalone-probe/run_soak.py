@@ -25,7 +25,9 @@ shutil.copy2(args.server_dir / "purpur-2622.jar", runtime / "purpur-2622.jar")
 for name in ("libraries", "versions", "cache"):
     if (args.server_dir / name).is_dir():
         shutil.copytree(args.server_dir / name, runtime / name)
-(runtime / "eula.txt").write_text("eula=true\n", encoding="utf-8")
+if "eula=true" not in (args.server_dir / "eula.txt").read_text(encoding="utf-8"):
+    raise RuntimeError("Source fixture must already have an accepted EULA")
+shutil.copy2(args.server_dir / "eula.txt", runtime / "eula.txt")
 (runtime / "server.properties").write_text(
     "server-ip=127.0.0.1\nserver-port=25618\nlevel-name=tabletop_soak\n"
     'level-type=minecraft:flat\ngenerator-settings={"layers":[{"block":"minecraft:bedrock","height":1}],"biome":"minecraft:plains"}\n'
