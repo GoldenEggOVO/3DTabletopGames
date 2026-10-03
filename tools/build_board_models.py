@@ -53,6 +53,37 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
         for face in part["faces"].values(): face["texture"]="#"+material
         return part
 
+    # Yacht keeps the same world coordinates in packed and native modes.
+    dice_names = ("one", "two", "three", "four", "five", "six")
+    dots = ((0,0),(-1,-1),(1,1),(-1,1),(1,-1),(-1,0),(1,0))
+    pip_sets = ((0,), (1,2), (0,1,2), (1,2,3,4), (0,1,2,3,4), (1,2,3,4,5,6))
+    faces = {}
+    textures = {}
+    for side, name, indices in zip(("up","east","south","north","west","down"), dice_names, pip_sets):
+        image = Image.new("RGB", (64,64), "#fff5df")
+        draw = ImageDraw.Draw(image)
+        for index in indices:
+            x,z = dots[index]
+            draw.ellipse((28+x*18,28+z*18,36+x*18,36+z*18), fill="#202934")
+        textures[name] = texture("surface/yacht-die-"+name, image)
+        faces[side] = {"uv":[0,0,16,16], "texture":"#"+name}
+    export_model("yacht_die", textures, [{"from":[0,0,0],"to":[16,16,16],"faces":faces}])
+
+    red = texture("surface/yacht-felt", Image.new("RGB", (32,32), "#843036"))
+    slot = texture("surface/yacht-slot", Image.new("RGB", (16,16), "#454954"))
+    def yacht_box(x,y,z,w,h,d,ink):
+        part = block(x,y,z,w,h,d)
+        for face in part["faces"].values(): face["texture"] = "#"+ink
+        return part
+    parts = [yacht_box(0,-.19,0,2.25,.14,2.25,"wood"), yacht_box(0,-.045,0,2.10,.045,2.10,"felt")]
+    for side in (-1,1):
+        parts += [yacht_box(side*1.085,-.045,0,.08,.10,2.25,"wood"),
+                  yacht_box(0,-.045,side*1.085,2.09,.10,.08,"wood")]
+    for x in (-.98,.98):
+        for z in (-.98,.98): parts.append(yacht_box(x,-1.03125,z,.13,.84125,.13,"wood"))
+    for i in range(5): parts.append(yacht_box(.32+(i-2)*.26,.002,-.68,.235,.017,.235,"slot"))
+    export_model("yacht_table", {"wood":wood,"felt":red,"slot":slot}, parts)
+
     # The central art spans precisely two blocks, matching TableGeometry's maps.
     for path in sorted(source.glob("*.png")):
         art = texture("surface/board-"+path.stem,Image.open(path).resize((512,512),Image.Resampling.NEAREST))

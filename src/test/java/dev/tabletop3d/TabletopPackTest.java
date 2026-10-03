@@ -180,7 +180,7 @@ class TabletopPackTest {
         assertFalse(pack.canPlay(player, "color-eight"));
         assertFalse(pack.canPlay(player, "chess"));
         assertFalse(pack.canPlay(player, "connectfour"));
-        assertTrue(pack.canPlay(player, "yacht"), "Restore-only providers keep native rendering");
+        assertFalse(pack.canPlay(player, "yacht"));
         pack.request(player);
         pack.status(player, pack.requestId(player), Status.SUCCESSFULLY_LOADED);
         assertTrue(pack.canPlay(player, "mahjong"));

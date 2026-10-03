@@ -15,6 +15,6 @@
 | Private hands | Owner-only faces, public backs, exposed melds, discard details and scores | HandTable/HandMenu tests and real server visibility metadata |
 | Dice | Separate stand, travel/bounce/tumble, final face, action lock and clean removal | DiceMotion/DiceTray/DiceRollGate tests and runtime probe |
 
-Xiangqi and legacy Aeroplane use the documented bundled variants. Go uses area scoring, 7.5 komi and negotiated dead-stone marking. Bots are basic assistance. Yacht remains disabled. See [game modes](game-modes.md) and [Mahjong house rules](mahjong.md) for the precise new rules and their reference differences.
+Xiangqi and legacy Aeroplane use the documented bundled variants. Go uses area scoring, 7.5 komi and negotiated dead-stone marking. Bots are basic assistance. Yacht Dice uses five dice, twelve categories and an upper-section bonus; see [dice table](yacht-dice.md). See [game modes](game-modes.md) and [Mahjong house rules](mahjong.md) for the precise new rules and their reference differences.
 
 See [verification](verification.md) for current evidence and the outstanding client checklist.

@@ -7,6 +7,19 @@ import upgrade_current_data as upgrade
 
 
 class UpgradeTest(unittest.TestCase):
+    def test_yacht_category_names_preserve_custom_translations(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / 'source'
+            (source / 'languages').mkdir(parents=True)
+            (source / 'languages/en_US.yml').write_text('"score.category.0": "Custom aces"\n"score.category.11": "Custom yacht"\n', encoding='utf-8')
+            output = Path(temporary) / 'output'
+            report = upgrade.convert(source, output)
+            values = upgrade.yaml.safe_load((output / 'languages/en_US.yml').read_text(encoding='utf-8'))
+            self.assertEqual('Custom aces', values['score.category.ones'])
+            self.assertEqual('Custom yacht', values['score.category.yacht'])
+            self.assertFalse(any(key.rsplit('.', 1)[-1].isdigit() for key in values if key.startswith('score.category.')))
+            self.assertFalse(report['unmapped'])
+
     def test_current_card_history_and_custom_language_are_preserved(self):
         with tempfile.TemporaryDirectory() as temporary:
             source = Path(temporary) / 'source'

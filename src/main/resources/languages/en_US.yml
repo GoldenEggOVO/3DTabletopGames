@@ -590,21 +590,21 @@
 "rules.reversi": "8×8 Reversi: Black moves first. Bracket enemy discs horizontally, vertically, or diagonally to flip them. A player without a legal move passes automatically. When neither player can move, the player with more discs wins."
 "rules.title": "{game} Rules"
 "rules.xiangqi": "Xiangqi: facing generals, blocked horse legs and elephant eyes, river and palace limits, and checks are enforced. Checkmate or stalemate loses. See the rules panel for repetition and perpetual check."
-"rules.yacht": "Yacht dice for 2–4 players. Each player has 12 rounds and up to three rolls per turn. Hold any dice, score each category once, and optionally score zero. Small straight is 15, large straight 30, Yacht 50, and reaching 63 in the upper section adds 35. There is no extra Yacht bonus. Click dice to hold them and use the menu to fill the score sheet."
+"rules.yacht": "Yacht dice for 2–4 players. Each player has 12 rounds and up to three rolls per turn. Hold any dice, score each category once, and optionally score zero. Small straight is 15, large straight 30, Yacht 50, and reaching 63 in the upper section adds 35. There is no extra Yacht bonus. Click dice to keep or return them. Use the table buttons to roll and choose a score category."
 
 # score
-"score.category.0": "Ones"
-"score.category.1": "Twos"
-"score.category.10": "Large Straight"
-"score.category.11": "Yacht"
-"score.category.2": "Threes"
-"score.category.3": "Fours"
-"score.category.4": "Fives"
-"score.category.5": "Sixes"
-"score.category.6": "Choice"
-"score.category.7": "Four of a Kind"
-"score.category.8": "Full House"
-"score.category.9": "Small Straight"
+"score.category.ones": "Ones"
+"score.category.twos": "Twos"
+"score.category.large-straight": "Large Straight"
+"score.category.yacht": "Yacht"
+"score.category.threes": "Threes"
+"score.category.fours": "Fours"
+"score.category.fives": "Fives"
+"score.category.sixes": "Sixes"
+"score.category.choice": "Choice"
+"score.category.four-kind": "Four of a Kind"
+"score.category.full-house": "Full House"
+"score.category.small-straight": "Small Straight"
 
 # setup
 "setup.basic-hint": "Choose your mode and players, then create the room. Detailed rules are optional."
@@ -683,7 +683,7 @@
 "table.title": "<gold>{game} · Table {number}</gold>"
 "table.turn": "<white>Turn: {player}</white>"
 "table.waiting": "Waiting for ready players"
-"table.yacht.hint": "Click dice to hold  |  Roll nearby  |  Score in menu"
+"table.yacht.hint": "Click dice to keep or return  |  Roll and score on the table"
 
 # tile
 "tile.concealed": "Concealed Tile"
@@ -777,3 +777,9 @@
 
 "cards.poker.dealer-button": "D"
 "cards.poker.award": " · Award {chips}"
+
+# Yacht table controls
+"table.yacht.category": "{category}: {score}"
+"table.yacht.total": "{number}: {score}"
+"table.yacht.keep": "Keep this die in its slot"
+"table.yacht.unkeep": "Return this die to the roll row"

@@ -739,7 +739,7 @@ final class GameMenus implements AutoCloseable {
         Component sheet = Component.empty();
         for (int i = 0; i < 12; i++) {
             String action = "score:" + YachtGame.CATEGORIES.get(i);
-            Component category = Language.component("score.category." + i),
+            Component category = Language.component("score.category." + YachtGame.CATEGORIES.get(i)),
                     scores = Component.empty();
             for (int seat = 0; seat < r.capacity; seat++)
                 scores =

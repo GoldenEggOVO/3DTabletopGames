@@ -106,7 +106,7 @@ final class TabletopPack implements Listener, AutoCloseable {
     }
 
     static boolean supported(String kind) {
-        return kind.equals("mahjong") || kind.equals("color-eight") || PackedBoardModels.supported(kind)
+        return kind.equals("mahjong") || kind.equals("color-eight") || kind.equals("yacht") || PackedBoardModels.supported(kind)
                 || Set.of("doudizhu", "liars-bar", "texas-holdem").contains(kind);
     }
 

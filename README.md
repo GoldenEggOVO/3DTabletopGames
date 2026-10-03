@@ -37,6 +37,7 @@ Public Mahjong tiles now use the same width as hand tiles, and the central wall 
 | Color Eight | 2–5 | Native round table, overlapping private hands, wild-color buttons, draw/discard piles |
 | Doudizhu | 3 | Private multi-card selection, bidding controls, public bottom cards after bidding |
 | Liar's Bar | 2–4 | Face-down plays, challenges and match-local roulette |
+| Yacht Dice | 2–4 | Five dice, three rolls, keep slots and twelve scoring categories |
 | Texas Hold'em | 2–6 | Community cards, betting controls, dealer button and compact chip stacks |
 | Mahjong | 4 | Original tile patterns, standing private hands, public rivers and exposed melds |
 
@@ -50,7 +51,7 @@ Public Mahjong tiles now use the same width as hand tiles, and the central wall 
 - Native Paper Dialog with editable YAML layouts and English by default.
 - MiniMessage styling, legacy color compatibility and editable language files.
 
-Rules and variant details: [feature inventory](docs/features.md). Historical Yacht sources remain disabled. Color Eight follows the documented 54-card shedding rules with original art; the command identifier remains `color-eight`. Regional Mahjong follows documented house rules and is not a drop-in replacement for MahjongCraft.
+Rules and variant details: [feature inventory](docs/features.md). Yacht Dice is available for 2–4 players with five dice, three rolls, reversible keep slots and direct scoring. Color Eight follows the documented 54-card shedding rules with original art; the command identifier remains `color-eight`. Regional Mahjong follows documented house rules and is not a drop-in replacement for MahjongCraft.
 
 ## Commands and permissions
 

@@ -11,6 +11,17 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ResourcePackTest(unittest.TestCase):
+    def test_yacht_die_has_six_opposing_faces_and_the_table_has_five_slots(self):
+        die = json.loads(self.archive.read("assets/tabletop3d/models/item/yacht_die.json"))
+        self.assertEqual(1, len(die["elements"]))
+        self.assertEqual({"up":"#one", "east":"#two", "south":"#three", "north":"#four", "west":"#five", "down":"#six"},
+                         {side:face["texture"] for side,face in die["elements"][0]["faces"].items()})
+        table = json.loads(self.archive.read("assets/tabletop3d/models/item/yacht_table.json"))
+        slots = [e for e in table["elements"] if e["faces"]["up"]["texture"] == "#slot"]
+        self.assertEqual(5, len(slots))
+        self.assertEqual([round((.32+(i-2)*.26)*16+8,5) for i in range(5)],
+                         [round((e["from"][0]+e["to"][0])/2,5) for e in slots])
+
     def test_bundled_checksum_matches_shipped_pack(self):
         import hashlib
         expected=(ROOT/"src/main/resources/resource-pack.sha1").read_text(encoding="ascii").strip()

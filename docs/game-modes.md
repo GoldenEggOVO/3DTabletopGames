@@ -28,7 +28,7 @@ The lobby prioritizes readiness and starting. Playing rooms return to the physic
 | Color Eight | 2–5 | First empty hand wins; fixed rules |
 | Mahjong | 4 | Four regional profiles and their room rules |
 
-Yacht and Aeroplane remain unavailable for creating new rooms. Existing supported historical room records can still be restored.
+Yacht Dice is available for 2–4 players. Aeroplane remains unavailable for creating new rooms. Existing supported historical room records can still be restored.
 
 ## Optional board rules
 

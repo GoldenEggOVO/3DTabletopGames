@@ -417,7 +417,7 @@
 "menu.yacht.score": "{category} · {score} 分"
 "menu.yacht.score-row": "{category}: {scores}"
 "menu.yacht.score-sheet": "计分表"
-"menu.yacht.seat-score": "Seat {number}: {score}  "
+"menu.yacht.seat-score": "座位{number}: {score}  "
 "menu.yacht.view-score": "查看计分表"
 
 # option
@@ -590,21 +590,21 @@
 "rules.reversi": "8×8 黑白棋：黑先，横竖斜线夹住对方棋子并全部翻面；无合法落点自动停手，双方都无法落子时，多子者获胜。"
 "rules.title": "{game}规则"
 "rules.xiangqi": "中国象棋：将帅照面、马腿、象眼、象不过河、九宫及自将过滤。将死或困毙判负；重复和长将规则以规则面板标注为准。"
-"rules.yacht": "2–4人快艇骰子，每人12轮，每回合最多掷3次，可保留任意骰子；每种计分项只填一次，可主动填零。小顺15、大顺30、快艇50，上半区达到63分额外加35分；没有额外快艇奖励。点击桌上骰子可保留，操作菜单填写计分表。"
+"rules.yacht": "2–4人快艇骰子，每人12轮，每回合最多掷3次，可保留任意骰子；每种计分项只填一次，可主动填零。小顺15、大顺30、快艇50，上半区达到63分额外加35分；没有额外快艇奖励。点击桌上骰子保留或取消保留，点击桌面按钮掷骰或填写计分项。"
 
 # score
-"score.category.0": "一点"
-"score.category.1": "二点"
-"score.category.10": "大顺"
-"score.category.11": "快艇"
-"score.category.2": "三点"
-"score.category.3": "四点"
-"score.category.4": "五点"
-"score.category.5": "六点"
-"score.category.6": "全选"
-"score.category.7": "四条"
-"score.category.8": "葫芦"
-"score.category.9": "小顺"
+"score.category.ones": "一点"
+"score.category.twos": "二点"
+"score.category.large-straight": "大顺"
+"score.category.yacht": "快艇"
+"score.category.threes": "三点"
+"score.category.fours": "四点"
+"score.category.fives": "五点"
+"score.category.sixes": "六点"
+"score.category.choice": "全选"
+"score.category.four-kind": "四条"
+"score.category.full-house": "葫芦"
+"score.category.small-straight": "小顺"
 
 # setup
 "setup.basic-hint": "Choose your mode and players, then create the room. Detailed rules are optional."
@@ -683,7 +683,7 @@
 "table.title": "<gold>{game} · Table {number}</gold>"
 "table.turn": "<white>Turn: {player}</white>"
 "table.waiting": "等候准备"
-"table.yacht.hint": "点击骰子保留  |  旁边掷骰  |  菜单计分"
+"table.yacht.hint": "点击骰子保留／取消  |  桌面掷骰和计分"
 
 # tile
 "tile.concealed": "Concealed Tile"
@@ -777,3 +777,9 @@
 
 "cards.poker.dealer-button": "D"
 "cards.poker.award": " · 赢得 {chips}"
+
+# Yacht table controls
+"table.yacht.category": "{category}: {score}"
+"table.yacht.total": "{number}: {score}"
+"table.yacht.keep": "保留这颗骰子"
+"table.yacht.unkeep": "取消保留，返回掷骰区"

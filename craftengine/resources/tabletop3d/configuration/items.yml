@@ -692,3 +692,9 @@ items:
   tabletop3d:xiangqi_red_rook:
     material: paper
     item_model: tabletop3d:xiangqi_red_rook
+  tabletop3d:yacht_die:
+    material: paper
+    item_model: tabletop3d:yacht_die
+  tabletop3d:yacht_table:
+    material: paper
+    item_model: tabletop3d:yacht_table

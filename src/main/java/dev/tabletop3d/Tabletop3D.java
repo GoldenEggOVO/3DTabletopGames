@@ -37,7 +37,8 @@ public final class Tabletop3D extends JavaPlugin
                     "mahjong",
                     "doudizhu",
                     "liars-bar",
-                    "texas-holdem");
+                    "texas-holdem",
+                    "yacht");
 
     static String gameName(String kind) {
         return dev.tabletop3d.ui.MessageText.plain(RoomText.game(kind));
@@ -369,7 +370,7 @@ public final class Tabletop3D extends JavaPlugin
 
     void createReserved(Player p, String kind, int capacity, Map<String, String> options) {
         if (pack != null) pack.require(p, kind);
-        if (Set.of("uno", "yacht", "aeroplane", "flying").contains(kind))
+        if (Set.of("uno", "aeroplane", "flying").contains(kind))
             throw new RuleViolation(
                     "error.this-game-is-temporarily-disabled-choose-another",
                     "This game is temporarily disabled. Choose another game from the menu.");

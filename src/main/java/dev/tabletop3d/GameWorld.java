@@ -383,7 +383,7 @@ final class GameWorld implements Listener, AutoCloseable {
                 TableGeometry.intersection(eye.getY(), direction.getY(), view.origin.getY() + .03);
         TableView.Hit piece = view.hitPiece(eye, direction);
         String cell = null;
-        if (piece != null && (distance < 0 || piece.distance() < distance)) {
+        if (piece != null && (view.room.kind.equals("yacht") || distance < 0 || piece.distance() < distance)) {
             distance = piece.distance();
             cell = piece.cell();
         }
@@ -398,6 +398,7 @@ final class GameWorld implements Listener, AutoCloseable {
                                 true);
         if (obstacle != null) return null;
         if (cell != null) return cell;
+        if (view.room.kind.equals("yacht")) return null;
         Vector hit = eye.toVector().add(direction.multiply(distance));
         return view.geometry.hit(hit.getX() - view.origin.getX(), hit.getZ() - view.origin.getZ());
     }
@@ -694,6 +695,10 @@ final class GameWorld implements Listener, AutoCloseable {
             return true;
         }
         if (room.phase != Room.Phase.PLAYING) return true;
+        if (room.kind.equals("yacht") && cell.equals("@scores")) {
+            plugin.menus.yachtScores(player, room);
+            return true;
+        }
         if (cell.startsWith("@call:assist:")) {
             view.toggleMahjongAssistance(player, cell.substring("@call:assist:".length()));
             return true;
@@ -719,6 +724,18 @@ final class GameWorld implements Listener, AutoCloseable {
     }
 
     private void pickCell(Player player, Room room, int seat, String cell) {
+        if (room.kind.equals("yacht")) {
+            if (cell.equals("@scores")) plugin.menus.yachtScores(player, room);
+            else if (cell.startsWith("@score:")) {
+                String action = "score:" + cell.substring(7);
+                if (room.board.legalActions(seat).contains(action)) execute(player, room, List.of(action));
+            } else if (cell.startsWith("die")) {
+                String action = "hold:" + cell;
+                if (room.board.legalActions(seat).contains(action)) execute(player, room, List.of(action));
+            } else if (cell.equals("@roll") && room.board.legalActions(seat).contains("roll"))
+                execute(player, room, List.of("roll"));
+            return;
+        }
         if (cell.startsWith("@call:playing:")) {
             TableView view=views.get(room.id);
             String action=view==null ? null : view.playingAction(player,cell.substring(14));

@@ -35,6 +35,7 @@ final class TableView implements AutoCloseable {
     private final List<Entity> lastMove = new ArrayList<>();
     private TextDisplay title;
     private DiceTray diceTray;
+    private YachtTable yachtTable;
     private HandTable handTable;
     private PlayingCardTable playingTable;
     private final List<Entity> handFurniture = new ArrayList<>();
@@ -371,6 +372,15 @@ final class TableView implements AutoCloseable {
         this.maps = maps;
         geometry = new TableGeometry(room.kind, room.board.cells());
         origin = center.clone().add(0, TableGeometry.SURFACE, 0);
+        if (room.kind.equals("yacht")) {
+            yachtTable = new YachtTable(plugin, room, origin, tag);
+            title = text(origin.clone().add(0,1.8,0), "", .35, false, NamedTextColor.GOLD);
+            title.setBillboard(Display.Billboard.CENTER);
+            furniture.add(title);
+            yachtTable.audience.common(title);
+            sync();
+            return;
+        }
         if (room.board instanceof dev.tabletop3d.rules.SelectedHandGame) {
             playingTable = new PlayingCardTable(plugin, room, origin, tag);
             title = text(origin.clone().add(0,1.8,0), "", .4, false, NamedTextColor.GOLD);
@@ -415,12 +425,6 @@ final class TableView implements AutoCloseable {
                     .26,true,NamedTextColor.DARK_GRAY);
             furniture.add(river);
             boardAudience.common(river);
-        }
-        if (room.kind.equals("yacht")) {
-            TextDisplay roll = text(origin.clone().add(1.30,.025,0), Language.component("table.roll"),
-                    .40,true,NamedTextColor.GOLD);
-            furniture.add(roll);
-            boardAudience.common(roll);
         }
         if (Set.of("aeroplane","ludo").contains(room.kind))
             diceTray = new DiceTray(plugin,room,center,tag,!room.sideTray);
@@ -758,6 +762,9 @@ final class TableView implements AutoCloseable {
     }
 
     void sync() {
+        if (yachtTable != null) {
+            yachtTable.sync(); renderedBoard = room.board; revision = room.revision; updateTitle(); return;
+        }
         if (boardAudience != null) syncBoardFurniture();
         if (renderedBoard != room.board) pendingTurnSound = false;
         if (playingTable != null) {
@@ -1021,6 +1028,7 @@ final class TableView implements AutoCloseable {
     }
 
     void tick() {
+        if (yachtTable != null) yachtTable.tick();
         if (boardAudience != null) syncBoardFurniture();
         for (var iterator = animating.iterator(); iterator.hasNext(); ) {
             TokenView token = iterator.next();
@@ -1071,7 +1079,7 @@ final class TableView implements AutoCloseable {
     }
 
     boolean rolling() {
-        return diceTray != null && diceTray.rolling();
+        return yachtTable != null ? yachtTable.rolling() : diceTray != null && diceTray.rolling();
     }
 
     String handHit(Player player, Location eye, org.bukkit.util.Vector direction) {
@@ -1121,6 +1129,7 @@ final class TableView implements AutoCloseable {
     record Hit(String cell, double distance) {}
 
     Hit hitPiece(Location eye, org.bukkit.util.Vector direction) {
+        if (yachtTable != null) return yachtTable.hit(eye, direction);
         Hit nearest = null;
         for (TokenView token : tokens.values()) {
             Location p = token.position();
@@ -1166,6 +1175,7 @@ final class TableView implements AutoCloseable {
     }
 
     void cursor(Player p, GameWorld.Pick pick, String hover) {
+        if (yachtTable != null) { yachtTable.cursor(p, hover); return; }
         if (playingTable != null) {
             playingTable.hover(p,hover!=null && hover.startsWith("@hand:") ? hover.substring(6) : null);
             return;
@@ -1493,6 +1503,7 @@ final class TableView implements AutoCloseable {
         if (handTable != null) handTable.close();
         if (playingTable != null) playingTable.close();
         if (diceTray != null) diceTray.close();
+        if (yachtTable != null) yachtTable.close();
         tokens.values().forEach(TokenView::remove);
         tokens.clear();
         handFurniture.forEach(Entity::remove);

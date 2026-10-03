@@ -2,7 +2,7 @@ package dev.tabletop3d.rules;
 
 import java.util.*;
 
-/** Casual 12-category Yacht variant. Seeded randomness makes replay and takeback deterministic. */
+/** Casual 12-category Yacht variant. Seeded randomness makes replay deterministic. */
 public final class YachtGame implements BoardGame {
     public static final List<String> CATEGORIES =
             List.of(
@@ -101,7 +101,7 @@ public final class YachtGame implements BoardGame {
                 && (rolls == 0 || java.util.stream.IntStream.range(0, 5).anyMatch(i -> !held[i])))
             a.add("roll");
         if (rolls > 0) {
-            if (rolls < 3) for (int i = 0; i < 5; i++) a.add("hold:die" + i);
+            for (int i = 0; i < 5; i++) a.add("hold:die" + i);
             for (int i = 0; i < 12; i++)
                 if (sheet[turn][i] < 0) a.add("score:" + CATEGORIES.get(i));
         }

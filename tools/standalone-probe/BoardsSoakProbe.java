@@ -30,7 +30,7 @@ public final class BoardsSoakProbe extends JavaPlugin {
             Map<UUID,Object> registry=(Map<UUID,Object>)field(boards,"rooms");require(registry.isEmpty(),"fresh fixture required");
             var ctor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class,Map.class);ctor.setAccessible(true);
             List<String> kinds=List.of("chess","xiangqi","gomoku","ludo","checkers","draughts","reversi","go9","go13","go","connectfour","color-eight",
-                "mahjong:riichi","mahjong:guangdong","mahjong:sichuan","mahjong:taiwan","doudizhu","liars-bar","texas-holdem");
+                "mahjong:riichi","mahjong:guangdong","mahjong:sichuan","mahjong:taiwan","doudizhu","liars-bar","texas-holdem","yacht");
             for(int i=0;i<kinds.size();i++){
                 String label=kinds.get(i),kind=label.split(":")[0];int capacity=kind.equals("doudizhu")?3:kind.equals("texas-holdem")?6:kind.equals("checkers")?6:Set.of("ludo","color-eight","mahjong","liars-bar").contains(kind)?4:2;
                 Map<String,String> options=kind.equals("mahjong")?Map.of("profile",label.split(":")[1],"rounds","1"):kind.equals("ludo")?Map.of("blocking","on"):Map.of();
@@ -97,6 +97,10 @@ public final class BoardsSoakProbe extends JavaPlugin {
             Entity packedBoard=(Entity)field(view,"packedBoard");if(packedBoard!=null)addEntities(expected,List.of(packedBoard));
             for(Object token:((Map<?,?>)field(view,"tokens")).values())for(Entity e:(List<Entity>)field(token,"parts")){require(e.isValid(),"tracked piece is invalid");expected.add(e.getUniqueId());}
             Object tray=field(view,"diceTray");if(tray!=null)addEntities(expected,(List<Entity>)field(tray,"entities"));
+            Object yacht=field(view,"yachtTable");if(yacht!=null){
+                for(String key:List.of("common","nativeTable","packedTable"))addEntities(expected,(List<Entity>)field(yacht,key));
+                for(String key:List.of("nativeDice","packedDice"))for(Object die:(List<?>)field(yacht,key))addEntities(expected,(List<Entity>)field(die,"entities"));
+            }
             Object cards=field(view,"playingTable");if(cards!=null){
                 for(String key:List.of("publicEntities","nativeFurniture","pokerMarkers","dealerMarkers"))addEntities(expected,(List<Entity>)field(cards,key));
                 for(Object card:((Map<?,?>)field(cards,"publicCards")).values())addEntities(expected,(List<Entity>)field(card,"parts"));
