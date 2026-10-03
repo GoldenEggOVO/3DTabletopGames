@@ -116,6 +116,9 @@ final class TableLobby implements Listener, AutoCloseable {
 
     boolean request(Player p) {
         if (!p.isSneaking() || !plugin.allowed(p)) return false;
+        Room room = plugin.room(p);
+        if (room != null && room.board != null && plugin.arena != null)
+            return plugin.arena.worldClick(p, true);
         if (!readEntries()) return false;
         Location eye = p.getEyeLocation();
         Vector dir = eye.getDirection();

@@ -83,6 +83,16 @@ final class PlayingCardTable implements AutoCloseable {
                                         });
                 parts.add(item);
                 show(item, viewer);
+            } else if (PlayingCardArt.boxes(spec.face) != null) {
+                for (var box : PlayingCardArt.boxes(spec.face)) {
+                    var part = origin.getWorld().spawn(at, BlockDisplay.class, d -> {
+                        configure(d, viewer, false);
+                        d.setBlock(Material.valueOf(box.material()).createBlockData());
+                        d.setTransformation(box.pose(WIDTH, spec.standing, spec.face.equals("back")));
+                    });
+                    parts.add(part);
+                    show(part, viewer);
+                }
             } else {
                 double h = spec.standing ? HEIGHT : .008, depth = spec.standing ? .008 : HEIGHT;
                 var body =

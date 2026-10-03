@@ -278,6 +278,9 @@ items:
   tabletop3d:ludo_blue:
     material: paper
     item_model: tabletop3d:ludo_blue
+  tabletop3d:ludo_dice_tray:
+    material: paper
+    item_model: tabletop3d:ludo_dice_tray
   tabletop3d:ludo_green:
     material: paper
     item_model: tabletop3d:ludo_green

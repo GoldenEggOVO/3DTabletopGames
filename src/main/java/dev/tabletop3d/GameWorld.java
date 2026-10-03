@@ -405,18 +405,20 @@ final class GameWorld implements Listener, AutoCloseable {
         return worldClick(player, false);
     }
 
-    private boolean worldClick(Player player, boolean rightClick) {
+    boolean worldClick(Player player, boolean rightClick) {
         if (!plugin.allowed(player)) return false;
         boolean focused = plugin.comfort != null && plugin.comfort.focused(player);
         if (focused) {
             Room room = plugin.room(player);
             if (rightClick && room != null) {
+                long now = System.nanoTime(), last = clicks.getOrDefault(player.getUniqueId(), 0L);
+                if (now - last < 180_000_000L) return true;
+                clicks.put(player.getUniqueId(), now);
                 plugin.comfort.release(player);
                 plugin.menus.room(player, room);
             }
             return true;
         }
-        if (player.isSneaking() && !focused && plugin.tableLobby != null) return false;
         Room room = plugin.room(player);
         TableView view = room == null ? null : views.get(room.id);
         if (view == null || room.board == null || !player.getWorld().equals(view.origin.getWorld()))
@@ -432,27 +434,14 @@ final class GameWorld implements Listener, AutoCloseable {
         long now = System.nanoTime(), last = clicks.getOrDefault(player.getUniqueId(), 0L);
         if (now - last < 180_000_000L) return true;
         clicks.put(player.getUniqueId(), now);
-        if (room.board instanceof dev.tabletop3d.rules.HandGame) {
-            if (player.isSneaking() && rightClick) {
-                if (room.kind.equals("mahjong") && plugin.comfort != null)
-                    plugin.comfort.release(player);
-                plugin.menus.room(player, room);
-                return true;
-            }
-            if (cell.equals("@menu")
-                    || player.isSneaking() && (room.kind.equals("color-eight") || !focused))
-                return true;
-        }
-        if (cell.startsWith("@tile:") || focused && cell.equals("@menu")) return true;
-        if (player.isSneaking() && !focused || cell.equals("@menu")) {
+        if (player.isSneaking() && rightClick) {
+            if (room.kind.equals("mahjong") && plugin.comfort != null)
+                plugin.comfort.release(player);
             plugin.menus.room(player, room);
             return true;
         }
+        if (cell.equals("@menu") || player.isSneaking() || cell.startsWith("@tile:")) return true;
         if (room.phase != Room.Phase.PLAYING) return true;
-        if (room.kind.equals("yacht") && cell.equals("@scores")) {
-            plugin.menus.yachtScores(player, room);
-            return true;
-        }
         if (cell.startsWith("@call:assist:")) {
             view.toggleMahjongAssistance(player, cell.substring("@call:assist:".length()));
             return true;
@@ -479,8 +468,7 @@ final class GameWorld implements Listener, AutoCloseable {
 
     private void pickCell(Player player, Room room, int seat, String cell) {
         if (room.kind.equals("yacht")) {
-            if (cell.equals("@scores")) plugin.menus.yachtScores(player, room);
-            else if (cell.startsWith("@score:")) {
+            if (cell.startsWith("@score:")) {
                 String action = "score:" + cell.substring(7);
                 if (room.board.legalActions(seat).contains(action)) execute(player, room, List.of(action));
             } else if (cell.startsWith("die")) {

@@ -1329,7 +1329,7 @@ final class HandTable implements AutoCloseable {
                     "pass",
                     new CardButton(
                             "pass",
-                            seatPose(view.seat, room.board.playerCount(), 0, .82),
+                            seatPose(view.seat, room.board.playerCount(), 0, 1.35),
                             Material.GRAY_CONCRETE,
                             Language.component("table.card.pass"),
                             view.player,

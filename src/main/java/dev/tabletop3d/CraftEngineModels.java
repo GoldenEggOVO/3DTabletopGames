@@ -45,7 +45,7 @@ final class CraftEngineModels {
         for(char color:new char[]{'r','b','y','p'})for(String rank:List.of("1","2","3","4","5","6","7","8","9","10","draw","skip","reverse"))result.add("card_"+color+rank);
         result.addAll(List.of("mahjong_back","card_back","card_wild","card_swap","card_table","mahjong_table","mahjong_panel","ring_forward","ring_reverse","button_r","button_b","button_y","button_p","button_pass"));
         result.addAll(PackedBoardModels.ids());
-        result.addAll(List.of("yacht_table", "yacht_die"));
+        result.addAll(List.of("yacht_table", "yacht_die", "ludo_dice_tray"));
         return List.copyOf(result);
     }
 }

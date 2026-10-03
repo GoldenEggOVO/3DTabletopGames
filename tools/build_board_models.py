@@ -21,30 +21,10 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
                          for name,color in MATERIALS.items()}
     wood = "tabletop3d:item/surface/wood"
 
-    def round_image(image):
-        image=image.convert("RGBA")
-        mask=Image.new("L",image.size)
-        ImageDraw.Draw(mask).ellipse((0,0,image.width-1,image.height-1),fill=255)
-        from PIL import ImageChops
-        image.putalpha(ImageChops.multiply(image.getchannel("A"),mask))
-        return image
-
     def disc(radius,y,height,side,cap,segments=64):
-        parts=disc_mesh(radius,y,height,side,cap,segments)
-        for part in parts:
-            for direction in ("up","down"):
-                if direction in part["faces"]:
-                    part["faces"][direction]["texture"]="#"+cap+"_cap"
-        return parts
+        return disc_mesh(radius,y,height,side,cap,max(64,segments))
 
     def model(name,textures,parts):
-        textures=dict(textures)
-        caps={face["texture"][1:] for part in parts for face in part["faces"].values()
-              if face["texture"].endswith("_cap")}
-        for cap in caps:
-            original=textures[cap[:-4]]
-            path=root/"target/resource-pack-build/assets"/(original.replace(":","/textures/")+".png")
-            textures[cap]=texture("surface/round-"+original.split("/")[-1],round_image(Image.open(path)))
         export_model(name,textures,parts)
 
     def block(x,y,z,w,h,d,material="STRIPPED_BIRCH_WOOD",scale=1):
@@ -91,13 +71,18 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
     for z in (-.20,-.10,.60):parts.append(yacht_box(-1.99,.004,z,.71,.009,.094,"grid"))
     export_model("yacht_table", {"wood":wood,"felt":red,"slot":slot,"paper":cream,"grid":black}, parts)
 
+    # A unit-width tray with unscaled height; the Java display supplies XZ width.
+    parts=[block(0,-.16,0,1,.13,1),block(0,-.03,0,.87,.045,.87,"GREEN_CONCRETE")]
+    for side in (-1,1):
+        parts += [block(side*.4675,-.03,0,.065,.13,1),
+                  block(0,-.03,side*.4675,.87,.13,.065)]
+    export_model("ludo_dice_tray",material_textures,parts)
+
     # The central art spans precisely two blocks, matching TableGeometry's maps.
     for path in sorted(source.glob("*.png")):
         art = texture("surface/board-"+path.stem,Image.open(path).resize((512,512),Image.Resampling.NEAREST))
         parts = rounded_square(1.125,.10,-.19,.19,"wood","wood")
-        top = cube([-8,8.02,-8],[24,8.025,24])
-        top["faces"]={"up":{"uv":[0,0,16,16],"texture":"#board"}}
-        parts.append(top)
+        parts += rounded_square(1,.10,.00125,.0003,"wood","board")
         for x in (-.99,.99):
             for z in (-.99,.99):
                 leg=block(x,-1.03125,z,.15,.84125,.15)
@@ -147,7 +132,7 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
                 for element in disc(.12,-.0425,.085,material,material,32):
                     for key in ("from","to"):
                         v=element[key];element[key]=[v[0],8+(v[2]-8)+.12*16,8+(v[1]-8)]
-                    element["faces"]={ {"up":"south","down":"north","south":"up"}.get(k,k):v for k,v in element["faces"].items()}
+                    element["faces"]={ {"up":"south","down":"north","south":"up","north":"down"}.get(k,k):v for k,v in element["faces"].items()}
                     if "rotation" in element:
                         element["rotation"]["axis"]="z";element["rotation"]["origin"]=[8,8+.12*16,8]
                     parts.append(element)
@@ -166,45 +151,52 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
                     ink="#b52324" if side=="red" else "#22242b"
                     draw.ellipse((5,5,122,122),outline=ink,width=3)
                     draw.text((64,63),glyphs[piece][0 if side=="red" else 1],font=ImageFont.truetype("C:/Windows/Fonts/msyh.ttc",82),fill=ink,anchor="mm")
-                    textures["engraving"]=texture("surface/"+name,round_image(image))
-                    parts[0]["faces"]["up"]["texture"]="#engraving"
+                    textures["engraving"]=texture("surface/"+name,image)
+                    for part in parts:
+                        if part["faces"].get("up",{}).get("texture")=="#"+material:
+                            part["faces"]["up"]["texture"]="#engraving"
         else:
             parts=[block(p["x"],p["y"],p["z"],p["w"],p["h"],p["d"],p["material"]) for p in native]
         model(name,textures,parts)
 
-    # Open rack: two transparent face sheets, actual inner walls, and solid outer frame.
-    rack=Image.new("RGBA",(512,440),"#245886");draw=ImageDraw.Draw(rack)
-    for col in range(7):
-        for row in range(6):
-            x=(.16+col*.28)/2*512;y=(1.74-(.17+row*.28))/1.72*440
-            rx,ry=.119/2*512,.119/1.72*440
-            draw.ellipse((x-rx,y-ry,x+rx,y+ry),fill=(0,0,0,0))
-    # Export a sample at the nearest central hole for the contract test.
+    # Solid scanlines make the circular holes and rounded frame one connected mesh.
     textures=dict(material_textures);textures["body"]=wood
-    textures["rack"]=texture("surface/connectfour-rack",rack)
     parts=[]
-    for z,face in ((.061,"south"),(-.061,"north")):
-        part=cube([0,8+.02*8,8+z*8],[16,8+1.74*8,8+z*8])
-        part["faces"]={face:{"uv":[0,0,16,16],"texture":"#rack"}}
-        parts.append(part)
-    for col in range(7):
+    hole_radius=.119
+    bands=224
+    from solid_mesh import rounded_width
+    for index in range(bands):
+        low=.02+1.72*index/bands
+        high=.02+1.72*(index+1)/bands
+        y=(low+high)/2
+        outer=rounded_width(1,.065,(y-.88)/.86)
+        intervals=[(-outer,outer)]
         for row in range(6):
-            x,y=(col-3)*.28,.17+row*.28
-            for step in range(16):
-                a=step*2*math.pi/16
-                wall=cube([8+(x+.119*math.cos(a))*8,8+(y-.119*math.sin(a)-.024)*8,8-.061*8],
-                          [8+(x+.119*math.cos(a))*8,8+(y-.119*math.sin(a)+.024)*8,8+.061*8])
-                wall["rotation"]={"origin":[8+x*8,8+y*8,8],"axis":"z","angle":-step*360/16}
-                # Author each strip at the right side and rotate about its hole center.
-                wall["from"][0]=wall["to"][0]=8+(x+.119)*8
-                wall["from"][1]=8+(y-.024)*8;wall["to"][1]=8+(y+.024)*8
-                wall["faces"]={"west":{"uv":[0,0,16,16],"texture":"#BLUE_CONCRETE"}}
-                parts.append(wall)
-    parts += [block(-1.06,-.04,0,.12,1.83,.20,"BLUE_CONCRETE",2),
-              block(1.06,-.04,0,.12,1.83,.20,"BLUE_CONCRETE",2),
-              block(0,1.74,0,2.25,.09,.20,"BLUE_CONCRETE",2)]
-    for x in (-1.06,1.06):parts.append(block(x,-.04,0,.26,.10,.65,"POLISHED_DEEPSLATE",2))
-    base=cube([-1,8-.19*8,-1],[17,8-.05*8,17]);parts.append(base)
+            dy=y-(.17+row*.28)
+            if abs(dy)>=hole_radius:continue
+            half=math.sqrt(hole_radius*hole_radius-dy*dy)
+            for col in range(7):
+                x=(col-3)*.28
+                remainder=[]
+                for left,right in intervals:
+                    if right<=x-half or left>=x+half:remainder.append((left,right));continue
+                    if left<x-half:remainder.append((left,x-half))
+                    if right>x+half:remainder.append((x+half,right))
+                intervals=remainder
+        for left,right in intervals:
+            parts.append(block((left+right)/2,low,0,right-left,high-low,.122,"BLUE_CONCRETE",2))
+    # Pillars and feet remain outside the holes and have rounded silhouettes.
+    for x in (-1.06,1.06):
+        pillar=rounded_square(.10,.045,0,1.83,"BLUE_CONCRETE","BLUE_CONCRETE")
+        for part in pillar:
+            for key in ("from","to"):
+                part[key]=[8+(part[key][0]-8)/2+x*8,8+(part[key][1]-8)/2-.04*8,8+(part[key][2]-8)/2]
+        parts.extend(pillar)
+        parts.append(block(x,-.04,0,.26,.10,.65,"POLISHED_DEEPSLATE",2))
+    parts.append(block(0,1.74,0,2.16,.09,.20,"BLUE_CONCRETE",2))
+    for part in rounded_square(1.125,.10,-.19,.14,"body","body"):
+        for key in ("from","to"):part[key]=[8+(value-8)/2 for value in part[key]]
+        parts.append(part)
     for x in (-.99,.99):
         for z in (-.99,.99):parts.append(block(x,-1.03125,z,.15,.84125,.15,"STRIPPED_BIRCH_WOOD",2))
     model("board_connectfour",textures,parts)
@@ -247,7 +239,7 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
         face_model("playing_joker_"+size,image,True,backtex)
     face_model("playing_back",back,True,backtex)
     for name,color,squash in (("doudizhu_table","#286346",1),("liars_bar_table","#473129",1),("texas_holdem_table","#245346",.76)):
-        im=Image.new("RGBA",(512,512));d=ImageDraw.Draw(im)
+        im=Image.new("RGB",(512,512),"#38251d");d=ImageDraw.Draw(im)
         d.ellipse((0,0,511,511),fill="#38251d");d.ellipse((19,19,492,492),fill=color,outline="#bd9955",width=2)
         if name=="doudizhu_table":
             # UVs span the three-block diameter. The bottom cards are now at world centre.
@@ -260,7 +252,7 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
                 ed.rounded_rectangle((2,8,70,62),12,fill="#205438",outline="#91ad7d",width=2)
                 ed.polygon(((36,18),(51,35),(36,52),(21,35)),fill="#c0ad71")
                 emblem=emblem.rotate(-angle,resample=Image.Resampling.BICUBIC,expand=True)
-                im.alpha_composite(emblem,(round(x-emblem.width/2),round(y-emblem.height/2)))
+                im.paste(emblem,(round(x-emblem.width/2),round(y-emblem.height/2)),emblem)
             # Each card is .24 by .34 blocks; the marks match the centred row.
             for x in (210,256,302):
                 d.rounded_rectangle((x-22,225,x+22,287),5,fill="#245a40",outline="#a6b889",width=2)
@@ -280,25 +272,10 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
         toptex=texture("surface/"+name,im)
         parts=disc(1.5,-.19,.19,"wood","top")+disc(.25,-.95125,.76125,"wood","wood",32)+disc(.70,-1.03125,.08,"wood","wood",48)
         if squash != 1:
-            # Bake the stretched ellipse as chords; rotating a squashed circle distorts its wall.
-            parts = []
-            for radius,y,height,segments,cap_texture in ((1.5,-.19,.19,96,"top"),(.25,-.95125,.76125,32,"wood"),(.70,-1.03125,.08,48,"wood")):
-                for down,level in ((False,y+height),(True,y)):
-                    cap=cube([8-radius*16,8+level*16,8-radius*squash*16],[8+radius*16,8+level*16,8+radius*squash*16])
-                    cap["faces"]={"down" if down else "up":{"uv":[0,0,16,16],"texture":"#"+cap_texture+"_cap"}}
-                    parts.append(cap)
-                for i in range(segments):
-                    a,b=2*math.pi*i/segments,2*math.pi*(i+1)/segments
-                    x,z=radius*math.sin(a),radius*squash*math.cos(a)
-                    X,Z=radius*math.sin(b),radius*squash*math.cos(b)
-                    mx,mz=(x+X)/2,(z+Z)/2
-                    half=math.hypot(X-x,Z-z)/2
-                    vertical=abs(Z-z)>abs(X-x)
-                    wall=cube([8+mx*16 if vertical else 8+(mx-half)*16,8+y*16,8+(mz-half)*16 if vertical else 8+mz*16],
-                              [8+mx*16 if vertical else 8+(mx+half)*16,8+(y+height)*16,8+(mz+half)*16 if vertical else 8+mz*16])
-                    wall["rotation"]={"origin":[8+mx*16,8,8+mz*16],"axis":"y","angle":(90 if vertical else 0)-math.degrees(math.atan2(Z-z,X-x))}
-                    wall["faces"]={"west" if vertical else "south":{"uv":[0,0,16,16],"texture":"#wood"}}
-                    parts.append(wall)
+            from solid_mesh import extrusion
+            parts=[]
+            for radius,y,height,segments,cap_texture in ((1.5,-.19,.19,96,"top"),(.25,-.95125,.76125,64,"wood"),(.70,-1.03125,.08,64,"wood")):
+                parts.extend(extrusion(radius,y,height,"wood",cap_texture,segments,squash=squash))
         model(name,{"body":wood,"wood":wood,"top":toptex},parts)
     chip=texture("surface/chip",Image.new("RGB",(16,16),"#d7b458"))
     model("poker_chips",{"body":chip,"chip":chip},disc(.09,0,.10,"chip","chip",16))

@@ -56,7 +56,8 @@ class HandTableTest {
         var box = (org.bukkit.util.BoundingBox) boxField.get(button);
         assertTrue(box.getHeight() < .025, "Pass must be horizontal, not standing upright");
         assertTrue(box.getWidthZ() >= .08, "A flat button needs table-depth hit area");
-        assertTrue(box.getCenterZ() > .75 && box.getCenterZ() < .95);
+        assertTrue(box.getCenterZ() > 1.28 && box.getCenterZ() < 1.42,
+                "Pass must lie between the player's hand and body, near the front edge");
         TextDisplay label = (TextDisplay) f.entities.subList(start, f.entities.size()).stream()
                 .filter(TextDisplay.class::isInstance).findFirst().orElseThrow();
         verify(label).setRotation(floatThat(yaw -> Math.abs(yaw) < 1e-5), eq(-90f));

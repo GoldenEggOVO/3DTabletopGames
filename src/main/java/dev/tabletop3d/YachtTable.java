@@ -27,7 +27,7 @@ final class YachtTable implements AutoCloseable {
     private final DiceMotion[] throwsByDie = new DiceMotion[5];
     private final DiceMotion.Pose[] poses = new DiceMotion.Pose[5];
     private final TextDisplay[] categories = new TextDisplay[12];
-    private final TextDisplay rollLabel, sheetLabel, headerLabel;
+    private final TextDisplay rollLabel, headerLabel;
     private final TextDisplay[][] scores;
     private final TextDisplay[] headers;
     private List<Room.Seat> roster = List.of();
@@ -65,8 +65,6 @@ final class YachtTable implements AutoCloseable {
         common.add(activeColumn);
         common.add(block(.45, .007, .82, .95, .016, .23, Material.GREEN_CONCRETE));
         rollLabel = label(.45, .038, .82, .16f);
-        common.add(block(SCORE_X, .007, .88, 1.4, .016, .18, Material.POLISHED_BLACKSTONE));
-        sheetLabel = label(SCORE_X, .038, .88, .135f);
         headerLabel = label(SCORE_X, .038, -1.025, .11f);
         for (Entity entity : common) audience.common(entity);
         sync();
@@ -99,8 +97,11 @@ final class YachtTable implements AutoCloseable {
                 throwsByDie[i] = new DiceMotion(SIZE, .24, local, face, room.seed ^ (history * 31L + i));
             } else {
                 throwsByDie[i] = null;
-                poses[i] = rest(i, board.held(i), face);
-                render(i);
+                DiceMotion.Pose resting = rest(i, board.held(i), face);
+                if (!resting.equals(poses[i])) {
+                    poses[i] = resting;
+                    render(i);
+                }
             }
         }
         frame = 0;
@@ -193,7 +194,6 @@ final class YachtTable implements AutoCloseable {
 
     private void refreshLabels() {
         int seat = board.currentPlayer();
-        sheetLabel.text(Language.component("menu.yacht.score-sheet"));
         for (int row = 0; row < summaryLabels.length; row++)
             summaryLabels[row].text(Language.component("table.yacht." + List.of("subtotal", "bonus", "total-label").get(row)).color(NamedTextColor.WHITE));
         int completed = 0;
@@ -232,7 +232,6 @@ final class YachtTable implements AutoCloseable {
             nearest = hit(nearest, eye, direction, "die" + i, p.x(), p.y() - SIZE / 2, p.z(), SIZE, SIZE, SIZE);
         }
         nearest = hit(nearest, eye, direction, "@roll", .45, .007, .82, .95, .035, .23);
-        nearest = hit(nearest, eye, direction, "@scores", SCORE_X, .007, .88, 1.4, .035, .18);
         for (int i = 0; i < 12; i++) nearest = hit(nearest, eye, direction, "@score:" + YachtGame.CATEGORIES.get(i), SCORE_X, .007, scoreZ(i), 1.45, .035, .094);
         nearest = hit(nearest, eye, direction, "@menu", SCORE_X, -.01, 0, 1.60, .015, 2.25);
         return hit(nearest, eye, direction, "@menu", .32, -.01, 0, 2.00, .015, 2.25);
@@ -258,7 +257,7 @@ final class YachtTable implements AutoCloseable {
                 int category = YachtGame.CATEGORIES.indexOf(hover.substring(7));
                 hint = Language.component("menu.yacht.score", "category", Language.component("score.category." + YachtGame.CATEGORIES.get(category)),
                         "score", board.rolls() == 0 ? 0 : YachtGame.score(category, board.dice()));
-            } else hint = Language.component(hover.equals("@scores") ? "menu.yacht.view-score" : hover.equals("@roll") ? "hint.roll" : "hint.menu");
+            } else hint = Language.component(hover.equals("@roll") ? "hint.roll" : "hint.menu");
         }
         player.sendActionBar(hint.colorIfAbsent(NamedTextColor.GOLD));
     }

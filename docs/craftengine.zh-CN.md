@@ -1,11 +1,11 @@
 # CraftEngine 与独立桌游资源包
 
-适用于本地验收版 **1.10.2-SNAPSHOT**：Paper／Purpur 26.2、Java 25。麻将、彩八、新卡牌游戏、快艇骰子和其他棋盘均提供资源包显示。CraftEngine 26.8.2 的物品注册与 ItemDisplay 已在隔离服务器验证；客户端画面、音效和加载仍须按文末清单验收。
+适用于本地验收版 **1.10.3-SNAPSHOT**：Paper／Purpur 26.2、Java 25。麻将、彩八、新卡牌游戏、快艇骰子和其他棋盘均提供资源包显示。CraftEngine 26.8.2 的物品注册与 ItemDisplay 已在隔离服务器验证；客户端画面、音效和加载仍须按文末清单验收。
 
 ## 安装
 
-1. 备份 `plugins/3dtabletop/`，停服后替换 `3dtabletop-1.10.2-SNAPSHOT.jar`，只保留一个版本。
-2. 若选择资源包或混合模式，安装 CraftEngine。将交付的 `craftengine-registration.zip` 解压到服务器根目录，最终路径为 `plugins/CraftEngine/resources/tabletop3d/configuration/items.yml` 和同目录包的 `pack.yml`。已有同名目录先备份。该配置注册 233 个 `tabletop3d:*` 自定义物品，物品使用独立 ZIP 中的 `item_model`。
+1. 备份 `plugins/3dtabletop/`，停服后替换 `3dtabletop-1.10.3-SNAPSHOT.jar`，只保留一个版本。
+2. 若选择资源包或混合模式，安装 CraftEngine。将交付的 `craftengine-registration.zip` 解压到服务器根目录，最终路径为 `plugins/CraftEngine/resources/tabletop3d/configuration/items.yml` 和同目录包的 `pack.yml`。已有同名目录先备份。该配置注册 234 个 `tabletop3d:*` 自定义物品，物品使用独立 ZIP 中的 `item_model`。
 3. 将 `tabletop-resource-pack.zip` 放到你已有的静态文件托管服务，取得客户端可直接下载的 HTTP／HTTPS 地址。不要使用需要登录的网页或分享页。保留 ZIP 文件内容不变。
 4. 修改 **`plugins/3dtabletop/config.yml`**，参考下例，只填实际 URL。校验值内置在插件中，请上传同一交付包中的 ZIP；每次请求的 UUID 自动生成。旧配置的 `sha1`、`uuid` 可以删除，插件不再读取。
 5. 重启服务器。先以默认 `vanilla` 验证旧玩法，再切换 `mixed` 进行客户端验收。

@@ -96,7 +96,13 @@ public final class BoardsSoakProbe extends JavaPlugin {
             Entity packedTable=(Entity)field(view,"packedTable");if(packedTable!=null)addEntities(expected,List.of(packedTable));
             Entity packedBoard=(Entity)field(view,"packedBoard");if(packedBoard!=null)addEntities(expected,List.of(packedBoard));
             for(Object token:((Map<?,?>)field(view,"tokens")).values())for(Entity e:(List<Entity>)field(token,"parts")){require(e.isValid(),"tracked piece is invalid");expected.add(e.getUniqueId());}
-            Object tray=field(view,"diceTray");if(tray!=null)addEntities(expected,(List<Entity>)field(tray,"entities"));
+            Object tray=field(view,"diceTray");if(tray!=null){
+                for(String key:List.of("entities","nativeTable"))addEntities(expected,(List<Entity>)field(tray,key));
+                Entity table=(Entity)field(tray,"packedTable");if(table!=null)addEntities(expected,List.of(table));
+                for(String key:List.of("nativeDie","packedDie")){
+                    Object die=field(tray,key);if(die!=null)addEntities(expected,(List<Entity>)field(die,"entities"));
+                }
+            }
             Object yacht=field(view,"yachtTable");if(yacht!=null){
                 for(String key:List.of("common","nativeTable","packedTable"))addEntities(expected,(List<Entity>)field(yacht,key));
                 for(String key:List.of("nativeDice","packedDice"))for(Object die:(List<?>)field(yacht,key))addEntities(expected,(List<Entity>)field(die,"entities"));

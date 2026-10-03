@@ -11,6 +11,7 @@ import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Interaction;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.BoundingBox;
@@ -19,7 +20,7 @@ import org.bukkit.util.Vector;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-/** Native side table and one reusable die, advanced by the owning table's existing tick. */
+/** Layered side table and one reusable die, advanced by the owning table's existing tick. */
 final class DiceTray implements AutoCloseable {
     private static final double FELT=.015;
     private final Tabletop3D plugin;
@@ -27,42 +28,36 @@ final class DiceTray implements AutoCloseable {
     private final NamespacedKey tag;
     private final Location center;
     private final double width,size,innerHalf;
+    private final TableAudience audience;
+    private final boolean refreshAudience;
     private final List<Entity> entities=new ArrayList<>();
-    private final List<Pip> pips=new ArrayList<>();
-    private final BlockDisplay die;
+    private final List<Entity> nativeTable=new ArrayList<>();
+    private ItemDisplay packedTable;
+    private YachtDie nativeDie,packedDie;
     private final TextDisplay label;
     private Component lastLabel=Component.empty();
     private DiceMotion motion;
     private DiceMotion.Pose pose;
     private int frame;
     private boolean closed;
-    private record Pip(BlockDisplay display,Vector3f center,Quaternionf face) {}
 
     DiceTray(Tabletop3D plugin,Room room,Location tableOrigin,NamespacedKey tag,boolean compact) {
+        this(plugin,room,tableOrigin,tag,compact,new TableAudience(plugin,tableOrigin),true);
+    }
+
+    DiceTray(Tabletop3D plugin,Room room,Location tableOrigin,NamespacedKey tag,boolean compact,TableAudience audience) {
+        this(plugin,room,tableOrigin,tag,compact,audience,false);
+    }
+
+    private DiceTray(Tabletop3D plugin,Room room,Location tableOrigin,NamespacedKey tag,boolean compact,
+            TableAudience audience,boolean refreshAudience) {
         this.plugin=plugin;this.room=room;this.tag=tag;
+        this.audience=audience;this.refreshAudience=refreshAudience;
         center=tableOrigin.clone().add(compact?1.42:2,TableGeometry.SURFACE,0);
         width=compact?.5:1.4;size=compact?.17:.28;innerHalf=compact?.21:.61;
-        double rim=(width-innerHalf*2)/2;
-        block(Material.DARK_OAK_PLANKS,0,-.16,0,width,.13,width);
-        block(Material.GREEN_CONCRETE,0,-.03,0,innerHalf*2,FELT+.03,innerHalf*2);
         double leg=compact?.07:.12,offset=width/2-leg*.8;
         for(double x:new double[]{-offset,offset})for(double z:new double[]{-offset,offset})
-            block(Material.STRIPPED_DARK_OAK_LOG,x,-TableGeometry.SURFACE,z,leg,TableGeometry.SURFACE-.12,leg);
-        for(double side:new double[]{-1,1}) {
-            block(Material.STRIPPED_DARK_OAK_WOOD,side*(width-rim)/2,-.03,0,rim,.13,width);
-            block(Material.STRIPPED_DARK_OAK_WOOD,0,-.03,side*(width-rim)/2,innerHalf*2,.13,rim);
-        }
-        die=block(Material.WHITE_CONCRETE,0,0,0,size,size,size);
-        int[][] coordinates={{0,0},{-1,-1},{1,1},{-1,1},{1,-1},{-1,0},{1,0}};
-        for(int face=1;face<=6;face++) {
-            Quaternionf rotation=TableView.faceRotation(face);
-            for(int index:TableView.pipIndices(face)) {
-                Vector3f offset3=new Vector3f((float)(coordinates[index][0]*size*.28),(float)(size/2+.002),
-                    (float)(coordinates[index][1]*size*.28)).rotate(rotation);
-                BlockDisplay dot=block(Material.BLACK_CONCRETE,0,0,0,size*.13,.004,size*.13);
-                pips.add(new Pip(dot,offset3,rotation));
-            }
-        }
+            entities.add(block(Material.STRIPPED_DARK_OAK_LOG,x,-TableGeometry.SURFACE,z,leg,TableGeometry.SURFACE-.12,leg));
         label=center.getWorld().spawn(center.clone().add(0,.125,width/2+.015),TextDisplay.class,d->{
             display(d);d.setRotation(0,-90);d.setBillboard(Display.Billboard.FIXED);d.text(lastLabel);
             d.setLineWidth(Integer.MAX_VALUE);d.setAlignment(TextDisplay.TextAlignment.CENTER);
@@ -72,12 +67,17 @@ final class DiceTray implements AutoCloseable {
         Interaction interaction=center.getWorld().spawn(center.clone().add(0,-.03,0),Interaction.class,e->{
             tag(e);e.setInteractionWidth((float)width);e.setInteractionHeight(.14f);e.setResponsive(true);
         });entities.add(interaction);
+        entities.forEach(audience::common);
         settle(1);
+        layers();
     }
 
     void settle(int face){motion=null;frame=0;pose=DiceMotion.rest(size,face);render();}
     void roll(int face,long variationSeed){if(closed)return;motion=new DiceMotion(size,innerHalf,pose,face,variationSeed);frame=0;}
     void tick() {
+        if(closed)return;
+        if(refreshAudience)audience.refresh();
+        layers();
         if(!rolling())return;
         frame++;pose=motion.pose(frame);render();
         if(motion.impact(frame)) {
@@ -108,19 +108,40 @@ final class DiceTray implements AutoCloseable {
 
     private void render() {
         if(closed)return;
-        Quaternionf rotation=pose.rotation();Vector3f position=new Vector3f((float)pose.x(),(float)(FELT+pose.y()),(float)pose.z());
-        transform(die,new Vector3f((float)(-size/2)).rotate(rotation).add(position),rotation,new Vector3f((float)size));
-        for(Pip pip:pips) {
-            Quaternionf orientation=new Quaternionf(rotation).mul(pip.face());
-            Vector3f corner=new Vector3f((float)(size*.065),.002f,(float)(size*.065)).rotate(orientation);
-            Vector3f at=new Vector3f(pip.center()).rotate(rotation).add(position).sub(corner);
-            transform(pip.display(),at,orientation,new Vector3f((float)(size*.13),.004f,(float)(size*.13)));
+        DiceMotion.Pose at=new DiceMotion.Pose(pose.x(),FELT+pose.y(),pose.z(),pose.rotation());
+        if(nativeDie!=null)nativeDie.pose(at);
+        if(packedDie!=null)packedDie.pose(at);
+    }
+
+    private void layers() {
+        if(audience.needed(false)&&nativeTable.isEmpty()) {
+            double rim=(width-innerHalf*2)/2;
+            nativeTable.add(block(Material.DARK_OAK_PLANKS,0,-.16,0,width,.13,width));
+            nativeTable.add(block(Material.GREEN_CONCRETE,0,-.03,0,innerHalf*2,FELT+.03,innerHalf*2));
+            for(double side:new double[]{-1,1}) {
+                nativeTable.add(block(Material.STRIPPED_DARK_OAK_WOOD,side*(width-rim)/2,-.03,0,rim,.13,width));
+                nativeTable.add(block(Material.STRIPPED_DARK_OAK_WOOD,0,-.03,side*(width-rim)/2,innerHalf*2,.13,rim));
+            }
+            nativeTable.forEach(entity->audience.add(entity,false));
+            nativeDie=new YachtDie(plugin,room,center,tag,audience,false,size,"@roll");
+            render();
+        } else if(!audience.needed(false)&&!nativeTable.isEmpty()) {
+            nativeTable.forEach(audience::remove);nativeTable.clear();nativeDie.close();nativeDie=null;
+        }
+        if(audience.needed(true)&&packedTable==null) {
+            packedTable=center.getWorld().spawn(center,ItemDisplay.class,d->{
+                display(d);d.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);
+                d.setItemStack(plugin.pack.item("ludo_dice_tray"));
+                d.setTransformation(new Transformation(new Vector3f(),new Quaternionf(),new Vector3f((float)width,1,(float)width),new Quaternionf()));
+            });
+            audience.add(packedTable,true);
+            packedDie=new YachtDie(plugin,room,center,tag,audience,true,size,"@roll");
+            render();
+        } else if(!audience.needed(true)&&packedTable!=null) {
+            audience.remove(packedTable);packedTable=null;packedDie.close();packedDie=null;
         }
     }
 
-    private void transform(BlockDisplay display,Vector3f translation,Quaternionf rotation,Vector3f scale) {
-        display.setInterpolationDelay(0);display.setTransformation(new Transformation(translation,new Quaternionf(rotation),scale,new Quaternionf()));
-    }
     private void tag(Entity entity) {
         entity.setPersistent(false);entity.setGravity(false);entity.setInvulnerable(true);
         entity.getPersistentDataContainer().set(tag,PersistentDataType.STRING,room.id+"|@roll");
@@ -134,7 +155,13 @@ final class DiceTray implements AutoCloseable {
             display(d);d.setBlock(material.createBlockData());
             d.setTransformation(new Transformation(new Vector3f((float)(x-w/2),(float)y,(float)(z-depth/2)),new Quaternionf(),
                 new Vector3f((float)w,(float)h,(float)depth),new Quaternionf()));
-        });entities.add(block);return block;
+        });return block;
     }
-    @Override public void close(){if(closed)return;closed=true;motion=null;entities.forEach(Entity::remove);entities.clear();pips.clear();}
+    @Override public void close(){
+        if(closed)return;closed=true;motion=null;
+        entities.forEach(audience::remove);entities.clear();nativeTable.forEach(audience::remove);nativeTable.clear();
+        if(packedTable!=null){audience.remove(packedTable);packedTable=null;}
+        if(nativeDie!=null){nativeDie.close();nativeDie=null;}
+        if(packedDie!=null){packedDie.close();packedDie=null;}
+    }
 }

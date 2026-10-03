@@ -421,7 +421,7 @@ final class TableView implements AutoCloseable {
             boardAudience.common(river);
         }
         if (room.kind.equals("ludo"))
-            diceTray = new DiceTray(plugin,room,center,tag,!room.sideTray);
+            diceTray = new DiceTray(plugin,room,center,tag,!room.sideTray,boardAudience);
         syncBoardFurniture();
         sync();
     }

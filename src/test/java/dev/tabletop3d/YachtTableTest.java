@@ -54,7 +54,7 @@ class YachtTableTest {
         var f = new TableViewTest.Fixture("yacht", "roll");
         assertHit(f, -1.65, -.80, "@score:ones");
         assertHit(f, -1.65, .50, "@score:yacht");
-        assertHit(f, -1.65, .88, "@scores");
+        assertHit(f, -1.65, .88, "@menu");
         assertHit(f, .45, .82, "@roll");
         assertTrue(TablePlacement.overlaps(0, 80, 0, false, 2.45, -3.3, 80, 0, false, 1.125));
         f.view.close();
@@ -109,7 +109,7 @@ class YachtTableTest {
         var f = new TableViewTest.Fixture("yacht", "roll");
         assertHit(f, .45, .82, "@roll");
         assertHit(f, -1.65, -.80, "@score:ones");
-        assertHit(f, -1.65, .88, "@scores");
+        assertHit(f, -1.65, .88, "@menu");
         assertNull(f.view.hitPiece(f.view.origin.clone().add(0, 8, 0), new Vector(0, -1, 0)));
         for (Entity entity : f.entities) clearInvocations(entity);
         for (int i = 0; i < 100; i++) f.view.tick();
@@ -131,6 +131,67 @@ class YachtTableTest {
         game.apply(0, "roll");
         assertFalse(game.legalActions(0).contains("score:yacht"));
         assertThrows(IllegalArgumentException.class, () -> game.apply(0, "score:yacht"));
+    }
+
+    @Test void keepingOneDieDoesNotRestartTheOtherDiceInterpolation() throws Exception {
+        var f = new TableViewTest.Fixture("yacht");
+        f.move("roll");
+        for (int i = 0; i < 24; i++) f.view.tick();
+        var table = TableViewTest.field(f.view, "yachtTable");
+        var dice = (java.util.List<YachtDie>) TableViewTest.field(table, "nativeDice");
+        for (Entity entity : f.entities) clearInvocations(entity);
+        f.move("hold:die2");
+        for (int i = 0; i < dice.size(); i++) {
+            var body = (org.bukkit.entity.BlockDisplay) TableViewTest.field(dice.get(i), "body");
+            if (i == 2) verify(body).setTransformation(any());
+            else verify(body, never()).setTransformation(any());
+        }
+        for (Entity entity : f.entities) clearInvocations(entity);
+        f.move("hold:die2");
+        for (int i = 0; i < dice.size(); i++) {
+            var body = (org.bukkit.entity.BlockDisplay) TableViewTest.field(dice.get(i), "body");
+            if (i == 2) verify(body).setTransformation(any());
+            else verify(body, never()).setTransformation(any());
+        }
+        f.view.close();
+    }
+
+    @Test void seatedPlayerOpensEitherYachtTableThroughTheLobbyWithoutPickingTheGap() throws Exception {
+        var f = new TableViewTest.Fixture("yacht");
+        var arena = mock(GameWorld.class, CALLS_REAL_METHODS);
+        var clicks = new java.util.HashMap<java.util.UUID, Long>();
+        TabletopTest.set(arena, "plugin", f.plugin);
+        TabletopTest.set(arena, "views", new java.util.HashMap<>(java.util.Map.of(f.room.id, f.view)));
+        TabletopTest.set(arena, "clicks", clicks);
+        f.plugin.arena = arena;
+        f.plugin.menus = mock(GameMenus.class);
+        f.plugin.tableLobby = spy(new TableLobby(f.plugin));
+        var playerId = java.util.UUID.randomUUID();
+        when(f.player.getUniqueId()).thenReturn(playerId);
+        when(f.player.getWorld()).thenReturn(f.world);
+        when(f.player.isSneaking()).thenReturn(true);
+        when(f.plugin.allowed(f.player)).thenReturn(true);
+        when(f.plugin.room(f.player)).thenReturn(f.room);
+        var entry = new TableLobby.Entry("board:" + f.room.id, f.view.origin, 1.1, TableGeometry.SURFACE,
+                Room.Phase.PLAYING, java.util.List.of("Player"), 2, java.util.Set.of(playerId),
+                p -> fail("Seated player must not join again"), p -> f.plugin.menus.room(p, f.room));
+        doReturn(java.util.List.of(entry)).when(f.plugin.tableLobby).collect();
+        for (double x : new double[] {-1.65, 1.1, -.765, 3}) {
+            clearInvocations(f.plugin.menus);
+            clicks.clear();
+            when(f.player.getEyeLocation()).thenReturn(f.view.origin.clone().add(x, 2, .50)
+                    .setDirection(new Vector(0, -1, 0)));
+            boolean overTable = x == -1.65 || x == 1.1;
+            assertEquals(overTable, f.plugin.tableLobby.request(f.player));
+            var event = new org.bukkit.event.player.PlayerInteractEvent(f.player,
+                    org.bukkit.event.block.Action.RIGHT_CLICK_AIR, null, null,
+                    org.bukkit.block.BlockFace.SELF, org.bukkit.inventory.EquipmentSlot.HAND);
+            event.setCancelled(false);
+            arena.use(event);
+            assertEquals(overTable, event.isCancelled());
+            verify(f.plugin.menus, times(overTable ? 1 : 0)).room(f.player, f.room);
+        }
+        f.view.close();
     }
 
     @Test void languageReloadKeepsTheThrowLockedUntilItsFinalFrame() {

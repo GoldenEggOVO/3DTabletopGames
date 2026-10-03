@@ -220,6 +220,32 @@ class TabletopTest {
     }
 
     @Test
+    void publicTableMenusRequireSneakingAndRightClick() throws Exception {
+        for (String kind : List.of("yacht", "chess")) {
+            Fixture f = new Fixture();
+            set(f.room, "kind", kind);
+            f.room.board = GameFactory.create(kind, 2, 0);
+            f.plugin.menus = mock(GameMenus.class);
+            TableView view =
+                    ((Map<UUID, TableView>) TableViewTest.field(f.arena, "views")).get(f.room.id);
+            when(view.hitPiece(any(), any())).thenReturn(new TableView.Hit("@menu", .4));
+            Method method =
+                    GameWorld.class.getDeclaredMethod("worldClick", Player.class, boolean.class);
+            method.setAccessible(true);
+            for (boolean sneak : new boolean[] {false, true}) {
+                when(f.player.isSneaking()).thenReturn(sneak);
+                for (boolean rightClick : new boolean[] {false, true}) {
+                    f.clicks.clear();
+                    clearInvocations(f.plugin.menus);
+                    assertTrue((boolean) method.invoke(f.arena, f.player, rightClick));
+                    verify(f.plugin.menus, times(sneak && rightClick ? 1 : 0)).room(f.player, f.room);
+                }
+            }
+            verify(f.plugin, never()).apply(any(), anyInt(), any(), any());
+        }
+    }
+
+    @Test
     void focusedMahjongRightClickOpensMenuAndReleasesFocusBeforeTileActions() throws Exception {
         for (boolean tile : new boolean[] {false, true}) {
             Fixture f = new Fixture();
@@ -242,6 +268,31 @@ class TabletopTest {
             order.verify(f.plugin.menus).room(f.player, f.room);
             verify(f.plugin, never()).apply(any(), anyInt(), any(), any());
         }
+    }
+
+    @Test
+    void focusedMahjongMenuOpensOnceAcrossLobbyAndWorldListeners() throws Exception {
+        Fixture f = new Fixture();
+        set(f.room, "kind", "mahjong");
+        f.room.board = mock(HandGame.class);
+        f.plugin.arena = f.arena;
+        f.plugin.menus = mock(GameMenus.class);
+        f.plugin.comfort = mock(TableComfort.class);
+        when(f.plugin.comfort.focused(f.player)).thenReturn(true);
+        doAnswer(invocation -> {
+            when(f.plugin.comfort.focused(f.player)).thenReturn(false);
+            return null;
+        }).when(f.plugin.comfort).release(f.player);
+        when(f.player.isSneaking()).thenReturn(true);
+        TableLobby lobby = new TableLobby(f.plugin);
+        var event = new org.bukkit.event.player.PlayerInteractEvent(f.player,
+                org.bukkit.event.block.Action.RIGHT_CLICK_AIR, null, null,
+                org.bukkit.block.BlockFace.SELF, org.bukkit.inventory.EquipmentSlot.HAND);
+        lobby.use(event);
+        f.arena.use(event);
+        verify(f.plugin.menus, times(1)).room(f.player, f.room);
+        verify(f.plugin.comfort, times(1)).release(f.player);
+        verify(f.plugin, never()).apply(any(), anyInt(), any(), any());
     }
 
     @Test

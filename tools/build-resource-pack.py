@@ -203,45 +203,21 @@ def flower_image(n):
     return im
 
 
-def cap(radius,y,tex,down=False):
-    return {"from":[8-radius*16,8+y*16,8-radius*16],"to":[8+radius*16,8+y*16,8+radius*16],
-            "faces":{"down" if down else "up":{"uv":[0,0,16,16],"texture":"#"+tex}}}
-
-
 def disc(radius,y,height,tex,cap_tex,segments=96):
-    # Only exterior faces: no internal strip walls or coplanar block tops.
-    parts=[cap(radius,y+height,cap_tex),cap(radius,y,cap_tex,True)]
-    half=radius*math.sin(math.pi/segments);z=radius*math.cos(math.pi/segments)
-    for i in range(segments):
-        parts.append({"from":[8-half*16,8+y*16,8+z*16],"to":[8+half*16,8+(y+height)*16,8+z*16],
-            "rotation":{"origin":[8,8,8],"axis":"y","angle":360*i/segments},
-            "faces":{"south":{"uv":[0,0,16,16],"texture":"#"+tex}}})
-    return parts
+    from solid_mesh import extrusion
+    return extrusion(radius,y,height,tex,cap_tex,max(64,segments))
 
 
-def rounded_square(radius,corner,y,height,tex,cap_tex):
-    points=[]
-    for cx,cz,start in ((radius-corner,radius-corner,0),(-radius+corner,radius-corner,90),
-                        (-radius+corner,-radius+corner,180),(radius-corner,-radius+corner,270)):
-        for i in range(9):
-            a=math.radians(start+i*90/8);points.append((cx+corner*math.cos(a),cz+corner*math.sin(a)))
-    parts=[cap(radius,y+height,cap_tex),cap(radius,y,cap_tex,True)]
-    for i,(x,z) in enumerate(points):
-        nx,nz=points[(i+1)%len(points)];mx,mz=(x+nx)/2,(z+nz)/2
-        half=math.hypot(nx-x,nz-z)/2;angle=180-math.degrees(math.atan2(nz-z,nx-x))
-        # Long vertical edges author along Z so their unrotated bounds remain within [-16,32].
-        vertical=abs(nz-z)>abs(nx-x)
-        parts.append({"from":[8+mx*16 if vertical else 8+(mx-half)*16,8+y*16,8+(mz-half)*16 if vertical else 8+mz*16],
-            "to":[8+mx*16 if vertical else 8+(mx+half)*16,8+(y+height)*16,8+(mz+half)*16 if vertical else 8+mz*16],
-            "rotation":{"origin":[8+mx*16,8,8+mz*16],"axis":"y","angle":angle-90 if vertical else angle},
-            "faces":{"east" if vertical else "south":{"uv":[0,0,16,16],"texture":"#"+tex}}})
-    return parts
+def rounded_square(radius,corner,y,height,tex,cap_tex,inner_radius=None,inner_corner=None):
+    from solid_mesh import extrusion
+    return extrusion(radius,y,height,tex,cap_tex,128,corner,
+                     inner_radius=inner_radius,inner_corner=inner_corner)
 
 
 def furniture():
     wood=Image.new("RGB",(128,128),"#38251d")
     texture("surface/wood",wood)
-    top=Image.new("RGBA",(1024,1024));d=ImageDraw.Draw(top)
+    top=Image.new("RGB",(1024,1024),"#38251d");d=ImageDraw.Draw(top)
     d.ellipse((1,1,1022,1022),fill="#38251d")
     d.ellipse((39,39,984,984),fill="#286346")
     # Low-contrast weave and sparse four-color inlays keep the playing area quiet.
@@ -251,14 +227,14 @@ def furniture():
         a=i*math.pi/2;x,y=512+490*math.sin(a),512+490*math.cos(a)
         d.rectangle((x-5,y-5,x+5,y+5),fill=c)
     texture("surface/card-top",top)
-    foot=Image.new("RGBA",(128,128));ImageDraw.Draw(foot).ellipse((0,0,127,127),fill="#38251d")
+    foot=Image.new("RGB",(128,128),"#38251d");ImageDraw.Draw(foot).ellipse((0,0,127,127),fill="#38251d")
     texture("surface/wood-disc",foot)
     tex={"body":"tabletop3d:item/surface/wood","card":"tabletop3d:item/surface/card-top",
          "disc":"tabletop3d:item/surface/wood-disc"}
     model("card_table",tex,disc(1.5,-.19,.19,"body","card")
           +disc(.25,-.95125,.76125,"body","disc",32)+disc(.70,-1.03125,.08,"body","disc",64))
     cloth=ImageOps.colorize(ImageOps.grayscale(Image.open(ROOT/"resource-pack/source/mahjong/tablecloth.jpg")),"#213344","#34495a").resize((936,936))
-    mj=Image.new("RGBA",(1024,1024));d=ImageDraw.Draw(mj)
+    mj=Image.new("RGB",(1024,1024),"#38251d");d=ImageDraw.Draw(mj)
     d.rounded_rectangle((0,0,1023,1023),radius=48,fill="#38251d")
     d.rounded_rectangle((12,12,1011,1011),radius=39,outline="#92684b",width=4)
     mask=Image.new("L",(936,936));ImageDraw.Draw(mask).rounded_rectangle((0,0,935,935),radius=30,fill=255)
@@ -267,17 +243,9 @@ def furniture():
     texture("surface/mahjong-top",mj)
     tex["cloth"]="tabletop3d:item/surface/mahjong-top"
     # A raised, open rim keeps the cloth at its original playing height.
-    rim=Image.new("RGBA",(1024,1024));rd=ImageDraw.Draw(rim)
-    rd.rounded_rectangle((0,0,1023,1023),radius=48,fill="#38251d")
-    rd.rounded_rectangle((44,44,979,979),radius=30,fill=(0,0,0,0))
-    tex["rim"]=texture("surface/mahjong-rim",rim)
+    tex["rim"]=tex["body"]
     parts=rounded_square(1.5,.14,-.19,.19,"body","cloth")
-    raised=rounded_square(1.5,.14,0,.065,"body","rim")
-    parts.extend([raised[0],*raised[2:]])
-    for wall in rounded_square(1.371,.088,0,.065,"body","rim")[2:]:
-        side=next(iter(wall["faces"]))
-        wall["faces"]={"north" if side=="south" else "west":wall["faces"][side]}
-        parts.append(wall)
+    parts.extend(rounded_square(1.5,.14,0,.065,"body","rim",1.371,.088))
     for x in (-1.25,1.25):
         for z in (-1.25,1.25):parts.append(cube([8+(x-.075)*16,8-1.03125*16,8+(z-.075)*16],
                                                              [8+(x+.075)*16,8-.19*16,8+(z+.075)*16]))

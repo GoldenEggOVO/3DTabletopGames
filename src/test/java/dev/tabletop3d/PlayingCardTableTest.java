@@ -185,17 +185,21 @@ class PlayingCardTableTest {
     }
 
     @Test
-    void nativeFacesHaveAClearBorderAndTwoOppositeCornerIndices() {
+    void nativeFacesUseBlackjackBlocksForBothCornerIndicesAndCentralArt() {
         var f = new TableViewTest.Fixture("liars-bar", 4);
         owner(f, false);
         Object card = ownCards(f).values().iterator().next();
         var parts = (List<Entity>) get(card, "parts");
-        assertEquals(2, parts.stream().filter(BlockDisplay.class::isInstance).count());
-        var labels = parts.stream().filter(TextDisplay.class::isInstance).toList();
-        assertEquals(3, labels.size());
-        var corner = f.transforms.get(labels.getLast());
-        var axis = corner.getLeftRotation().transform(new org.joml.Vector3f(0, 1, 0));
-        assertTrue(axis.y < -.99, "The lower corner must read upside down like a physical card");
+        assertTrue(parts.size() > 50);
+        assertTrue(parts.stream().allMatch(BlockDisplay.class::isInstance));
+        var ink = parts.subList(1, parts.size()).stream().map(f.transforms::get).toList();
+        assertTrue(ink.stream().anyMatch(p -> p.getTranslation().x < -.05 && p.getTranslation().y > .16),
+                "The upper left corner must retain the Blackjack rank and suit artwork");
+        assertTrue(ink.stream().anyMatch(p -> p.getTranslation().x > .05 && p.getTranslation().y < .06),
+                "The lower right corner must retain its inverted artwork");
+        assertTrue(ink.stream().anyMatch(p -> Math.abs(p.getTranslation().x) < .04
+                        && p.getTranslation().y > .07 && p.getTranslation().y < .15),
+                "The card centre must contain physical suit or face-card artwork");
         f.view.close();
     }
 
@@ -215,26 +219,17 @@ class PlayingCardTableTest {
     }
 
     @Test
-    void nativeFlatFaceSitsAboveItsBorderAndBelowThePrintedIndices() {
+    void nativeFlatInkSitsAboveTheWhiteCardBody() {
         var f = new TableViewTest.Fixture("liars-bar", 4);
         owner(f, false);
         var cards = (Map<String, Object>) get(table(f), "publicCards");
         var parts = (List<Entity>) get(cards.get("native:declaration"), "parts");
-        Entity border = parts.getFirst(), face = parts.get(1), label = parts.get(2);
-        double borderTop =
-                border.getLocation().getY()
-                        + f.transforms.get(border).getTranslation().y
-                        + f.transforms.get(border).getScale().y;
-        double faceTop =
-                face.getLocation().getY()
-                        + f.transforms.get(face).getTranslation().y
-                        + f.transforms.get(face).getScale().y;
-        assertTrue(
-                faceTop > borderTop + .001,
-                "The inset must not share the opaque border's top plane");
-        assertTrue(
-                label.getLocation().getY() > faceTop + .0005,
-                "Printed indices must sit in front of the inset");
+        Entity body = parts.getFirst();
+        double bodyTop = f.transforms.get(body).getTranslation().y
+                + f.transforms.get(body).getScale().y;
+        for (Entity ink : parts.subList(1, parts.size()))
+            assertTrue(f.transforms.get(ink).getTranslation().y > bodyTop + .0001,
+                    "Block artwork must project above the card body without coplanar faces");
         f.view.close();
     }
 
@@ -269,15 +264,12 @@ class PlayingCardTableTest {
                 Object card = cards.values().iterator().next();
                 var parts = (List<Entity>) get(card, "parts");
                 Location body = parts.getFirst().getLocation();
-                Location face =
-                        parts.stream()
-                                .filter(TextDisplay.class::isInstance)
-                                .findFirst()
-                                .orElseThrow()
-                                .getLocation();
+                assertTrue(parts.stream().allMatch(BlockDisplay.class::isInstance));
+                for (Entity part : parts) assertEquals(body.getYaw(), part.getLocation().getYaw());
+                assertTrue(fixture.transforms.get(parts.get(1)).getTranslation().z > .001,
+                        "Physical ink must face the owning seat");
                 double angle = Math.PI * 2 * seat / capacity;
                 var normal = new org.bukkit.util.Vector(Math.sin(angle), 0, Math.cos(angle));
-                assertEquals(.009, face.toVector().subtract(body.toVector()).dot(normal), 1e-8);
                 var eye = body.clone().add(normal.clone().multiply(1.5)).add(0, .125, 0);
                 assertEquals(
                         cards.keySet().iterator().next(),

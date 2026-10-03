@@ -40,6 +40,8 @@ shutil.copy2(source / "eula.txt", runtime / "eula.txt")
 plugins = runtime / "plugins"
 plugins.mkdir()
 jar = project / "target" / f"3dtabletop-{version}.jar"
+with zipfile.ZipFile(jar) as artifact:
+    assert f"version: {version}" in artifact.read("plugin.yml").decode().splitlines(), "Plugin version differs from build version"
 shutil.copy2(jar, plugins / jar.name)
 if args.craftengine_jar:
     shutil.copy2(args.craftengine_jar, plugins / "CraftEngine.jar")

@@ -3,7 +3,6 @@ package dev.tabletop3d;
 import com.google.gson.*;
 
 import dev.tabletop3d.rules.GameOptions;
-import dev.tabletop3d.rules.YachtGame;
 import dev.tabletop3d.ui.MessageText;
 
 import net.kyori.adventure.text.Component;
@@ -678,110 +677,6 @@ final class GameMenus implements AutoCloseable {
         if (r.phase == Room.Phase.FINISHED || r.phase == Room.Phase.PAUSED)
             text = text.append(Component.newline()).append(RoomText.outcome(r, r.result));
         return text;
-    }
-
-    void yacht(Player p, Room r) {
-        if (!(r.board instanceof YachtGame g)) return;
-        int seat = r.seat(p.getUniqueId());
-        long rev = r.revision;
-        List<String> legal = g.legalActions(seat);
-        List<Button> b = new ArrayList<>();
-        if (legal.contains("roll"))
-            b.add(
-                    new Button(
-                            "roll",
-                            Language.component("menu.yacht.roll", "count", 3 - g.rolls()),
-                            () -> yachtAction(p, r, rev, "roll")));
-        for (int i = 0; i < 5; i++) {
-            String a = "hold:die" + i;
-            if (legal.contains(a))
-                b.add(
-                        new Button(
-                                Language.component(
-                                        "menu.yacht.die",
-                                        "held",
-                                        Language.component(
-                                                g.held(i)
-                                                        ? "menu.yacht.hold"
-                                                        : "menu.yacht.reroll"),
-                                        "number",
-                                        i + 1,
-                                        "value",
-                                        g.dice()[i]),
-                                () -> yachtAction(p, r, rev, a)));
-        }
-        StringBuilder dice = new StringBuilder();
-        for (int i = 0; i < 5; i++) dice.append(g.dice()[i]).append(g.held(i) ? "✓  " : "  ");
-        b.add(
-                new Button(
-                        "score",
-                        Language.component(
-                                legal.stream().anyMatch(a -> a.startsWith("score:"))
-                                        ? "menu.yacht.choose-score"
-                                        : "menu.yacht.view-score"),
-                        () -> yachtScores(p, r)));
-        show(
-                p,
-                RoomText.game("yacht"),
-                Language.component("menu.yacht.dice", "dice", dice)
-                        .append(Component.newline())
-                        .append(roomSummary(r)),
-                b,
-                () -> room(p, r),
-                "yacht");
-    }
-
-    void yachtScores(Player p, Room r) {
-        if (!(r.board instanceof YachtGame g) || r.seat(p.getUniqueId()) < 0) return;
-        long revision = r.revision;
-        List<String> legal = g.legalActions(r.seat(p.getUniqueId()));
-        List<Button> buttons = new ArrayList<>();
-        Component sheet = Component.empty();
-        for (int i = 0; i < 12; i++) {
-            String action = "score:" + YachtGame.CATEGORIES.get(i);
-            Component category = Language.component("score.category." + YachtGame.CATEGORIES.get(i)),
-                    scores = Component.empty();
-            for (int seat = 0; seat < r.capacity; seat++)
-                scores =
-                        scores.append(
-                                Language.component(
-                                        "menu.yacht.seat-score",
-                                        "number",
-                                        seat + 1,
-                                        "score",
-                                        g.written(seat, i) < 0 ? "—" : g.written(seat, i)));
-            sheet =
-                    sheet.append(
-                                    Language.component(
-                                            "menu.yacht.score-row",
-                                            "category",
-                                            category,
-                                            "scores",
-                                            scores))
-                            .append(Component.newline());
-            if (legal.contains(action))
-                buttons.add(
-                        new Button(
-                                Language.component(
-                                        "menu.yacht.score",
-                                        "category",
-                                        category,
-                                        "score",
-                                        YachtGame.score(i, g.dice())),
-                                () -> yachtAction(p, r, revision, action)));
-        }
-        show(
-                p,
-                Language.component("menu.yacht.score-sheet"),
-                sheet,
-                buttons,
-                () -> yacht(p, r),
-                "yacht");
-    }
-
-    void yachtAction(Player p, Room r, long revision, String action) {
-        plugin.action(p, r, revision, new JsonPrimitive(action));
-        if (plugin.rooms.containsKey(r.id) && r.phase == Room.Phase.PLAYING) yacht(p, r);
     }
 
     void observe(Player p, Room r) {
