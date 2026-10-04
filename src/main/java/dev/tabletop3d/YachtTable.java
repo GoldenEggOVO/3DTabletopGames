@@ -3,6 +3,9 @@ package dev.tabletop3d;
 import dev.tabletop3d.rules.YachtGame;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
@@ -42,6 +45,8 @@ final class YachtTable implements AutoCloseable {
     private long revision = -1, language = -1;
     private int history, frame;
     private boolean closed;
+    private record Focus(String target, double x, double y, double z, double width, double depth, List<BlockDisplay> edges) {}
+    private final Map<UUID, Focus> focuses = new HashMap<>();
 
     YachtTable(Tabletop3D plugin, Room room, Location origin, NamespacedKey tag) {
         this.plugin = plugin; this.room = room; this.origin = origin; this.tag = tag;
@@ -107,6 +112,7 @@ final class YachtTable implements AutoCloseable {
             }
         }
         frame = 0;
+        if (rolling()) clearFocuses();
         refreshLabels();
     }
 
@@ -151,7 +157,7 @@ final class YachtTable implements AutoCloseable {
                 nativeTable.add(block(center, -.19, 0, width, .14, 2.25, Material.DARK_OAK_PLANKS));
                 nativeTable.add(block(center, -.045, 0, width - .15, .045, 2.10,
                         center == SCORE_X ? Material.WHITE_CONCRETE : Material.RED_CONCRETE));
-                for (double side : new double[]{-1,1}) {
+                if (center != SCORE_X) for (double side : new double[]{-1,1}) {
                     nativeTable.add(block(center + side * (width / 2 - .04), -.045, 0, .08, .10, 2.25, Material.STRIPPED_DARK_OAK_WOOD));
                     nativeTable.add(block(center, -.045, side * 1.085, width - .16, .10, .08, Material.STRIPPED_DARK_OAK_WOOD));
                 }
@@ -249,6 +255,7 @@ final class YachtTable implements AutoCloseable {
     }
 
     void cursor(Player player, String hover) {
+        focus(player, rolling() ? null : hover);
         Component hint = Component.empty();
         if (hover != null) {
             if (rolling()) hint = Language.component("hint.rolling");
@@ -264,6 +271,44 @@ final class YachtTable implements AutoCloseable {
         player.sendActionBar(hint.colorIfAbsent(NamedTextColor.GOLD));
     }
 
+    private void focus(Player player, String target) {
+        if (closed || target == null || (!target.startsWith("die") && !target.startsWith("@score:"))) {
+            clear(player);
+            return;
+        }
+        double x, y, z, width, depth;
+        if (target.startsWith("die")) {
+            var pose = poses[Integer.parseInt(target.substring(3))];
+            x = pose.x(); y = pose.y() + SIZE / 2 + .003; z = pose.z();
+            width = depth = SIZE + .016;
+        } else {
+            x = columnX(board.currentPlayer()); y = .022;
+            z = scoreZ(YachtGame.CATEGORIES.indexOf(target.substring(7)));
+            width = COLUMNS_WIDTH / room.capacity - .008; depth = .094;
+        }
+        Focus old = focuses.get(player.getUniqueId());
+        if (old != null && old.target().equals(target) && old.x() == x && old.y() == y
+                && old.z() == z && old.width() == width && old.depth() == depth) return;
+        clear(player);
+        List<BlockDisplay> edges = new ArrayList<>(4);
+        double stroke = .006;
+        for (double side : new double[]{-1, 1}) {
+            edges.add(block(x, y, z + side * (depth - stroke) / 2, width, .003, stroke, Material.LIME_CONCRETE, player));
+            edges.add(block(x + side * (width - stroke) / 2, y, z, stroke, .003, depth - stroke * 2, Material.LIME_CONCRETE, player));
+        }
+        focuses.put(player.getUniqueId(), new Focus(target, x, y, z, width, depth, edges));
+    }
+
+    void clear(Player player) {
+        Focus old = focuses.remove(player.getUniqueId());
+        if (old != null) old.edges().forEach(Entity::remove);
+    }
+
+    private void clearFocuses() {
+        focuses.values().forEach(focus -> focus.edges().forEach(Entity::remove));
+        focuses.clear();
+    }
+
     private void init(Display display, String id) {
         display.setPersistent(false); display.setGravity(false); display.setInvulnerable(true);
         display.getPersistentDataContainer().set(tag, PersistentDataType.STRING, room.id + "|" + id);
@@ -271,11 +316,18 @@ final class YachtTable implements AutoCloseable {
     }
 
     private BlockDisplay block(double x, double y, double z, double w, double h, double d, Material material) {
-        return origin.getWorld().spawn(origin, BlockDisplay.class, display -> {
+        return block(x, y, z, w, h, d, material, null);
+    }
+
+    private BlockDisplay block(double x, double y, double z, double w, double h, double d, Material material, Player viewer) {
+        BlockDisplay entity = origin.getWorld().spawn(origin, BlockDisplay.class, display -> {
             init(display, "@menu"); display.setBlock(material.createBlockData());
+            if (viewer != null) display.setVisibleByDefault(false);
             display.setTransformation(new Transformation(new Vector3f((float)(x-w/2), (float)y, (float)(z-d/2)), new Quaternionf(),
                     new Vector3f((float)w,(float)h,(float)d), new Quaternionf()));
         });
+        if (viewer != null) viewer.showEntity(plugin, entity);
+        return entity;
     }
 
     private TextDisplay label(double x, double y, double z, float scale) {
@@ -290,6 +342,7 @@ final class YachtTable implements AutoCloseable {
     @Override public void close() {
         if (closed) return;
         closed = true;
+        clearFocuses();
         nativeDice.forEach(YachtDie::close); packedDice.forEach(YachtDie::close);
         nativeTable.forEach(audience::remove); packedTable.forEach(audience::remove); common.forEach(audience::remove);
     }

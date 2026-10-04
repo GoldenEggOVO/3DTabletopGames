@@ -1463,6 +1463,7 @@ final class TableView implements AutoCloseable {
     }
 
     void clear(Player player) {
+        if (yachtTable != null) yachtTable.clear(player);
         if (handTable != null) handTable.clear(player);
         if (playingTable != null) playingTable.clear(player);
         Overlay old = overlays.remove(player.getUniqueId());

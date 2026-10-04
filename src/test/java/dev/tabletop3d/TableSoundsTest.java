@@ -32,12 +32,19 @@ class TableSoundsTest {
                     Map.of("combination", type.name()), true).getFirst();
             assertTrue(cues.add(cue), type.name());
         }
-        assertEquals("doudizhu.bomb", TableSounds.cards("doudizhu", "play:cards", Map.of(),
+        assertNull(TableSounds.cards("doudizhu", "play:cards", Map.of(),
                 Map.of("combination", "BOMB"), true).getFirst().resource());
+        for (var type : DoudizhuCombination.Type.values())
+            assertTrue(TableSounds.cards("doudizhu", "play:cards", Map.of(),
+                    Map.of("combination", type.name()), true).stream().allMatch(cue -> cue.resource() == null));
         assertNotEquals(TableSounds.cards("doudizhu", "pass", Map.of(), Map.of(), true),
                 TableSounds.cards("doudizhu", "pass", Map.of(), Map.of(), false));
         assertNotEquals(TableSounds.cards("doudizhu", "bid:2", Map.of("bid", "0"), Map.of(), true),
                 TableSounds.cards("doudizhu", "bid:2", Map.of("bid", "1"), Map.of(), true));
+        for (boolean canBeat : List.of(true, false))
+            assertNull(TableSounds.cards("doudizhu", "pass", Map.of(), Map.of(), canBeat).getFirst().resource());
+        for (String bid : List.of("0", "1"))
+            assertNull(TableSounds.cards("doudizhu", "bid:2", Map.of("bid", bid), Map.of(), true).getFirst().resource());
     }
 
     @Test
@@ -67,10 +74,10 @@ class TableSoundsTest {
             when(plugin.allowed(player)).thenReturn(true);
         }
         when(plugin.pack.packed(packedPlayer)).thenReturn(true);
-        var cue = TableSounds.cards("doudizhu", "play:cards", Map.of(),
-                Map.of("combination", "BOMB"), true).getFirst();
-        TableSounds.play(plugin, at, cue, "doudizhu");
-        verify(packedPlayer).playSound(at, "tabletop3d:doudizhu.bomb", SoundCategory.BLOCKS, cue.volume(), 1f);
+        var cue = TableSounds.cards("liars-bar", "challenge", Map.of("alive.0", "true"),
+                Map.of("alive.0", "true"), true).getFirst();
+        TableSounds.play(plugin, at, cue, "liars-bar");
+        verify(packedPlayer).playSound(at, "tabletop3d:liars-bar.challenge", SoundCategory.BLOCKS, cue.volume(), 1f);
         verify(nativePlayer).playSound(at, cue.sound(), SoundCategory.BLOCKS, cue.volume(), cue.pitch());
         verify(packedPlayer, never()).playSound(any(Location.class), any(Sound.class), any(SoundCategory.class), anyFloat(), anyFloat());
         verify(world, never()).playSound(any(Location.class), any(Sound.class), any(SoundCategory.class), anyFloat(), anyFloat());

@@ -10,6 +10,64 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class YachtTableTest {
+    @Test void scoreSheetHasNoRaisedRailsAndDiceTrayKeepsItsRails() {
+        var f = new TableViewTest.Fixture("yacht");
+        var rails = f.entities.stream().filter(org.bukkit.entity.BlockDisplay.class::isInstance)
+                .filter(e -> Math.abs(f.transforms.get(e).getScale().y() - .10) < 1e-6).toList();
+        assertEquals(4, rails.size());
+        assertTrue(rails.stream().allMatch(e -> f.transforms.get(e).getTranslation().x() > -.8));
+        f.view.close();
+    }
+
+    @Test void cursorFramesFitScoreCellsArePrivateAndReuseIdleEntities() {
+        var f = new TableViewTest.Fixture("yacht");
+        int count = f.entities.size();
+        f.view.cursor(f.player, null, "@score:ones");
+        var edges = java.util.List.copyOf(f.entities.subList(count, f.entities.size()));
+        assertEquals(4, edges.size());
+        for (var edge : edges) {
+            verify(edge).setVisibleByDefault(false);
+            verify(f.player).showEntity(f.plugin, edge);
+            var pose = f.transforms.get(edge);
+            assertTrue(pose.getTranslation().x() >= -1.621 - 1e-6);
+            assertTrue(pose.getTranslation().x() + pose.getScale().x() <= -1.279 + 1e-6);
+            assertTrue(pose.getTranslation().z() >= -.847 - 1e-6);
+            assertTrue(pose.getTranslation().z() + pose.getScale().z() <= -.753 + 1e-6);
+        }
+        for (int i = 0; i < 100; i++) f.view.cursor(f.player, null, "@score:ones");
+        assertEquals(count + 4, f.entities.size());
+        f.view.clear(f.player);
+        for (var edge : edges) verify(edge).remove();
+        f.view.close();
+    }
+
+    @Test void dieHoverMovesToTheKeepSlotAndClearsDuringThrowsAndOnExit() {
+        var f = new TableViewTest.Fixture("yacht", "roll");
+        int count = f.entities.size();
+        f.view.cursor(f.player, null, "die2");
+        assertEquals(count + 4, f.entities.size());
+        var edges = java.util.List.copyOf(f.entities.subList(count, f.entities.size()));
+        f.move("hold:die2");
+        f.view.cursor(f.player, null, "die2");
+        for (var edge : edges) verify(edge).remove();
+        var held = java.util.List.copyOf(f.entities.subList(count + 4, f.entities.size()));
+        assertEquals(4, held.size());
+        for (var edge : held) {
+            var pose = f.transforms.get(edge);
+            assertTrue(pose.getTranslation().z() >= -.778 - 1e-6);
+            assertTrue(pose.getTranslation().z() + pose.getScale().z() <= -.582 + 1e-6);
+        }
+        f.move("roll");
+        for (var edge : held) verify(edge).remove();
+        for (int i = 0; i < 24; i++) f.view.tick();
+        count = f.entities.size();
+        f.view.cursor(f.player, null, "die2");
+        var finalEdges = java.util.List.copyOf(f.entities.subList(count, f.entities.size()));
+        f.view.cursor(f.player, null, null);
+        for (var edge : finalEdges) verify(edge).remove();
+        f.view.close();
+    }
+
     @Test void activeScoreColumnFitsTheGridForEverySeatAndCapacity() throws Exception {
         for (int capacity : java.util.List.of(2, 4)) {
             var f = new TableViewTest.Fixture("yacht", capacity);
@@ -255,6 +313,14 @@ class YachtTableTest {
         for (int i = 0; i < 24; i++) table.tick();
         assertFalse(table.rolling());
         for (int i = 0; i < 5; i++) assertEquals("die" + i, table.hit(f.view.origin.clone().add(.32 + (i-2)*.26,2,.15),new Vector(0,-1,0)).cell());
+        int count = f.entities.size();
+        table.cursor(f.player, "die1");
+        var edges = java.util.List.copyOf(f.entities.subList(count, f.entities.size()));
+        assertEquals(4, edges.size());
+        for (var edge : edges) {
+            verify(edge).setVisibleByDefault(false);
+            verify(f.player).showEntity(f.plugin, edge);
+        }
         f.plugin.pack.toggle(f.player); table.tick();
         assertFalse(table.rolling());
         table.close();

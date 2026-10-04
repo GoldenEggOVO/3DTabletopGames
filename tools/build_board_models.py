@@ -60,9 +60,10 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
     parts=[]
     for center,width,top in ((.32,2,"felt"),(-1.65,1.6,"paper")):
         parts += [yacht_box(center,-.19,0,width,.14,2.25,"wood"),yacht_box(center,-.045,0,width-.15,.045,2.10,top)]
-        for side in (-1,1):
-            parts += [yacht_box(center+side*(width/2-.04),-.045,0,.08,.10,2.25,"wood"),
-                      yacht_box(center,-.045,side*1.085,width-.16,.10,.08,"wood")]
+        if center == .32:
+            for side in (-1,1):
+                parts += [yacht_box(center+side*(width/2-.04),-.045,0,.08,.10,2.25,"wood"),
+                          yacht_box(center,-.045,side*1.085,width-.16,.10,.08,"wood")]
         for x in (center-width/2+.15,center+width/2-.15):
             for z in (-.98,.98):parts.append(yacht_box(x,-1.03125,z,.13,.84125,.13,"wood"))
     for i in range(5):parts.append(yacht_box(.32+(i-2)*.26,.002,-.68,.235,.017,.235,"slot"))

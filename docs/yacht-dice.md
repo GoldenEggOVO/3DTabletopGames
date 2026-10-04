@@ -2,7 +2,7 @@
 
 Two to four players share five small dice and fill twelve categories each. Every turn permits up to three rolls. Dice settle into the same five positions in a row; clicking moves a die into its keep slot, and clicking again returns it. Kept dice retain their value during rerolls. Adjusting slots after the third roll does not grant another roll.
 
-Click **Roll Dice** in front of the tray. The twelve category buttons on the left show the current player's available score, or the score already written. Click an unused category to finish the turn; choosing an unmet category writes zero. **Score Sheet** shows everyone's written categories. Actions stay locked during the throw animation, and room identity, turn and revision checks apply to both world and menu actions.
+Click **Roll Dice** in front of the tray. The twelve rows on the left show everyone's scores and the current player's available score. A private cursor frame outlines that player's aimed score cell or the aimed die. Click an unused category to finish the turn; choosing an unmet category writes zero. Sneak and right-click either table to open the room menu. Actions stay locked during the throw animation, and room identity, turn and revision checks apply to both world and menu actions.
 
 ## Scoring
 
@@ -22,6 +22,6 @@ The provided video could not be retrieved during development. The user screensho
 
 ## Rendering and upgrade
 
-Vanilla uses reusable six-face dice and a raised tray. CraftEngine adds `yacht_table` and `yacht_die`; mixed mode creates only the nearby players' required layers. The packed die has the same top and opposing-face orientations as the native die. The pack must match the JAR's bundled hash.
+Vanilla uses reusable six-face dice, a raised dice tray and a flat score table without raised rails. CraftEngine adds `yacht_table` and `yacht_die`; both modes share cursor geometry, and mixed mode creates only the nearby players' required layers. The packed die has the same top and opposing-face orientations as the native die. The pack must match the JAR's bundled hash.
 
 Existing seeded Yacht histories remain readable. The offline upgrade tool maps `score.category.0` through `.11` to semantic names and preserves custom values. Back up and prepare the language directory before installing the new JAR; the test-server deployment performs this conversion before restart.

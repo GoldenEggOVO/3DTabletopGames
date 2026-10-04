@@ -97,12 +97,10 @@ final class TableSounds {
             Map<String, String> after, boolean canBeat) {
         if (kind.equals("doudizhu")) {
             if (action.equals("pass"))
-                return List.of(new Cue(PASS.sound(), .28f, canBeat ? 1.2f : .8f,
-                        canBeat ? "doudizhu.pass" : "doudizhu.no-beat"));
+                return List.of(new Cue(PASS.sound(), .28f, canBeat ? 1.2f : .8f));
             if (action.startsWith("bid:")) {
                 if (action.equals("bid:0")) return List.of(PASS);
-                return List.of(new Cue(CONFIRM.sound(), .3f, 1.3f,
-                        before.get("bid").equals("0") ? "doudizhu.bid" : "doudizhu.grab"));
+                return List.of(new Cue(CONFIRM.sound(), .3f, before.get("bid").equals("0") ? 1.3f : 1.5f));
             }
             var type = DoudizhuCombination.Type.valueOf(after.get("combination"));
             Sound sound = switch (type) {
@@ -112,8 +110,7 @@ final class TableSounds {
                 case AIRPLANE_SINGLE, AIRPLANE_PAIR -> Sound.ENTITY_FIREWORK_ROCKET_LAUNCH;
                 default -> Sound.BLOCK_NOTE_BLOCK_PLING;
             };
-            String event = type.name().toLowerCase(java.util.Locale.ROOT).replace('_', '-');
-            return List.of(new Cue(sound, .3f, .65f + type.ordinal() * .075f, "doudizhu." + event),
+            return List.of(new Cue(sound, .3f, .65f + type.ordinal() * .075f),
                     new Cue(CARD.sound(), .16f, 1.4f, null, 2));
         }
         if (kind.equals("liars-bar")) {

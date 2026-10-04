@@ -7,7 +7,6 @@ import hashlib
 import json
 import math
 import sys
-import numpy as np
 import zipfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -309,8 +308,7 @@ def audio():
         assert checked==rate and abs(len(decoded)-len(data))<=1
         durations[event]=round(len(data)/rate,4)
         events["mahjong."+event]={"sounds":[{"name":"tabletop3d:mahjong/"+event,"stream":False}]}
-    sampled = ("doudizhu/bid", "doudizhu/grab", "doudizhu/pass", "doudizhu/no-beat",
-               "doudizhu/bomb", "doudizhu/triple-single", "liars-bar/challenge", "liars-bar/shot")
+    sampled = ("liars-bar/challenge", "liars-bar/shot")
     for name in sampled:
         data,rate=sf.read(ROOT/f"audio-source/{name}.ogg",dtype="float32",always_2d=True)
         data=data.mean(axis=1)
@@ -319,25 +317,6 @@ def audio():
         event=name.replace("/", ".")
         durations[event]=round(len(data)/rate,4)
         events[event]={"sounds":[{"name":"tabletop3d:"+name,"stream":False}]}
-    # Original short motifs distinguish combinations for which no voice was supplied.
-    motifs={"single":(60,), "pair":(60,60), "triple":(60,60,60), "triple-pair":(60,64,64),
-            "straight":(60,62,64,65,67), "pair-straight":(60,60,64,64,67,67),
-            "triple-straight":(60,60,60,64,64,64), "airplane-single":(55,60,64,67),
-            "airplane-pair":(55,55,60,60,67,67), "four-single":(48,48,48,48,60,64),
-            "four-pair":(48,48,48,48,60,60,64,64), "rocket":(48,60,67,72,79)}
-    rate=24000
-    for name,notes in motifs.items():
-        parts=[]
-        for note in notes:
-            t=np.arange(int(rate*.085))/rate
-            envelope=np.sin(np.pi*np.minimum(t/.015,1)/2)*np.exp(-t*35)
-            frequency=440*2**((note-69)/12)
-            parts.append((.28*np.sin(2*np.pi*frequency*t)+.07*np.sin(4*np.pi*frequency*t))*envelope)
-        data=np.concatenate(parts).astype("float32")
-        target=ASSETS/f"sounds/doudizhu/{name}.ogg";target.parent.mkdir(parents=True,exist_ok=True)
-        sf.write(target,data,rate,format="OGG",subtype="VORBIS")
-        event="doudizhu."+name;durations[event]=round(len(data)/rate,4)
-        events[event]={"sounds":[{"name":"tabletop3d:doudizhu/"+name,"stream":False}]}
     write_json(ASSETS/"sounds.json",events)
     return durations
 

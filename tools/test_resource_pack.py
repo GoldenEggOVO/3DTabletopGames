@@ -72,12 +72,12 @@ class ResourcePackTest(unittest.TestCase):
             self.assertEqual((36, 90, 64), cloth.getpixel((x, 256)))
         self.assertEqual((40, 99, 70), cloth.getpixel((256, 190)))
 
-    def test_every_landlord_combination_and_liars_result_has_a_sound_event(self):
+    def test_landlord_audio_is_absent_and_liars_results_keep_distinct_sounds(self):
         sounds = json.loads(self.archive.read("assets/tabletop3d/sounds.json"))
-        combinations = ("single", "pair", "triple", "triple-single", "triple-pair", "straight", "pair-straight",
-                        "triple-straight", "airplane-single", "airplane-pair", "four-single", "four-pair", "bomb", "rocket")
+        self.assertFalse(any(event.startswith("doudizhu.") for event in sounds))
+        self.assertFalse(any(name.startswith("assets/tabletop3d/sounds/doudizhu/") for name in self.names))
         payloads = []
-        for event in ["doudizhu." + name for name in combinations] + ["doudizhu.pass", "doudizhu.no-beat", "liars-bar.challenge", "liars-bar.shot"]:
+        for event in ["liars-bar.challenge", "liars-bar.shot"]:
             name = sounds[event]["sounds"][0]["name"]
             payloads.append(self.archive.read("assets/" + name.replace(":", "/sounds/") + ".ogg"))
         self.assertEqual(len(payloads), len(set(payloads)))
@@ -92,6 +92,10 @@ class ResourcePackTest(unittest.TestCase):
         self.assertEqual(5, len(slots))
         self.assertEqual([round((.32+(i-2)*.26)*8+8,5) for i in range(5)],
                          [round((e["from"][0]+e["to"][0])/2,5) for e in slots])
+        rails = [e for e in table["elements"] if e["faces"]["up"]["texture"] == "#wood"
+                 and abs((e["to"][1] - e["from"][1]) / 8 - .10) < 1e-6]
+        self.assertEqual(4, len(rails))
+        self.assertTrue(all((e["from"][0] + e["to"][0] - 16) / 16 > -.8 for e in rails))
 
     def test_bundled_checksum_matches_shipped_pack(self):
         import hashlib
@@ -143,7 +147,7 @@ class ResourcePackTest(unittest.TestCase):
 
     def test_sounds_have_real_ogg_payloads(self):
         sounds = json.loads(self.archive.read("assets/tabletop3d/sounds.json"))
-        self.assertEqual(29, len(sounds))
+        self.assertEqual(11, len(sounds))
         for event in sounds.values():
             name = event["sounds"][0]["name"]
             path = "assets/" + name.replace(":", "/sounds/") + ".ogg"

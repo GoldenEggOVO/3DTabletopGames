@@ -58,42 +58,6 @@
       "url": "https://files.riichi.moe/mjg/game%20resources%20and%20tools/Mahjong%20Soul/game%20files/tablecloth/default.jpg"
     },
     {
-      "file": "audio-source/doudizhu/bid.ogg",
-      "sha256": "35b59a62a0a353e552dbff68c07d0a18abd67d96c57821754e86f054a5411979",
-      "archive": "doudizhu-craftengine-5.2.2.zip",
-      "entry": "doudizhu/resourcepack/assets/fentai_doudizhu/sounds/voice/bid_landlord.ogg"
-    },
-    {
-      "file": "audio-source/doudizhu/grab.ogg",
-      "sha256": "bfec586a0af12068bca63579fa110ff31790d02546f8277e2ba5b2a4bb43454c",
-      "archive": "doudizhu-craftengine-5.2.2.zip",
-      "entry": "doudizhu/resourcepack/assets/fentai_doudizhu/sounds/voice/grab_landlord.ogg"
-    },
-    {
-      "file": "audio-source/doudizhu/pass.ogg",
-      "sha256": "813864eae2f86302edb91084f02ec9db582e4267e8f9d4c7cda7afcfcaa1e978",
-      "archive": "doudizhu-craftengine-5.2.2.zip",
-      "entry": "doudizhu/resourcepack/assets/fentai_doudizhu/sounds/voice/pass.ogg"
-    },
-    {
-      "file": "audio-source/doudizhu/no-beat.ogg",
-      "sha256": "dffa4645978a551aecf58656cd7a930bb4a58f59e5e25a7d98fd53c75cf07d59",
-      "archive": "doudizhu-craftengine-5.2.2.zip",
-      "entry": "doudizhu/resourcepack/assets/fentai_doudizhu/sounds/voice/no_beat.ogg"
-    },
-    {
-      "file": "audio-source/doudizhu/bomb.ogg",
-      "sha256": "2aefdc22823a1eedcb56f574ba31689d85580fe16b71158bdadf86471aad43ae",
-      "archive": "doudizhu-craftengine-5.2.2.zip",
-      "entry": "doudizhu/resourcepack/assets/fentai_doudizhu/sounds/voice/combo_bomb.ogg"
-    },
-    {
-      "file": "audio-source/doudizhu/triple-single.ogg",
-      "sha256": "a584a00605e74a25de87e8ca56213fa971533ae25a5e2e22eb0295a7ecc8f928",
-      "archive": "doudizhu-craftengine-5.2.2.zip",
-      "entry": "doudizhu/resourcepack/assets/fentai_doudizhu/sounds/voice/combo_three_with_one.ogg"
-    },
-    {
       "file": "audio-source/liars-bar/challenge.ogg",
       "sha256": "ed2d42c9f9b7f457ff28d91edb4739635efc5bdde91ce061bf344628df6640ba",
       "archive": "guandan-liarsbar-craftengine-1.2.0.zip",
