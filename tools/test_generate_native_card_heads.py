@@ -46,6 +46,14 @@ class GenerateNativeCardHeadsTest(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.generator.catalog(manifest, {"textures": {}})
 
+    def test_unlimited_hour_window_does_not_block_a_pro_key(self):
+        response = {"rateLimit": {"next": {"relative": 2000}, "limit": {
+            "minute": {"limit": 180, "remaining": 179, "reset": 130},
+            "hour": {"limit": 0, "remaining": 0, "reset": 3700}}}}
+        self.assertEqual(2, self.generator.delay(response, 100))
+        response["rateLimit"]["limit"]["minute"]["remaining"] = 0
+        self.assertEqual(31, self.generator.delay(response, 100))
+
     def test_proxy_backlog_retries_without_regenerating_completed_textures(self):
         temporary = Path(__file__).resolve().parents[1] / "target/head-tests"
         temporary.mkdir(parents=True, exist_ok=True)

@@ -83,7 +83,19 @@ final class PlayingCardTable implements AutoCloseable {
                                         });
                 parts.add(item);
                 show(item, viewer);
-            } else if (PlayingCardHeads.tiles(spec.face) != null) {
+            } else if (spec.face.equals("back")) {
+                double cardHeight = WIDTH * 4 / 3;
+                parts.add(block(at, Material.WHITE_CONCRETE, WIDTH,
+                        spec.standing ? cardHeight : .008,
+                        spec.standing ? .008 : cardHeight, viewer));
+                double yaw = Math.toRadians(at.getYaw());
+                Location inset = spec.standing
+                        ? at.clone().add(Math.sin(yaw) * .0055, .006, -Math.cos(yaw) * .0055)
+                        : at.clone().add(0, .0085, 0);
+                parts.add(block(inset, Material.BLUE_CONCRETE, WIDTH - .012,
+                        spec.standing ? cardHeight - .012 : .002,
+                        spec.standing ? .002 : cardHeight - .012, viewer));
+            } else {
                 var textures = PlayingCardHeads.tiles(spec.face);
                 for (int tile = 0; tile < textures.size(); tile++) {
                     final int index = tile;
@@ -91,74 +103,10 @@ final class PlayingCardTable implements AutoCloseable {
                         configure(d, viewer, false);
                         d.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.NONE);
                         d.setItemStack(PlayingCardHeads.item(textures.get(index)));
-                        d.setTransformation(PlayingCardHeads.pose(WIDTH, spec.standing,
-                                spec.face.equals("back"), index));
+                        d.setTransformation(PlayingCardHeads.pose(WIDTH, spec.standing, index));
                     });
                     parts.add(head);
                     show(head, viewer);
-                }
-            } else {
-                double h = spec.standing ? HEIGHT : .008, depth = spec.standing ? .008 : HEIGHT;
-                var body =
-                        block(
-                                at,
-                                spec.face.equals("back")
-                                        ? Material.BLUE_TERRACOTTA
-                                        : Material.BLACK_CONCRETE,
-                                WIDTH,
-                                h,
-                                depth,
-                                viewer);
-                parts.add(body);
-                if (!spec.face.equals("back")) {
-                    Location inset = faceLocation(at, spec.standing);
-                    if (spec.standing) inset.add(0, -.076, 0);
-                    else inset.add(0, -.003, 0);
-                    parts.add(
-                            block(
-                                    inset,
-                                    Material.SMOOTH_QUARTZ,
-                                    WIDTH - .008,
-                                    spec.standing ? HEIGHT - .008 : .003,
-                                    spec.standing ? .003 : HEIGHT - .008,
-                                    viewer));
-                    Component face =
-                            PlayingCardText.face(spec.face)
-                                    .colorIfAbsent(
-                                            spec.face.startsWith("hearts_")
-                                                            || spec.face.startsWith("diamonds_")
-                                                            || spec.face.equals("joker_big")
-                                                    ? NamedTextColor.RED
-                                                    : NamedTextColor.DARK_GRAY);
-                    parts.add(
-                            text(
-                                    cardLabelLocation(at, spec.standing, 0, .5),
-                                    face,
-                                    spec.face.startsWith("joker_") ? .09f : .16f,
-                                    viewer,
-                                    !spec.standing));
-                    for (int corner = 0; corner < 2; corner++) {
-                        var label =
-                                text(
-                                        cardLabelLocation(
-                                                at,
-                                                spec.standing,
-                                                corner == 0 ? -.30 : .30,
-                                                corner == 0 ? .84 : .16),
-                                        face,
-                                        .05f,
-                                        viewer,
-                                        !spec.standing);
-                        if (corner == 1) {
-                            label.setTransformation(
-                                    new Transformation(
-                                            new Vector3f(),
-                                            new Quaternionf().rotateZ((float) Math.PI),
-                                            new Vector3f(.05f),
-                                            new Quaternionf()));
-                        }
-                        parts.add(label);
-                    }
                 }
             }
         }
@@ -250,23 +198,6 @@ final class PlayingCardTable implements AutoCloseable {
         Location at = origin.clone().add(pose.x, pose.y, pose.z);
         at.setYaw(pose.yaw);
         return at;
-    }
-
-    private Location faceLocation(Location location, boolean standing) {
-        if (!standing) return location.clone().add(0, .01, 0);
-        double yaw = Math.toRadians(location.getYaw());
-        return location.clone().add(-Math.sin(yaw) * .007, .08, Math.cos(yaw) * .007);
-    }
-
-    private Location cardLabelLocation(Location location, boolean standing, double x, double y) {
-        double yaw = Math.toRadians(location.getYaw());
-        double tangent = x * WIDTH;
-        double normal = standing ? .009 : (.5 - y) * HEIGHT;
-        return location.clone()
-                .add(
-                        tangent * Math.cos(yaw) - normal * Math.sin(yaw),
-                        standing ? y * HEIGHT : .011,
-                        tangent * Math.sin(yaw) + normal * Math.cos(yaw));
     }
 
     private void configure(Display display, Player viewer, boolean packed) {

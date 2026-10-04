@@ -17,7 +17,7 @@ import org.bukkit.util.Transformation;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-/** Six thin heads carry a 16 by 24 pixel card without resource packs or font geometry. */
+/** Twenty-four thin heads carry a 32 by 48 pixel card without a resource pack. */
 final class PlayingCardHeads {
     record Texture(String value, String signature) {}
 
@@ -45,14 +45,14 @@ final class PlayingCardHeads {
         }).clone();
     }
 
-    static Transformation pose(double width, boolean standing, boolean back, int tile) {
+    static Transformation pose(double width, boolean standing, int tile) {
         double height = width * 4 / 3;
-        double cellWidth = width / 2, cellHeight = height / 3;
+        double cellWidth = width / 4, cellHeight = height / 6;
         var rotation = standing
-                ? (back ? new Quaternionf().rotateY((float) Math.PI) : new Quaternionf())
+                ? new Quaternionf()
                 : new Quaternionf().rotateX((float) -Math.PI / 2);
-        var translation = new Vector3f((float) ((tile % 2 - .5) * cellWidth),
-                (float) ((standing ? height : height / 2) - (tile / 2) * cellHeight), 0);
+        var translation = new Vector3f((float) ((tile % 4 - 1.5) * cellWidth),
+                (float) ((standing ? height : height / 2) - (tile / 4) * cellHeight), 0);
         rotation.transform(translation);
         if (!standing) translation.y += .006f;
         // NONE has a half-block skull, top at y=0 and bottom at y=-.5.

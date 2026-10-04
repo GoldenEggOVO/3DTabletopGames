@@ -25,7 +25,7 @@ def delay(response, now):
     rate = response.get("rateLimit", {})
     seconds = rate.get("next", {}).get("relative", 0) / 1000
     for limit in rate.get("limit", {}).values():
-        if isinstance(limit, dict) and limit.get("remaining") == 0:
+        if isinstance(limit, dict) and limit.get("limit") != 0 and limit.get("remaining") == 0:
             seconds = max(seconds, limit.get("reset", now) - now + 1)
     return max(0, seconds)
 
@@ -94,6 +94,7 @@ def generate(root, key, cache_path):
             if digest not in cache["jobs"]:
                 wait_until(cache.get("next_request_at", 0))
                 response = upload(key, root / path)
+                cache["rate_limit"] = response.get("rateLimit", {})
                 cache["next_request_at"] = time.time() + max(delay(response, time.time()), response.get("retry_after", 0))
                 if "skin" in response:
                     cache["textures"][digest] = texture(response)

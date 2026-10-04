@@ -106,15 +106,92 @@ class PlayingCardTableTest {
         f.view.tick();
         for (Object card : ownCards(f).values()) {
             var parts = (List<Entity>) get(card, "parts");
-            String face = (String) get(get(card, "spec"), "face");
-            assertEquals(face.startsWith("joker_") ? 5 : 6, parts.size(),
-                    "Standard cards use six heads; jokers retain their text model");
+            assertEquals(24, parts.size(), "Every private face, including a Joker, uses 24 heads");
             for (Entity part : parts) {
                 verify(part).setVisibleByDefault(false);
                 verify(f.player).showEntity(f.plugin, part);
                 verify(spectator, never()).showEntity(f.plugin, part);
             }
         }
+        f.view.close();
+    }
+
+    @Test
+    void publicNativeHandBacksUseTwoBlocksWithAWhiteBorderAndSeparateBlueSurface() {
+        var f = new TableViewTest.Fixture("doudizhu", 3);
+        owner(f, false);
+        var cards = (Map<String, Object>) get(table(f), "publicCards");
+        int backs = 0;
+        for (var entry : cards.entrySet()) {
+            if (!entry.getKey().startsWith("native:back:")) continue;
+            var parts = (List<Entity>) get(entry.getValue(), "parts");
+            assertEquals(2, parts.size(), entry.getKey());
+            var white = assertInstanceOf(BlockDisplay.class, parts.getFirst());
+            var blue = assertInstanceOf(BlockDisplay.class, parts.getLast());
+            var block = org.mockito.ArgumentCaptor.forClass(org.bukkit.block.data.BlockData.class);
+            verify(white).setBlock(block.capture());
+            assertEquals(Material.WHITE_CONCRETE, block.getValue().getMaterial());
+            verify(blue).setBlock(block.capture());
+            assertEquals(Material.BLUE_CONCRETE, block.getValue().getMaterial());
+            var body = f.transforms.get(white);
+            var inset = f.transforms.get(blue);
+            assertEquals(.168, body.getScale().x, 1e-6);
+            assertEquals(.224, body.getScale().y, 1e-6);
+            assertTrue(inset.getScale().x < body.getScale().x);
+            assertTrue(inset.getScale().y < body.getScale().y);
+            assertEquals(.006, blue.getLocation().getY() - white.getLocation().getY(), 1e-6);
+            double yaw = Math.toRadians(white.getLocation().getYaw());
+            assertEquals(Math.sin(yaw) * .0055,
+                    blue.getLocation().getX() - white.getLocation().getX(), 1e-6);
+            assertEquals(-Math.cos(yaw) * .0055,
+                    blue.getLocation().getZ() - white.getLocation().getZ(), 1e-6);
+            assertEquals(.0005, .0055 - inset.getScale().z / 2 - body.getScale().z / 2, 1e-6);
+            if (entry.getKey().startsWith("native:back:0:")) {
+                for (var part : parts) verify(f.player, atLeastOnce()).hideEntity(f.plugin, part);
+            }
+            backs++;
+        }
+        assertEquals(51, backs);
+        f.view.close();
+    }
+
+    @Test
+    void concealedLiarCardsLieFlatWithTheBlueBackAboveTheWhiteBody() {
+        var f = new TableViewTest.Fixture("liars-bar", 4);
+        owner(f, false);
+        var game = (dev.tabletop3d.rules.HandGame) f.room.board;
+        f.move("play:" + game.hand(f.room.board.currentPlayer()).getFirst().id());
+        var cards = (Map<String, Object>) get(table(f), "publicCards");
+        var hidden = cards.entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith("native:play:"))
+                .findFirst().orElseThrow().getValue();
+        var parts = (List<Entity>) get(hidden, "parts");
+        assertEquals(2, parts.size());
+        var white = assertInstanceOf(BlockDisplay.class, parts.getFirst());
+        var blue = assertInstanceOf(BlockDisplay.class, parts.getLast());
+        var body = f.transforms.get(white);
+        var inset = f.transforms.get(blue);
+        assertEquals(.008, body.getScale().y, 1e-6);
+        assertEquals(.224, body.getScale().z, 1e-6);
+        assertEquals(.0085, blue.getLocation().getY() - white.getLocation().getY(), 1e-6);
+        assertEquals(.0005, .0085 - body.getScale().y, 1e-6);
+        assertTrue(inset.getScale().x < body.getScale().x);
+        assertTrue(inset.getScale().z < body.getScale().z);
+        f.view.close();
+    }
+
+    @Test
+    void packedPublicHandBacksRemainOneItemDisplayEach() {
+        var f = new TableViewTest.Fixture("doudizhu", 3);
+        owner(f, true);
+        var cards = (Map<String, Object>) get(table(f), "publicCards");
+        for (var entry : cards.entrySet()) {
+            if (!entry.getKey().startsWith("packed:back:")) continue;
+            var parts = (List<Entity>) get(entry.getValue(), "parts");
+            assertEquals(1, parts.size());
+            assertInstanceOf(ItemDisplay.class, parts.getFirst());
+        }
+        assertTrue(cards.keySet().stream().noneMatch(key -> key.startsWith("native:back:")));
         f.view.close();
     }
 
@@ -215,7 +292,7 @@ class PlayingCardTableTest {
         owner(f, false);
         Object card = ownCards(f).values().iterator().next();
         var parts = (List<Entity>) get(card, "parts");
-        assertEquals(6, parts.size());
+        assertEquals(24, parts.size());
         var item = org.mockito.ArgumentCaptor.forClass(ItemStack.class);
         for (Entity part : parts) {
             var head = assertInstanceOf(ItemDisplay.class, part);
@@ -252,7 +329,7 @@ class PlayingCardTableTest {
         owner(f, false);
         var cards = (Map<String, Object>) get(table(f), "publicCards");
         var parts = (List<Entity>) get(cards.get("native:declaration"), "parts");
-        assertEquals(6, parts.size());
+        assertEquals(24, parts.size());
         for (Entity head : parts) assertInstanceOf(ItemDisplay.class, head);
         f.view.close();
     }
@@ -288,14 +365,8 @@ class PlayingCardTableTest {
                 Object card = cards.values().iterator().next();
                 var parts = (List<Entity>) get(card, "parts");
                 Location body = parts.getFirst().getLocation();
-                String face = (String) get(get(card, "spec"), "face");
-                if (face.startsWith("joker_")) {
-                    assertEquals(5, parts.size());
-                    assertInstanceOf(BlockDisplay.class, parts.getFirst());
-                } else {
-                    assertEquals(6, parts.size());
-                    assertTrue(parts.stream().allMatch(ItemDisplay.class::isInstance));
-                }
+                assertEquals(24, parts.size());
+                assertTrue(parts.stream().allMatch(ItemDisplay.class::isInstance));
                 for (Entity part : parts) assertEquals(body.getYaw(), part.getLocation().getYaw());
                 double angle = Math.PI * 2 * seat / capacity;
                 var normal = new org.bukkit.util.Vector(Math.sin(angle), 0, Math.cos(angle));
