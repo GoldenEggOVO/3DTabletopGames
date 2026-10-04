@@ -17,6 +17,26 @@ import java.util.*;
 import java.util.function.Consumer;
 
 class HandTableTest {
+    @Test void nativeColorEightBacksUseTwoBlocksAndPrivateFacesUseTwelveHeads() throws Exception {
+        var f = new Fixture("color-eight");
+        var publicPieces = (Map<?, ?>) TableViewTest.field(f.table, "publicPieces");
+        assertEquals(5, publicPieces.size());
+        for (Object piece : publicPieces.values()) {
+            var parts = (List<Entity>) TableViewTest.field(piece, "parts");
+            assertEquals(2, parts.size(), "Each public back needs only white and blue blocks");
+            assertTrue(parts.stream().allMatch(BlockDisplay.class::isInstance));
+        }
+        int start = f.entities.size();
+        f.table.show(f.owner);
+        var faces = f.entities.subList(start, f.entities.size()).stream().filter(ItemDisplay.class::isInstance).toList();
+        assertEquals(24, faces.size(), "Two private cards use twelve heads each");
+        for (var face : faces) {
+            verify(f.owner).showEntity(f.plugin, face);
+            verify(f.spectator, never()).showEntity(f.plugin, face);
+            verify((ItemDisplay) face).setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.NONE);
+        }
+        f.table.close();
+    }
     @Test
     void cardTurnIndicatorMovesWithTheActiveSeatAndIsRemovedAtRoundEnd() {
         Fixture f = new Fixture("color-eight");

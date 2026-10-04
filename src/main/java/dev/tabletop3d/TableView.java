@@ -493,13 +493,13 @@ final class TableView implements AutoCloseable {
                                 null));
             for (double side : new double[] {-1.06, 1.06}) {
                 furniture.add(
-                        block(origin, Material.BLUE_CONCRETE, side, -.04, 0, .12, 1.83, .20, null));
+                        block(origin, Material.BLUE_CONCRETE, side, .175, 0, .12, 1.615, .20, null));
                 furniture.add(
                         block(
                                 origin,
                                 Material.POLISHED_DEEPSLATE,
                                 side,
-                                -.04,
+                                .075,
                                 0,
                                 .26,
                                 .10,
@@ -1430,10 +1430,10 @@ final class TableView implements AutoCloseable {
                                     at,
                                     Material.LIME_CONCRETE,
                                     side,
-                                    -.132,
+                                    -.125,
                                     0,
                                     .014,
-                                    .278,
+                                    .25,
                                     .16,
                                     player));
                     overlay.hover.add(
@@ -1443,7 +1443,7 @@ final class TableView implements AutoCloseable {
                                     0,
                                     side - .007,
                                     0,
-                                    .25,
+                                    .278,
                                     .014,
                                     .16,
                                     player));

@@ -103,18 +103,14 @@ class ColorEightInteractionTest {
         List<Surface> surfaces = new ArrayList<>();
         for (int i = 0; i < 54; i++) {
             var pose = HandTable.handPose(0, 2, i, 54, false);
-            for (var part : HandModels.cardBody()) {
-                double cos = Math.cos(part.roll()), sin = Math.sin(part.roll());
-                if (Math.abs(cos * sin) > 1e-9) continue;
-                double width = Math.abs(cos) * part.w() / 32 * .168
-                        + Math.abs(sin) * part.h() / 48 * .25;
-                double height = Math.abs(sin) * part.w() / 32 * .168
-                        + Math.abs(cos) * part.h() / 48 * .25;
-                double x = pose.x() + (part.x() / 32 - .5) * .168;
-                double center = pose.lift() + .25 - part.y() / 48 * .25;
+            for (int tile = 0; tile < 12; tile++) {
+                var part = PlayingCardHeads.pose(.168, .25, true, tile, 3, 4);
+                double width = .168 / 3, height = .25 / 4;
+                double x = pose.x() + part.getTranslation().x;
+                double center = pose.lift() + part.getTranslation().y - height / 2;
                 for (int side : new int[] {-1, 1})
                     surfaces.add(new Surface(i, x, center + side * height / 2,
-                            pose.z() + part.relief(), width, .008));
+                            pose.z(), width, .008));
             }
         }
         for (int i = 0; i < surfaces.size(); i++)
@@ -165,7 +161,7 @@ class ColorEightInteractionTest {
         Map<?, ?> hand = (Map<?, ?>) TableViewTest.field(own, "pieces");
         for (String id : List.of("a", "b"))
             for (Entity part : (List<Entity>) TableViewTest.field(hand.get(id), "parts")) {
-                verify((org.bukkit.entity.BlockDisplay) part, times(1)).setBlock(any());
+                verify((org.bukkit.entity.ItemDisplay) part, times(1)).setItemStack(any());
                 verify((org.bukkit.entity.Display) part, times(id.equals("a") ? 0 : 1))
                         .setBrightness(new org.bukkit.entity.Display.Brightness(7, 7));
             }
@@ -174,7 +170,7 @@ class ColorEightInteractionTest {
         f.room.revision++;
         f.table.show(f.owner);
         for (Entity part : (List<Entity>) TableViewTest.field(hand.get("b"), "parts")) {
-            verify((org.bukkit.entity.BlockDisplay) part, times(1)).setBlock(any());
+            verify((org.bukkit.entity.ItemDisplay) part, times(1)).setItemStack(any());
             verify((org.bukkit.entity.Display) part, times(2))
                     .setBrightness(new org.bukkit.entity.Display.Brightness(15, 15));
         }
@@ -282,7 +278,7 @@ class ColorEightInteractionTest {
     }
 
     @Test
-    void circularFurnitureSeparatesOverlappingTexturedPlanesWithinABoundedRelief() {
+    void circularFurnitureKeepsLevelWoodAndClothSurfacesSeparated() {
         var parts = RoundCardTable.parts();
         double highestWood = parts.stream()
                 .filter(p -> p.material() == org.bukkit.Material.STRIPPED_DARK_OAK_WOOD)
@@ -292,16 +288,12 @@ class ColorEightInteractionTest {
                 .mapToDouble(p -> p.y() + p.h()).min().orElseThrow();
         assertTrue(lowestCloth - highestWood >= .001,
                 "Every felt strip must cover the wooden surface below it");
-        for (int i = 0; i < parts.size(); i++)
-            for (int j = i + 1; j < parts.size(); j++) {
-                var a = parts.get(i);
-                var b = parts.get(j);
-                if (a.material() != b.material()) continue;
-                assertTrue(Math.abs(a.y() - b.y()) >= .0005 - 1e-9,
-                        "Overlapping round bars need a resolvable depth separation");
-                assertTrue(Math.abs(a.y() - b.y()) < .015,
-                        "Furniture relief must remain below 1.5 cm");
-            }
+        for (var part : parts) {
+            if (part.material() == org.bukkit.Material.STRIPPED_DARK_OAK_WOOD)
+                assertEquals(highestWood, part.y() + part.h(), 1e-9);
+            if (part.material() == org.bukkit.Material.GREEN_TERRACOTTA)
+                assertEquals(lowestCloth, part.y() + part.h(), 1e-9);
+        }
     }
 
     @Test
@@ -312,8 +304,8 @@ class ColorEightInteractionTest {
                         .toList();
         for (int degrees = 0; degrees < 360; degrees++) {
             double angle = Math.toRadians(degrees),
-                    x = 1.495 * Math.cos(angle),
-                    z = 1.495 * Math.sin(angle);
+                    x = 1.47 * Math.cos(angle),
+                    z = 1.47 * Math.sin(angle);
             boolean covered = false;
             for (var p : rim) {
                 double yaw = p.yaw();

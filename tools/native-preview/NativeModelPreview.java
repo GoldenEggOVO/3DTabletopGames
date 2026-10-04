@@ -12,30 +12,27 @@ import org.bukkit.Material;
 public final class NativeModelPreview {
     public static void main(String[] args) throws Exception {
         Path out=Path.of(args[0]);Files.createDirectories(out);
-        java.util.List<String> tiles=new ArrayList<>(),cards=new ArrayList<>();
+        java.util.List<String> tiles=new ArrayList<>();
         for(char suit:new char[]{'m','p','s'})for(int n=0;n<=9;n++)tiles.add(""+suit+n);
         for(int n=1;n<=7;n++)tiles.add("z"+n);
         for(int n=1;n<=8;n++)tiles.add("f"+n);
-        for(char color:new char[]{'r','b','y','p'})for(String rank:java.util.List.of("1","6","8","9","Draw1","Skip","Reverse"))cards.add(color+rank);
-        cards.addAll(java.util.List.of("wild","swap","back"));
         StringBuilder counts=new StringBuilder("kind,face,standing_displays,flat_displays\n");
-        render(out,"mahjong",tiles,true,counts);render(out,"color-eight",cards,false,counts);
+        render(out,"mahjong",tiles,counts);
         counts.append("furniture,round_table,").append(RoundCardTable.parts().size()).append(",\n");
         Files.writeString(out.resolve("counts.csv"),counts);
     }
-    private static void render(Path out,String name,java.util.List<String> faces,boolean tile,StringBuilder counts) throws Exception {
-        int cols=tile?10:7,rows=(faces.size()+cols-1)/cols,w=108,h=170;
+    private static void render(Path out,String name,java.util.List<String> faces,StringBuilder counts) throws Exception {
+        int cols=10,rows=(faces.size()+cols-1)/cols,w=108,h=170;
         BufferedImage image=new BufferedImage(cols*w,rows*h,BufferedImage.TYPE_INT_RGB);
         Graphics2D g=image.createGraphics();g.setColor(new Color(0x19262d));g.fillRect(0,0,image.getWidth(),image.getHeight());
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
         for(int i=0;i<faces.size();i++) {
-            String face=faces.get(i);var art=HandModels.of(tile,face);
-            int body=tile?1:HandModels.cardBody().size(),rear=tile?1:5;
+            String face=faces.get(i);var art=HandModels.of(face);
+            int body=1,rear=1;
             counts.append(name).append(',').append(face).append(',').append(body+art.size()+rear).append(',').append(body+art.size()).append('\n');
             int x=(i%cols)*w+6,y=(i/cols)*h+6;var old=g.getTransform();
             g.translate(x,y);g.scale(3,3);
-            if(tile){g.setColor(color(Material.SMOOTH_QUARTZ));g.fillRect(0,0,32,48);}
-            else for(var part:HandModels.cardBody())part(g,part);
+            g.setColor(color(Material.SMOOTH_QUARTZ));g.fillRect(0,0,32,48);
             art.stream().sorted(Comparator.comparingInt(HandModels.Part::layer)).forEach(p->part(g,p));
             g.setTransform(old);g.setColor(Color.WHITE);g.setFont(new Font("SansSerif",Font.PLAIN,12));g.drawString(face+" · "+(body+art.size()+rear),x,y+158);
         }

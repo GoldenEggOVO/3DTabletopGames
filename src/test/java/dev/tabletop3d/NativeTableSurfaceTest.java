@@ -11,6 +11,22 @@ class NativeTableSurfaceTest {
     @BeforeEach void setup() { MockBukkit.mock(); }
     @AfterEach void cleanup() { MockBukkit.unmock(); }
 
+    @Test void connectFourFeetAndPostsClearTheWoodenRim() {
+        var f = new TableViewTest.Fixture("connectfour");
+        for (Entity entity : f.entities) {
+            if (!(entity instanceof org.bukkit.entity.BlockDisplay)) continue;
+            var pose = f.transforms.get(entity);
+            if (pose == null) continue;
+            boolean foot = Math.abs(pose.getScale().x - .26) < 1e-6
+                    && Math.abs(pose.getScale().z - .65) < 1e-6;
+            boolean post = Math.abs(pose.getScale().x - .12) < 1e-6
+                    && pose.getScale().y > 1;
+            if (foot || post) assertTrue(pose.getTranslation().y > .06 + .005,
+                    "Support must sit above the rim without coplanar contact");
+        }
+        f.view.close();
+    }
+
     @Test void squareTableRimCornersDoNotShareTexturedTopFaces() throws Exception {
         for (String kind : List.of("chess", "mahjong")) {
             var f = new TableViewTest.Fixture(kind, kind.equals("mahjong") ? 4 : 2);

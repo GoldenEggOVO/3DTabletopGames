@@ -140,11 +140,34 @@ final class HandTable implements AutoCloseable {
                 if (viewer != null) viewer.showEntity(plugin, item);
                 return;
             }
-            if (mahjong) add(block(at, Material.SMOOTH_QUARTZ, w, h, d, id, viewer), new Vector());
-            else {
-                for (var part : HandModels.cardBody()) modelPart(part, true, id, viewer);
+            if (!mahjong) {
+                if (spec.back()) {
+                    add(block(at, Material.WHITE_CONCRETE, w, h, d, id, viewer), new Vector());
+                    Vector inset = spec.standing()
+                            ? rotated(0, .006, -d / 2 - .0015, spec.pose())
+                            : new Vector(0, h + .0005, 0);
+                    add(block(at.clone().add(inset), Material.BLUE_CONCRETE, w - .012,
+                            spec.standing() ? h - .012 : .002,
+                            spec.standing() ? .002 : d - .012, id, viewer), inset);
+                } else {
+                    var textures = ColorEightHeads.tiles(spec.face());
+                    for (int tile = 0; tile < textures.size(); tile++) {
+                        final int index = tile;
+                        ItemDisplay head = origin.getWorld().spawn(at, ItemDisplay.class, display -> {
+                            configure(display, id, viewer);
+                            display.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.NONE);
+                            display.setItemStack(PlayingCardHeads.item(textures.get(index)));
+                            display.setTransformation(PlayingCardHeads.pose(w, spec.standing() ? h : d,
+                                    spec.standing(), index, 3, 4));
+                        });
+                        add(head, new Vector());
+                        if (viewer != null) viewer.showEntity(plugin, head);
+                    }
+                }
                 bodyParts = parts.size();
+                return;
             }
+            add(block(at, Material.SMOOTH_QUARTZ, w, h, d, id, viewer), new Vector());
             if (spec.back() && mahjong) {
                 Vector panel =
                         spec.standing()
@@ -161,51 +184,24 @@ final class HandTable implements AutoCloseable {
                                 viewer),
                         panel);
             } else
-                for (var part : HandModels.of(mahjong, spec.back() ? "back" : spec.face()))
-                    modelPart(part, false, id, viewer);
+                for (var part : HandModels.of(spec.back() ? "back" : spec.face()))
+                    modelPart(part, id, viewer);
             if (spec.standing()) {
                 Vector back = rotated(0, .012, -d / 2 - .002, spec.pose());
-                Material backMaterial = mahjong ? Material.GREEN_CONCRETE : Material.BLACK_CONCRETE;
                 add(
                         block(
                                 at.clone().add(back),
-                                backMaterial,
+                                Material.GREEN_CONCRETE,
                                 w * .84,
                                 h - .024,
                                 .002,
                                 id,
                                 viewer),
                         back);
-                if (!mahjong) {
-                    Material[] colors = {
-                        Material.RED_CONCRETE,
-                        Material.BLUE_CONCRETE,
-                        Material.YELLOW_CONCRETE,
-                        Material.PURPLE_CONCRETE
-                    };
-                    for (int i = 0; i < 4; i++) {
-                        Vector mark =
-                                rotated(
-                                        (i % 2 == 0 ? -.018 : .018),
-                                        .10 + (i / 2) * .037,
-                                        -d / 2 - .004,
-                                        spec.pose());
-                        add(
-                                block(
-                                        at.clone().add(mark),
-                                        colors[i],
-                                        .035,
-                                        .035,
-                                        .001,
-                                        id,
-                                        viewer),
-                                mark);
-                    }
-                }
             }
         }
 
-        void modelPart(HandModels.Part part, boolean body, String id, Player viewer) {
+        void modelPart(HandModels.Part part, String id, Player viewer) {
             double w = width(),
                     h = height(),
                     d = depth(),
@@ -216,26 +212,24 @@ final class HandTable implements AutoCloseable {
             double sy, sz;
             if (spec.standing()) {
                 y = h - part.y() / 48 * h;
-                z = body ? part.relief() : d / 2 + .003 + part.relief();
+                z = d / 2 + .003 + part.relief();
                 sy = ph;
-                sz = body ? d : .001;
+                sz = .001;
                 rotation = new Quaternionf().rotateZ((float) -part.roll());
             } else {
-                y = body ? h / 2 + part.relief() : .014 + part.relief();
+                y = .014 + part.relief();
                 z = (part.y() / 48 - .5) * d;
-                sy = body ? h : .002;
+                sy = .002;
                 sz = ph;
                 rotation = new Quaternionf().rotateY((float) -part.roll());
             }
             // Rotate about the cuboid center, then place it in the card's local plane.
-            Vector offset = mahjong ? rotated(x, y, z, spec.pose()) : new Vector();
-            Vector3f center =
-                    mahjong ? new Vector3f() : new Vector3f((float) x, (float) y, (float) z);
+            Vector offset = rotated(x, y, z, spec.pose());
             add(
                     modelBlock(
                             at(spec.pose()).add(offset),
                             part.material(),
-                            center,
+                            new Vector3f(),
                             pw,
                             sy,
                             sz,

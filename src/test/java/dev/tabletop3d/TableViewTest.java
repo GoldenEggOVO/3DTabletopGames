@@ -39,13 +39,21 @@ class TableViewTest {
         f.view.cursor(f.player, null, "2,5");
         assertEquals(initial + 4, f.entities.size());
         var preview = List.copyOf(f.entities.subList(initial, f.entities.size()));
+        double minX = Double.POSITIVE_INFINITY, maxX = Double.NEGATIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
         for (Entity entity : preview) {
             verify((Display) entity).setVisibleByDefault(false);
             verify(f.player).showEntity(f.plugin, entity);
             assertTrue(
                     f.transforms.get(entity).getScale().z > .12f,
                     "Preview must project beyond both opaque rack faces");
+            var pose = f.transforms.get(entity);
+            minX = Math.min(minX, pose.getTranslation().x);
+            maxX = Math.max(maxX, pose.getTranslation().x + pose.getScale().x);
+            minY = Math.min(minY, pose.getTranslation().y);
+            maxY = Math.max(maxY, pose.getTranslation().y + pose.getScale().y);
         }
+        assertEquals(maxX - minX, maxY - minY, 1e-6, "Drop preview must be square");
         for (int i = 0; i < 20; i++) f.view.cursor(f.player, null, "2," + (i % 6));
         assertEquals(initial + 4, f.entities.size());
         verify(f.player, times(3)).sendActionBar(any(net.kyori.adventure.text.Component.class));

@@ -19,15 +19,15 @@ def skin(front):
     return image
 
 
-def export(source, output):
+def export(source, output, width=32, height=48):
     (output / "skins").mkdir(parents=True, exist_ok=True)
     (output / "cards").mkdir(parents=True, exist_ok=True)
     faces, cards, unique = {}, {}, set()
     digest = hashlib.sha256()
     for path in sorted(source.glob("*.png")):
         card = Image.open(path).convert("RGBA")
-        if card.size != (32, 48):
-            raise ValueError(f"Card must be 32x48 pixels: {path.name}")
+        if card.size != (width, height):
+            raise ValueError(f"Card must be {width}x{height} pixels: {path.name}")
         if card.getextrema()[3] != (255, 255):
             raise ValueError(f"Card must be opaque: {path.name}")
         digest.update(path.name.encode())
@@ -35,8 +35,8 @@ def export(source, output):
         cards[path.stem] = card
         card.save(output / "cards" / path.name)
         tiles = []
-        for row in range(6):
-            for column in range(4):
+        for row in range(height // 8):
+            for column in range(width // 8):
                 front = card.crop((column * 8, row * 8, column * 8 + 8, row * 8 + 8))
                 buffer = io.BytesIO()
                 skin(front).save(buffer, format="PNG")
@@ -50,7 +50,7 @@ def export(source, output):
         faces[path.stem] = tiles
     if not faces:
         raise ValueError("No card PNG files found")
-    manifest = {"width": 32, "height": 48, "faces": faces,
+    manifest = {"width": width, "height": height, "faces": faces,
                 "unique_skins": len(unique), "source_sha256": digest.hexdigest()}
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     return cards, manifest

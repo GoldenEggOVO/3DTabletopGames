@@ -207,6 +207,21 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 }
                 if(kind.equals("color-eight")){
                     var pieces=(Map<?,?>)field(own,"pieces");Object first=pieces.values().iterator().next();
+                    for(Object piece:pieces.values()) if(!((Boolean)field(piece,"packed"))) {
+                        var parts=(List<?>)field(piece,"parts");
+                        require(parts.size()==12,"Color Eight native face uses twelve heads");
+                        for(Object part:parts) {
+                            var head=(org.bukkit.entity.ItemDisplay)part;
+                            require(head.getItemStack().getType()==org.bukkit.Material.PLAYER_HEAD,"Color Eight signed head material");
+                            var meta=(org.bukkit.inventory.meta.SkullMeta)head.getItemStack().getItemMeta();
+                            require(meta.getPlayerProfile().getProperties().stream().anyMatch(p->p.getName().equals("textures")&&p.getSignature()!=null),"Color Eight real signed texture");
+                        }
+                    }
+                    for(Object piece:((Map<?,?>)field(hand,"publicPieces")).values())
+                        if((Boolean)field(field(piece,"spec"),"back")) {
+                            var parts=(List<?>)field(piece,"parts");
+                            require(parts.size()==2&&parts.stream().allMatch(org.bukkit.entity.BlockDisplay.class::isInstance),"Color Eight public back uses two blocks");
+                        }
                     var body=(org.bukkit.entity.Entity)((List<?>)field(first,"parts")).getFirst();double y=body.getLocation().getY();
                     String id=String.valueOf(pieces.keySet().iterator().next());
                     call(hand,"hover",new Class<?>[]{Player.class,String.class},owner,id);

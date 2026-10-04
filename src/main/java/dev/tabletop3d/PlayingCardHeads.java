@@ -22,7 +22,7 @@ final class PlayingCardHeads {
     record Texture(String value, String signature) {}
 
     private static final class Catalog {
-        static final Map<String, List<Texture>> FACES = load();
+        static final Map<String, List<Texture>> FACES = load("/playing-card-heads.json");
     }
     private static final Map<Texture, ItemStack> ITEMS = new HashMap<>();
 
@@ -46,13 +46,16 @@ final class PlayingCardHeads {
     }
 
     static Transformation pose(double width, boolean standing, int tile) {
-        double height = width * 4 / 3;
-        double cellWidth = width / 4, cellHeight = height / 6;
+        return pose(width, width * 4 / 3, standing, tile, 4, 6);
+    }
+
+    static Transformation pose(double width, double height, boolean standing, int tile, int columns, int rows) {
+        double cellWidth = width / columns, cellHeight = height / rows;
         var rotation = standing
                 ? new Quaternionf()
                 : new Quaternionf().rotateX((float) -Math.PI / 2);
-        var translation = new Vector3f((float) ((tile % 4 - 1.5) * cellWidth),
-                (float) ((standing ? height : height / 2) - (tile / 4) * cellHeight), 0);
+        var translation = new Vector3f((float) ((tile % columns - (columns - 1) / 2.0) * cellWidth),
+                (float) ((standing ? height : height / 2) - (tile / columns) * cellHeight), 0);
         rotation.transform(translation);
         if (!standing) translation.y += .006f;
         // NONE has a half-block skull, top at y=0 and bottom at y=-.5.
@@ -62,9 +65,9 @@ final class PlayingCardHeads {
                 new Quaternionf().rotateY((float) Math.PI));
     }
 
-    private static Map<String, List<Texture>> load() {
-        try (var input = PlayingCardHeads.class.getResourceAsStream("/playing-card-heads.json")) {
-            if (input == null) throw new IllegalStateException("Missing native playing-card head textures");
+    static Map<String, List<Texture>> load(String resource) {
+        try (var input = PlayingCardHeads.class.getResourceAsStream(resource)) {
+            if (input == null) throw new IllegalStateException("Missing native card head textures: " + resource);
             return Map.copyOf(new Gson().fromJson(new InputStreamReader(input, StandardCharsets.UTF_8),
                     new TypeToken<Map<String, List<Texture>>>() {}.getType()));
         } catch (java.io.IOException exception) {

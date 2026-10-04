@@ -32,10 +32,10 @@ final class TableModels {
                 switch(cell.piece()){
                     case GameSymbols.PAWN -> {box(p,0,.49,0,.39,.24,.39,body);}
                     case GameSymbols.ROOK -> {box(p,0,.50,0,.57,.14,.57,body);for(double x:new double[]{-.20,.20})for(double z:new double[]{-.20,.20})box(p,x,.64,z,.16,.16,.16,body);}
-                    case GameSymbols.HORSE -> {box(p,0,.49,.04,.28,.33,.30,body);box(p,0,.70,-.15,.28,.22,.45,body);box(p,0,.92,.02,.25,.12,.11,body);}
+                    case GameSymbols.HORSE -> {box(p,0,.51,.04,.28,.19,.30,body);box(p,0,.70,-.15,.28,.22,.45,body);box(p,0,.92,.02,.25,.12,.11,body);}
                     case GameSymbols.ELEPHANT -> {box(p,0,.51,0,.46,.08,.46,trim);box(p,0,.59,0,.33,.25,.33,body);box(p,0,.84,0,.16,.13,.16,body);}
                     case GameSymbols.QUEEN -> {box(p,0,.51,0,.42,.25,.42,body);box(p,0,.76,0,.55,.08,.55,trim);for(double x:new double[]{-.19,.19})box(p,x,.84,0,.13,.15,.34,body);}
-                    case GameSymbols.KING -> {box(p,0,.51,0,.44,.28,.44,body);box(p,0,.79,0,.15,.32,.15,trim);box(p,0,.93,0,.40,.10,.15,trim);}
+                    case GameSymbols.KING -> {box(p,0,.51,0,.44,.28,.44,body);box(p,0,.79,0,.15,.32,.15,trim);for(double side:new double[]{-.1375,.1375})box(p,side,.93,0,.125,.10,.15,trim);}
                     default -> throw new IllegalArgumentException("Unknown chess piece "+cell.piece());
                 }
             }

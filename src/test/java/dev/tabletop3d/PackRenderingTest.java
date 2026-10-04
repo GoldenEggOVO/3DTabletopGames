@@ -189,7 +189,7 @@ class PackRenderingTest {
         for (Entity part : privateParts) verify(part).remove();
         assertTrue(
                 f.entities.subList(initial + 2, f.entities.size()).stream()
-                        .anyMatch(BlockDisplay.class::isInstance));
+                        .filter(ItemDisplay.class::isInstance).count() == 24);
     }
 
     @Test
