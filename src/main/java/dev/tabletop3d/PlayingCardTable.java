@@ -577,7 +577,8 @@ final class PlayingCardTable implements AutoCloseable {
                 String control = controls.get(index);
                 int columns = Math.min(4, controls.size());
                 Pose pose =
-                        seatPose(seat, (index % columns - (columns - 1) / 2.0) * .32, 1.27, .03);
+                        seatPose(seat, (index % columns - (columns - 1) / 2.0) * .32, 1.27,
+                                packed ? .03 : RoundCardTable.RIM_TOP + .003);
                 var body =
                         block(
                                 at(pose),

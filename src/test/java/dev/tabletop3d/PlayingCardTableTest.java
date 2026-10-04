@@ -250,10 +250,13 @@ class PlayingCardTableTest {
                         "Adjacent upright cards use the compact Color Eight spacing");
             var views = (Map<?, ?>) get(table(f), "privateViews");
             var buttons = (Map<?, List<Entity>>) get(views.get(f.player.getUniqueId()), "buttons");
-            for (var parts : buttons.values())
+            for (var parts : buttons.values()) {
                 assertTrue(
                         parts.getFirst().getLocation().getZ() > body(cards.getLast()).getZ() + .085,
                         "Controls must lie between the player and the hand");
+                assertTrue(parts.getFirst().getLocation().getY() - f.view.origin.getY() >= .037,
+                        "Controls must sit above the raised native rim");
+            }
             if (kind.equals("doudizhu")) {
                 while (f.room.board.currentPlayer() != 0) f.move("bid:0");
                 f.move("bid:3");

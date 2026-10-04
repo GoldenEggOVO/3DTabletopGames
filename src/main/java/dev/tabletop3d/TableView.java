@@ -520,15 +520,15 @@ final class TableView implements AutoCloseable {
             try {
                 if (room.kind.equals("color-eight"))
                     for (var part : RoundCardTable.parts()) {
-                        Location at = origin.clone();
+                        Location at = origin.clone().add(part.x(), part.y(), part.z());
                         at.setYaw(part.yaw());
                         handFurniture.add(
                                 block(
                                         at,
                                         part.material(),
-                                        part.x(),
-                                        part.y(),
-                                        part.z(),
+                                        0,
+                                        0,
+                                        0,
                                         part.w(),
                                         part.h(),
                                         part.d(),

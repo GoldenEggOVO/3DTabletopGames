@@ -500,6 +500,7 @@ final class HandTable implements AutoCloseable {
                 double width) {
             Location at = at(pose);
             boolean flat = action.equals("pass");
+            if (flat && !audience.packed(player)) at.add(0, RoundCardTable.RIM_TOP + .003 - .017, 0);
             String id = "@call:card:" + action;
             parts = new ArrayList<>();
             if (audience.packed(player)) {

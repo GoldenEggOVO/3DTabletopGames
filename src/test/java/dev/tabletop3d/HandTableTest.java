@@ -75,6 +75,7 @@ class HandTableTest {
         boxField.setAccessible(true);
         var box = (org.bukkit.util.BoundingBox) boxField.get(button);
         assertTrue(box.getHeight() < .025, "Pass must be horizontal, not standing upright");
+        assertTrue(box.getMinY() - f.origin.getY() >= .037, "Pass must sit above the raised native rim");
         assertTrue(box.getWidthZ() >= .08, "A flat button needs table-depth hit area");
         assertTrue(box.getCenterZ() > 1.28 && box.getCenterZ() < 1.42,
                 "Pass must lie between the player's hand and body, near the front edge");

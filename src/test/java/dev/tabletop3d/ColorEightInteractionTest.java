@@ -293,7 +293,7 @@ class ColorEightInteractionTest {
     }
 
     @Test
-    void circularFurnitureKeepsLevelWoodAndClothSurfacesSeparated() {
+    void raisedRimKeepsItsTopAboveTheLevelCloth() {
         var parts = RoundCardTable.parts();
         double highestWood = parts.stream()
                 .filter(p -> p.material() == org.bukkit.Material.STRIPPED_DARK_OAK_WOOD)
@@ -301,11 +301,9 @@ class ColorEightInteractionTest {
         double lowestCloth = parts.stream()
                 .filter(p -> p.material() == org.bukkit.Material.GREEN_TERRACOTTA)
                 .mapToDouble(p -> p.y() + p.h()).min().orElseThrow();
-        assertTrue(lowestCloth - highestWood >= .001,
-                "Every felt strip must cover the wooden surface below it");
+        assertTrue(highestWood - lowestCloth >= .015,
+                "The rim must cover the stepped felt boundary");
         for (var part : parts) {
-            if (part.material() == org.bukkit.Material.STRIPPED_DARK_OAK_WOOD)
-                assertEquals(highestWood, part.y() + part.h(), 1e-9);
             if (part.material() == org.bukkit.Material.GREEN_TERRACOTTA)
                 assertEquals(lowestCloth, part.y() + part.h(), 1e-9);
         }
@@ -323,10 +321,7 @@ class ColorEightInteractionTest {
                     z = 1.445 * Math.sin(angle);
             boolean covered = false;
             for (var p : rim) {
-                double yaw = p.yaw();
-                double a = Math.toRadians(yaw), dx = x - p.x(), dz = z - p.z();
-                if (Math.abs(dx * Math.cos(a) - dz * Math.sin(a)) <= p.w() / 2
-                        && Math.abs(dx * Math.sin(a) + dz * Math.cos(a)) <= p.d() / 2)
+                if (RoundCardTableTest.contains(p, x, z))
                     covered = true;
             }
             assertTrue(covered, "Rim edge angle " + degrees);
@@ -337,13 +332,12 @@ class ColorEightInteractionTest {
     void circularFurnitureFitsTheRadiusAndLeavesTheSquareCornersEmpty() {
         for (var part : RoundCardTable.parts()) {
             assertTrue(part.w() > 0 && part.h() > 0 && part.d() > 0);
-            assertTrue(
-                    Math.hypot(Math.abs(part.x()) + part.w() / 2, Math.abs(part.z()) + part.d() / 2)
-                            <= RoundCardTable.RADIUS + 1e-7);
-            double a = Math.toRadians(part.yaw()),
-                    x = 1.4 * Math.cos(a) - 1.4 * Math.sin(a),
-                    z = 1.4 * Math.sin(a) + 1.4 * Math.cos(a);
-            assertFalse(Math.abs(x) < part.w() / 2 && Math.abs(z) < part.d() / 2);
+            double a = Math.toRadians(part.yaw());
+            for (double x : new double[]{-part.w() / 2, part.w() / 2})
+                for (double z : new double[]{-part.d() / 2, part.d() / 2})
+                    assertTrue(Math.hypot(part.x() + x * Math.cos(a) - z * Math.sin(a),
+                            part.z() + x * Math.sin(a) + z * Math.cos(a)) <= RoundCardTable.RADIUS + 1e-7);
+            assertFalse(RoundCardTableTest.contains(part, 1.4, 1.4));
         }
         assertTrue(Tabletop3D.capacityValid("color-eight", 5));
         assertFalse(Tabletop3D.capacityValid("color-eight", 6));
