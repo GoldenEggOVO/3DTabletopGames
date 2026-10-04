@@ -427,7 +427,7 @@ final class TableView implements AutoCloseable {
     }
 
     private void buildNativeBoardFurniture() {
-        double width = 2.25, leg = width / 2 - .135, edge = width / 2 - .065;
+        double width = 2.25, leg = width / 2 - .135;
         furniture.add(block(origin, Material.DARK_OAK_PLANKS, 0, -.19, 0, width, .14, width, null));
         for (double x : new double[] {-leg, leg})
             for (double z : new double[] {-leg, leg})
@@ -442,30 +442,6 @@ final class TableView implements AutoCloseable {
                                 TableGeometry.SURFACE - .13,
                                 .15,
                                 null));
-        for (double v : new double[] {-edge, edge}) {
-            furniture.add(
-                    block(
-                            origin,
-                            Material.STRIPPED_DARK_OAK_WOOD,
-                            v,
-                            -.05,
-                            0,
-                            .10,
-                            .11,
-                            width - .03,
-                            null));
-            furniture.add(
-                    block(
-                            origin,
-                            Material.STRIPPED_DARK_OAK_WOOD,
-                            0,
-                            -.05,
-                            v,
-                            width - .23,
-                            .11,
-                            .10,
-                            null));
-        }
         if (room.kind.equals("connectfour")) {
             for (int x = 0; x <= 7; x++)
                 furniture.add(

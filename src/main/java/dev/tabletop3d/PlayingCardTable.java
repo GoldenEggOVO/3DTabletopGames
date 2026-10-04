@@ -18,7 +18,7 @@ import java.util.*;
 /** Standard cards share rendering and selection; each pure engine owns its legal controls. */
 final class PlayingCardTable implements AutoCloseable {
     private static final double WIDTH = .168, HEIGHT = .25;
-    private static final double FLAT_CARD_LAYER = .012, CARD_LIFT = .085;
+    private static final double CARD_SPACING = .15, CARD_LIFT = .085;
     private final Tabletop3D plugin;
     private final Room room;
     private final Location origin;
@@ -191,7 +191,7 @@ final class PlayingCardTable implements AutoCloseable {
     }
 
     private Pose cardPose(int seat, int index, int count, double depthStep, double height) {
-        double unit = Math.min(.15, (room.capacity >= 5 ? 1.06 : 1.50) / Math.max(1, count - 1));
+        double unit = Math.min(CARD_SPACING, (room.capacity >= 5 ? 1.06 : 1.50) / Math.max(1, count - 1));
         return seatPose(
                 seat,
                 (index - (count - 1) / 2.0) * unit,
@@ -317,7 +317,7 @@ final class PlayingCardTable implements AutoCloseable {
                                             seat,
                                             (index - (cards.size() - 1) / 2.0) * .10,
                                             .52,
-                                            .022 + index * FLAT_CARD_LAYER),
+                                            .022 + index * CardLayout.DEPTH_STEP),
                                     false,
                                     -1);
                         if (room.kind.equals("doudizhu")) continue;
@@ -333,13 +333,13 @@ final class PlayingCardTable implements AutoCloseable {
                                                     seat,
                                                     index,
                                                     exposed.size(),
-                                                    FLAT_CARD_LAYER,
-                                                    .032 + index * FLAT_CARD_LAYER)
+                                                    CardLayout.DEPTH_STEP,
+                                                    .032 + index * CardLayout.DEPTH_STEP)
                                             : seatPose(
                                                     seat,
-                                                    (index - (exposed.size() - 1) / 2.0) * .18,
+                                                    (index - (exposed.size() - 1) / 2.0) * CARD_SPACING,
                                                     .55,
-                                                    .032 + index * FLAT_CARD_LAYER),
+                                                    .032 + index * CardLayout.DEPTH_STEP),
                                     false,
                                     -1);
                     }
@@ -353,7 +353,8 @@ final class PlayingCardTable implements AutoCloseable {
                                     packed,
                                     "bottom:" + index,
                                     cards.get(index).face(),
-                                    new Pose((index - 1) * .27, 0, 0, .022),
+                                    new Pose((index - 1) * CARD_SPACING, 0, 0,
+                                            .022 + index * CardLayout.DEPTH_STEP),
                                     false,
                                     -1);
                     }
@@ -364,10 +365,10 @@ final class PlayingCardTable implements AutoCloseable {
                                 card.id(),
                                 card.piece(),
                                 new Pose(
-                                        room.kind.equals("texas-holdem") ? (card.x() - 2) * .30 : 0,
+                                        room.kind.equals("texas-holdem") ? (card.x() - 2) * CARD_SPACING : 0,
                                         0,
                                         0,
-                                        .023),
+                                        .023 + card.x() * CardLayout.DEPTH_STEP),
                                 false,
                                 -1);
                 }

@@ -447,6 +447,23 @@ class TableViewTest {
     }
 
     @Test
+    void ordinarySquareBoardsHaveNoRaisedWoodenRails() throws Exception {
+        for (String kind : List.of("connectfour", "xiangqi", "gomoku", "chess", "ludo",
+                "checkers", "draughts", "reversi", "go9", "go13", "go")) {
+            Fixture f = new Fixture(kind);
+            var furniture = (List<Entity>) field(f.view, "nativeBoardFurniture");
+            for (Entity entity : furniture) {
+                if (!(entity instanceof BlockDisplay display)) continue;
+                var data = org.mockito.ArgumentCaptor.forClass(org.bukkit.block.data.BlockData.class);
+                verify(display).setBlock(data.capture());
+                assertNotEquals(Material.STRIPPED_DARK_OAK_WOOD, data.getValue().getMaterial(),
+                        "Remove raised perimeter rails from " + kind);
+            }
+            f.view.close();
+        }
+    }
+
+    @Test
     void connectFourSupportsStayOutsideAllPlayingCells() throws Exception {
         Fixture f = new Fixture("connectfour");
         var furniture = (List<Entity>) field(f.view, "nativeBoardFurniture");

@@ -272,15 +272,20 @@ class PlayingCardTableTest {
                 var publicCards = (Map<String, Object>) get(table(f), "publicCards");
                 Location a = body(publicCards.get("native:play:0:0"));
                 Location b = body(publicCards.get("native:play:0:1"));
-                assertTrue(
-                        b.getY() - a.getY() > .01,
-                        "Overlapping flat faces and card bodies need separate heights");
+                assertEquals(.003025, b.getY() - a.getY(), 1e-6,
+                        "Flat faces retain the same compact normal offset as upright hands");
                 var bottom =
                         publicCards.entrySet().stream()
                                 .filter(e -> e.getKey().startsWith("native:bottom:"))
                                 .toList();
                 assertEquals(3, bottom.size());
                 for (var entry : bottom) assertEquals(0, body(entry.getValue()).getZ(), 1e-8);
+                for (int i = 1; i < bottom.size(); i++) {
+                    Location previous = body(bottom.get(i - 1).getValue());
+                    Location next = body(bottom.get(i).getValue());
+                    assertEquals(.15, next.getX() - previous.getX(), 1e-6);
+                    assertEquals(.003025, next.getY() - previous.getY(), 1e-6);
+                }
             }
             f.view.close();
         }
@@ -317,9 +322,36 @@ class PlayingCardTableTest {
         var cards = (Map<String, Object>) get(table(f), "publicCards");
         Location first = body(cards.get("packed:exposed:0:0"));
         Location second = body(cards.get("packed:exposed:0:1"));
-        assertEquals(.012, second.getY() - first.getY(), 1e-6);
-        assertEquals(.012, second.getZ() - first.getZ(), 1e-6);
+        assertEquals(.003025, second.getY() - first.getY(), 1e-6);
+        assertEquals(.003025, second.getZ() - first.getZ(), 1e-6);
+        var community = cards.entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith("packed:community:"))
+                .map(entry -> body(entry.getValue())).toList();
+        assertEquals(5, community.size());
+        for (int i = 1; i < community.size(); i++) {
+            assertEquals(.15, community.get(i).getX() - community.get(i - 1).getX(), 1e-6);
+            assertEquals(.003025, community.get(i).getY() - community.get(i - 1).getY(), 1e-6);
+        }
         f.view.close();
+    }
+
+    @Test
+    void concealedLiarCardsUseCompactFlatLayersInBothRenderingModes() {
+        for (boolean packed : List.of(false, true)) {
+            var f = new TableViewTest.Fixture("liars-bar", 4);
+            owner(f, packed);
+            var game = (dev.tabletop3d.rules.HandGame) f.room.board;
+            int seat = f.room.board.currentPlayer();
+            var hand = game.hand(seat);
+            f.move("play:" + hand.get(0).id() + "," + hand.get(1).id());
+            var cards = (Map<String, Object>) get(table(f), "publicCards");
+            String prefix = packed ? "packed:" : "native:";
+            Location first = body(cards.get(prefix + "play:" + seat + ":0"));
+            Location second = body(cards.get(prefix + "play:" + seat + ":1"));
+            assertEquals(.003025, second.getY() - first.getY(), 1e-6);
+            assertEquals(.10, Math.hypot(second.getX() - first.getX(), second.getZ() - first.getZ()), 1e-6);
+            f.view.close();
+        }
     }
 
     @Test
