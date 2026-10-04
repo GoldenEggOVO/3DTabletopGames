@@ -209,7 +209,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     var pieces=(Map<?,?>)field(own,"pieces");Object first=pieces.values().iterator().next();
                     for(Object piece:pieces.values()) if(!((Boolean)field(piece,"packed"))) {
                         var parts=(List<?>)field(piece,"parts");
-                        require(parts.size()==12,"Color Eight native face uses twelve heads");
+                        require(parts.size()==24,"Color Eight native face uses twenty-four heads");
                         for(Object part:parts) {
                             var head=(org.bukkit.entity.ItemDisplay)part;
                             require(head.getItemStack().getType()==org.bukkit.Material.PLAYER_HEAD,"Color Eight signed head material");

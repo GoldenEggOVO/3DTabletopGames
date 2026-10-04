@@ -40,12 +40,14 @@ python tools/generate-native-card-heads.py --skins target/native-card-heads --ap
 
 生成器使用官方 V2 队列，遵守响应中的限额与等待时间，进度保存到素材目录的 `generation-cache.json`。中断后使用同一命令续传，不重复已完成的纹理。仅当全部纹理完成时，才写出 `playing-card-heads.json`；缓存与 Key 不随源码或插件交付。
 
-资源包扑克仍每张一个 ItemDisplay，原版正面为 24 个头颅、公开牌背为两个方块。保留现有尺寸、点击位置、私有手牌、选中与悬停体验。资源包 ZIP 无需更新，1.10.7 继续使用 1.10.4 的 ZIP。
+资源包扑克仍每张一个 ItemDisplay，原版正面为 24 个头颅、公开牌背为两个方块。保留现有尺寸、点击位置、私有手牌、选中与悬停体验。资源包 ZIP 无需更新，1.10.8 继续使用 1.10.4 的 ZIP。
 
 MineSkin 无限小时额度仍有分钟速率限制。生成器忽略明确为 `limit: 0` 的无限窗口，继续遵守非零额度、`next.relative` 与 HTTP 429 的等待时间。官方说明：[速率限制](https://docs.mineskin.org/docs/guides/rate-limits/)。
 
-## 彩八 24×32
+## 彩八 32×48
 
-1.10.7 将现有 B 版图案等比最近邻缩小到 24×32，再分为 3×4 共 12 个头颅。牌面大小、座位朝向、点击、悬停、明暗和私有手牌保留；牌背为两个原版方块，白边＋蓝背。普通牌仍没有彩色 8，目录中的四种彩色 8 只用于打出彩 8 后的所选颜色显示。
+1.10.8 将现有 B 版图案等比最近邻缩小到 32×48，再分为 4×6 共 24 个头颅。牌面大小、座位朝向、点击、悬停、明暗和私有手牌保留；牌背为两个原版方块，白边＋蓝背。普通牌仍没有彩色 8，目录中的四种彩色 8 只用于打出彩 8 后的所选颜色显示。
 
-离线导出：`python tools/build-color-eight-heads.py --output target/color-eight-heads-24x32`。使用同一签名生成器上传并写入 `src/main/resources/color-eight-heads.json`，缓存与密钥不交付。54 种显示图案、每种 12 块、去重 460 张纹理；逐张 Mojang PNG 验证切片一致、外层透明。资源包图案与 ZIP 无变动。
+离线导出：`python tools/build-color-eight-heads.py --output target/color-eight-heads-32x48`。使用同一签名生成器上传并写入 `src/main/resources/color-eight-heads.json`，缓存与密钥不交付。54 种显示图案、每种 24 块、去重 624 张纹理；逐张 Mojang PNG 验证切片一致、外层透明。资源包图案与 ZIP 无变动。
+
+相邻立牌深度间距统一为 0.003025 方块。彩八旧间距让下一张蓝背与上一张白边恰好共面，现在额外留出 0.000525 方块，即牌面宽度方向约 0.1 像素。斗地主、骗子酒馆和德州扑克的立牌使用相同间距；平放出牌和亮牌保持 0.012 方块分层。

@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 class HandTableTest {
-    @Test void nativeColorEightBacksUseTwoBlocksAndPrivateFacesUseTwelveHeads() throws Exception {
+    @Test void nativeColorEightBacksUseTwoBlocksAndPrivateFacesUseTwentyFourHeads() throws Exception {
         var f = new Fixture("color-eight");
         var publicPieces = (Map<?, ?>) TableViewTest.field(f.table, "publicPieces");
         assertEquals(5, publicPieces.size());
@@ -29,7 +29,7 @@ class HandTableTest {
         int start = f.entities.size();
         f.table.show(f.owner);
         var faces = f.entities.subList(start, f.entities.size()).stream().filter(ItemDisplay.class::isInstance).toList();
-        assertEquals(24, faces.size(), "Two private cards use twelve heads each");
+        assertEquals(48, faces.size(), "Two private cards use twenty-four heads each");
         for (var face : faces) {
             verify(f.owner).showEntity(f.plugin, face);
             verify(f.spectator, never()).showEntity(f.plugin, face);

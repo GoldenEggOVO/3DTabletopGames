@@ -18,7 +18,7 @@ import java.util.*;
 /** Standard cards share rendering and selection; each pure engine owns its legal controls. */
 final class PlayingCardTable implements AutoCloseable {
     private static final double WIDTH = .168, HEIGHT = .25;
-    private static final double CARD_LAYER = .012, CARD_LIFT = .085;
+    private static final double FLAT_CARD_LAYER = .012, CARD_LIFT = .085;
     private final Tabletop3D plugin;
     private final Room room;
     private final Location origin;
@@ -186,12 +186,17 @@ final class PlayingCardTable implements AutoCloseable {
     }
 
     private Pose handPose(int seat, int index, int count, double lift) {
+        return cardPose(seat, index, count, CardLayout.DEPTH_STEP,
+                .017 + index * CardLayout.HEIGHT_STEP + lift);
+    }
+
+    private Pose cardPose(int seat, int index, int count, double depthStep, double height) {
         double unit = Math.min(.15, (room.capacity >= 5 ? 1.06 : 1.50) / Math.max(1, count - 1));
         return seatPose(
                 seat,
                 (index - (count - 1) / 2.0) * unit,
-                1.02 + (index - (count - 1) / 2.0) * CARD_LAYER,
-                .017 + lift);
+                1.02 + (index - (count - 1) / 2.0) * depthStep,
+                height);
     }
 
     private Location at(Pose pose) {
@@ -312,7 +317,7 @@ final class PlayingCardTable implements AutoCloseable {
                                             seat,
                                             (index - (cards.size() - 1) / 2.0) * .10,
                                             .52,
-                                            .022 + index * CARD_LAYER),
+                                            .022 + index * FLAT_CARD_LAYER),
                                     false,
                                     -1);
                         if (room.kind.equals("doudizhu")) continue;
@@ -324,16 +329,17 @@ final class PlayingCardTable implements AutoCloseable {
                                     "exposed:" + seat + ":" + index,
                                     exposed.get(index).face(),
                                     room.kind.equals("texas-holdem")
-                                            ? handPose(
+                                            ? cardPose(
                                                     seat,
                                                     index,
                                                     exposed.size(),
-                                                    .015 + index * CARD_LAYER)
+                                                    FLAT_CARD_LAYER,
+                                                    .032 + index * FLAT_CARD_LAYER)
                                             : seatPose(
                                                     seat,
                                                     (index - (exposed.size() - 1) / 2.0) * .18,
                                                     .55,
-                                                    .032 + index * CARD_LAYER),
+                                                    .032 + index * FLAT_CARD_LAYER),
                                     false,
                                     -1);
                     }

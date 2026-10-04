@@ -246,8 +246,8 @@ class PlayingCardTableTest {
             var cards = new ArrayList<>(ownCards(f).values());
             for (int i = 1; i < cards.size(); i++)
                 assertTrue(
-                        body(cards.get(i)).getZ() - body(cards.get(i - 1)).getZ() > .008,
-                        "Adjacent upright card volumes must not intersect");
+                        Math.abs(body(cards.get(i)).getZ() - body(cards.get(i - 1)).getZ() - .003025) < 1e-7,
+                        "Adjacent upright cards use the compact Color Eight spacing");
             var views = (Map<?, ?>) get(table(f), "privateViews");
             var buttons = (Map<?, List<Entity>>) get(views.get(f.player.getUniqueId()), "buttons");
             for (var parts : buttons.values())
@@ -317,9 +317,8 @@ class PlayingCardTableTest {
         var cards = (Map<String, Object>) get(table(f), "publicCards");
         Location first = body(cards.get("packed:exposed:0:0"));
         Location second = body(cards.get("packed:exposed:0:1"));
-        assertTrue(
-                second.getY() - first.getY() > .01,
-                "Revealed overlapping hole cards need distinct heights too");
+        assertEquals(.012, second.getY() - first.getY(), 1e-6);
+        assertEquals(.012, second.getZ() - first.getZ(), 1e-6);
         f.view.close();
     }
 

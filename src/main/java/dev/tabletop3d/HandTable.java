@@ -45,7 +45,6 @@ final class HandTable implements AutoCloseable {
     private long revision = -1, language = -1;
     private boolean closed;
     static final double CARD_LIFT = .085;
-    private static final double CARD_SURFACE_SEPARATION = .0011;
 
     record Pose(double x, double z, float yaw, double lift) {
         Pose(double x, double z, float yaw) {
@@ -158,7 +157,7 @@ final class HandTable implements AutoCloseable {
                             display.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.NONE);
                             display.setItemStack(PlayingCardHeads.item(textures.get(index)));
                             display.setTransformation(PlayingCardHeads.pose(w, spec.standing() ? h : d,
-                                    spec.standing(), index, 3, 4));
+                                    spec.standing(), index, 4, 6));
                         });
                         add(head, new Vector());
                         if (viewer != null) viewer.showEntity(plugin, head);
@@ -680,8 +679,8 @@ final class HandTable implements AutoCloseable {
         if (!mahjong) {
             double centered = index - (count - 1) / 2.0,
                     unit = Math.min(.15, (players == 5 ? 1.18 : 1.50) / Math.max(1, count - 1));
-            Pose pose = seatPose(seat, players, centered * unit, 1.02 + index * .0025);
-            return new Pose(pose.x(), pose.z(), pose.yaw(), index * CARD_SURFACE_SEPARATION);
+            Pose pose = seatPose(seat, players, centered * unit, 1.02 + index * CardLayout.DEPTH_STEP);
+            return new Pose(pose.x(), pose.z(), pose.yaw(), index * CardLayout.HEIGHT_STEP);
         }
         int columns = mahjong ? 17 : 18,
                 row = index / columns,

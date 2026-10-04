@@ -103,9 +103,9 @@ class ColorEightInteractionTest {
         List<Surface> surfaces = new ArrayList<>();
         for (int i = 0; i < 54; i++) {
             var pose = HandTable.handPose(0, 2, i, 54, false);
-            for (int tile = 0; tile < 12; tile++) {
-                var part = PlayingCardHeads.pose(.168, .25, true, tile, 3, 4);
-                double width = .168 / 3, height = .25 / 4;
+            for (int tile = 0; tile < 24; tile++) {
+                var part = PlayingCardHeads.pose(.168, .25, true, tile, 4, 6);
+                double width = .168 / 4, height = .25 / 6;
                 double x = pose.x() + part.getTranslation().x;
                 double center = pose.lift() + part.getTranslation().y - height / 2;
                 for (int side : new int[] {-1, 1})
@@ -128,6 +128,21 @@ class ColorEightInteractionTest {
     }
 
     @Test
+    void adjacentBlueBackAndWhiteFrameHaveATenthPixelOfClearance() throws Exception {
+        var f = new TableViewTest.Fixture("color-eight", 2);
+        var table = TableViewTest.field(f.view, "handTable");
+        var pieces = (Map<?, ?>) TableViewTest.field(table, "publicPieces");
+        var previous = (List<Entity>) TableViewTest.field(pieces.get("back:0:0"), "parts");
+        var next = (List<Entity>) TableViewTest.field(pieces.get("back:0:1"), "parts");
+        Entity white = previous.getFirst(), blue = next.getLast();
+        double whiteFace = white.getLocation().getZ() + f.transforms.get(white).getTranslation().z;
+        double blueFace = blue.getLocation().getZ() + f.transforms.get(blue).getTranslation().z;
+        assertEquals(.168 / 32 * .1, blueFace - whiteFace, 1e-7,
+                "A blue panel must not share the previous card's white surface plane");
+        f.view.close();
+    }
+
+    @Test
     void cardsFormOneParallelDiagonalWithEachLaterCardInFront() {
         for (int players = 2; players <= 5; players++)
             for (int seat = 0; seat < players; seat++)
@@ -144,7 +159,7 @@ class ColorEightInteractionTest {
                             Vector delta =
                                     new Vector(pose.x() - previous.x(), 0, pose.z() - previous.z());
                             assertTrue(delta.dot(right) > 0);
-                            assertEquals(.0025, delta.dot(outward), .00001);
+                            assertEquals(.003025, delta.dot(outward), .00001);
                         }
                     }
                 }
