@@ -301,7 +301,7 @@ class ColorEightInteractionTest {
         double lowestCloth = parts.stream()
                 .filter(p -> p.material() == org.bukkit.Material.GREEN_TERRACOTTA)
                 .mapToDouble(p -> p.y() + p.h()).min().orElseThrow();
-        assertTrue(highestWood - lowestCloth >= .015,
+        assertTrue(highestWood - lowestCloth > 0 && highestWood - lowestCloth <= .0025,
                 "The rim must cover the stepped felt boundary");
         for (var part : parts) {
             if (part.material() == org.bukkit.Material.GREEN_TERRACOTTA)

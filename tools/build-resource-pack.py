@@ -308,15 +308,13 @@ def audio():
         assert checked==rate and abs(len(decoded)-len(data))<=1
         durations[event]=round(len(data)/rate,4)
         events["mahjong."+event]={"sounds":[{"name":"tabletop3d:mahjong/"+event,"stream":False}]}
-    sampled = ("liars-bar/challenge", "liars-bar/shot")
-    for name in sampled:
-        data,rate=sf.read(ROOT/f"audio-source/{name}.ogg",dtype="float32",always_2d=True)
-        data=data.mean(axis=1)
-        target=ASSETS/f"sounds/{name}.ogg";target.parent.mkdir(parents=True,exist_ok=True)
-        sf.write(target,data,rate,format="OGG",subtype="VORBIS")
-        event=name.replace("/", ".")
-        durations[event]=round(len(data)/rate,4)
-        events[event]={"sounds":[{"name":"tabletop3d:"+name,"stream":False}]}
+    data,rate=sf.read(ROOT/"audio-source/cards/play.mp3",dtype="float32",always_2d=True)
+    data=data.mean(axis=1)
+    data*=min(1,.79/max(abs(data)))
+    target=ASSETS/"sounds/cards/play.ogg";target.parent.mkdir(parents=True,exist_ok=True)
+    sf.write(target,data,rate,format="OGG",subtype="VORBIS",compression_level=.1)
+    durations["cards.play"]=round(len(data)/rate,4)
+    events["cards.play"]={"sounds":[{"name":"tabletop3d:cards/play","stream":False}]}
     write_json(ASSETS/"sounds.json",events)
     return durations
 

@@ -6,7 +6,7 @@ import org.bukkit.Material;
 /** Native circular card furniture, in block units relative to the playing surface. */
 final class RoundCardTable {
     static final double RADIUS=1.5;
-    static final double RIM_TOP=.035;
+    static final double RIM_TOP=.017;
     record Part(double x,double y,double z,double w,double h,double d,Material material,float yaw) {}
     static List<Part> parts(){
         List<Part> parts=new ArrayList<>();

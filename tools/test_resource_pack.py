@@ -72,15 +72,13 @@ class ResourcePackTest(unittest.TestCase):
             self.assertEqual((36, 90, 64), cloth.getpixel((x, 256)))
         self.assertEqual((40, 99, 70), cloth.getpixel((256, 190)))
 
-    def test_landlord_audio_is_absent_and_liars_results_keep_distinct_sounds(self):
+    def test_retired_card_audio_is_absent_and_one_shared_play_sample_is_registered(self):
         sounds = json.loads(self.archive.read("assets/tabletop3d/sounds.json"))
         self.assertFalse(any(event.startswith("doudizhu.") for event in sounds))
         self.assertFalse(any(name.startswith("assets/tabletop3d/sounds/doudizhu/") for name in self.names))
-        payloads = []
-        for event in ["liars-bar.challenge", "liars-bar.shot"]:
-            name = sounds[event]["sounds"][0]["name"]
-            payloads.append(self.archive.read("assets/" + name.replace(":", "/sounds/") + ".ogg"))
-        self.assertEqual(len(payloads), len(set(payloads)))
+        self.assertFalse(any(event.startswith("liars-bar.") for event in sounds))
+        self.assertFalse(any(name.startswith("assets/tabletop3d/sounds/liars-bar/") for name in self.names))
+        self.assertEqual({"sounds": [{"name": "tabletop3d:cards/play", "stream": False}]}, sounds["cards.play"])
 
     def test_yacht_die_has_six_opposing_faces_and_the_table_has_five_slots(self):
         die = json.loads(self.archive.read("assets/tabletop3d/models/item/yacht_die.json"))
@@ -147,7 +145,7 @@ class ResourcePackTest(unittest.TestCase):
 
     def test_sounds_have_real_ogg_payloads(self):
         sounds = json.loads(self.archive.read("assets/tabletop3d/sounds.json"))
-        self.assertEqual(11, len(sounds))
+        self.assertEqual(10, len(sounds))
         for event in sounds.values():
             name = event["sounds"][0]["name"]
             path = "assets/" + name.replace(":", "/sounds/") + ".ogg"

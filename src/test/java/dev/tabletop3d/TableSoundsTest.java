@@ -35,8 +35,9 @@ class TableSoundsTest {
         assertNull(TableSounds.cards("doudizhu", "play:cards", Map.of(),
                 Map.of("combination", "BOMB"), true).getFirst().resource());
         for (var type : DoudizhuCombination.Type.values())
-            assertTrue(TableSounds.cards("doudizhu", "play:cards", Map.of(),
-                    Map.of("combination", type.name()), true).stream().allMatch(cue -> cue.resource() == null));
+            assertEquals(List.of("cards.play"), TableSounds.cards("doudizhu", "play:cards", Map.of(),
+                    Map.of("combination", type.name()), true).stream()
+                    .filter(cue -> cue.resource() != null).map(TableSounds.Cue::resource).toList());
         assertNotEquals(TableSounds.cards("doudizhu", "pass", Map.of(), Map.of(), true),
                 TableSounds.cards("doudizhu", "pass", Map.of(), Map.of(), false));
         assertNotEquals(TableSounds.cards("doudizhu", "bid:2", Map.of("bid", "0"), Map.of(), true),
@@ -53,14 +54,15 @@ class TableSoundsTest {
         var live = TableSounds.cards("liars-bar", "challenge", before, before, true);
         var shot = TableSounds.cards("liars-bar", "challenge", before,
                 Map.of("alive.0", "false", "alive.1", "true"), true);
-        assertEquals("liars-bar.challenge", live.getFirst().resource());
+        assertNull(live.getFirst().resource());
         assertNull(live.getLast().resource());
-        assertEquals("liars-bar.shot", shot.getLast().resource());
+        assertNull(shot.getLast().resource());
+        assertNotEquals(live.getLast().sound(), shot.getLast().sound());
         assertTrue(shot.getLast().delayTicks() >= 20);
     }
 
     @Test
-    void mixedCardViewersHearVoiceOrNativeEffectWithoutDuplicatingEither() {
+    void mixedCardViewersHearOneSampleOrNativeEffectWithoutDuplicatingEither() {
         var plugin = mock(Tabletop3D.class);
         when(plugin.getConfig()).thenReturn(new YamlConfiguration());
         plugin.pack = mock(TabletopPack.class);
@@ -74,13 +76,23 @@ class TableSoundsTest {
             when(plugin.allowed(player)).thenReturn(true);
         }
         when(plugin.pack.packed(packedPlayer)).thenReturn(true);
-        var cue = TableSounds.cards("liars-bar", "challenge", Map.of("alive.0", "true"),
-                Map.of("alive.0", "true"), true).getFirst();
+        var cue = TableSounds.CARD;
         TableSounds.play(plugin, at, cue, "liars-bar");
-        verify(packedPlayer).playSound(at, "tabletop3d:liars-bar.challenge", SoundCategory.BLOCKS, cue.volume(), 1f);
+        verify(packedPlayer).playSound(at, "tabletop3d:cards.play", SoundCategory.BLOCKS, cue.volume(), 1f);
         verify(nativePlayer).playSound(at, cue.sound(), SoundCategory.BLOCKS, cue.volume(), cue.pitch());
         verify(packedPlayer, never()).playSound(any(Location.class), any(Sound.class), any(SoundCategory.class), anyFloat(), anyFloat());
         verify(world, never()).playSound(any(Location.class), any(Sound.class), any(SoundCategory.class), anyFloat(), anyFloat());
+    }
+
+    @Test
+    void allCardGamesUseTheSameSampleForTheirCardCue() {
+        assertEquals("cards.play", TableSounds.move("color-eight", 0, "play:card", List.of(), List.of()).resource());
+        for (var type : DoudizhuCombination.Type.values()) {
+            var cues = TableSounds.cards("doudizhu", "play:cards", Map.of(), Map.of("combination", type.name()), true);
+            assertEquals(List.of("cards.play"), cues.stream().map(TableSounds.Cue::resource).filter(Objects::nonNull).toList());
+        }
+        assertEquals("cards.play", TableSounds.cards("liars-bar", "play:cards", Map.of(), Map.of(), true).getFirst().resource());
+        assertEquals("cards.play", TableSounds.cards("texas-holdem", "raise:20", Map.of(), Map.of(), true).getFirst().resource());
     }
     @Test
     void mixedViewersEachHearOnlyTheirOwnMahjongSound() {

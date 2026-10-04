@@ -254,7 +254,7 @@ class PlayingCardTableTest {
                 assertTrue(
                         parts.getFirst().getLocation().getZ() > body(cards.getLast()).getZ() + .085,
                         "Controls must lie between the player and the hand");
-                assertTrue(parts.getFirst().getLocation().getY() - f.view.origin.getY() >= .037,
+                assertTrue(parts.getFirst().getLocation().getY() - f.view.origin.getY() >= RoundCardTable.RIM_TOP + .002,
                         "Controls must sit above the raised native rim");
             }
             if (kind.equals("doudizhu")) {

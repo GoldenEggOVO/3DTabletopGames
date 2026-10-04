@@ -47,7 +47,8 @@ class RoundCardTableTest {
         for (int i = 0; i < rim.size(); i++) {
             var current = rim.get(i);
             var next = rim.get((i + 1) % rim.size());
-            assertTrue(current.y() + current.h() > feltTop + .015);
+            assertTrue(current.y() + current.h() > feltTop);
+            assertTrue(current.y() + current.h() <= feltTop + .0025, "Rim must be almost flush with the felt");
             assertTrue(Math.abs(current.y() - next.y()) >= .0002);
             assertTrue(Math.abs(current.y() + current.h() - next.y() - next.h()) >= .0002);
         }

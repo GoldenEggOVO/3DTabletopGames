@@ -36,7 +36,7 @@ final class TableSounds {
     static final Cue WIN = new Cue(Sound.ENTITY_PLAYER_LEVELUP, .3f, 1.3f);
     static final Cue DRAW = new Cue(Sound.BLOCK_NOTE_BLOCK_CHIME, .25f, .8f);
     static final Cue TURN = new Cue(Sound.BLOCK_NOTE_BLOCK_PLING, .15f, 1.2f);
-    static final Cue CARD = new Cue(Sound.ITEM_BOOK_PAGE_TURN, .25f, 1.4f);
+    static final Cue CARD = new Cue(Sound.ITEM_BOOK_PAGE_TURN, .25f, 1.4f, "cards.play");
     static final Cue TILE = new Cue(Sound.BLOCK_BONE_BLOCK_HIT, .24f, 1.5f);
     static final Cue TILE_DRAW = new Cue(Sound.BLOCK_BAMBOO_WOOD_HIT, .16f, 1.7f);
     static final Cue TILE_DISCARD = new Cue(Sound.BLOCK_BONE_BLOCK_PLACE, .28f, 1.35f);
@@ -111,16 +111,16 @@ final class TableSounds {
                 default -> Sound.BLOCK_NOTE_BLOCK_PLING;
             };
             return List.of(new Cue(sound, .3f, .65f + type.ordinal() * .075f),
-                    new Cue(CARD.sound(), .16f, 1.4f, null, 2));
+                    new Cue(CARD.sound(), .16f, 1.4f, CARD.resource(), 2));
         }
         if (kind.equals("liars-bar")) {
             if (action.equals("challenge")) {
                 boolean eliminated = before.entrySet().stream().anyMatch(entry ->
                         entry.getKey().startsWith("alive.") && entry.getValue().equals("true")
                                 && after.get(entry.getKey()).equals("false"));
-                return List.of(new Cue(Sound.BLOCK_NOTE_BLOCK_BELL, .32f, .65f, "liars-bar.challenge"),
+                return List.of(new Cue(Sound.BLOCK_NOTE_BLOCK_BELL, .32f, .65f),
                         new Cue(eliminated ? Sound.ENTITY_GENERIC_EXPLODE : Sound.BLOCK_LEVER_CLICK,
-                                .35f, eliminated ? 1.2f : .75f, eliminated ? "liars-bar.shot" : null, 30));
+                                .35f, eliminated ? 1.2f : .75f, null, 30));
             }
             return List.of(CARD, new Cue(Sound.BLOCK_NOTE_BLOCK_BASS, .16f, .75f));
         }
