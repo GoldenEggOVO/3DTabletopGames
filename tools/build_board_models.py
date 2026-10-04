@@ -22,7 +22,7 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
     wood = "tabletop3d:item/surface/wood"
 
     def disc(radius,y,height,side,cap,segments=64):
-        return disc_mesh(radius,y,height,side,cap,max(64,segments))
+        return disc_mesh(radius,y,height,side,cap,segments)
 
     def model(name,textures,parts):
         export_model(name,textures,parts)
@@ -129,13 +129,8 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
                 material="RED_CONCRETE" if name.endswith("red") else "YELLOW_CONCRETE"
                 # Model's Y axis rotates to face the vertical rack; bottom stays at Y=0.
                 parts=[]
-                for element in disc(.12,-.0425,.085,material,material,32):
-                    for key in ("from","to"):
-                        v=element[key];element[key]=[v[0],8+(v[2]-8)+.12*16,8+(v[1]-8)]
-                    element["faces"]={ {"up":"south","down":"north","south":"up","north":"down"}.get(k,k):v for k,v in element["faces"].items()}
-                    if "rotation" in element:
-                        element["rotation"]["axis"]="z";element["rotation"]["origin"]=[8,8+.12*16,8]
-                    parts.append(element)
+                from solid_mesh import upright
+                parts = upright(disc(.12,-.0425,.085,material,material,32), .12*16)
             else:
                 material=native[0]["material"]
                 height=.19 if name.startswith(("draught_","xiangqi_")) else .13
@@ -159,44 +154,20 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
             parts=[block(p["x"],p["y"],p["z"],p["w"],p["h"],p["d"],p["material"]) for p in native]
         model(name,textures,parts)
 
-    # Solid scanlines make the circular holes and rounded frame one connected mesh.
+    # One front/back cap and closed hole walls replace the solid scanline boxes.
     textures=dict(material_textures);textures["body"]=wood
-    parts=[]
-    hole_radius=.119
-    bands=224
-    from solid_mesh import rounded_width
-    for index in range(bands):
-        low=.02+1.72*index/bands
-        high=.02+1.72*(index+1)/bands
-        y=(low+high)/2
-        outer=rounded_width(1,.065,(y-.88)/.86)
-        intervals=[(-outer,outer)]
-        for row in range(6):
-            dy=y-(.17+row*.28)
-            if abs(dy)>=hole_radius:continue
-            half=math.sqrt(hole_radius*hole_radius-dy*dy)
-            for col in range(7):
-                x=(col-3)*.28
-                remainder=[]
-                for left,right in intervals:
-                    if right<=x-half or left>=x+half:remainder.append((left,right));continue
-                    if left<x-half:remainder.append((left,x-half))
-                    if right>x+half:remainder.append((x+half,right))
-                intervals=remainder
-        for left,right in intervals:
-            parts.append(block((left+right)/2,low,0,right-left,high-low,.122,"BLUE_CONCRETE",2))
+    from solid_mesh import circle, rounded_outline, shell, upright, rescale
+    holes = [circle(.119/2, 24, center=((col-3)*.14, (.17+row*.28-.88)/2))
+             for row in range(6) for col in range(7)]
+    parts = upright(shell(rounded_outline(.5,.0325,squash=.86), -.0305, .061,
+                          "BLUE_CONCRETE", "BLUE_CONCRETE", holes), .44*16)
     # Pillars and feet remain outside the holes and have rounded silhouettes.
     for x in (-1.06,1.06):
         pillar=rounded_square(.10,.045,0,1.83,"BLUE_CONCRETE","BLUE_CONCRETE")
-        for part in pillar:
-            for key in ("from","to"):
-                part[key]=[8+(part[key][0]-8)/2+x*8,8+(part[key][1]-8)/2-.04*8,8+(part[key][2]-8)/2]
-        parts.extend(pillar)
+        parts.extend(rescale(pillar, .5, (x*8, -.04*8, 0)))
         parts.append(block(x,-.04,0,.26,.10,.65,"POLISHED_DEEPSLATE",2))
     parts.append(block(0,1.74,0,2.16,.09,.20,"BLUE_CONCRETE",2))
-    for part in rounded_square(1.125,.10,-.19,.14,"body","body"):
-        for key in ("from","to"):part[key]=[8+(value-8)/2 for value in part[key]]
-        parts.append(part)
+    parts.extend(rescale(rounded_square(1.125,.10,-.19,.14,"body","body"), .5))
     for x in (-.99,.99):
         for z in (-.99,.99):parts.append(block(x,-1.03125,z,.15,.84125,.15,"STRIPPED_BIRCH_WOOD",2))
     model("board_connectfour",textures,parts)

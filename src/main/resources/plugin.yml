@@ -1,5 +1,5 @@
 name: 3dtabletop
-version: 1.10.8-SNAPSHOT
+version: 1.10.9-SNAPSHOT
 main: dev.tabletop3d.Tabletop3D
 api-version: '26.2'
 softdepend: [CraftEngine]

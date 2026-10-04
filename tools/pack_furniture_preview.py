@@ -44,7 +44,9 @@ def render(name):
     canvas=Image.new('RGBA',(1024,720),'#17232e')
     for _,v,path,uv in sorted(faces,key=lambda f:f[0]):
         tex=Image.open(path).convert('RGBA');w,h=tex.size
-        tex=tex.crop((uv[0]*w/16,uv[1]*h/16,uv[2]*w/16,uv[3]*h/16))
+        tex=tex.crop((min(uv[0],uv[2])*w/16,min(uv[1],uv[3])*h/16,max(uv[0],uv[2])*w/16,max(uv[1],uv[3])*h/16))
+        if uv[0]>uv[2]:tex=tex.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        if uv[1]>uv[3]:tex=tex.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
         if tex.width==0 or tex.height==0:continue
         a,b,c=v[0],v[1],v[3];ux,uy=b[0]-a[0],b[1]-a[1];vx,vy=c[0]-a[0],c[1]-a[1]
         det=ux*vy-uy*vx

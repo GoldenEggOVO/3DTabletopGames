@@ -2,6 +2,7 @@ import com.google.gson.*;
 import java.nio.file.*;
 import net.minecraft.client.resources.model.cuboid.ItemTransforms;
 import net.minecraft.client.resources.model.cuboid.ItemTransform;
+import net.minecraft.client.resources.model.cuboid.CuboidModel;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -22,6 +23,17 @@ class ClientTransformProbe {
             if(front.z()<.999)throw new AssertionError(name+" faces away");
             if(new Quaternionf().rotateX((float)-Math.PI/2).transform(new Vector3f(front)).y()<.999)throw new AssertionError(name+" faces down");
         }
-        System.out.println("CLIENT_26_2_TRANSFORM_PASS actual_deserializer=true none_ignored=true fixed_faces_owner_and_up=true client_visual_test=false");
+        int models = 0;
+        try (var paths = Files.list(Path.of(args[0]))) {
+            for (Path path : paths.filter(p -> p.toString().endsWith(".json")).toList()) {
+                try (var reader = Files.newBufferedReader(path)) {
+                    if (CuboidModel.fromStream(reader).geometry() == null)
+                        throw new AssertionError(path + " has no geometry");
+                }
+                models++;
+            }
+        }
+        System.out.println("CLIENT_26_2_TRANSFORM_PASS actual_deserializer=true models=" + models
+            + " none_ignored=true fixed_faces_owner_and_up=true client_visual_test=false");
     }
 }

@@ -58,6 +58,8 @@ CATALOG = []
 
 
 def model(name, textures, elements):
+    from solid_mesh import bake_caps
+    textures = bake_caps(textures, elements, ASSETS, texture)
     CATALOG.append(name)
     write_json(ASSETS / f"models/item/{name}.json", {"gui_light": "front", "ambientocclusion": False,
                "textures": textures, "elements": elements,
@@ -68,19 +70,22 @@ def model(name, textures, elements):
 
 def face_model(name, image, rounded=False, back=None):
     face = texture("face/"+name, image)
-    elements = []
-    for i in range(48 if rounded else 1):
-        y0, y1 = (i*16/48, (i+1)*16/48) if rounded else (0, 16)
-        y = (y0+y1)/2
-        edge = 0
-        radius = 1.2
-        if rounded and (y < radius or y > 16-radius):
-            dy = radius-y if y < radius else y-(16-radius)
-            edge = radius-math.sqrt(max(0, radius*radius-dy*dy))
-        part = cube([edge, y0, 0], [16-edge, y1, 16], "face", [edge, 16-y1, 16-edge, 16-y0])
-        if back:
-            part["faces"]["north"] = {"uv": [edge, 16-y1, 16-edge, 16-y0], "texture": "#back"}
-        elements.append(part)
+    if rounded:
+        from solid_mesh import rounded_outline, shell, upright
+        elements = upright(shell(rounded_outline(.5, .075, steps=4), -.5, 1, "body", "face"))
+        for part in elements:
+            for direction, surface in part["faces"].items():
+                if "_mask" in surface:
+                    surface["uv"] = [0, 0, 16, 16]
+                    if direction == "north": surface["texture"] = "#back" if back else "#body"
+        textures = {"body": "tabletop3d:item/surface/ivory", "face": face}
+        if back: textures["back"] = back
+        model(name, textures, elements)
+        return
+    part = cube([0, 0, 0], [16, 16, 16], "face")
+    if back:
+        part["faces"]["north"] = {"uv": [0, 0, 16, 16], "texture": "#back"}
+    elements = [part]
     textures = {"body": "tabletop3d:item/surface/ivory", "face": face}
     if back:
         textures["back"] = back
@@ -205,7 +210,7 @@ def flower_image(n):
 
 def disc(radius,y,height,tex,cap_tex,segments=96):
     from solid_mesh import extrusion
-    return extrusion(radius,y,height,tex,cap_tex,max(64,segments))
+    return extrusion(radius,y,height,tex,cap_tex,segments)
 
 
 def rounded_square(radius,corner,y,height,tex,cap_tex,inner_radius=None,inner_corner=None):

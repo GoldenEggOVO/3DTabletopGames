@@ -11,27 +11,60 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ResourcePackTest(unittest.TestCase):
-    def test_round_furniture_and_pieces_are_closed_solids_without_alpha_cutout_caps(self):
+    def test_hole_mask_does_not_remove_pixels_from_the_solid_frame(self):
+        from solid_mesh import circle
+        model = json.loads(self.archive.read("assets/tabletop3d/models/item/board_connectfour.json"))
+        cap = next(e for e in model["elements"] if e["faces"].get("south", {}).get("texture", "").startswith("#cap_"))
+        image = self.face_image(model, cap["faces"]["south"])
+        hole = circle(.119 / 2, 24, center=(-3 * .14, (.17 - .88) / 2))
+        for px in range(int(.01 * image.width), int(.15 * image.width)):
+            for py in range(int(.01 * image.height), int(.15 * image.height)):
+                x, z = (px + .5) / image.width - .5, (py + .5) / image.height * .86 - .43
+                inside = all((b[0] - a[0]) * (z - a[1]) - (b[1] - a[1]) * (x - a[0]) >= 0
+                             for a, b in zip(hole, hole[1:] + hole[:1]))
+                if not inside:
+                    self.assertEqual(255, image.getpixel((px, py))[3], "Cap must reach the exact hole wall")
+
+    def test_curved_models_only_spend_faces_on_the_exterior(self):
+        budgets = {"card_table": 150, "mahjong_table": 150, "board_connectfour": 1500,
+                   "board_chess": 110, "chess_black_pawn": 120, "stone_black": 40,
+                   "poker_chips": 24, "card_r3": 30}
+        for name, maximum in budgets.items():
+            data = json.loads(self.archive.read(f"assets/tabletop3d/models/item/{name}.json"))
+            self.assertLessEqual(sum(len(e["faces"]) for e in data["elements"]), maximum,
+                                 name + " must not draw the internal faces of solid slices")
+
+    def face_image(self, model, face):
+        path = "assets/" + model["textures"][face["texture"][1:]].replace(":", "/textures/") + ".png"
+        return Image.open(io.BytesIO(self.archive.read(path))).convert("RGBA")
+
+    def test_curved_shells_have_valid_exterior_quads_and_opaque_walls(self):
         for name in ("card_table", "doudizhu_table", "liars_bar_table", "texas_holdem_table",
                      "stone_black", "chess_black_pawn", "poker_chips", "board_connectfour"):
             data = json.loads(self.archive.read(f"assets/tabletop3d/models/item/{name}.json"))
             for element in data["elements"]:
-                self.assertTrue(all(high > low for low, high in zip(element["from"], element["to"])),
-                                name + " must not rely on disconnected zero-thickness sheets")
-                for face in element["faces"].values():
-                    path = "assets/" + data["textures"][face["texture"][1:]].replace(":", "/textures/") + ".png"
-                    image = Image.open(io.BytesIO(self.archive.read(path))).convert("RGBA")
-                    self.assertEqual((255,255), image.getchannel("A").getextrema(), name)
+                spans = [high - low for low, high in zip(element["from"], element["to"])]
+                for direction, face in element["faces"].items():
+                    axis = {"north": 2, "south": 2, "east": 0, "west": 0, "up": 1, "down": 1}[direction]
+                    self.assertTrue(all(span > 0 for i, span in enumerate(spans) if i != axis), name)
+                    image = self.face_image(data, face)
+                    if face["texture"].startswith("#cap_"):
+                        self.assertEqual(255, image.getchannel("A").getextrema()[1], name)
+                    else:
+                        self.assertEqual((255,255), image.getchannel("A").getextrema(), name)
+                    self.assertNotIn("_mask", face)
 
     def test_board_playing_surface_has_rounded_geometry_inside_the_table_border(self):
         for name in ("chess", "xiangqi", "gomoku", "go", "ludo", "checkers"):
             data = json.loads(self.archive.read(f"assets/tabletop3d/models/item/board_{name}.json"))
             tops = [element for element in data["elements"] if
-                    element["faces"].get("up",{}).get("texture") == "#board"]
-            self.assertGreater(len(tops), 1, name)
+                    element["faces"].get("up",{}).get("texture", "").startswith("#cap_board_")]
+            self.assertEqual(1, len(tops), name)
             self.assertTrue(all(max(element["to"][0], element["to"][2]) <= 24 for element in tops))
             self.assertTrue(all(min(element["from"][0], element["from"][2]) >= -8 for element in tops))
-            self.assertLess(tops[0]["to"][0] - tops[0]["from"][0], 32, name + " corner must taper")
+            image = self.face_image(data, tops[0]["faces"]["up"])
+            self.assertEqual(0, image.getpixel((0,0))[3], name + " corner must follow the rounded border")
+            self.assertEqual(255, image.getpixel((image.width//2,image.height//2))[3], name)
 
     def test_landlord_cloth_has_the_bottom_card_marks_at_the_actual_centre(self):
         cloth = Image.open(io.BytesIO(self.archive.read("assets/tabletop3d/textures/item/surface/doudizhu_table.png"))).convert("RGB")
@@ -123,31 +156,56 @@ class ResourcePackTest(unittest.TestCase):
         names += ["playing_joker_small", "playing_joker_big", "playing_back"]
         for name in names:
             model = json.loads(self.archive.read(f"assets/tabletop3d/models/item/{name}.json"))
-            self.assertIn("back", model["textures"])
+            back_face = model["elements"][0]["faces"]["north"]
             for element in model["elements"]:
-                self.assertEqual("#back", element["faces"]["north"]["texture"])
-            back = Image.open(io.BytesIO(self.archive.read("assets/" + model["textures"]["back"].replace(":", "/textures/") + ".png"))).convert("RGBA")
-            self.assertEqual((255,255), back.getchannel("A").getextrema())
+                if "north" in element["faces"]:
+                    self.assertTrue(element["faces"]["north"]["texture"].startswith("#cap_back_"))
+            back = self.face_image(model, back_face)
+            self.assertEqual(255, back.getpixel((back.width // 2, back.height // 2))[3])
+            self.assertEqual(0, back.getpixel((0, 0))[3])
+
+    def test_shell_textures_fit_the_atlas_budget_without_unused_aliases(self):
+        paths = set()
+        for name in self.names:
+            if name.startswith("assets/tabletop3d/models/item/"):
+                model = json.loads(self.archive.read(name))
+                used = {face["texture"][1:] for element in model["elements"] for face in element["faces"].values()}
+                self.assertEqual(used, set(model["textures"]), name)
+                paths.update(model["textures"].values())
+        pixels = 0
+        for path in paths:
+            image = Image.open(io.BytesIO(self.archive.read("assets/" + path.replace(":", "/textures/") + ".png")))
+            pixels += image.width * image.height
+        self.assertLess(pixels, 40_000_000, "Geometry savings must not inflate the texture atlas")
 
     def test_connect_four_has_real_open_holes_and_a_sealed_frame(self):
         data=json.loads(self.archive.read("assets/tabletop3d/models/item/board_connectfour.json"))
-        def occupied(x,y,z):
-            return any(all(lo<=p<=hi for lo,p,hi in zip(part["from"],(x,y,z),part["to"]))
-                       for part in data["elements"])
+        front = data["elements"][0]
+        image = self.face_image(data, front["faces"]["south"])
+        def opaque(x,y):
+            u=(x-front["from"][0])/(front["to"][0]-front["from"][0])
+            v=1-(y-front["from"][1])/(front["to"][1]-front["from"][1])
+            uv=front["faces"]["south"]["uv"]
+            u=(uv[0]+u*(uv[2]-uv[0]))/16
+            v=(uv[1]+v*(uv[3]-uv[1]))/16
+            return image.getpixel((int(u*image.width),int(v*image.height)))[3]>0
         for row in range(6):
             for col in range(7):
-                self.assertFalse(occupied(8+(col-3)*.28*8,8+(.17+row*.28)*8,8))
+                self.assertFalse(opaque(8+(col-3)*.28*8,8+(.17+row*.28)*8))
         for row in range(6):
             for col in range(6):
-                self.assertTrue(occupied(8+(col-2.5)*.28*8,8+(.17+row*.28)*8,8))
+                self.assertTrue(opaque(8+(col-2.5)*.28*8,8+(.17+row*.28)*8))
+        self.assertEqual(42*24+28, sum("rotation" in e for e in data["elements"][:1037]))
 
     def test_round_pieces_have_geometric_silhouettes_including_vertical_discs(self):
         for name in ("stone_black", "draught_white", "xiangqi_red_general", "chess_black_pawn", "reversi_disc", "connectfour_red", "poker_chips"):
             data=json.loads(self.archive.read(f"assets/tabletop3d/models/item/{name}.json"))
-            self.assertGreaterEqual(len(data["elements"]),64,name)
+            self.assertTrue(any("rotation" in e for e in data["elements"]), name)
             first=data["elements"][0]
-            self.assertLess(first["to"][0]-first["from"][0],
-                            max(e["to"][0]-e["from"][0] for e in data["elements"]),name)
+            face=first["faces"]["south" if name.startswith("connectfour_") else "up"]
+            image=self.face_image(data,face)
+            self.assertEqual(0,image.getpixel((0,0))[3],name)
+            self.assertEqual(255,image.getpixel((image.width//2,image.height//2))[3],name)
 
     def test_tile_and_card_faces_point_to_owner_and_up_when_flat(self):
         # Minecraft 26.2 ignores display.none; ItemTransforms reads fixed.
@@ -204,17 +262,20 @@ class ResourcePackTest(unittest.TestCase):
         model = json.loads(self.archive.read("assets/tabletop3d/models/item/mahjong_table.json"))
         raised = [e for e in model["elements"] if e["to"][1] > 8.8]
         self.assertTrue(raised, "Mahjong rim must stand above the playing surface")
-        self.assertFalse(any(e["from"][0]<8<e["to"][0] and e["from"][2]<8<e["to"][2]
-                             for e in raised), "Raised rim must leave a real open playing area")
+        cap=next(e["faces"]["up"] for e in raised if "up" in e["faces"])
+        image=self.face_image(model,cap)
+        self.assertEqual(0,image.getpixel((image.width//2,image.height//2))[3],
+                         "Raised rim must leave a real open playing area")
 
     def test_round_table_is_sealed_with_a_fine_silhouette_and_bounded_geometry(self):
         data=json.loads(self.archive.read("assets/tabletop3d/models/item/card_table.json"))
         body=[element for element in data["elements"] if abs(element["to"][1]-8)<1e-6]
-        self.assertGreaterEqual(len(body),96)
-        for previous,current in zip(body,body[1:]):
-            self.assertAlmostEqual(previous["to"][2],current["from"][2],places=8)
-        self.assertLessEqual(sum(len(e["faces"]) for e in data["elements"]),1600,
-                             "Keep the sealed furniture within its mesh budget")
+        self.assertEqual(49,len(body))
+        image=self.face_image(data,body[0]["faces"]["up"])
+        self.assertEqual(0,image.getpixel((0,0))[3])
+        self.assertEqual(255,image.getpixel((image.width//2,image.height//2))[3])
+        self.assertLessEqual(1.5*(1-math.cos(math.pi/48)),.0033,
+                             "The exterior silhouette must stay close to the original radius")
 
 
 if __name__ == "__main__":
