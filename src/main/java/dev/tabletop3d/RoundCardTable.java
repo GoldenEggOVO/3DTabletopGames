@@ -9,10 +9,10 @@ final class RoundCardTable {
     record Part(double x,double y,double z,double w,double h,double d,Material material,float yaw) {}
     static List<Part> parts(){
         List<Part> parts=new ArrayList<>();
-        disc(parts,RADIUS,-.19,.19,Material.STRIPPED_DARK_OAK_WOOD,96);
-        disc(parts,1.41,.005,.01,Material.GREEN_TERRACOTTA,96);
-        disc(parts,.25,-TableGeometry.SURFACE,TableGeometry.SURFACE-.19,Material.STRIPPED_DARK_OAK_LOG,8);
-        disc(parts,.70,-TableGeometry.SURFACE,.08,Material.DARK_OAK_PLANKS,16);
+        disc(parts,RADIUS,-.19,.19,Material.STRIPPED_DARK_OAK_WOOD,48);
+        disc(parts,1.41,.005,.01,Material.GREEN_TERRACOTTA,48);
+        parts.add(new Part(0,-TableGeometry.SURFACE,0,.35,TableGeometry.SURFACE-.19,.35,Material.STRIPPED_DARK_OAK_LOG,0));
+        parts.add(new Part(0,-TableGeometry.SURFACE,0,.98,.08,.98,Material.DARK_OAK_PLANKS,0));
         return List.copyOf(parts);
     }
     private static void disc(List<Part> parts,double radius,double y,double height,Material material,int rows){

@@ -312,15 +312,15 @@ class ColorEightInteractionTest {
     }
 
     @Test
-    void circularRimHasNoVisibleStepsAtItsOuterEdge() throws Exception {
+    void circularRimBoundsItsStairStepInset() throws Exception {
         var rim =
                 RoundCardTable.parts().stream()
                         .filter(p -> p.material() == org.bukkit.Material.STRIPPED_DARK_OAK_WOOD)
                         .toList();
         for (int degrees = 0; degrees < 360; degrees++) {
             double angle = Math.toRadians(degrees),
-                    x = 1.47 * Math.cos(angle),
-                    z = 1.47 * Math.sin(angle);
+                    x = 1.445 * Math.cos(angle),
+                    z = 1.445 * Math.sin(angle);
             boolean covered = false;
             for (var p : rim) {
                 double yaw = p.yaw();

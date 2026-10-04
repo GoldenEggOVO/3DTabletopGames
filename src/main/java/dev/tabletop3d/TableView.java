@@ -491,19 +491,19 @@ final class TableView implements AutoCloseable {
                                 .035,
                                 .12,
                                 null));
-            for (double side : new double[] {-1.06, 1.06}) {
+            for (double side : new double[] {-1.075, 1.075}) {
                 furniture.add(
-                        block(origin, Material.BLUE_CONCRETE, side, .175, 0, .12, 1.615, .20, null));
+                        block(origin, Material.BLUE_CONCRETE, side, -.045, 0, .10, 1.835, .12, null));
                 furniture.add(
                         block(
                                 origin,
                                 Material.POLISHED_DEEPSLATE,
                                 side,
-                                .075,
+                                -.045,
                                 0,
-                                .26,
-                                .10,
-                                .65,
+                                .18,
+                                .04,
+                                .28,
                                 null));
             }
             furniture.add(block(origin, Material.BLUE_CONCRETE, 0, 1.74, 0, 2.25, .09, .20, null));

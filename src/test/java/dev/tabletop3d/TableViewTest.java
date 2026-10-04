@@ -447,6 +447,26 @@ class TableViewTest {
     }
 
     @Test
+    void connectFourSupportsStayOutsideAllPlayingCells() throws Exception {
+        Fixture f = new Fixture("connectfour");
+        var furniture = (List<Entity>) field(f.view, "nativeBoardFurniture");
+        for (Entity entity : furniture) {
+            if (!(entity instanceof org.bukkit.entity.BlockDisplay display)) continue;
+            var pose = f.transforms.get(display);
+            if (pose == null) continue;
+            double left = pose.getTranslation().x(), bottom = pose.getTranslation().y(), front = pose.getTranslation().z();
+            double right = left + pose.getScale().x(), top = bottom + pose.getScale().y(), back = front + pose.getScale().z();
+            for (int column = 0; column < 7; column++) {
+                double center = (column - 3) * .28;
+                assertFalse(left < center + .12 && right > center - .12
+                        && bottom < .28 && top > .06 && front < .10 && back > -.10,
+                        "Support must not overlap the bottom-row chip interior");
+            }
+        }
+        f.view.close();
+    }
+
+    @Test
     void connectFourFallsFromAboveItsColumnAndSettlesAtTheRuleCell() throws Exception {
         Fixture f = new Fixture("connectfour");
         f.move("drop:2");

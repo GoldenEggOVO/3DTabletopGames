@@ -26,7 +26,7 @@ class HandModelsTest {
     }
     @Test void detailedPatternsUseFewerNativeEntitiesWithoutShrinkingFaces(){
         assertTrue(HandModels.of("p9").size()<=140);
-        assertTrue(RoundCardTable.parts().size()<=224);
+        assertTrue(RoundCardTable.parts().size()<=94);
     }
     @Test void overlappingColorsHaveDifferentDepths(){
         for(String face:List.of("s1","p1","f1","f2","f3","f4","f5","f6","f7","f8")){

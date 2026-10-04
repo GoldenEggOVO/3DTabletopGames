@@ -34,8 +34,10 @@ final class YachtTable implements AutoCloseable {
     private final BlockDisplay activeColumn;
     private final TextDisplay[] summaryLabels = new TextDisplay[3];
     static final double SCORE_X = -1.65;
+    private static final double SCORE_TOP = -.85, SCORE_HEIGHT = 1.50;
+    private static final double COLUMNS_LEFT = -1.625, COLUMNS_WIDTH = .70;
     static double scoreZ(int category) { return -.80 + (category < 6 ? category : category + 2) * .10; }
-    private double columnX(int seat) { return -1.29 + (seat - (room.capacity - 1) / 2.0) * .64 / room.capacity; }
+    private double columnX(int seat) { return COLUMNS_LEFT + (seat + .5) * COLUMNS_WIDTH / room.capacity; }
     private YachtGame board;
     private long revision = -1, language = -1;
     private int history, frame;
@@ -60,8 +62,8 @@ final class YachtTable implements AutoCloseable {
         summaryLabels[1] = label(-1.99, .034, -.10, .12f);
         summaryLabels[2] = label(-1.99, .034, .60, .13f);
         for (int seat = 1; seat < room.capacity; seat++)
-            common.add(block(-1.61 + seat * .64 / room.capacity, .017, -.10, .006, .002, 1.50, Material.BLACK_CONCRETE));
-        activeColumn = block(columnX(0), .007, -.05, .64 / room.capacity - .008, .004, 1.65, Material.YELLOW_CONCRETE);
+            common.add(block(COLUMNS_LEFT + seat * COLUMNS_WIDTH / room.capacity, .017, -.10, .006, .002, SCORE_HEIGHT, Material.BLACK_CONCRETE));
+        activeColumn = block(columnX(0), .007, -.10, COLUMNS_WIDTH / room.capacity - .008, .004, SCORE_HEIGHT - .008, Material.YELLOW_CONCRETE);
         common.add(activeColumn);
         common.add(block(.45, .007, .82, .95, .016, .23, Material.GREEN_CONCRETE));
         rollLabel = label(.45, .038, .82, .16f);
@@ -157,10 +159,10 @@ final class YachtTable implements AutoCloseable {
                     for (double z : new double[]{-.98,.98}) nativeTable.add(block(x, -TableGeometry.SURFACE, z, .13, TableGeometry.SURFACE - .19, .13, Material.STRIPPED_DARK_OAK_LOG));
             }
             for (int row = 0; row <= 15; row++) nativeTable.add(block(SCORE_X, .013, -.85 + row * .10, 1.45, .003, .006, Material.BLACK_CONCRETE));
-            nativeTable.add(block(-1.625, .013, -.1, .008, .003, 1.50, Material.BLACK_CONCRETE));
-            for (double z : new double[]{-.20, -.10, .60}) nativeTable.add(block(-1.99, .004, z, .71, .009, .094, Material.POLISHED_BLACKSTONE));
+            nativeTable.add(block(COLUMNS_LEFT, .013, -.1, .008, .003, SCORE_HEIGHT, Material.BLACK_CONCRETE));
+            for (double z : new double[]{-.20, -.10, .60}) nativeTable.add(block(-1.99, .004, z, .71, .009, .094, Material.GRAY_CONCRETE));
             for (int i = 0; i < 5; i++) {
-                nativeTable.add(block(x(i), .002, -.68, .235, .012, .235, Material.POLISHED_BLACKSTONE));
+                nativeTable.add(block(x(i), .002, -.68, .235, .012, .235, Material.LIGHT_GRAY_CONCRETE));
                 nativeTable.add(block(x(i), .015, -.68, .21, .004, .21, Material.GRAY_CONCRETE));
             }
             nativeTable.forEach(entity -> audience.add(entity, false));
@@ -199,8 +201,8 @@ final class YachtTable implements AutoCloseable {
         int completed = 0;
         for (int i = 0; i < 12; i++) if (board.written(seat, i) >= 0) completed++;
         headerLabel.text(Language.component("table.yacht.round", "round", Math.min(12, completed + 1)).color(NamedTextColor.BLACK));
-        activeColumn.setTransformation(new Transformation(new Vector3f((float) (columnX(seat) - (.64 / room.capacity - .008) / 2), .007f, -.875f),
-                new Quaternionf(), new Vector3f((float) (.64 / room.capacity - .008), .004f, 1.65f), new Quaternionf()));
+        activeColumn.setTransformation(new Transformation(new Vector3f((float) (columnX(seat) - (COLUMNS_WIDTH / room.capacity - .008) / 2), .007f, (float)(SCORE_TOP + .004)),
+                new Quaternionf(), new Vector3f((float) (COLUMNS_WIDTH / room.capacity - .008), .004f, (float)(SCORE_HEIGHT - .008)), new Quaternionf()));
         for (int player = 0; player < board.playerCount(); player++) {
             int upper = 0;
             for (int category = 0; category < 12; category++) {

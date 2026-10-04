@@ -10,6 +10,27 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class YachtTableTest {
+    @Test void activeScoreColumnFitsTheGridForEverySeatAndCapacity() throws Exception {
+        for (int capacity : java.util.List.of(2, 4)) {
+            var f = new TableViewTest.Fixture("yacht", capacity);
+            var table = TableViewTest.field(f.view, "yachtTable");
+            var highlight = (org.bukkit.entity.BlockDisplay) TableViewTest.field(table, "activeColumn");
+            for (int seat = 0; seat < capacity; seat++) {
+                var transform = org.mockito.ArgumentCaptor.forClass(org.bukkit.util.Transformation.class);
+                verify(highlight, atLeastOnce()).setTransformation(transform.capture());
+                var pose = transform.getValue();
+                double left = -1.625 + seat * .70 / capacity;
+                assertEquals(left + .004, pose.getTranslation().x(), 1e-6);
+                assertEquals(.70 / capacity - .008, pose.getScale().x(), 1e-6);
+                assertEquals(-.85 + .004, pose.getTranslation().z(), 1e-6);
+                assertEquals(1.50 - .008, pose.getScale().z(), 1e-6);
+                f.move("roll");
+                f.move("score:choice");
+            }
+            f.view.close();
+        }
+    }
+
     @Test void scoreHeadersFollowLateJoinsAndSeatReorderingWithoutBoardChanges() throws Exception {
         var f = new TableViewTest.Fixture("yacht");
         f.room.seats.clear();

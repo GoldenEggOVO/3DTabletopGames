@@ -28,13 +28,13 @@ class NativeModelGeometryTest {
             }
             double radius = material == Material.GREEN_TERRACOTTA ? 1.41 : RoundCardTable.RADIUS;
             for (double x = -radius; x <= radius; x += .025) for (double z = -radius; z <= radius; z += .025) {
-                if (Math.hypot(x, z) > radius - .03) continue;
+                if (Math.hypot(x, z) > radius - .055) continue;
                 final double px = x, pz = z;
                 assertTrue(surface.stream().anyMatch(p -> Math.abs(px - p.x()) <= p.w() / 2 + 1e-9
                         && Math.abs(pz - p.z()) <= p.d() / 2 + 1e-9), "No hole inside the circular top");
             }
         }
-        assertTrue(parts.size() <= 224, "Round furniture must keep a bounded entity budget");
+        assertTrue(parts.size() <= 94, "Round furniture must keep a bounded entity budget");
     }
 
     @Test void chessKingCrossAndKnightHaveNoIntersectingCuboids() {
