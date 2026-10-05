@@ -61,9 +61,6 @@
   "table.draw": [
     "interface/close_001.ogg"
   ],
-  "table.turn": [
-    "interface/question_002.ogg"
-  ],
   "table.home": [
     "interface/confirmation_003.ogg"
   ]

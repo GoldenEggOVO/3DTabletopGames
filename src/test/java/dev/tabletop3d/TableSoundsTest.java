@@ -476,32 +476,23 @@ class TableSoundsTest {
     }
 
     @Test
-    void turnPromptOnlyReachesTheNearbyEligibleHuman() {
-        var server = MockBukkit.getMock();
-        var world = server.addSimpleWorld("sound-table");
-        var player = server.addPlayer();
-        player.teleport(new Location(world, 0, 80, 0));
-        var plugin = mock(Tabletop3D.class);
-        when(plugin.getConfig()).thenReturn(new YamlConfiguration());
-        when(plugin.allowed(player)).thenReturn(true);
-        var room = new Room(UUID.randomUUID(), "gomoku", 2, 0, 0);
-        room.join(player.getUniqueId(), "Player");
-        room.fillBots();
-        room.board = GameFactory.create("gomoku", 2, 0);
-        room.phase = Room.Phase.PLAYING;
-        TableSounds.turn(plugin, room, player.getLocation());
-        assertEquals(1, player.getHeardSounds().size());
-        TableSounds.turn(plugin, room, new Location(world, 20, 80, 0));
-        assertEquals(1, player.getHeardSounds().size());
-        TableSounds.turn(plugin, room, new Location(server.addSimpleWorld("elsewhere"), 0, 80, 0));
-        assertEquals(1, player.getHeardSounds().size());
-        when(plugin.allowed(player)).thenReturn(false);
-        TableSounds.turn(plugin, room, player.getLocation());
-        assertEquals(1, player.getHeardSounds().size());
-        when(plugin.allowed(player)).thenReturn(true);
-        room.board.apply(0, "place:0,0");
-        TableSounds.turn(plugin, room, player.getLocation());
-        assertEquals(1, player.getHeardSounds().size());
+    void startingAndChangingTurnsDoNotPlayPersonalPrompts() throws Exception {
+        var f = application("gomoku");
+        when(f.player.getWorld()).thenReturn(f.world);
+        when(f.player.getLocation()).thenReturn(f.view.origin.clone());
+        when(f.plugin.allowed(f.player)).thenReturn(true);
+        try (var bukkit = mockStatic(Bukkit.class, CALLS_REAL_METHODS)) {
+            bukkit.when(() -> Bukkit.getPlayer(f.player.getUniqueId())).thenReturn(f.player);
+            f.plugin.start(f.room);
+            f.plugin.apply(f.room, 0, new JsonPrimitive("place:0,0"), null);
+            f.plugin.apply(f.room, 1, new JsonPrimitive("place:1,0"), null);
+            f.view.tick();
+            verify(f.player, never()).playSound(any(Location.class), any(Sound.class),
+                    any(SoundCategory.class), anyFloat(), anyFloat());
+            verify(f.player, never()).playSound(any(Location.class), anyString(),
+                    any(SoundCategory.class), anyFloat(), anyFloat());
+        }
+        f.view.close();
     }
 
     @Test

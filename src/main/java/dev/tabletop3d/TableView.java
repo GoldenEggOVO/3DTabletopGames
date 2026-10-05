@@ -52,7 +52,6 @@ final class TableView implements AutoCloseable {
     private TitleState titleState;
     private boolean wasRolling;
     private String lastDiceKey;
-    private boolean pendingTurnSound;
 
     private record TitleState(
             dev.tabletop3d.rules.BoardGame board,
@@ -736,7 +735,6 @@ final class TableView implements AutoCloseable {
             yachtTable.sync(); renderedBoard = room.board; revision = room.revision; updateTitle(); return;
         }
         if (boardAudience != null) syncBoardFurniture();
-        if (renderedBoard != room.board) pendingTurnSound = false;
         if (playingTable != null) {
             playingTable.sync(); renderedBoard=room.board; revision=room.revision; updateTitle(); return;
         }
@@ -1012,15 +1010,6 @@ final class TableView implements AutoCloseable {
             syncHandFurniture();
         }
         updateTitle();
-        if (pendingTurnSound && !rolling()) {
-            pendingTurnSound = false;
-            TableSounds.turn(plugin, room, origin);
-        }
-    }
-
-    void turnSound() {
-        if (rolling()) pendingTurnSound = true;
-        else TableSounds.turn(plugin, room, origin);
     }
 
     static Set<Integer> pipIndices(int value) {
@@ -1468,7 +1457,6 @@ final class TableView implements AutoCloseable {
 
     @Override
     public void close() {
-        pendingTurnSound = false;
         if (handTable != null) handTable.close();
         if (playingTable != null) playingTable.close();
         if (diceTray != null) diceTray.close();

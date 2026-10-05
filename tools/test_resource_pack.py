@@ -148,7 +148,7 @@ class ResourcePackTest(unittest.TestCase):
         for event in ("board.wood", "board.stone", "board.drop", "board.flip", "board.capture",
                       "dice.roll", "dice.single", "dice.hold", "cards.draw", "chips.bet",
                       "table.select", "table.pass", "table.confirm", "table.start", "table.win",
-                      "table.draw", "table.turn", "table.home"):
+                      "table.draw", "table.home"):
             self.assertIn(event, sounds)
         self.assertGreaterEqual(len(sounds["dice.roll"]["sounds"]), 3)
         self.assertGreaterEqual(len(sounds["chips.bet"]["sounds"]), 3)
@@ -157,12 +157,17 @@ class ResourcePackTest(unittest.TestCase):
 
     def test_sounds_have_real_ogg_payloads(self):
         sounds = json.loads(self.archive.read("assets/tabletop3d/sounds.json"))
-        self.assertEqual(28, len(sounds))
+        self.assertEqual(27, len(sounds))
         for event in sounds.values():
             name = event["sounds"][0]["name"]
             path = "assets/" + name.replace(":", "/sounds/") + ".ogg"
             self.assertIn(path, self.names)
             self.assertTrue(self.archive.read(path).startswith(b"OggS"))
+
+    def test_retired_turn_prompt_has_no_event_or_sample(self):
+        sounds = json.loads(self.archive.read("assets/tabletop3d/sounds.json"))
+        self.assertNotIn("table.turn", sounds)
+        self.assertFalse(any("/sounds/table/turn/" in name for name in self.names))
 
     def test_standard_playing_cards_have_complete_faces_and_opaque_backs(self):
         ranks = ["ace"] + [str(n) for n in range(2, 11)] + ["jack", "queen", "king"]

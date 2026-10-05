@@ -331,11 +331,31 @@ class PlayingCardTableTest {
                 .filter(entry -> entry.getKey().startsWith("packed:community:"))
                 .map(entry -> body(entry.getValue())).toList();
         assertEquals(5, community.size());
-        for (int i = 1; i < community.size(); i++) {
-            assertEquals(.15, community.get(i).getX() - community.get(i - 1).getX(), 1e-6);
-            assertEquals(.003025, community.get(i).getY() - community.get(i - 1).getY(), 1e-6);
-        }
         f.view.close();
+    }
+
+    @Test
+    void pokerCommunityCardsOccupyIndividualClothFramesOnEveryStreet() {
+        for (boolean packed : List.of(false, true)) {
+            var f = new TableViewTest.Fixture("texas-holdem", 2);
+            owner(f, packed);
+            for (int count : List.of(3, 4, 5)) {
+                for (int moves = 0; f.room.board.cells().size() < count && moves < 20; moves++) {
+                    var actions = f.room.board.legalActions(f.room.turn());
+                    f.move(actions.contains("check") ? "check" : "call");
+                }
+                assertEquals(count, f.room.board.cells().size());
+                var cards = (Map<String, Object>) get(table(f), "publicCards");
+                for (int index = 0; index < count; index++) {
+                    Location card = body(cards.get((packed ? "packed:" : "native:") + "community:" + index));
+                    assertEquals(f.view.origin.getX() + (154 + 51 * index - 256) * 3.0 / 512,
+                            card.getX(), 1e-6, "One card must occupy each of the five cloth frames");
+                    assertEquals(f.view.origin.getZ() + 3 * 3.0 * .76 / 512, card.getZ(), 1e-6);
+                    assertEquals(f.view.origin.getY() + .023, card.getY(), 1e-6);
+                }
+            }
+            f.view.close();
+        }
     }
 
     @Test

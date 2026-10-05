@@ -37,7 +37,6 @@ final class TableSounds {
     static final Cue START = new Cue(Sound.BLOCK_NOTE_BLOCK_CHIME, .3f, 1.5f, "table.start");
     static final Cue WIN = new Cue(Sound.ENTITY_PLAYER_LEVELUP, .3f, 1.3f, "table.win");
     static final Cue DRAW = new Cue(Sound.BLOCK_NOTE_BLOCK_CHIME, .25f, .8f, "table.draw");
-    static final Cue TURN = new Cue(Sound.BLOCK_NOTE_BLOCK_PLING, .15f, 1.2f, "table.turn");
     static final Cue CARD = new Cue(Sound.ITEM_BOOK_PAGE_TURN, .25f, 1.4f, "cards.play");
     static final Cue CARD_DRAW = new Cue(Sound.ITEM_CROSSBOW_LOADING_MIDDLE, .3f, 1.5f, "cards.draw");
     static final Cue CHIPS = new Cue(Sound.BLOCK_CHAIN_PLACE, .18f, 1.2f, "chips.bet");
@@ -286,18 +285,4 @@ final class TableSounds {
             personal(plugin, player, at, COUNTDOWN, room.kind);
     }
 
-    static void turn(Tabletop3D plugin, Room room, Location at) {
-        if (room.phase != Room.Phase.PLAYING
-                || room.board.finished()
-                || room.turn() < 0
-                || room.turn() >= room.seats.size()) return;
-        Room.Seat seat = room.seats.get(room.turn());
-        if (seat.bot()) return;
-        Player player = Bukkit.getPlayer(seat.id());
-        if (player != null
-                && plugin.allowed(player)
-                && player.getWorld().equals(at.getWorld())
-                && player.getLocation().distanceSquared(at) <= 64)
-            personal(plugin, player, at, TURN, room.kind);
-    }
 }

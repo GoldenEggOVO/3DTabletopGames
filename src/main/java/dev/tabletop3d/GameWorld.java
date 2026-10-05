@@ -202,10 +202,6 @@ final class GameWorld implements Listener, AutoCloseable {
         return view != null && view.rolling();
     }
 
-    void turnSound(Room room) {
-        TableView view = views.get(room.id);
-        if (view != null) view.turnSound();
-    }
 
     MahjongAssist mahjongAssistance(Room room, int seat) {
         TableView view = views.get(room.id);

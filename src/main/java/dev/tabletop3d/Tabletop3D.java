@@ -531,7 +531,6 @@ public final class Tabletop3D extends JavaPlugin
             announce(r, Language.component("chat.start"));
             if (!r.restoring && r.phase == Room.Phase.PLAYING) {
                 arena.sound(r, TableSounds.START);
-                arena.turnSound(r);
             }
         } catch (RuntimeException ex) {
             r.busy = false;
@@ -639,7 +638,6 @@ public final class Tabletop3D extends JavaPlugin
                                     r.kind, seat, action.getAsString(), before, r.board.cells()));
             }
             if (r.board.finished()) finish(r, r.board.outcome());
-            else if (!r.restoring && r.turn() != previousTurn) arena.turnSound(r);
             save();
             if (source != null && source.isOnline()) menus.room(source, r);
         } catch (IllegalArgumentException ex) {

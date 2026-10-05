@@ -19,6 +19,9 @@ import java.util.*;
 final class PlayingCardTable implements AutoCloseable {
     private static final double WIDTH = .168, HEIGHT = .25;
     private static final double CARD_SPACING = .15, CARD_LIFT = .085;
+    // Five frames on the 512-pixel cloth span a three-block table, compressed in Z.
+    private static final double COMMUNITY_CARD_SPACING = 51 * 3.0 / 512;
+    private static final double COMMUNITY_CARD_Z = 3 * 3.0 * .76 / 512;
     private final Tabletop3D plugin;
     private final Room room;
     private final Location origin;
@@ -365,10 +368,10 @@ final class PlayingCardTable implements AutoCloseable {
                                 card.id(),
                                 card.piece(),
                                 new Pose(
-                                        room.kind.equals("texas-holdem") ? (card.x() - 2) * CARD_SPACING : 0,
+                                        room.kind.equals("texas-holdem") ? (card.x() - 2) * COMMUNITY_CARD_SPACING : 0,
+                                        room.kind.equals("texas-holdem") ? COMMUNITY_CARD_Z : 0,
                                         0,
-                                        0,
-                                        .023 + card.x() * CardLayout.DEPTH_STEP),
+                                        room.kind.equals("texas-holdem") ? .023 : .023 + card.x() * CardLayout.DEPTH_STEP),
                                 false,
                                 -1);
                 }
