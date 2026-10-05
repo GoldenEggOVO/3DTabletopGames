@@ -40,6 +40,16 @@ CraftEngine is the optional resource-model bridge. Vanilla rendering and native 
 
 The bundled chess rules no longer maintain unused Polyglot opening-book hashes, board event observers or deprecated FEN aliases. Position history and internal move backups remain necessary for repetition detection and legal-move analysis.
 
+## Reading the rendering and input code
+
+Start with `GameWorld.worldClick`: it validates the player and table, handles the menu gesture and then dispatches to `pickCell`. Yacht controls, Mahjong controls and private hand cards have separate handlers; board source/destination selection remains in the shared path. Keep this dispatch order when changing input behavior.
+
+`TableView.sync` coordinates revision checks, reusable tokens, token moves/creation and the final title update. `reuseTokens` retains eligible existing pieces; `moveOrCreateTokens` handles the remaining pieces. Furniture construction is separated into the table frame, Connect Four rack and board map surface. These helpers preserve entity creation order and the existing animation cadence.
+
+`BoardBots.choose` dispatches to named per-game policies without changing their random choices. `TableArt` draws static board pixels; `HandModels.glyphStrokes` contains Mahjong artwork coordinates, separate from stroke construction. `TableModels` builds piece meshes. Geometry values remain in those drawing methods so the artwork can be read and adjusted without tracing a new configuration layer.
+
+Use descriptive player, material, graphics and model-part names, four-space indentation and explicit control-flow blocks. Coordinates such as `x`, `y` and `z` retain their conventional names. Player labels, action IDs, map-index keys and saved state are independent of these private implementation names.
+
 ## Input validation and hover state
 
 Room callbacks recheck live registry identity before backend mutations. Piece-source menus retain their rendered revision; stale selections rebuild from current legal actions. A leave confirmation is tied to the room it displayed. This does not change persisted room identity or schema.

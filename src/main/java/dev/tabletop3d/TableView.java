@@ -1,8 +1,7 @@
 package dev.tabletop3d;
 
-import dev.tabletop3d.ui.GameSymbols;
-
 import dev.tabletop3d.rules.Cell;
+import dev.tabletop3d.ui.GameSymbols;
 import dev.tabletop3d.ui.LabelLayout;
 
 import net.kyori.adventure.text.Component;
@@ -108,41 +107,50 @@ final class TableView implements AutoCloseable {
         }
 
         void build() {
-            Cell c = token.cell;
+            Cell cell = token.cell;
             float scale = (float) geometry.spacing;
             if (boardAudience.needed(true) && PackedBoardModels.supported(room.kind)) {
-                ItemDisplay item = packedItem(from,
-                        PackedBoardModels.piece(room.kind, c, room.board.publicInfo()),
-                        room.kind.equals("connectfour") ? 1 : scale);
+                ItemDisplay item =
+                        packedItem(
+                                from,
+                                PackedBoardModels.piece(room.kind, cell, room.board.publicInfo()),
+                                room.kind.equals("connectfour") ? 1 : scale);
                 parts.add(item);
-                if (room.kind.equals("reversi")) flipParts.put(item,new Matrix4f().scale(scale));
-                if ((room.kind.equals("chess") && c.piece().equals(GameSymbols.HORSE)) || room.kind.equals("xiangqi"))
-                    item.setRotation(c.owner()==0 ? 180 : 0, 0);
+                if (room.kind.equals("reversi")) {
+                    flipParts.put(item, new Matrix4f().scale(scale));
+                }
+                if ((room.kind.equals("chess") && cell.piece().equals(GameSymbols.HORSE))
+                        || room.kind.equals("xiangqi")) {
+                    item.setRotation(cell.owner() == 0 ? 180 : 0, 0);
+                }
             }
             if (room.kind.equals("connectfour")) {
-                if (boardAudience.needed(false)) for (var part : TableModels.connectFour(c.owner()))
-                    parts.add(
-                            block(
-                                    from,
-                                    part.material(),
-                                    part.x(),
-                                    part.y(),
-                                    part.z(),
-                                    part.w(),
-                                    part.h(),
-                                    part.d(),
-                                    null));
+                if (boardAudience.needed(false)) {
+                    for (var part : TableModels.connectFour(cell.owner())) {
+                        parts.add(
+                                block(
+                                        from,
+                                        part.material(),
+                                        part.x(),
+                                        part.y(),
+                                        part.z(),
+                                        part.w(),
+                                        part.h(),
+                                        part.d(),
+                                        null));
+                    }
+                }
                 height = .24;
                 radius = .12;
                 frame = 12;
                 return;
             }
             boolean reversi = room.kind.equals("reversi");
-            flipTo = c.owner() == 0 ? 0 : (float) Math.PI;
+            flipTo = cell.owner() == 0 ? 0 : (float) Math.PI;
             for (TableModels.Part part :
                     reversi
                             ? TableModels.reversi()
-                            : TableModels.piece(room.kind, c, room.board.publicInfo())) {
+                            : TableModels.piece(room.kind, cell, room.board.publicInfo())) {
                 height = Math.max(height, (part.y() + part.h()) * scale);
                 radius =
                         Math.max(
@@ -151,7 +159,9 @@ final class TableView implements AutoCloseable {
                                                 Math.abs(part.x()) + part.w() / 2,
                                                 Math.abs(part.z()) + part.d() / 2)
                                         * scale);
-                if (!boardAudience.needed(false)) continue;
+                if (!boardAudience.needed(false)) {
+                    continue;
+                }
                 BlockDisplay d =
                         block(
                                 from,
@@ -176,32 +186,34 @@ final class TableView implements AutoCloseable {
                                             (float) (part.h() * scale),
                                             (float) (part.d() * scale)));
                 }
-                if (room.kind.equals("chess") && c.piece().equals(GameSymbols.HORSE))
-                    d.setRotation(c.owner() == 0 ? 180 : 0, 0);
+                if (room.kind.equals("chess") && cell.piece().equals(GameSymbols.HORSE)) {
+                    d.setRotation(cell.owner() == 0 ? 180 : 0, 0);
+                }
                 if (Set.of("go", "go9", "go13").contains(room.kind)
-                        && part.material() == Material.RED_CONCRETE) deadMarks.add(d);
-                if (room.kind.equals("ludo"))
+                        && part.material() == Material.RED_CONCRETE) {
+                    deadMarks.add(d);
+                }
+                if (room.kind.equals("ludo")) {
                     d.setRotation(
-                            GameWorld.actualColor(room.board.publicInfo(), c.owner()) * 90, 0);
+                            GameWorld.actualColor(room.board.publicInfo(), cell.owner()) * 90, 0);
+                }
                 parts.add(d);
             }
-            if (reversi) poseFlip(flipTo);
+            if (reversi) {
+                poseFlip(flipTo);
+            }
             if (boardAudience.needed(false) && room.kind.equals("xiangqi")) {
-                String glyph = c.piece();
+                String glyph = cell.piece();
                 TextDisplay label =
                         text(
-                                from.clone()
-                                        .add(
-                                                0,
-                                                geometry.spacing * .235,
-                                                0),
+                                from.clone().add(0, geometry.spacing * .235, 0),
                                 Component.text(glyph),
                                 geometry.spacing * 1.50,
                                 true,
-                                c.owner() == 0
-                                        ? NamedTextColor.DARK_RED
-                                        : NamedTextColor.BLACK);
-                if (room.kind.equals("xiangqi") && c.owner() == 0) label.setRotation(180, -90);
+                                cell.owner() == 0 ? NamedTextColor.DARK_RED : NamedTextColor.BLACK);
+                if (room.kind.equals("xiangqi") && cell.owner() == 0) {
+                    label.setRotation(180, -90);
+                }
                 parts.add(label);
             }
         }
@@ -211,20 +223,34 @@ final class TableView implements AutoCloseable {
             float savedFlipFrom = flipFrom, savedFlipTo = flipTo;
             int savedFlipFrame = flipFrame;
             parts.forEach(boardAudience::remove);
-            parts.clear(); deadMarks.clear(); flipParts.clear();
+            parts.clear();
+            deadMarks.clear();
+            flipParts.clear();
             height = radius = 0;
             build();
-            frame = savedFrame; flipFrom = savedFlipFrom; flipTo = savedFlipTo; flipFrame = savedFlipFrame;
+            frame = savedFrame;
+            flipFrom = savedFlipFrom;
+            flipTo = savedFlipTo;
+            flipFrame = savedFlipFrame;
             positionParts(position());
-            if (room.kind.equals("reversi")) poseFlip(flipAngle());
+            if (room.kind.equals("reversi")) {
+                poseFlip(flipAngle());
+            }
         }
 
         void mark(Token next) {
             boolean dead = next.cell.piece().contains("×");
-            if (token.cell.piece().contains("×") != dead)
-                for (Entity part : parts) if (part instanceof ItemDisplay item)
-                    item.setItemStack(plugin.pack.item(PackedBoardModels.piece(room.kind,next.cell,room.board.publicInfo())));
-            if (dead && deadMarks.isEmpty() && boardAudience.needed(false))
+            if (token.cell.piece().contains("×") != dead) {
+                for (Entity part : parts) {
+                    if (part instanceof ItemDisplay item) {
+                        item.setItemStack(
+                                plugin.pack.item(
+                                        PackedBoardModels.piece(
+                                                room.kind, next.cell, room.board.publicInfo())));
+                    }
+                }
+            }
+            if (dead && deadMarks.isEmpty() && boardAudience.needed(false)) {
                 for (var part : TableModels.deadStoneMarks()) {
                     double scale = geometry.spacing;
                     BlockDisplay display =
@@ -241,7 +267,7 @@ final class TableView implements AutoCloseable {
                     deadMarks.add(display);
                     parts.add(display);
                 }
-            else if (!dead && !deadMarks.isEmpty()) {
+            } else if (!dead && !deadMarks.isEmpty()) {
                 deadMarks.forEach(boardAudience::remove);
                 parts.removeAll(deadMarks);
                 deadMarks.clear();
@@ -255,8 +281,12 @@ final class TableView implements AutoCloseable {
             to = at;
             token = next;
             frame = animate ? 0 : duration();
-            if (animate) animating.add(this);
-            if (!animate) positionParts(at);
+            if (animate) {
+                animating.add(this);
+            }
+            if (!animate) {
+                positionParts(at);
+            }
         }
 
         int duration() {
@@ -322,8 +352,9 @@ final class TableView implements AutoCloseable {
         void positionParts(Location at) {
             for (Entity part : parts) {
                 Location dest = at.clone();
-                if (part instanceof TextDisplay)
+                if (part instanceof TextDisplay) {
                     dest.add(0, geometry.spacing * (room.kind.equals("xiangqi") ? .235 : .39), 0);
+                }
                 dest.setYaw(part.getLocation().getYaw());
                 dest.setPitch(part.getLocation().getPitch());
                 part.teleport(dest);
@@ -367,7 +398,7 @@ final class TableView implements AutoCloseable {
         origin = center.clone().add(0, TableGeometry.SURFACE, 0);
         if (room.kind.equals("yacht")) {
             yachtTable = new YachtTable(plugin, room, origin, tag);
-            title = text(origin.clone().add(0,1.8,0), "", .35, false, NamedTextColor.GOLD);
+            title = text(origin.clone().add(0, 1.8, 0), "", .35, false, NamedTextColor.GOLD);
             title.setBillboard(Display.Billboard.CENTER);
             furniture.add(title);
             yachtTable.audience.common(title);
@@ -376,7 +407,7 @@ final class TableView implements AutoCloseable {
         }
         if (room.board instanceof dev.tabletop3d.rules.SelectedHandGame) {
             playingTable = new PlayingCardTable(plugin, room, origin, tag);
-            title = text(origin.clone().add(0,1.8,0), "", .4, false, NamedTextColor.GOLD);
+            title = text(origin.clone().add(0, 1.8, 0), "", .4, false, NamedTextColor.GOLD);
             title.setBillboard(Display.Billboard.CENTER);
             furniture.add(title);
             playingTable.audience.common(title);
@@ -398,38 +429,63 @@ final class TableView implements AutoCloseable {
         }
         boardAudience = new TableAudience(plugin, origin, PackedBoardModels.supported(room.kind));
         if (!room.kind.equals("connectfour")) {
-            Interaction hit = origin.getWorld().spawn(origin.clone().add(0,.012,0), Interaction.class, e -> {
-                tag(e,"@board");
-                e.setInteractionWidth(2.25f);
-                e.setInteractionHeight(.025f);
-                e.setResponsive(true);
-            });
+            Interaction hit =
+                    origin.getWorld()
+                            .spawn(
+                                    origin.clone().add(0, .012, 0),
+                                    Interaction.class,
+                                    e -> {
+                                        tag(e, "@board");
+                                        e.setInteractionWidth(2.25f);
+                                        e.setInteractionHeight(.025f);
+                                        e.setResponsive(true);
+                                    });
             furniture.add(hit);
             boardAudience.common(hit);
         }
-        title = text(origin.clone().add(0, room.kind.equals("connectfour") ? 2.05 : 1.65, 0),
-                "", room.kind.equals("connectfour") ? .38 : .48, false, NamedTextColor.GOLD);
+        title =
+                text(
+                        origin.clone().add(0, room.kind.equals("connectfour") ? 2.05 : 1.65, 0),
+                        "",
+                        room.kind.equals("connectfour") ? .38 : .48,
+                        false,
+                        NamedTextColor.GOLD);
         title.setBillboard(Display.Billboard.CENTER);
         title.setLineWidth(500);
         furniture.add(title);
         boardAudience.common(title);
         if (room.kind.equals("xiangqi")) {
-            TextDisplay river = text(origin.clone().add(0,.018,0), Component.text(GameSymbols.XIANGQI_RIVER),
-                    .26,true,NamedTextColor.DARK_GRAY);
+            TextDisplay river =
+                    text(
+                            origin.clone().add(0, .018, 0),
+                            Component.text(GameSymbols.XIANGQI_RIVER),
+                            .26,
+                            true,
+                            NamedTextColor.DARK_GRAY);
             furniture.add(river);
             boardAudience.common(river);
         }
-        if (room.kind.equals("ludo"))
-            diceTray = new DiceTray(plugin,room,center,tag,!room.sideTray,boardAudience);
+        if (room.kind.equals("ludo")) {
+            diceTray = new DiceTray(plugin, room, center, tag, !room.sideTray, boardAudience);
+        }
         syncBoardFurniture();
         sync();
     }
 
     private void buildNativeBoardFurniture() {
+        buildBoardFrame();
+        if (room.kind.equals("connectfour")) {
+            buildConnectFourRack();
+            return;
+        }
+        buildBoardMapSurface();
+    }
+
+    private void buildBoardFrame() {
         double width = 2.25, leg = width / 2 - .135;
         furniture.add(block(origin, Material.DARK_OAK_PLANKS, 0, -.19, 0, width, .14, width, null));
-        for (double x : new double[] {-leg, leg})
-            for (double z : new double[] {-leg, leg})
+        for (double x : new double[] {-leg, leg}) {
+            for (double z : new double[] {-leg, leg}) {
                 furniture.add(
                         block(
                                 origin,
@@ -441,55 +497,53 @@ final class TableView implements AutoCloseable {
                                 TableGeometry.SURFACE - .13,
                                 .15,
                                 null));
-        if (room.kind.equals("connectfour")) {
-            for (int x = 0; x <= 7; x++)
-                furniture.add(
-                        block(
-                                origin,
-                                Material.BLUE_CONCRETE,
-                                (x - 3.5) * .28,
-                                .02,
-                                0,
-                                .035,
-                                1.72,
-                                .12,
-                                null));
-            for (int y = 0; y <= 6; y++)
-                furniture.add(
-                        block(
-                                origin,
-                                Material.BLUE_CONCRETE,
-                                0,
-                                .02 + y * .28,
-                                0,
-                                2,
-                                .035,
-                                .12,
-                                null));
-            for (double side : new double[] {-1.075, 1.075}) {
-                furniture.add(
-                        block(origin, Material.BLUE_CONCRETE, side, -.045, 0, .10, 1.835, .12, null));
-                furniture.add(
-                        block(
-                                origin,
-                                Material.POLISHED_DEEPSLATE,
-                                side,
-                                -.045,
-                                0,
-                                .18,
-                                .04,
-                                .28,
-                                null));
             }
-            furniture.add(block(origin, Material.BLUE_CONCRETE, 0, 1.74, 0, 2.25, .09, .20, null));
-            return;
         }
+    }
+
+    private void buildConnectFourRack() {
+        for (int x = 0; x <= 7; x++) {
+            furniture.add(
+                    block(
+                            origin,
+                            Material.BLUE_CONCRETE,
+                            (x - 3.5) * .28,
+                            .02,
+                            0,
+                            .035,
+                            1.72,
+                            .12,
+                            null));
+        }
+        for (int y = 0; y <= 6; y++) {
+            furniture.add(
+                    block(origin, Material.BLUE_CONCRETE, 0, .02 + y * .28, 0, 2, .035, .12, null));
+        }
+        for (double side : new double[] {-1.075, 1.075}) {
+            furniture.add(
+                    block(origin, Material.BLUE_CONCRETE, side, -.045, 0, .10, 1.835, .12, null));
+            furniture.add(
+                    block(
+                            origin,
+                            Material.POLISHED_DEEPSLATE,
+                            side,
+                            -.045,
+                            0,
+                            .18,
+                            .04,
+                            .28,
+                            null));
+        }
+        furniture.add(block(origin, Material.BLUE_CONCRETE, 0, 1.74, 0, 2.25, .09, .20, null));
+    }
+
+    private void buildBoardMapSurface() {
         List<org.bukkit.inventory.ItemStack> images = maps.get(origin.getWorld(), geometry);
-        for (int z = 0; z < 2; z++)
+        for (int z = 0; z < 2; z++) {
             for (int x = 0; x < 2; x++) {
                 Location at = origin.clone().add(x - .5, 0, z - .5);
                 final int tile = z * 2 + x;
-                ItemFrame f =
+                ItemFrame mapFrame =
                         origin.getWorld()
                                 .spawn(
                                         at,
@@ -506,10 +560,11 @@ final class TableView implements AutoCloseable {
                                         });
                 // Hanging-entity creation snaps to a block face. Reposition once before any players
                 // receive the next frame.
-                f.teleport(at);
-                f.setFacingDirection(BlockFace.UP, true);
-                furniture.add(f);
+                mapFrame.teleport(at);
+                mapFrame.setFacingDirection(BlockFace.UP, true);
+                furniture.add(mapFrame);
             }
+        }
     }
 
     private void syncHandFurniture() {
@@ -517,7 +572,7 @@ final class TableView implements AutoCloseable {
         if (audience.needed(false) && handFurniture.isEmpty()) {
             buildingHandFurniture = true;
             try {
-                if (room.kind.equals("color-eight"))
+                if (room.kind.equals("color-eight")) {
                     for (var part : RoundCardTable.parts()) {
                         Location at = origin.clone().add(part.x(), part.y(), part.z());
                         at.setYaw(part.yaw());
@@ -533,7 +588,7 @@ final class TableView implements AutoCloseable {
                                         part.d(),
                                         null));
                     }
-                else {
+                } else {
                     double width = 3, leg = width / 2 - .135, edge = width / 2 - .065;
                     handFurniture.add(
                             block(
@@ -546,8 +601,8 @@ final class TableView implements AutoCloseable {
                                     .14,
                                     width,
                                     null));
-                    for (double x : new double[] {-leg, leg})
-                        for (double z : new double[] {-leg, leg})
+                    for (double x : new double[] {-leg, leg}) {
+                        for (double z : new double[] {-leg, leg}) {
                             handFurniture.add(
                                     block(
                                             origin,
@@ -559,6 +614,8 @@ final class TableView implements AutoCloseable {
                                             TableGeometry.SURFACE - .13,
                                             .15,
                                             null));
+                        }
+                    }
                     for (double v : new double[] {-edge, edge}) {
                         handFurniture.add(
                                 block(
@@ -602,7 +659,7 @@ final class TableView implements AutoCloseable {
             handFurniture.forEach(audience::remove);
             handFurniture.clear();
         }
-        if (audience.needed(true) && packedTable == null)
+        if (audience.needed(true) && packedTable == null) {
             packedTable =
                     PackedDisplay.spawn(
                             plugin,
@@ -613,7 +670,7 @@ final class TableView implements AutoCloseable {
                             room.kind.equals("mahjong") ? "mahjong_table" : "card_table",
                             new Vector3f(1),
                             new Quaternionf());
-        else if (!audience.needed(true) && packedTable != null) {
+        } else if (!audience.needed(true) && packedTable != null) {
             audience.remove(packedTable);
             packedTable = null;
         }
@@ -632,14 +689,19 @@ final class TableView implements AutoCloseable {
         d.setViewRange(.35f);
         d.setTeleportDuration(2);
         d.setInterpolationDuration(2);
-        if (viewer != null) d.setVisibleByDefault(false);
-        else if (boardAudience != null) boardAudience.add(d, false);
-        if (buildingHandFurniture) handTable.audience.add(d, false);
+        if (viewer != null) {
+            d.setVisibleByDefault(false);
+        } else if (boardAudience != null) {
+            boardAudience.add(d, false);
+        }
+        if (buildingHandFurniture) {
+            handTable.audience.add(d, false);
+        }
     }
 
     private BlockDisplay block(
             Location at,
-            Material mat,
+            Material material,
             double x,
             double y,
             double z,
@@ -654,7 +716,7 @@ final class TableView implements AutoCloseable {
                                 BlockDisplay.class,
                                 d -> {
                                     display(d, viewer);
-                                    d.setBlock(mat.createBlockData());
+                                    d.setBlock(material.createBlockData());
                                     d.setTransformation(
                                             new Transformation(
                                                     new Vector3f(
@@ -666,7 +728,9 @@ final class TableView implements AutoCloseable {
                                                             (float) w, (float) h, (float) depth),
                                                     new Quaternionf()));
                                 });
-        if (viewer != null) viewer.showEntity(plugin, result);
+        if (viewer != null) {
+            viewer.showEntity(plugin, result);
+        }
         return result;
     }
 
@@ -684,7 +748,9 @@ final class TableView implements AutoCloseable {
                         d -> {
                             display(d, null);
                             d.setBillboard(Display.Billboard.FIXED);
-                            if (flat) d.setRotation(0, -90);
+                            if (flat) {
+                                d.setRotation(0, -90);
+                            }
                             d.text(value.colorIfAbsent(color));
                             d.setLineWidth(200);
                             d.setAlignment(TextDisplay.TextAlignment.CENTER);
@@ -703,27 +769,36 @@ final class TableView implements AutoCloseable {
 
     private List<Token> desired() {
         List<Token> list = new ArrayList<>();
-        for (Cell c : cells.values())
-            if (c.owner() >= 0) {
+        for (Cell cell : cells.values()) {
+            if (cell.owner() >= 0) {
                 if (room.kind.equals("ludo")) {
                     int stack = 0;
-                    for (char digit : c.piece().toCharArray())
-                        if (digit >= '1' && digit <= '4')
+                    for (char digit : cell.piece().toCharArray()) {
+                        if (digit >= '1' && digit <= '4') {
                             list.add(
                                     new Token(
-                                            c.owner() + ":" + digit,
-                                            c,
+                                            cell.owner() + ":" + digit,
+                                            cell,
                                             stack++ * (room.kind.equals("ludo") ? .82 : .19)));
-                } else list.add(new Token(c.id(), c, 0));
+                        }
+                    }
+                } else {
+                    list.add(new Token(cell.id(), cell, 0));
+                }
             }
+        }
         return list;
     }
 
-    private Location at(Token t) {
-        if (room.kind.equals("connectfour"))
-            return origin.clone().add((t.cell.x() - 3) * .28, .05 + t.cell.y() * .28, 0);
+    private Location at(Token token) {
+        if (room.kind.equals("connectfour")) {
+            return origin.clone().add((token.cell.x() - 3) * .28, .05 + token.cell.y() * .28, 0);
+        }
         return origin.clone()
-                .add(geometry.x(t.cell), .03 + t.stack * geometry.spacing, geometry.z(t.cell));
+                .add(
+                        geometry.x(token.cell),
+                        .03 + token.stack * geometry.spacing,
+                        geometry.z(token.cell));
     }
 
     private boolean same(Token a, Token b) {
@@ -732,11 +807,21 @@ final class TableView implements AutoCloseable {
 
     void sync() {
         if (yachtTable != null) {
-            yachtTable.sync(); renderedBoard = room.board; revision = room.revision; updateTitle(); return;
+            yachtTable.sync();
+            renderedBoard = room.board;
+            revision = room.revision;
+            updateTitle();
+            return;
         }
-        if (boardAudience != null) syncBoardFurniture();
+        if (boardAudience != null) {
+            syncBoardFurniture();
+        }
         if (playingTable != null) {
-            playingTable.sync(); renderedBoard=room.board; revision=room.revision; updateTitle(); return;
+            playingTable.sync();
+            renderedBoard = room.board;
+            revision = room.revision;
+            updateTitle();
+            return;
         }
         if (handTable != null) {
             handTable.sync();
@@ -759,91 +844,22 @@ final class TableView implements AutoCloseable {
             overlays.values().forEach(Overlay::remove);
             overlays.clear();
         }
-        Map<String, TokenView> old = new LinkedHashMap<>(tokens), next = new LinkedHashMap<>();
-        List<Token> pending = new ArrayList<>();
-        for (Token want : desired()) {
-            TokenView existing = old.get(want.id);
-            if (existing != null
-                    && existing.valid()
-                    && Set.of("go", "go9", "go13").contains(room.kind)
-                    && existing.token.cell.owner() == want.cell.owner()) {
-                old.remove(want.id);
-                existing.mark(want);
-                next.put(want.id, existing);
-                continue;
-            }
-            if (existing != null && existing.valid() && room.kind.equals("reversi")) {
-                old.remove(want.id);
-                existing.flip(want);
-                next.put(want.id, existing);
-                continue;
-            }
-            if (existing != null
-                    && existing.valid()
-                    && (room.kind.equals("ludo")
-                            || same(existing.token, want))) {
-                old.remove(want.id);
-                boolean moved =
-                        !existing.token.cell.id().equals(want.cell.id())
-                                || existing.token.stack != want.stack;
-                if (moved) existing.move(want, at(want), changed);
-                else existing.token = want;
-                next.put(want.id, existing);
-            } else pending.add(want);
-        }
+        Map<String, TokenView> remainingTokens = new LinkedHashMap<>(tokens),
+                updatedTokens = new LinkedHashMap<>();
+        List<Token> pending = reuseTokens(remainingTokens, updatedTokens, changed);
         String action = lastAction();
         String[] move = action.split(":");
-        for (Token want : pending) {
-            TokenView source = null;
-            String sourceId = null;
-            if (changed
-                    && move.length >= 3
-                    && move[0].equals("move")
-                    && move[2].equals(want.cell.id())) {
-                source = old.get(move[1]);
-                sourceId = move[1];
-                if (source != null && (!source.valid() || !same(source.token, want))) {
-                    source = null;
-                    sourceId = null;
-                }
-            }
-            if (source == null
-                    && changed
-                    && !Set.of("ludo", "reversi", "connectfour").contains(room.kind))
-                for (var e : old.entrySet())
-                    if (e.getValue().valid()
-                            && same(e.getValue().token, want)
-                            && !e.getValue().token.cell.id().equals(want.cell.id())) {
-                        source = e.getValue();
-                        sourceId = e.getKey();
-                        break;
-                    }
-            if (source != null) {
-                old.remove(sourceId);
-                source.move(want, at(want), true);
-                next.put(want.id, source);
-            } else {
-                Location pos = at(want);
-                Location start = pos.clone();
-                if (changed)
-                    start.setY(
-                            room.kind.equals("connectfour")
-                                    ? origin.getY() + 1.9
-                                    : pos.getY() + geometry.spacing * .8);
-                TokenView created = new TokenView(want, start);
-                if (changed) created.move(want, pos, true);
-                next.put(want.id, created);
-            }
-        }
-        old.values().forEach(TokenView::remove);
+        moveOrCreateTokens(pending, remainingTokens, updatedTokens, move, changed);
+        remainingTokens.values().forEach(TokenView::remove);
         tokens.clear();
-        tokens.putAll(next);
+        tokens.putAll(updatedTokens);
         if (changed) {
             lastMove.forEach(boardAudience::remove);
             lastMove.clear();
             lastDestination = move.length >= 3 ? move[2] : move.length == 2 ? move[1] : null;
-            if (lastDestination != null && geometry.byId.containsKey(lastDestination))
+            if (lastDestination != null && geometry.byId.containsKey(lastDestination)) {
                 ring(lastMove, lastDestination, Material.GOLD_BLOCK, null, .90);
+            }
         }
         if (diceTray != null) {
             int value =
@@ -851,8 +867,11 @@ final class TableView implements AutoCloseable {
                             1, Integer.parseInt(room.board.publicInfo().getOrDefault("dice", "1")));
             if (renderedBoard == room.board
                     && room.history.size() == renderedHistory + 1
-                    && action.equals("roll")) diceTray.roll(value, room.seed ^ room.history.size());
-            else if (renderedBoard != room.board) diceTray.settle(value);
+                    && action.equals("roll")) {
+                diceTray.roll(value, room.seed ^ room.history.size());
+            } else if (renderedBoard != room.board) {
+                diceTray.settle(value);
+            }
         }
         renderedHistory = room.history.size();
         renderedBoard = room.board;
@@ -860,49 +879,166 @@ final class TableView implements AutoCloseable {
         updateTitle();
     }
 
+    private List<Token> reuseTokens(
+            Map<String, TokenView> remainingTokens,
+            Map<String, TokenView> updatedTokens,
+            boolean changed) {
+        List<Token> pending = new ArrayList<>();
+        for (Token desiredToken : desired()) {
+            TokenView existing = remainingTokens.get(desiredToken.id);
+            if (existing != null
+                    && existing.valid()
+                    && Set.of("go", "go9", "go13").contains(room.kind)
+                    && existing.token.cell.owner() == desiredToken.cell.owner()) {
+                remainingTokens.remove(desiredToken.id);
+                existing.mark(desiredToken);
+                updatedTokens.put(desiredToken.id, existing);
+                continue;
+            }
+            if (existing != null && existing.valid() && room.kind.equals("reversi")) {
+                remainingTokens.remove(desiredToken.id);
+                existing.flip(desiredToken);
+                updatedTokens.put(desiredToken.id, existing);
+                continue;
+            }
+            if (existing != null
+                    && existing.valid()
+                    && (room.kind.equals("ludo") || same(existing.token, desiredToken))) {
+                remainingTokens.remove(desiredToken.id);
+                boolean moved =
+                        !existing.token.cell.id().equals(desiredToken.cell.id())
+                                || existing.token.stack != desiredToken.stack;
+                if (moved) {
+                    existing.move(desiredToken, at(desiredToken), changed);
+                } else {
+                    existing.token = desiredToken;
+                }
+                updatedTokens.put(desiredToken.id, existing);
+            } else {
+                pending.add(desiredToken);
+            }
+        }
+        return pending;
+    }
+
+    private void moveOrCreateTokens(
+            List<Token> pending,
+            Map<String, TokenView> remainingTokens,
+            Map<String, TokenView> updatedTokens,
+            String[] move,
+            boolean changed) {
+        for (Token desiredToken : pending) {
+            TokenView source = null;
+            String sourceId = null;
+            if (changed
+                    && move.length >= 3
+                    && move[0].equals("move")
+                    && move[2].equals(desiredToken.cell.id())) {
+                source = remainingTokens.get(move[1]);
+                sourceId = move[1];
+                if (source != null && (!source.valid() || !same(source.token, desiredToken))) {
+                    source = null;
+                    sourceId = null;
+                }
+            }
+            if (source == null
+                    && changed
+                    && !Set.of("ludo", "reversi", "connectfour").contains(room.kind)) {
+                for (var entry : remainingTokens.entrySet()) {
+                    if (entry.getValue().valid()
+                            && same(entry.getValue().token, desiredToken)
+                            && !entry.getValue().token.cell.id().equals(desiredToken.cell.id())) {
+                        source = entry.getValue();
+                        sourceId = entry.getKey();
+                        break;
+                    }
+                }
+            }
+            if (source != null) {
+                remainingTokens.remove(sourceId);
+                source.move(desiredToken, at(desiredToken), true);
+                updatedTokens.put(desiredToken.id, source);
+            } else {
+                Location destination = at(desiredToken);
+                Location animationStart = destination.clone();
+                if (changed) {
+                    animationStart.setY(
+                            room.kind.equals("connectfour")
+                                    ? origin.getY() + 1.9
+                                    : destination.getY() + geometry.spacing * .8);
+                }
+                TokenView created = new TokenView(desiredToken, animationStart);
+                if (changed) {
+                    created.move(desiredToken, destination, true);
+                }
+                updatedTokens.put(desiredToken.id, created);
+            }
+        }
+    }
+
     private void syncBoardFurniture() {
         boardAudience.refresh();
         if (boardAudience.needed(false) && nativeBoardFurniture.isEmpty()) {
             Set<Entity> before = new HashSet<>(furniture);
             buildNativeBoardFurniture();
-            for (Entity entity : furniture) if (!before.contains(entity)) {
-                if (entity instanceof TextDisplay || entity instanceof Interaction) boardAudience.common(entity);
-                else nativeBoardFurniture.add(entity);
+            for (Entity entity : furniture) {
+                if (!before.contains(entity)) {
+                    if (entity instanceof TextDisplay || entity instanceof Interaction) {
+                        boardAudience.common(entity);
+                    } else {
+                        nativeBoardFurniture.add(entity);
+                    }
+                }
             }
         } else if (!boardAudience.needed(false) && !nativeBoardFurniture.isEmpty()) {
             nativeBoardFurniture.forEach(boardAudience::remove);
             furniture.removeAll(nativeBoardFurniture);
             nativeBoardFurniture.clear();
         }
-        if (PackedBoardModels.supported(room.kind) && boardAudience.needed(true) && packedBoard == null) {
-            packedBoard = packedItem(origin, PackedBoardModels.table(room.kind), room.kind.equals("connectfour") ? 2 : 1);
+        if (PackedBoardModels.supported(room.kind)
+                && boardAudience.needed(true)
+                && packedBoard == null) {
+            packedBoard =
+                    packedItem(
+                            origin,
+                            PackedBoardModels.table(room.kind),
+                            room.kind.equals("connectfour") ? 2 : 1);
         } else if (!boardAudience.needed(true) && packedBoard != null) {
             boardAudience.remove(packedBoard);
             packedBoard = null;
         }
-        int neededLayers = (boardAudience.needed(false) ? 1 : 0) | (boardAudience.needed(true) ? 2 : 0);
+        int neededLayers =
+                (boardAudience.needed(false) ? 1 : 0) | (boardAudience.needed(true) ? 2 : 0);
         if (boardLayers != neededLayers) {
-            for (TokenView token : tokens.values()) token.rebuildLayers();
+            for (TokenView token : tokens.values()) {
+                token.rebuildLayers();
+            }
             boardLayers = neededLayers;
         }
     }
 
     private ItemDisplay packedItem(Location at, String model, float scale) {
-        return origin.getWorld().spawn(at, ItemDisplay.class, entity -> {
-            tag(entity, "@model");
-            entity.setBrightness(new Display.Brightness(15, 15));
-            entity.setViewRange(.35f);
-            entity.setTeleportDuration(2);
-            entity.setInterpolationDuration(2);
-            entity.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);
-            entity.setItemStack(plugin.pack.item(model));
-            entity.setTransformationMatrix(new Matrix4f().scale(scale));
-            boardAudience.add(entity, true);
-        });
+        return origin.getWorld()
+                .spawn(
+                        at,
+                        ItemDisplay.class,
+                        entity -> {
+                            tag(entity, "@model");
+                            entity.setBrightness(new Display.Brightness(15, 15));
+                            entity.setViewRange(.35f);
+                            entity.setTeleportDuration(2);
+                            entity.setInterpolationDuration(2);
+                            entity.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);
+                            entity.setItemStack(plugin.pack.item(model));
+                            entity.setTransformationMatrix(new Matrix4f().scale(scale));
+                            boardAudience.add(entity, true);
+                        });
     }
 
     private String lastAction() {
-        if (room.history.isEmpty()) return "";
+        if (room.history.isEmpty()) {
+            return "";
+        }
         var e = room.history.get(room.history.size() - 1).getAsJsonObject().get("action");
         return e != null && e.isJsonPrimitive() ? e.getAsString() : "";
     }
@@ -930,11 +1066,13 @@ final class TableView implements AutoCloseable {
                                     turn >= 0 && turn < room.seats.size()
                                             ? RoomText.player(room.seats.get(turn), turn + 1)
                                             : Language.component("room.player"));
-            if (room.phase == Room.Phase.LOBBY) status = Language.component("table.waiting");
-            else if (room.phase == Room.Phase.FINISHED && !room.result.isEmpty())
+            if (room.phase == Room.Phase.LOBBY) {
+                status = Language.component("table.waiting");
+            } else if (room.phase == Room.Phase.FINISHED && !room.result.isEmpty()) {
                 status = RoomText.outcome(room, room.result);
-            else if (room.phase == Room.Phase.PAUSED || room.phase == Room.Phase.ABORTED)
+            } else if (room.phase == Room.Phase.PAUSED || room.phase == Room.Phase.ABORTED) {
                 status = RoomText.phase(room);
+            }
             Component value =
                     Language.component(
                                     "table.title",
@@ -996,15 +1134,25 @@ final class TableView implements AutoCloseable {
     }
 
     void tick() {
-        if (yachtTable != null) yachtTable.tick();
-        if (boardAudience != null) syncBoardFurniture();
+        if (yachtTable != null) {
+            yachtTable.tick();
+        }
+        if (boardAudience != null) {
+            syncBoardFurniture();
+        }
         for (var iterator = animating.iterator(); iterator.hasNext(); ) {
             TokenView token = iterator.next();
             token.tick();
-            if (!token.moving()) iterator.remove();
+            if (!token.moving()) {
+                iterator.remove();
+            }
         }
-        if (diceTray != null) diceTray.tick();
-        if (playingTable != null) playingTable.sync();
+        if (diceTray != null) {
+            diceTray.tick();
+        }
+        if (playingTable != null) {
+            playingTable.sync();
+        }
         if (handTable != null) {
             handTable.tick();
             syncHandFurniture();
@@ -1042,7 +1190,9 @@ final class TableView implements AutoCloseable {
     }
 
     String handHit(Player player, Location eye, org.bukkit.util.Vector direction) {
-        return playingTable != null ? playingTable.handHit(player,eye,direction) : handTable == null ? null : handTable.hit(player, eye, direction);
+        return playingTable != null
+                ? playingTable.handHit(player, eye, direction)
+                : handTable == null ? null : handTable.hit(player, eye, direction);
     }
 
     boolean deckHit(Location eye, org.bukkit.util.Vector direction) {
@@ -1050,11 +1200,15 @@ final class TableView implements AutoCloseable {
     }
 
     String handCallHit(Player player, Location eye, org.bukkit.util.Vector direction) {
-        return playingTable != null ? playingTable.callHit(player,eye,direction) : handTable == null ? null : handTable.callHit(player, eye, direction);
+        return playingTable != null
+                ? playingTable.callHit(player, eye, direction)
+                : handTable == null ? null : handTable.callHit(player, eye, direction);
     }
 
     void dismissHandCalls(Player player) {
-        if (handTable != null) handTable.dismissCalls(player);
+        if (handTable != null) {
+            handTable.dismissCalls(player);
+        }
     }
 
     boolean toggleMahjongAssistance(Player player, String option) {
@@ -1074,15 +1228,19 @@ final class TableView implements AutoCloseable {
     }
 
     String cardHandAction(Player player, String id) {
-        return playingTable != null ? playingTable.cardAction(player,id) : handTable == null ? null : handTable.cardAction(player, id);
+        return playingTable != null
+                ? playingTable.cardAction(player, id)
+                : handTable == null ? null : handTable.cardAction(player, id);
     }
 
-    String playingAction(Player player,String control) {
-        return playingTable == null ? null : playingTable.action(player,control);
+    String playingAction(Player player, String control) {
+        return playingTable == null ? null : playingTable.action(player, control);
     }
 
     void maintainMahjongPress(Player player) {
-        if (handTable != null) handTable.keepHandPress(player);
+        if (handTable != null) {
+            handTable.keepHandPress(player);
+        }
     }
 
     record Hit(String cell, double distance) {}
@@ -1092,37 +1250,45 @@ final class TableView implements AutoCloseable {
     }
 
     Hit hitPiece(Location eye, org.bukkit.util.Vector direction) {
-        if (yachtTable != null) return yachtTable.hit(eye, direction);
+        if (yachtTable != null) {
+            return yachtTable.hit(eye, direction);
+        }
         Hit nearest = null;
         for (TokenView token : tokens.values()) {
-            Location p = token.position();
+            Location player = token.position();
             var box =
                     new org.bukkit.util.BoundingBox(
-                            p.getX() - token.radius,
-                            p.getY(),
-                            p.getZ() - token.radius,
-                            p.getX() + token.radius,
-                            p.getY() + token.height,
-                            p.getZ() + token.radius);
+                            player.getX() - token.radius,
+                            player.getY(),
+                            player.getZ() - token.radius,
+                            player.getX() + token.radius,
+                            player.getY() + token.height,
+                            player.getZ() + token.radius);
             var hit = box.rayTrace(eye.toVector(), direction, TableGeometry.REACH);
             if (hit != null) {
                 double distance = hit.getHitPosition().distance(eye.toVector());
-                if (nearest == null || distance < nearest.distance)
+                if (nearest == null || distance < nearest.distance) {
                     nearest = new Hit(token.token.cell.id(), distance);
+                }
             }
         }
         if (diceTray != null) {
             double distance = diceTray.hit(eye, direction);
-            if (distance >= 0 && (nearest == null || distance < nearest.distance))
+            if (distance >= 0 && (nearest == null || distance < nearest.distance)) {
                 nearest = new Hit("@roll", distance);
+            }
         }
         return nearest;
     }
 
     String verticalHit(Location eye, org.bukkit.util.Vector direction) {
-        if (Math.abs(direction.getZ()) < 1e-6) return null;
+        if (Math.abs(direction.getZ()) < 1e-6) {
+            return null;
+        }
         double distance = (origin.getZ() - eye.getZ()) / direction.getZ();
-        if (distance < 0 || distance > TableGeometry.REACH) return null;
+        if (distance < 0 || distance > TableGeometry.REACH) {
+            return null;
+        }
         if (eye.getWorld()
                         .rayTraceBlocks(
                                 eye,
@@ -1130,33 +1296,40 @@ final class TableView implements AutoCloseable {
                                 Math.max(.001, distance - .035),
                                 FluidCollisionMode.NEVER,
                                 true)
-                != null) return null;
+                != null) {
+            return null;
+        }
         var point = eye.toVector().add(direction.clone().multiply(distance));
         double x = point.getX() - origin.getX(), y = point.getY() - origin.getY();
         int col = (int) Math.floor(x / .28 + 3.5), row = (int) Math.floor((y - .02) / .28);
         return col >= 0 && col < 7 && row >= 0 && row < 6 ? col + "," + row : null;
     }
 
-    void cursor(Player p, GameWorld.Pick pick, String hover) {
-        if (yachtTable != null) { yachtTable.cursor(p, hover); return; }
+    void cursor(Player player, GameWorld.Pick pick, String hover) {
+        if (yachtTable != null) {
+            yachtTable.cursor(player, hover);
+            return;
+        }
         if (playingTable != null) {
-            playingTable.hover(p,hover!=null && hover.startsWith("@hand:") ? hover.substring(6) : null);
+            playingTable.hover(
+                    player,
+                    hover != null && hover.startsWith("@hand:") ? hover.substring(6) : null);
             return;
         }
         if (handTable != null) {
             handTable.hover(
-                    p,
+                    player,
                     hover != null && (hover.startsWith("@hand:") || hover.startsWith("@tile:"))
                             ? hover.substring(6)
                             : null);
-            handTable.assistanceHint(p, hover);
+            handTable.assistanceHint(player, hover);
             return;
         }
         boolean turn =
                 room.phase == Room.Phase.PLAYING
                         && !room.busy
-                        && room.seat(p.getUniqueId()) >= 0
-                        && (room.seat(p.getUniqueId()) == room.board.currentPlayer()
+                        && room.seat(player.getUniqueId()) >= 0
+                        && (room.seat(player.getUniqueId()) == room.board.currentPlayer()
                                 || room.board instanceof dev.tabletop3d.rules.GoGame go
                                         && go.scoring());
         String signature =
@@ -1173,34 +1346,38 @@ final class TableView implements AutoCloseable {
                         + Language.generation()
                         + "/"
                         + (pick == null ? "" : pick.source());
-        Overlay old = overlays.get(p.getUniqueId());
+        Overlay old = overlays.get(player.getUniqueId());
         boolean reset = old == null || !old.signature.equals(signature);
         if (reset) {
-            if (old != null) old.remove();
+            if (old != null) {
+                old.remove();
+            }
             old = new Overlay(signature);
-            overlays.put(p.getUniqueId(), old);
+            overlays.put(player.getUniqueId(), old);
         }
         if (room.kind.equals("connectfour")) {
-            columnCursor(p, old, reset, turn, hover);
+            columnCursor(player, old, reset, turn, hover);
             return;
         }
         if (room.kind.equals("ludo")) {
-            ludoCursor(p, old, reset, turn && !rolling(), hover);
+            ludoCursor(player, old, reset, turn && !rolling(), hover);
             return;
         }
         if (reset && turn && pick != null) {
-            ring(old.entities, pick.source(), Material.LIME_CONCRETE, p, 1.0);
+            ring(old.entities, pick.source(), Material.LIME_CONCRETE, player, 1.0);
             Set<String> destinations = new HashSet<>();
             for (String action : pick.actions()) {
                 String[] parts = action.split(":");
-                if (parts.length >= 3) destinations.add(parts[2]);
+                if (parts.length >= 3) {
+                    destinations.add(parts[2]);
+                }
             }
             for (String id : destinations) {
                 Cell cell = cells.get(id);
                 if (cell != null) {
-                    if (cell.owner() >= 0)
-                        ring(old.entities, id, Material.LIGHT_BLUE_CONCRETE, p, .96);
-                    else
+                    if (cell.owner() >= 0) {
+                        ring(old.entities, id, Material.LIGHT_BLUE_CONCRETE, player, .96);
+                    } else {
                         old.entities.add(
                                 block(
                                         origin.clone()
@@ -1212,12 +1389,15 @@ final class TableView implements AutoCloseable {
                                         geometry.spacing * .20,
                                         .018,
                                         geometry.spacing * .20,
-                                        p));
+                                        player));
+                    }
                 }
             }
         }
         if (!reset && Objects.equals(old.cell, hover)) {
-            if (++old.ticks % 10 == 0) p.sendActionBar(old.feedback);
+            if (++old.ticks % 10 == 0) {
+                player.sendActionBar(old.feedback);
+            }
             return;
         }
         old.cell = hover;
@@ -1226,7 +1406,10 @@ final class TableView implements AutoCloseable {
             Cell cell = cells.get(hover);
             boolean direct =
                     turn
-                            && room.board.actionsForCell(room.seat(p.getUniqueId()), hover).stream()
+                            && room
+                                    .board
+                                    .actionsForCell(room.seat(player.getUniqueId()), hover)
+                                    .stream()
                                     .anyMatch(
                                             a ->
                                                     a.startsWith("place:")
@@ -1238,7 +1421,9 @@ final class TableView implements AutoCloseable {
                                     || pick != null
                                             && !GameWorld.destinationActions(pick, hover).isEmpty()
                                     || !GameWorld.sourceActions(
-                                                    room.board, room.seat(p.getUniqueId()), hover)
+                                                    room.board,
+                                                    room.seat(player.getUniqueId()),
+                                                    hover)
                                             .isEmpty());
             Material material =
                     !turn
@@ -1246,8 +1431,10 @@ final class TableView implements AutoCloseable {
                             : legal ? Material.YELLOW_CONCRETE : Material.RED_CONCRETE;
             if (old.hover.isEmpty()) {
                 List<Entity> list = new ArrayList<>();
-                ring(list, hover, material, p, .82);
-                for (Entity entity : list) old.hover.add((BlockDisplay) entity);
+                ring(list, hover, material, player, .82);
+                for (Entity entity : list) {
+                    old.hover.add((BlockDisplay) entity);
+                }
             } else {
                 Location at = origin.clone().add(geometry.x(cell), .025, geometry.z(cell));
                 for (BlockDisplay d : old.hover) {
@@ -1261,8 +1448,8 @@ final class TableView implements AutoCloseable {
                             : legal
                                     ? direct
                                             ? cell.piece().contains("×")
-                                                            ? "hint.restore"
-                                                            : "hint.act"
+                                                    ? "hint.restore"
+                                                    : "hint.act"
                                             : pick == null ? "hint.select" : "hint.place"
                                     : pick == null ? "hint.unavailable" : "hint.invalid";
             old.feedback =
@@ -1291,7 +1478,7 @@ final class TableView implements AutoCloseable {
                                             : Component.empty())
                             .colorIfAbsent(NamedTextColor.GOLD);
         }
-        p.sendActionBar(old.feedback);
+        player.sendActionBar(old.feedback);
     }
 
     private String blockedHint() {
@@ -1307,13 +1494,18 @@ final class TableView implements AutoCloseable {
     private void ludoCursor(
             Player player, Overlay overlay, boolean reset, boolean turn, String hover) {
         int seat = room.seat(player.getUniqueId());
-        if (reset && turn)
-            for (Cell cell : cells.values())
+        if (reset && turn) {
+            for (Cell cell : cells.values()) {
                 if (cell.owner() == seat
-                        && !GameWorld.sourceActions(room.board, seat, cell.id()).isEmpty())
+                        && !GameWorld.sourceActions(room.board, seat, cell.id()).isEmpty()) {
                     ring(overlay.entities, cell.id(), Material.YELLOW_CONCRETE, player, .92);
+                }
+            }
+        }
         if (!reset && Objects.equals(overlay.cell, hover)) {
-            if (++overlay.ticks % 10 == 0) player.sendActionBar(overlay.feedback);
+            if (++overlay.ticks % 10 == 0) {
+                player.sendActionBar(overlay.feedback);
+            }
             return;
         }
         overlay.cell = hover;
@@ -1354,7 +1546,9 @@ final class TableView implements AutoCloseable {
                                     : room.board.legalActions(seat).contains("roll")
                                             ? "hint.roll"
                                             : "table.ludo.choose";
-            if ("@menu".equals(hover)) key = "hint.menu";
+            if ("@menu".equals(hover)) {
+                key = "hint.menu";
+            }
             overlay.feedback = Language.component(key).colorIfAbsent(NamedTextColor.GOLD);
         }
         player.sendActionBar(overlay.feedback);
@@ -1365,7 +1559,9 @@ final class TableView implements AutoCloseable {
         Cell aimed = hover == null ? null : cells.get(hover);
         String column = aimed == null ? null : Integer.toString(aimed.x());
         if (!reset && Objects.equals(overlay.cell, column)) {
-            if (++overlay.ticks % 10 == 0) player.sendActionBar(overlay.feedback);
+            if (++overlay.ticks % 10 == 0) {
+                player.sendActionBar(overlay.feedback);
+            }
             return;
         }
         overlay.cell = column;
@@ -1374,7 +1570,7 @@ final class TableView implements AutoCloseable {
                 aimed == null
                         ? null
                         : cells.values().stream()
-                                .filter(c -> c.x() == aimed.x() && c.owner() < 0)
+                                .filter(cell -> cell.x() == aimed.x() && cell.owner() < 0)
                                 .min(Comparator.comparingInt(Cell::y))
                                 .orElse(null);
         boolean legal =
@@ -1413,7 +1609,9 @@ final class TableView implements AutoCloseable {
                                     .16,
                                     player));
                 }
-            } else overlay.hover.forEach(entity -> entity.teleport(at));
+            } else {
+                overlay.hover.forEach(entity -> entity.teleport(at));
+            }
         } else {
             overlay.hover.forEach(Entity::remove);
             overlay.hover.clear();
@@ -1433,43 +1631,77 @@ final class TableView implements AutoCloseable {
 
     private void ring(
             List<Entity> list, String id, Material material, Player viewer, double fraction) {
-        Cell c = geometry.byId.get(id);
-        if (c == null) return;
+        Cell cell = geometry.byId.get(id);
+        if (cell == null) {
+            return;
+        }
         double width = geometry.spacing * fraction, stroke = geometry.spacing * .065;
-        Location at = origin.clone().add(geometry.x(c), .025, geometry.z(c));
+        Location at = origin.clone().add(geometry.x(cell), .025, geometry.z(cell));
         for (double side : new double[] {-width / 2, width / 2}) {
             list.add(block(at, material, side, 0, 0, stroke, .012, width, viewer));
             list.add(block(at, material, 0, 0, side, width, .012, stroke, viewer));
             if (viewer == null && boardAudience != null) {
-                boardAudience.common(list.get(list.size()-2));
+                boardAudience.common(list.get(list.size() - 2));
                 boardAudience.common(list.getLast());
             }
         }
     }
 
     void clear(Player player) {
-        if (yachtTable != null) yachtTable.clear(player);
-        if (handTable != null) handTable.clear(player);
-        if (playingTable != null) playingTable.clear(player);
+        if (yachtTable != null) {
+            yachtTable.clear(player);
+        }
+        if (handTable != null) {
+            handTable.clear(player);
+        }
+        if (playingTable != null) {
+            playingTable.clear(player);
+        }
         Overlay old = overlays.remove(player.getUniqueId());
-        if (old != null) old.remove();
+        if (old != null) {
+            old.remove();
+        }
     }
 
     @Override
     public void close() {
-        if (handTable != null) handTable.close();
-        if (playingTable != null) playingTable.close();
-        if (diceTray != null) diceTray.close();
-        if (yachtTable != null) yachtTable.close();
+        if (handTable != null) {
+            handTable.close();
+        }
+        if (playingTable != null) {
+            playingTable.close();
+        }
+        if (diceTray != null) {
+            diceTray.close();
+        }
+        if (yachtTable != null) {
+            yachtTable.close();
+        }
         tokens.values().forEach(TokenView::remove);
         tokens.clear();
         handFurniture.forEach(Entity::remove);
-        if (packedTable != null) packedTable.remove();
-        if (packedBoard != null) boardAudience.remove(packedBoard);
-        furniture.forEach(entity -> { if (playingTable != null) playingTable.audience.remove(entity); else if (boardAudience == null) entity.remove(); else boardAudience.remove(entity); });
+        if (packedTable != null) {
+            packedTable.remove();
+        }
+        if (packedBoard != null) {
+            boardAudience.remove(packedBoard);
+        }
+        furniture.forEach(
+                entity -> {
+                    if (playingTable != null) {
+                        playingTable.audience.remove(entity);
+                    } else if (boardAudience == null) {
+                        entity.remove();
+                    } else {
+                        boardAudience.remove(entity);
+                    }
+                });
         overlays.values().forEach(Overlay::remove);
         overlays.clear();
-        if (boardAudience != null) lastMove.forEach(boardAudience::remove);
-        else lastMove.forEach(Entity::remove);
+        if (boardAudience != null) {
+            lastMove.forEach(boardAudience::remove);
+        } else {
+            lastMove.forEach(Entity::remove);
+        }
     }
 }
