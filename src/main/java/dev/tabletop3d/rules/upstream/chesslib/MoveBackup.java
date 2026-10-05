@@ -27,11 +27,8 @@ import dev.tabletop3d.rules.upstream.chesslib.move.Move;
  * A structure that can be used to cancel the effects of a move and to restore the board to a previous status. The
  * board context is memorized at the <i>backup</i> is created, and it could be subsequently re-applied to the sourcing
  * board.
- * <p>
- * The move backup is also a {@link BoardEvent}, and hence it can be passed to the observers of the
- * {@link BoardEventType#ON_UNDO_MOVE} events, emitted when a move is reverted on a board.
  */
-public class MoveBackup implements BoardEvent {
+public class MoveBackup {
 
     private final EnumMap<Side, CastleRight> castleRight;
     private Side sideToMove;
@@ -47,7 +44,6 @@ public class MoveBackup implements BoardEvent {
     private boolean castleMove;
     private boolean enPassantMove;
     private long incrementalHashKey;
-    private long incrementalPolyglotKey;
 
     /**
      * Constructs a new empty move backup.
@@ -77,7 +73,6 @@ public class MoveBackup implements BoardEvent {
     public void makeBackup(Board board, Move move) {
 
         setIncrementalHashKey(board.getIncrementalHashKey());
-        setIncrementalPolyglotKey(board.getPolyglotKey());
         setSideToMove(board.getSideToMove());
         setEnPassantTarget(board.getEnPassantTarget());
         setEnPassant(board.getEnPassant());
@@ -150,7 +145,6 @@ public class MoveBackup implements BoardEvent {
                     board.setPiece(rook, rookMove.getFrom());
                     board.setPiece(king, getMove().getFrom());
                     board.setIncrementalHashKey(getIncrementalHashKey());
-                    board.setIncrementalPolyglotKey(getIncrementalPolyglotKey());
                     return;
                 }
                 board.undoMovePiece(getRookCastleMove());
@@ -166,7 +160,6 @@ public class MoveBackup implements BoardEvent {
             }
         }
         board.setIncrementalHashKey(getIncrementalHashKey());
-        board.setIncrementalPolyglotKey(getIncrementalPolyglotKey());
     }
 
     /**
@@ -344,16 +337,6 @@ public class MoveBackup implements BoardEvent {
     }
 
     /**
-     * The type of board events this data structure represents when notified to its observers.
-     *
-     * @return the board event type {@link BoardEventType#ON_UNDO_MOVE}
-     */
-    @Override
-    public BoardEventType getType() {
-        return BoardEventType.ON_UNDO_MOVE;
-    }
-
-    /**
      * Returns the piece moved in the move to revert in the case a board has to be restored.
      *
      * @return the moved piece
@@ -425,21 +408,4 @@ public class MoveBackup implements BoardEvent {
         this.incrementalHashKey = incrementalHashKey;
     }
 
-    /**
-     * Sets the incremental Polyglot key used for restoring the board.
-     *
-     * @param incrementalPolyglotKey the incremental Polyglot key
-     */
-    public void setIncrementalPolyglotKey(long incrementalPolyglotKey) {
-        this.incrementalPolyglotKey = incrementalPolyglotKey;
-    }
-
-    /**
-     * Returns the incremental Polyglot key used for restoring the board.
-     *
-     * @return the incremental Polyglot key
-     */
-    public long getIncrementalPolyglotKey() {
-        return incrementalPolyglotKey;
-    }
 }

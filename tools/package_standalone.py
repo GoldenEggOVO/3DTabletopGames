@@ -94,11 +94,5 @@ with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as archive:
     for path in sorted((project / "src/main/resources").rglob("*.yml")):
         if path.parent.name in ("languages", "menus"):
             archive.write(path, path.relative_to(project).as_posix())
-    for name in ("ludo-side-tray-frames.png", "lastcard-owner-view.png", "mahjong-owner-view.png",
-                 "lastcard-hover-draw-frames.png", "hand-face-art.png", "table-controls-preview.png", "mahjong-table-preview.png",
-                 "mahjong-table-preview-notes.txt", "source-geometry-preview.txt"):
-        preview = output / "previews" / name
-        if preview.is_file():
-            archive.write(preview, "previews/" + name)
 print(json.dumps({"package": str(package), "zip_sha256": hashlib.sha256(package.read_bytes()).hexdigest(),
                   "jar_sha256": digest, "junit": totals, "runtime_pass": True}, indent=2))

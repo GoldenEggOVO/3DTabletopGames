@@ -79,7 +79,7 @@ Game IDs, configuration and integration details: [installation](docs/installatio
 
 Edit `plugins/3dtabletop/languages/en_US.yml` or another complete named catalogue. Select it with `language: <code>` and run `/3dtabletop reload-language`. See [languages](docs/languages.md).
 
-Menus, chat, action hints and room presentation use named keys and literal parameters. Legacy `translations` remain supported for rule text and existing menu customizations. Menu layouts live in `menus/*.yml`. See [languages and text styling](docs/languages.md).
+Menus, chat, action hints and room presentation use named keys and literal parameters. Menu layouts live in `menus/*.yml`; each message is translated separately in `languages/*.yml`. See [languages and text styling](docs/languages.md).
 
 Custom layouts retain ordering, captions and styles. Use the current semantic language keys and menu action IDs; retired-format conversion tools are no longer bundled.
 

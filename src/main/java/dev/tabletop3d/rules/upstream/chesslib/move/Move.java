@@ -17,8 +17,6 @@
 
 package dev.tabletop3d.rules.upstream.chesslib.move;
 
-import dev.tabletop3d.rules.upstream.chesslib.BoardEvent;
-import dev.tabletop3d.rules.upstream.chesslib.BoardEventType;
 import dev.tabletop3d.rules.upstream.chesslib.Piece;
 import dev.tabletop3d.rules.upstream.chesslib.Side;
 import dev.tabletop3d.rules.upstream.chesslib.Square;
@@ -26,11 +24,8 @@ import dev.tabletop3d.rules.upstream.chesslib.Square;
 /**
  * The definition of a chess move, that is, a piece movement from its starting square (the origin square) to a
  * destination square. Optionally, the move could specify a promotion piece used to replace a pawn in case of promotion.
- * <p>
- * The move is also a {@link BoardEvent}, and hence it can be passed to the observers of the
- * {@link BoardEventType#ON_MOVE} events, emitted when a move is executed on a board.
  */
-public class Move implements BoardEvent {
+public class Move {
 
     private final Square from;
     private final Square to;
@@ -151,16 +146,6 @@ public class Move implements BoardEvent {
         return from.toString().toLowerCase() +
                 to.toString().toLowerCase() +
                 promo.toLowerCase();
-    }
-
-    /**
-     * The type of board events this data structure represents when notified to its observers.
-     *
-     * @return the board event type {@link BoardEventType#ON_MOVE}
-     */
-    @Override
-    public BoardEventType getType() {
-        return BoardEventType.ON_MOVE;
     }
 
     /**

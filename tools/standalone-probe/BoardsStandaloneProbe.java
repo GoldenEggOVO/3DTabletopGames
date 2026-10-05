@@ -405,7 +405,12 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             require(display.getItemDisplayTransform()==org.bukkit.entity.ItemDisplay.ItemDisplayTransform.FIXED,"client-readable model display transform");
             display.remove();count++;
         }
-        getLogger().info("BOARDS_CRAFTENGINE_PASS models="+count+" optional_api=true client_visual_test=false");
+        Map<?,?> before = new HashMap<>((Map<?,?>)field(models,"models"));
+        Field checked=type.getDeclaredField("checked");checked.setAccessible(true);checked.setLong(models,0);
+        require((boolean)call(models,"ready",new Class<?>[0]),"CE models remain ready after registry poll");
+        Map<?,?> after=(Map<?,?>)field(models,"models");
+        for(var entry:before.entrySet())require(entry.getValue()==after.get(entry.getKey()),"unchanged CE definition reuses built model: "+entry.getKey());
+        getLogger().info("BOARDS_CRAFTENGINE_PASS models="+count+" cached_poll=true optional_api=true client_visual_test=false");
     }
 
     /** Resolve native sounds against the real server registry and exercise their dispatch. */

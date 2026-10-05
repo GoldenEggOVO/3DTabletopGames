@@ -15,6 +15,34 @@ class LanguageTest {
     Path temp;
 
     @Test
+    void fixedLabelsAreReusedUntilAnAcceptedLanguageReload() throws Exception {
+        Path folder = temp.resolve("cached-labels");
+        Language.load(folder, "en_US", warning -> fail(warning));
+        Path custom = folder.resolve("custom.yml");
+        Files.writeString(custom, "menu.create: '<green>First label'\nchat.joined: '{player} joined'\n");
+        try {
+            assertTrue(Language.reload(folder, "custom", warning -> fail(warning)));
+            var first = Language.component("menu.create");
+            assertEquals("First label", plain(first));
+            assertSame(first, Language.component("menu.create"));
+            assertEquals("Alice joined", plain(Language.component("chat.joined", "player", "Alice")));
+            assertEquals("Bob joined", plain(Language.component("chat.joined", "player", "Bob")));
+            first.color(net.kyori.adventure.text.format.NamedTextColor.RED);
+            assertEquals(first, Language.component("menu.create"));
+            Files.writeString(custom, "menu.create: '<gold>Second label'\n");
+            assertTrue(Language.reload(folder, "custom", warning -> fail(warning)));
+            assertEquals("Second label", plain(Language.component("menu.create")));
+            assertNotSame(first, Language.component("menu.create"));
+            var second = Language.component("menu.create");
+            Files.writeString(custom, "menu.create: '{unknown}'\n");
+            assertFalse(Language.reload(folder, "custom", warning -> {}));
+            assertSame(second, Language.component("menu.create"));
+        } finally {
+            Language.reload(folder, "en_US", warning -> fail(warning));
+        }
+    }
+
+    @Test
     void completeRuleMessagesHaveNamedParametersAndNeverTranslatePlayerNames() throws Exception {
         String player = chineseCatalog().getString("game.xiangqi");
         var message =

@@ -23,14 +23,12 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 
 import static dev.tabletop3d.rules.upstream.chesslib.Bitboard.extractLsb;
 import static dev.tabletop3d.rules.upstream.chesslib.Constants.emptyMove;
-import static dev.tabletop3d.rules.upstream.chesslib.Constants.POLYGLOT_RANDOM_TABLE;
 import dev.tabletop3d.rules.upstream.chesslib.game.GameContext;
 import dev.tabletop3d.rules.upstream.chesslib.game.VariationType;
 import dev.tabletop3d.rules.upstream.chesslib.move.Move;
@@ -46,13 +44,8 @@ import dev.tabletop3d.rules.upstream.chesslib.util.XorShiftRandom;
  * Each position in uniquely identified by hashes that could be retrieved using {@link Board#getIncrementalHashKey()}
  * and {@link Board#getZobristKey()} methods. Also, the implementation supports comparison against other board instances
  * using either the strict ({@link Board#strictEquals(Object)}) or the non-strict ({@link Board#equals(Object)}) mode.
- * <p>
- * The board can be observed registering {@link BoardEventListener}s for particular types of events. Moreover, the
- * {@link Board} class itself is a {@link BoardEvent}, and hence it can be passed to the observers of the
- * {@link BoardEventType#ON_LOAD} events, emitted when a new chess position is loaded from an external source (e.g. a
- * FEN string).
  */
-public class Board implements Cloneable, BoardEvent {
+public class Board implements Cloneable {
 
     private static final List<Long> keys = new ArrayList<>();
     private static final long RANDOM_SEED = 49109794719L;
@@ -67,7 +60,6 @@ public class Board implements Cloneable, BoardEvent {
     }
 
     private final LinkedList<MoveBackup> backup;
-    private final EnumMap<BoardEventType, List<BoardEventListener>> eventListener;
     private final long[] bitboard;
     private final long[] bbSide;
     private final Piece[] occupation;
@@ -79,10 +71,8 @@ public class Board implements Cloneable, BoardEvent {
     private Integer moveCounter;
     private Integer halfMoveCounter;
     private GameContext context;
-    private boolean enableEvents;
     private final boolean updateHistory;
     private long incrementalHashKey;
-    private long incrementalPolyglotKey;
 
     /**
      * Constructs a new board using a default game context. The board will keep its history updated, that is, will store
@@ -109,18 +99,13 @@ public class Board implements Cloneable, BoardEvent {
         castleRight = new EnumMap<>(Side.class);
         backup = new LinkedList<>();
         context = gameContext;
-        eventListener = new EnumMap<>(BoardEventType.class);
         this.updateHistory = updateHistory;
         setSideToMove(Side.WHITE);
         setEnPassantTarget(Square.NONE);
         setEnPassant(Square.NONE);
         setMoveCounter(1);
         setHalfMoveCounter(0);
-        for (BoardEventType evt : BoardEventType.values()) {
-            eventListener.put(evt, new CopyOnWriteArrayList<>());
-        }
         loadFromFen(gameContext.getStartFEN());
-        setEnableEvents(true);
     }
 
     /*
@@ -216,11 +201,9 @@ public class Board implements Cloneable, BoardEvent {
         }
 
         incrementalHashKey ^= getSideKey(getSideToMove());
-        incrementalPolyglotKey ^= getSidePolyglotKey();
 
         if (getEnPassantTarget() != Square.NONE) {
             incrementalHashKey ^= getEnPassantKey(getEnPassantTarget());
-            incrementalPolyglotKey ^= getEnPassantPolyglotKey(getEnPassantTarget());
         }
 
         if (PieceType.KING.equals(movingPiece.getPieceType())) {
@@ -251,7 +234,6 @@ public class Board implements Cloneable, BoardEvent {
             }
             if (getCastleRight(side) != CastleRight.NONE) {
                 incrementalHashKey ^= getCastleRightKey(side);
-                incrementalPolyglotKey ^= getCastleRightsPolyglotKey(getCastleRight(side), side);
                 getCastleRight().put(side, CastleRight.NONE);
             }
         } else if (PieceType.ROOK == movingPiece.getPieceType()
@@ -262,25 +244,19 @@ public class Board implements Cloneable, BoardEvent {
             if (move.getFrom() == oo.getFrom()) {
                 if (CastleRight.KING_AND_QUEEN_SIDE == getCastleRight(side)) {
                     incrementalHashKey ^= getCastleRightKey(side);
-                    incrementalPolyglotKey ^= getCastleRightsPolyglotKey(getCastleRight(side), side);
                     getCastleRight().put(side, CastleRight.QUEEN_SIDE);
                     incrementalHashKey ^= getCastleRightKey(side);
-                    incrementalPolyglotKey ^= getCastleRightsPolyglotKey(getCastleRight(side), side);
                 } else if (CastleRight.KING_SIDE == getCastleRight(side)) {
                     incrementalHashKey ^= getCastleRightKey(side);
-                    incrementalPolyglotKey ^= getCastleRightsPolyglotKey(getCastleRight(side), side);
                     getCastleRight().put(side, CastleRight.NONE);
                 }
             } else if (move.getFrom() == ooo.getFrom()) {
                 if (CastleRight.KING_AND_QUEEN_SIDE == getCastleRight(side)) {
                     incrementalHashKey ^= getCastleRightKey(side);
-                    incrementalPolyglotKey ^= getCastleRightsPolyglotKey(getCastleRight(side), side);
                     getCastleRight().put(side, CastleRight.KING_SIDE);
                     incrementalHashKey ^= getCastleRightKey(side);
-                    incrementalPolyglotKey ^= getCastleRightsPolyglotKey(getCastleRight(side), side);
                 } else if (CastleRight.QUEEN_SIDE == getCastleRight(side)) {
                     incrementalHashKey ^= getCastleRightKey(side);
-                    incrementalPolyglotKey ^= getCastleRightsPolyglotKey(getCastleRight(side), side);
                     getCastleRight().put(side, CastleRight.NONE);
                 }
             }
@@ -300,25 +276,19 @@ public class Board implements Cloneable, BoardEvent {
             if (move.getTo() == oo.getFrom()) {
                 if (CastleRight.KING_AND_QUEEN_SIDE == getCastleRight(side.flip())) {
                     incrementalHashKey ^= getCastleRightKey(side.flip());
-                    incrementalPolyglotKey ^= getCastleRightsPolyglotKey(getCastleRight(side.flip()), side.flip());
                     getCastleRight().put(side.flip(), CastleRight.QUEEN_SIDE);
                     incrementalHashKey ^= getCastleRightKey(side.flip());
-                    incrementalPolyglotKey ^= getCastleRightsPolyglotKey(getCastleRight(side.flip()), side.flip());
                 } else if (CastleRight.KING_SIDE == getCastleRight(side.flip())) {
                     incrementalHashKey ^= getCastleRightKey(side.flip());
-                    incrementalPolyglotKey ^= getCastleRightsPolyglotKey(getCastleRight(side.flip()), side.flip());
                     getCastleRight().put(side.flip(), CastleRight.NONE);
                 }
             } else if (move.getTo() == ooo.getFrom()) {
                 if (CastleRight.KING_AND_QUEEN_SIDE == getCastleRight(side.flip())) {
                     incrementalHashKey ^= getCastleRightKey(side.flip());
-                    incrementalPolyglotKey ^= getCastleRightsPolyglotKey(getCastleRight(side.flip()), side.flip());
                     getCastleRight().put(side.flip(), CastleRight.KING_SIDE);
                     incrementalHashKey ^= getCastleRightKey(side.flip());
-                    incrementalPolyglotKey ^= getCastleRightsPolyglotKey(getCastleRight(side.flip()), side.flip());
                 } else if (CastleRight.QUEEN_SIDE == getCastleRight(side.flip())) {
                     incrementalHashKey ^= getCastleRightKey(side.flip());
-                    incrementalPolyglotKey ^= getCastleRightsPolyglotKey(getCastleRight(side.flip()), side.flip());
                     getCastleRight().put(side.flip(), CastleRight.NONE);
                 }
             }
@@ -342,7 +312,6 @@ public class Board implements Cloneable, BoardEvent {
                         verifyNotPinnedPiece(side, getEnPassant(), move.getTo())) {
                     setEnPassantTarget(move.getTo());
                     incrementalHashKey ^= getEnPassantKey(getEnPassantTarget());
-                    incrementalPolyglotKey ^= getEnPassantPolyglotKey(getEnPassantTarget());
                 }
             }
             setHalfMoveCounter(0);
@@ -360,12 +329,6 @@ public class Board implements Cloneable, BoardEvent {
         }
 
         backup.add(backupMove);
-        // call listeners
-        if (isEnableEvents() && eventListener.get(BoardEventType.ON_MOVE).size() > 0) {
-            for (BoardEventListener evl : eventListener.get(BoardEventType.ON_MOVE)) {
-                evl.onEvent(move);
-            }
-        }
         return true;
     }
 
@@ -387,13 +350,11 @@ public class Board implements Cloneable, BoardEvent {
 
         if (getEnPassantTarget() != Square.NONE) {
             incrementalHashKey ^= getEnPassantKey(getEnPassantTarget());
-            incrementalPolyglotKey ^= getEnPassantPolyglotKey(getEnPassantTarget());
         }
         setEnPassantTarget(Square.NONE);
         setEnPassant(Square.NONE);
 
         incrementalHashKey ^= getSideKey(getSideToMove());
-        incrementalPolyglotKey ^= getSidePolyglotKey();
         setSideToMove(side.flip());
         incrementalHashKey ^= getSideKey(getSideToMove());
         if (updateHistory) {
@@ -418,14 +379,6 @@ public class Board implements Cloneable, BoardEvent {
         if (b != null) {
             move = b.getMove();
             b.restore(this);
-        }
-        // call listeners
-        if (isEnableEvents() &&
-                eventListener.get(BoardEventType.ON_UNDO_MOVE).size() > 0) {
-            for (BoardEventListener evl :
-                    eventListener.get(BoardEventType.ON_UNDO_MOVE)) {
-                evl.onEvent(b);
-            }
         }
         return move;
     }
@@ -761,7 +714,6 @@ public class Board implements Cloneable, BoardEvent {
         Arrays.fill(occupation, Piece.NONE);
         backup.clear();
         incrementalHashKey = 0;
-        incrementalPolyglotKey = 0L;
     }
 
     /**
@@ -778,7 +730,6 @@ public class Board implements Cloneable, BoardEvent {
         occupation[sq.ordinal()] = piece;
         if (piece != Piece.NONE && sq != Square.NONE) {
             incrementalHashKey ^= getPieceSquareKey(piece, sq);
-            incrementalPolyglotKey ^= getPiecePolyglotKey(piece, sq);
         }
     }
 
@@ -794,7 +745,6 @@ public class Board implements Cloneable, BoardEvent {
         occupation[sq.ordinal()] = Piece.NONE;
         if (piece != Piece.NONE && sq != Square.NONE) {
             incrementalHashKey ^= getPieceSquareKey(piece, sq);
-            incrementalPolyglotKey ^= getPiecePolyglotKey(piece, sq);
         }
     }
 
@@ -1036,17 +986,8 @@ public class Board implements Cloneable, BoardEvent {
         }
 
         incrementalHashKey = getZobristKey();
-        incrementalPolyglotKey = computePolyglotKey();
         if (updateHistory) {
             getHistory().addLast(this.getZobristKey());
-        }
-        // call listeners
-        if (isEnableEvents() &&
-                eventListener.get(BoardEventType.ON_LOAD).size() > 0) {
-            for (BoardEventListener evl :
-                    eventListener.get(BoardEventType.ON_LOAD)) {
-                evl.onEvent(Board.this);
-            }
         }
     }
 
@@ -1227,58 +1168,6 @@ public class Board implements Cloneable, BoardEvent {
         }
 
         return pieces;
-    }
-
-    /**
-     * The type of board events this data structure represents when notified to its observers.
-     *
-     * @return the board event type {@link BoardEventType#ON_LOAD}
-     */
-    @Override
-    public BoardEventType getType() {
-        return BoardEventType.ON_LOAD;
-    }
-
-    /**
-     * Returns an {@link EnumMap} of the event listeners registered to this board. Each entry of the map contains the
-     * list of observers for a particular type of events.
-     *
-     * @return the event listeners registered to this board
-     */
-    public EnumMap<BoardEventType, List<BoardEventListener>> getEventListener() {
-        return eventListener;
-    }
-
-    /**
-     * Registers to the board a new listener for a specified event type.
-     * <p>
-     * It returns a reference to this board to fluently chain other calls for registering (or deregistering) other
-     * listeners.
-     *
-     * @param eventType the board event type observed by the listener
-     * @param listener  the listener to register
-     * @return this board
-     */
-    public Board addEventListener(BoardEventType eventType, BoardEventListener listener) {
-        getEventListener().get(eventType).add(listener);
-        return this;
-    }
-
-    /**
-     * Deregisters from the board a listener for a specified event type.
-     * <p>
-     * It returns a reference to this board to fluently chain other calls for deregistering (or registering) other
-     * listeners.
-     *
-     * @param eventType the board event type observed by the listener
-     * @param listener  the listener to deregister
-     * @return this board
-     */
-    public Board removeEventListener(BoardEventType eventType, BoardEventListener listener) {
-        if (getEventListener() != null && getEventListener().get(eventType) != null) {
-            getEventListener().get(eventType).remove(listener);
-        }
-        return this;
     }
 
     /**
@@ -1776,25 +1665,6 @@ public class Board implements Cloneable, BoardEvent {
     }
 
     /**
-     * Returns whether the notifications of board events are enabled or not.
-     *
-     * @return {@code true} if board events are notified to observers
-     */
-    public boolean isEnableEvents() {
-        return enableEvents;
-    }
-
-    /**
-     * Sets the flag that controls the notification of board events. If {@code true}, board events are emitted,
-     * otherwise they are turned off.
-     *
-     * @param enableEvents whether the notification of board events is enabled or not
-     */
-    public void setEnableEvents(boolean enableEvents) {
-        this.enableEvents = enableEvents;
-    }
-
-    /**
      * Returns the unique position ID for the current position and status. The identifier is nothing more than the
      * Forsyth-Edwards Notation (FEN) representation of the board without the move counters.
      * <p>
@@ -2103,7 +1973,6 @@ public class Board implements Cloneable, BoardEvent {
         copy.loadFromFen(this.getFen());
         copy.setEnPassantTarget(this.getEnPassantTarget());
         copy.incrementalHashKey = this.incrementalHashKey;
-        copy.incrementalPolyglotKey = this.incrementalPolyglotKey;
         copy.getHistory().clear();
         for (long key : getHistory()) {
             copy.getHistory().add(key);
@@ -2198,108 +2067,4 @@ public class Board implements Cloneable, BoardEvent {
         return (getBitboard() ^ pieces ^ target.getBitboard()) | enPassant.getBitboard();
     }
 
-    private long computePolyglotKey() {
-        long polyglot = 0L;
-
-        for (Square square : Square.values()) {
-            if (square != Square.NONE) {
-                Piece piece = getPiece(square);
-                if (piece == null || piece == Piece.NONE) {
-                    continue;
-                }
-                polyglot ^= getPiecePolyglotKey(piece, square);
-            }
-        }
-
-        polyglot ^= getCastleRightsPolyglotKey(getCastleRight(Side.WHITE), Side.WHITE);
-        polyglot ^= getCastleRightsPolyglotKey(getCastleRight(Side.BLACK), Side.BLACK);
-
-        if (getSideToMove() == Side.WHITE) {
-            polyglot ^= getSidePolyglotKey();
-        }
-
-        Square epTarget = getEnPassantTarget();
-        if (epTarget != Square.NONE && pawnCanBeCapturedEnPassant()) {
-            polyglot ^= getEnPassantPolyglotKey(epTarget);
-        }
-
-        return polyglot;
-    }
-
-    /**
-     * Returns the Polyglot Zobrist key of the current position. Unlike {@link Board#getZobristKey()}, this key is
-     * computed from the standardized Polyglot random number table, making it suitable for looking up moves in
-     * Polyglot-format opening books and for interoperability with other chess tools.
-     *
-     * @return the Polyglot Zobrist key of the position
-     */
-    public long getPolyglotKey() {
-        return incrementalPolyglotKey;
-    }
-
-    void setIncrementalPolyglotKey(long key) {
-        this.incrementalPolyglotKey = key;
-    }
-
-    private static long getEnPassantPolyglotKey(Square square) {
-        if (square == Square.NONE) {
-            throw new IllegalArgumentException("must be a valid square");
-        }
-        return POLYGLOT_RANDOM_TABLE[772 + square.getFile().ordinal()];
-    }
-
-    private static long getSidePolyglotKey() {
-        return POLYGLOT_RANDOM_TABLE[780];
-    }
-
-    private static long getCastleRightsPolyglotKey(CastleRight rights, Side side) {
-        long castleKey = 0L;
-        if (rights == CastleRight.KING_AND_QUEEN_SIDE) {
-            castleKey ^= getKingCastlePolyglotKey(side);
-            castleKey ^= getQueenCastlePolyglotKey(side);
-        } else if (rights == CastleRight.KING_SIDE) {
-            castleKey ^= getKingCastlePolyglotKey(side);
-        } else if (rights == CastleRight.QUEEN_SIDE) {
-            castleKey ^= getQueenCastlePolyglotKey(side);
-        }
-        return castleKey;
-    }
-
-    private static long getKingCastlePolyglotKey(Side side) {
-        return POLYGLOT_RANDOM_TABLE[side == Side.WHITE ? 768 : 770];
-    }
-
-    private static long getQueenCastlePolyglotKey(Side side) {
-        return POLYGLOT_RANDOM_TABLE[side == Side.WHITE ? 769 : 771];
-    }
-
-    private static long getPiecePolyglotKey(Piece piece, Square square) {
-        int pieceIdx = getPiecePolyglotIndex(piece);
-        int squareIdx = getSquarePolyglotIndex(square);
-        return POLYGLOT_RANDOM_TABLE[pieceIdx * 64 + squareIdx];
-    }
-
-    private static int getSquarePolyglotIndex(Square square) {
-        if (square == Square.NONE) {
-            throw new IllegalArgumentException("must be a valid square");
-        }
-        int file = square.getFile().ordinal();
-        int rank = square.getRank().ordinal();
-        return rank * 8 + file;
-    }
-
-    private static int getPiecePolyglotIndex(Piece piece) {
-        if (piece == Piece.NONE) {
-            throw new IllegalArgumentException("must be a valid piece");
-        }
-        switch (piece.getPieceType()) {
-            case PAWN: return piece.getPieceSide() == Side.WHITE ? 1 : 0;
-            case KNIGHT: return piece.getPieceSide() == Side.WHITE ? 3 : 2;
-            case BISHOP: return piece.getPieceSide() == Side.WHITE ? 5 : 4;
-            case ROOK: return piece.getPieceSide() == Side.WHITE ? 7 : 6;
-            case QUEEN: return piece.getPieceSide() == Side.WHITE ? 9 : 8;
-            case KING: return piece.getPieceSide() == Side.WHITE ? 11 : 10;
-            default: throw new IllegalArgumentException("unhandled piece");
-        }
-    }
 }

@@ -15,16 +15,27 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 /** Complete named templates, English fallback and atomic language reloads. */
 final class Language {
     private static final Map<String, String> ENGLISH = bundled("en_US");
-    private static volatile Map<String, String> current = ENGLISH;
+    private record Catalogue(Map<String, String> templates, Map<String, Component> labels) {
+        Catalogue(Map<String, String> templates) {
+            this(templates, new ConcurrentHashMap<>());
+        }
+    }
+
+    private static volatile Catalogue current = new Catalogue(ENGLISH);
     private static long generation;
 
     static Component component(String key, Object... parameters) {
-        return MessageText.render(current.getOrDefault(key, key), parameters);
+        Catalogue catalogue = current;
+        String template = catalogue.templates().getOrDefault(key, key);
+        if (parameters.length != 0 || !catalogue.templates().containsKey(key))
+            return MessageText.render(template, parameters);
+        return catalogue.labels().computeIfAbsent(key, ignored -> MessageText.render(template));
     }
 
     static Component message(RuleMessage message) {
@@ -81,10 +92,10 @@ final class Language {
 
     static void load(Tabletop3D plugin) {
         current =
-                load(
+                new Catalogue(load(
                         plugin.getDataFolder().toPath().resolve("languages"),
                         plugin.getConfig().getString("language", "en_US"),
-                        plugin.getLogger()::warning);
+                        plugin.getLogger()::warning));
         generation++;
     }
 
@@ -120,7 +131,7 @@ final class Language {
         Map<String, String> candidate = load(folder, locale, problems::add);
         problems.forEach(warning);
         if (!problems.isEmpty()) return false;
-        current = candidate;
+        current = new Catalogue(candidate);
         generation++;
         return true;
     }

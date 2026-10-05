@@ -28,9 +28,17 @@ The Tabletop renderer has its own plugin lifecycle. The text utilities are inclu
 
 `Language.component(key, pairs)` formats named UI messages through `ui.MessageText`. `RoomText` supplies shared game/seat/phase/roster/outcome presentation. Dynamic arguments are Components/literal values. Current semantic templates are loaded from `languages/`; unknown keys and incompatible placeholders are reported. Styling supports MiniMessage and standard color codes. `ui.LabelLayout` fits table text without discarding the lower instruction lines.
 
+Fixed labels share immutable Components within the active catalogue. Parameterized text is rendered separately, so player names and current values never enter the fixed-label cache. A successful language reload swaps the catalogue and cache together; a rejected reload keeps both unchanged.
+
 ## Extension boundaries
 
 CraftEngine is the optional resource-model bridge. Vanilla rendering and native Paper Dialog menus run independently. No AuthMe, Geyser, Casino, ServerGames or ServerMenu runtime dependency is required.
+
+`CraftEngineModels` checks the current model definitions every two seconds. Unchanged definitions reuse their built item; a replaced definition rebuilds only that item, and a missing definition disables packed rendering until registration completes. Returned items are independent copies. Reflection stays isolated to the optional public API bridge.
+
+`TableAudience` keeps immutable native, packed and shared viewer sets. On a viewer change it sends only the necessary show/hide updates for that player's changed layers. Other viewers and shared parts keep their current visibility.
+
+The bundled chess rules no longer maintain unused Polyglot opening-book hashes, board event observers or deprecated FEN aliases. Position history and internal move backups remain necessary for repetition detection and legal-move analysis.
 
 ## Input validation and hover state
 
