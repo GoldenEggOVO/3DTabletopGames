@@ -17,6 +17,45 @@ import java.util.*;
 
 class TableSoundsTest {
     @Test
+    void physicalActionsUseSamplesForTheirMaterialAndKeepCardPlayUnchanged() {
+        assertEquals("cards.draw", TableSounds.move("color-eight", 0, "draw", List.of(), List.of()).resource());
+        assertEquals("dice.roll", TableSounds.move("yacht", 0, "roll", List.of(), List.of()).resource());
+        assertEquals("dice.single", TableSounds.move("ludo", 0, "roll", List.of(), List.of()).resource());
+        assertEquals("dice.hold", TableSounds.move("yacht", 0, "hold:0", List.of(), List.of()).resource());
+        assertEquals("board.wood", TableSounds.move("chess", 0, "move:a2:a3", List.of(), List.of()).resource());
+        assertEquals("board.stone", TableSounds.move("gomoku", 0, "place:0,0", List.of(), List.of()).resource());
+        assertEquals("board.drop", TableSounds.move("connectfour", 0, "drop:0", List.of(), List.of()).resource());
+        assertEquals("board.flip", TableSounds.move("reversi", 0, "place:0,0", List.of(), List.of()).resource());
+        assertEquals("chips.bet", TableSounds.cards("texas-holdem", "raise:20", Map.of(), Map.of(), true).getLast().resource());
+        assertEquals("cards.play", TableSounds.CARD.resource());
+    }
+
+    @Test
+    void mixedBoardViewersUseTheirOwnSoundAndMahjongKeepsItsSelectionRecording() {
+        var plugin = mock(Tabletop3D.class);
+        when(plugin.getConfig()).thenReturn(new YamlConfiguration());
+        plugin.pack = mock(TabletopPack.class);
+        var world = mock(World.class);
+        var at = new Location(world, 0, 80, 0);
+        var nativePlayer = mock(org.bukkit.entity.Player.class);
+        var packedPlayer = mock(org.bukkit.entity.Player.class);
+        when(world.getPlayers()).thenReturn(List.of(nativePlayer, packedPlayer));
+        for (var player : List.of(nativePlayer, packedPlayer)) {
+            when(player.getLocation()).thenReturn(at);
+            when(plugin.allowed(player)).thenReturn(true);
+        }
+        when(plugin.pack.packed(packedPlayer)).thenReturn(true);
+        TableSounds.play(plugin, at, TableSounds.WOOD, "chess");
+        verify(packedPlayer).playSound(at, "tabletop3d:board.wood", SoundCategory.BLOCKS, TableSounds.WOOD.volume(), 1f);
+        verify(nativePlayer).playSound(at, TableSounds.WOOD.sound(), SoundCategory.BLOCKS, TableSounds.WOOD.volume(), TableSounds.WOOD.pitch());
+        TableSounds.play(plugin, at, TableSounds.SELECT, "mahjong");
+        verify(packedPlayer).playSound(at, "tabletop3d:mahjong.select", SoundCategory.BLOCKS, TableSounds.SELECT.volume(), 1f);
+        verify(packedPlayer, never()).playSound(at, "tabletop3d:table.select", SoundCategory.BLOCKS, TableSounds.SELECT.volume(), 1f);
+        verify(packedPlayer, never()).playSound(any(Location.class), any(Sound.class), any(SoundCategory.class), anyFloat(), anyFloat());
+        verify(world, never()).playSound(any(Location.class), any(Sound.class), any(SoundCategory.class), anyFloat(), anyFloat());
+    }
+
+    @Test
     void cardDrawingPassingAndYachtScoringHaveDifferentNativeCues() {
         assertNotEquals(TableSounds.move("color-eight", 0, "draw", List.of(), List.of()),
                 TableSounds.move("color-eight", 0, "play:card", List.of(), List.of()));

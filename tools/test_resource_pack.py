@@ -143,9 +143,21 @@ class ResourcePackTest(unittest.TestCase):
                     self.assertIn(face["texture"][1:], model["textures"])
                     self.assertTrue(all(0 <= v <= 16 for v in face["uv"]), path)
 
+    def test_physical_and_interface_samples_include_variations_and_their_cc0_licenses(self):
+        sounds = json.loads(self.archive.read("assets/tabletop3d/sounds.json"))
+        for event in ("board.wood", "board.stone", "board.drop", "board.flip", "board.capture",
+                      "dice.roll", "dice.single", "dice.hold", "cards.draw", "chips.bet",
+                      "table.select", "table.pass", "table.confirm", "table.start", "table.win",
+                      "table.draw", "table.turn", "table.home"):
+            self.assertIn(event, sounds)
+        self.assertGreaterEqual(len(sounds["dice.roll"]["sounds"]), 3)
+        self.assertGreaterEqual(len(sounds["chips.bet"]["sounds"]), 3)
+        for pack in ("casino", "interface", "impact"):
+            self.assertIn(b"CC0", self.archive.read(f"licenses/kenney-{pack}.txt"))
+
     def test_sounds_have_real_ogg_payloads(self):
         sounds = json.loads(self.archive.read("assets/tabletop3d/sounds.json"))
-        self.assertEqual(10, len(sounds))
+        self.assertEqual(28, len(sounds))
         for event in sounds.values():
             name = event["sounds"][0]["name"]
             path = "assets/" + name.replace(":", "/sounds/") + ".ogg"

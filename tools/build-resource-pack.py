@@ -315,6 +315,23 @@ def audio():
     sf.write(target,data,rate,format="OGG",subtype="VORBIS",compression_level=.1)
     durations["cards.play"]=round(len(data)/rate,4)
     events["cards.play"]={"sounds":[{"name":"tabletop3d:cards/play","stream":False}]}
+    sources=ROOT/"audio-source/kenney"
+    for event,variants in json.loads((sources/"events.json").read_text()).items():
+        samples=[]
+        for source in variants:
+            data,rate=sf.read(sources/source,dtype="float32",always_2d=True)
+            data=data.mean(axis=1)
+            data*=min(1,.72/max(abs(data)))
+            name=event.replace(".","/")+"/"+Path(source).stem
+            target=ASSETS/f"sounds/{name}.ogg";target.parent.mkdir(parents=True,exist_ok=True)
+            sf.write(target,data,rate,format="OGG",subtype="VORBIS",compression_level=.1)
+            durations[name]=round(len(data)/rate,4)
+            samples.append({"name":"tabletop3d:"+name,"stream":False})
+        events[event]={"sounds":samples}
+    licenses=BUILD/"licenses";licenses.mkdir(exist_ok=True)
+    for pack in ("casino","interface","impact"):
+        (licenses/f"kenney-{pack}.txt").write_bytes((sources/f"LICENSE-{pack}.txt").read_bytes())
+    (licenses/"kenney-sources.md").write_bytes((sources/"README.md").read_bytes())
     write_json(ASSETS/"sounds.json",events)
     return durations
 

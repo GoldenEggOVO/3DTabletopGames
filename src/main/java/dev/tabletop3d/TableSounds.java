@@ -19,24 +19,28 @@ final class TableSounds {
         Cue(Sound sound, float volume, float pitch, String resource) { this(sound, volume, pitch, resource, 0); }
     }
 
-    static final Cue WOOD = new Cue(Sound.BLOCK_WOOD_HIT, .28f, 1.15f);
-    static final Cue XIANGQI = new Cue(Sound.BLOCK_BAMBOO_WOOD_HIT, .28f, .9f);
-    static final Cue STONE = new Cue(Sound.BLOCK_STONE_HIT, .25f, 1.45f);
-    static final Cue HOP = new Cue(Sound.BLOCK_NOTE_BLOCK_XYLOPHONE, .2f, 1.4f);
-    static final Cue DROP = new Cue(Sound.BLOCK_DECORATED_POT_PLACE, .28f, 1.5f);
-    static final Cue FLIP = new Cue(Sound.BLOCK_BONE_BLOCK_PLACE, .25f, 1.5f);
-    static final Cue PAWN = new Cue(Sound.BLOCK_WOODEN_BUTTON_CLICK_ON, .25f, 1.3f);
-    static final Cue ROLL = new Cue(Sound.ITEM_CROSSBOW_LOADING_MIDDLE, .3f, 1.5f);
-    static final Cue CAPTURE = new Cue(Sound.BLOCK_WOOD_BREAK, .28f, 1.5f);
-    static final Cue HOME = new Cue(Sound.BLOCK_NOTE_BLOCK_PLING, .25f, 1.8f);
-    static final Cue SELECT = new Cue(Sound.BLOCK_NOTE_BLOCK_HAT, .15f, 1.8f);
-    static final Cue PASS = new Cue(Sound.BLOCK_NOTE_BLOCK_BASS, .2f, 1.2f);
-    static final Cue CONFIRM = new Cue(Sound.BLOCK_NOTE_BLOCK_CHIME, .2f, 1.2f);
-    static final Cue START = new Cue(Sound.BLOCK_NOTE_BLOCK_CHIME, .3f, 1.5f);
-    static final Cue WIN = new Cue(Sound.ENTITY_PLAYER_LEVELUP, .3f, 1.3f);
-    static final Cue DRAW = new Cue(Sound.BLOCK_NOTE_BLOCK_CHIME, .25f, .8f);
-    static final Cue TURN = new Cue(Sound.BLOCK_NOTE_BLOCK_PLING, .15f, 1.2f);
+    static final Cue WOOD = new Cue(Sound.BLOCK_WOOD_HIT, .28f, 1.15f, "board.wood");
+    static final Cue XIANGQI = new Cue(Sound.BLOCK_BAMBOO_WOOD_HIT, .28f, .9f, "board.wood");
+    static final Cue STONE = new Cue(Sound.BLOCK_STONE_HIT, .25f, 1.45f, "board.stone");
+    static final Cue HOP = new Cue(Sound.BLOCK_NOTE_BLOCK_XYLOPHONE, .2f, 1.4f, "board.wood");
+    static final Cue DROP = new Cue(Sound.BLOCK_DECORATED_POT_PLACE, .28f, 1.5f, "board.drop");
+    static final Cue FLIP = new Cue(Sound.BLOCK_BONE_BLOCK_PLACE, .25f, 1.5f, "board.flip");
+    static final Cue PAWN = new Cue(Sound.BLOCK_WOODEN_BUTTON_CLICK_ON, .25f, 1.3f, "board.wood");
+    static final Cue ROLL = new Cue(Sound.ITEM_CROSSBOW_LOADING_MIDDLE, .3f, 1.5f, "dice.roll");
+    static final Cue SINGLE_ROLL = new Cue(Sound.ITEM_CROSSBOW_LOADING_MIDDLE, .3f, 1.5f, "dice.single");
+    static final Cue HOLD = new Cue(Sound.BLOCK_NOTE_BLOCK_HAT, .15f, 1.8f, "dice.hold");
+    static final Cue CAPTURE = new Cue(Sound.BLOCK_WOOD_BREAK, .28f, 1.5f, "board.capture");
+    static final Cue HOME = new Cue(Sound.BLOCK_NOTE_BLOCK_PLING, .25f, 1.8f, "table.home");
+    static final Cue SELECT = new Cue(Sound.BLOCK_NOTE_BLOCK_HAT, .15f, 1.8f, "table.select");
+    static final Cue PASS = new Cue(Sound.BLOCK_NOTE_BLOCK_BASS, .2f, 1.2f, "table.pass");
+    static final Cue CONFIRM = new Cue(Sound.BLOCK_NOTE_BLOCK_CHIME, .2f, 1.2f, "table.confirm");
+    static final Cue START = new Cue(Sound.BLOCK_NOTE_BLOCK_CHIME, .3f, 1.5f, "table.start");
+    static final Cue WIN = new Cue(Sound.ENTITY_PLAYER_LEVELUP, .3f, 1.3f, "table.win");
+    static final Cue DRAW = new Cue(Sound.BLOCK_NOTE_BLOCK_CHIME, .25f, .8f, "table.draw");
+    static final Cue TURN = new Cue(Sound.BLOCK_NOTE_BLOCK_PLING, .15f, 1.2f, "table.turn");
     static final Cue CARD = new Cue(Sound.ITEM_BOOK_PAGE_TURN, .25f, 1.4f, "cards.play");
+    static final Cue CARD_DRAW = new Cue(Sound.ITEM_CROSSBOW_LOADING_MIDDLE, .3f, 1.5f, "cards.draw");
+    static final Cue CHIPS = new Cue(Sound.BLOCK_CHAIN_PLACE, .18f, 1.2f, "chips.bet");
     static final Cue TILE = new Cue(Sound.BLOCK_BONE_BLOCK_HIT, .24f, 1.5f);
     static final Cue TILE_DRAW = new Cue(Sound.BLOCK_BAMBOO_WOOD_HIT, .16f, 1.7f);
     static final Cue TILE_DISCARD = new Cue(Sound.BLOCK_BONE_BLOCK_PLACE, .28f, 1.35f);
@@ -126,12 +130,12 @@ final class TableSounds {
         }
         if (action.equals("fold")) return List.of(PASS);
         if (action.equals("check")) return List.of(SELECT);
-        return List.of(CARD, new Cue(Sound.BLOCK_CHAIN_PLACE, .18f, 1.2f));
+        return List.of(CARD, CHIPS);
     }
 
     static Cue move(String kind, int seat, String action, List<Cell> before, List<Cell> after) {
         if (kind.equals("color-eight")) return switch (action.split(":", 2)[0]) {
-            case "draw" -> ROLL;
+            case "draw" -> CARD_DRAW;
             case "pass" -> PASS;
             case "choose" -> CONFIRM;
             default -> CARD;
@@ -147,9 +151,10 @@ final class TableSounds {
             return action.startsWith("discard:")
                     ? TILE_DISCARD
                     : action.equals("pass") ? PASS : TILE;
-        if (action.equals("roll")) return ROLL;
+        if (action.equals("roll")) return kind.equals("ludo") ? SINGLE_ROLL : ROLL;
         if (action.equals("pass")) return PASS;
-        if (action.startsWith("dead:") || action.startsWith("hold:")) return SELECT;
+        if (action.startsWith("hold:")) return HOLD;
+        if (action.startsWith("dead:")) return SELECT;
         if (action.equals("accept") || action.equals("resume") || action.startsWith("score:"))
             return CONFIRM;
         if (kind.equals("reversi")) return FLIP;
@@ -227,8 +232,8 @@ final class TableSounds {
         if (volume <= 0) return;
         String custom =
                 plugin.pack != null && plugin.pack.packed(player)
-                        ? cue.resource() != null ? cue.resource()
-                                : kind.equals("mahjong") && packedSound(cue) != null ? "mahjong." + packedSound(cue) : null
+                        ? kind.equals("mahjong") && packedSound(cue) != null
+                                ? "mahjong." + packedSound(cue) : cue.resource()
                         : null;
         if (custom != null)
             player.playSound(at, "tabletop3d:" + custom, SoundCategory.BLOCKS, volume, 1f);
