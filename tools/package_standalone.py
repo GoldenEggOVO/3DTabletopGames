@@ -63,9 +63,12 @@ with zipfile.ZipFile(jar) as artifact:
                      "dev/tabletop3d/ui/LabelLayout.class", "dev/tabletop3d/RoomText.class",
                      "dev/tabletop3d/rules/MahjongGame.class", "dev/tabletop3d/rules/ColorEightGame.class",
                      "dev/tabletop3d/HandTable.class", "dev/tabletop3d/DiceTray.class",
-                     "languages/en_US.yml", "languages/zh_CN.yml", "menus/catalog.yml", "menus/setup.yml", "menus/hand.yml"):
+                     "languages/en_US.yml", "languages/zh_CN.yml"):
         if required not in names:
             raise SystemExit(f"Missing {required}")
+
+    if any(name.startswith("menus/") or "GameMenuLayouts" in name for name in names):
+        raise SystemExit("Retired menu templates were bundled")
 
 source = package_source()
 output = project / "deliverables" / version
@@ -92,7 +95,7 @@ with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as archive:
     for path in sorted((project / "docs").rglob("*.md")):
         archive.write(path, path.relative_to(project).as_posix())
     for path in sorted((project / "src/main/resources").rglob("*.yml")):
-        if path.parent.name in ("languages", "menus"):
+        if path.parent.name == "languages":
             archive.write(path, path.relative_to(project).as_posix())
 print(json.dumps({"package": str(package), "zip_sha256": hashlib.sha256(package.read_bytes()).hexdigest(),
                   "jar_sha256": digest, "junit": totals, "runtime_pass": True}, indent=2))

@@ -121,7 +121,6 @@
 "error.ludo-requires-2-to-4-players": "Ludo requires 2 to 4 players"
 "error.mahjong.action": "Choose a legal mahjong action"
 "error.mahjong.profile": "Unknown mahjong profile: {profile}"
-"error.menu-template": "Cannot read menu template {file}; ask an administrator to check it"
 "error.only-the-host-can-add-bots": "Only the host can add bots"
 "error.page-changed": "Page changed; reopen it"
 "error.repeated-position-or-no-liberties": "Repeated position or no liberties"

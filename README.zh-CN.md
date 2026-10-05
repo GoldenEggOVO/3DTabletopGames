@@ -43,7 +43,7 @@
 
 `config.yml` 保留语言、房间和超时设置。语言默认 `en_US`，使用 `plugins/3dtabletop/languages/` 下具名完整模板，修改后执行 `/3dtabletop reload-language`；其他配置修改需要重启。可独立翻译每一条消息，参数与玩家名字按字面插入。旧颜色码仍可使用，见 [语言说明](docs/languages.md)。
 
-房间 JSON schema 1、世界 UUID 和桌子坐标保持。升级前用独立工具转换当前 1.8.10 的彩八标识和语言文件，再用新 JAR 验证回放。动画不写存档，重启直接恢复最终状态，见 [升级说明](docs/migration.zh-CN.md)。自定义菜单的原顺序与样式保留，旧默认模板由离线工具转换。
+房间 JSON schema 1、世界 UUID 和桌子坐标保持。升级前用独立工具转换当前 1.8.10 的彩八标识和语言文件，再用新 JAR 验证回放。动画不写存档，重启直接恢复最终状态，见 [升级说明](docs/migration.zh-CN.md)。菜单布局由代码统一定义，文字仍在 languages 中独立翻译。旧 menus 目录不再读取或生成，备份后可删除。
 
 ## 构建与验收
 

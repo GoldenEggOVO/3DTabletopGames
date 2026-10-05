@@ -75,6 +75,6 @@ with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as z:
     for p in sorted((ROOT / "docs").rglob("*.md")):
         z.write(p, p.relative_to(ROOT).as_posix())
     for p in sorted((ROOT / "src/main/resources").rglob("*.yml")):
-        if p.parent.name in ("languages", "menus"):
+        if p.parent.name == "languages":
             z.write(p, p.relative_to(ROOT).as_posix())
 print(package)

@@ -121,7 +121,6 @@
 "error.ludo-requires-2-to-4-players": "英国十字戏需要 2 至 4 人"
 "error.mahjong.action": "请选择合法麻将操作"
 "error.mahjong.profile": "未知麻将规则：{profile}"
-"error.menu-template": "无法读取菜单模板 {file}，请联系管理员检查"
 "error.only-the-host-can-add-bots": "仅房主可以添加陪练"
 "error.page-changed": "页面已更新，请重新打开"
 "error.repeated-position-or-no-liberties": "此步重复局面或没有气"

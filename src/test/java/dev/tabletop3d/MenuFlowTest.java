@@ -310,36 +310,12 @@ class MenuFlowTest {
     }
 
     @Test
-    void placeholderLabelsFollowNamedMessagesButCustomCaptionsStayUntouched() {
+    void roomButtonsUseTheSuppliedLocalizedLabels() {
         for (String id : List.of("bots", "play", "leave")) {
-            String source = "<white>@label@";
-            var config = new YamlConfiguration();
-            config.set("Bottom.buttons." + id + ".text", source);
-            var button = new GameMenus.Button(id, Component.text("Custom named label"), () -> {});
-            var result =
-                    GameMenuLayouts.render(
-                            config,
-                            Component.text("Title"),
-                            Component.empty(),
-                            List.of(button),
-                            UUID.randomUUID());
-            assertEquals(
-                    "Custom named label",
-                    MessageText.plain(
-                            (Component) result.config().get("Bottom.buttons.slot0.component")));
-            config = new YamlConfiguration();
-            config.set("Bottom.buttons." + id + ".text", "<red>My caption</red>");
-            result =
-                    GameMenuLayouts.render(
-                            config,
-                            Component.text("Title"),
-                            Component.empty(),
-                            List.of(button),
-                            UUID.randomUUID());
-            assertEquals(
-                    "My caption",
-                    MessageText.plain(
-                            (Component) result.config().get("Bottom.buttons.slot0.component")));
+            var button = new GameMenus.Button(id, Component.text("Localized label"), () -> {});
+            var menu = BoardWindow.layout("room", Component.text("Title"), Component.empty(),
+                    List.of(button), UUID.randomUUID());
+            assertEquals("Localized label", MessageText.plain(menu.controls().getFirst().caption()));
         }
     }
 
@@ -376,14 +352,14 @@ class MenuFlowTest {
                             i -> {
                                 description = i.getArgument(2);
                                 buttons = List.copyOf(i.getArgument(3));
-                                return GameMenuLayouts.render(
-                                        new YamlConfiguration(),
+                                return BoardWindow.layout(
+                                        i.getArgument(0),
                                         i.getArgument(1, Component.class),
                                         description,
                                         buttons,
                                         i.getArgument(4));
                             });
-            when(window.open(any(), any(), anyString())).thenReturn(true);
+            when(window.open(any(), any())).thenReturn(true);
             menus = new GameMenus(plugin, window);
             plugin.menus = menus;
         }

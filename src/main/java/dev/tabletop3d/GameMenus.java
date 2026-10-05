@@ -115,7 +115,7 @@ final class GameMenus implements AutoCloseable {
                             System.currentTimeMillis() + 120000,
                             List.copyOf(entries),
                             refresh));
-            if (window.open(p, rendered.config(), page)) return;
+            if (window.open(p, rendered)) return;
         }
         sessions.put(
                 p.getUniqueId(),

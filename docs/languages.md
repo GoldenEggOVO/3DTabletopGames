@@ -22,7 +22,7 @@ Successful reload closes and invalidates old menu sessions. Labels and private h
 
 Layers are bundled English, editable `en_US.yml`, then the selected file. Missing keys fall back normally. Invalid YAML, non-string values, unknown keys, unknown placeholders and invalid styles warn; valid entries still load at startup. Files remain unchanged. Locale filenames accept letters, digits, `_` and `-`, start with a letter, and have at most 64 characters.
 
-Keep placeholder names such as `{player}`, `{game}`, `{number}`. Translations may omit a parameter but cannot invent one. Player names and ordinary parameter values remain literal text. Colors, decorations, gradients, rainbow, reset and newline use the same renderer as Casino. Legacy `&a`, `§a` and hex colors remain supported. Language files cannot define callbacks, clicks or hover commands.
+Keep placeholder names such as `{player}`, `{game}`, `{number}`. Translations may omit a parameter but cannot invent one. Player names and ordinary parameter values remain literal text. Colors, decorations, gradients, rainbow, reset and newline use the same renderer as Casino. Legacy `&a`, `搂a` and hex colors remain supported. Language files cannot define callbacks, clicks or hover commands.
 
 ## Upgrade existing files
 
@@ -30,4 +30,4 @@ Use the current semantic catalog when updating. Retired-format converters are no
 
 ## Menu layouts
 
-Custom `menus/*.yml` files retain their exact order, widths and captions. Hardcoded custom captions override generated labels; use `@label@` to follow language messages. Table labels fit estimated default Minecraft font metrics; custom client fonts need in-game acceptance.
+Menu layouts are fixed in `BoardWindow`: button order, widths, columns and colors are defined in code. Titles, labels and descriptions still come from `languages`. No `menus` directory is created or read. Remove obsolete menu templates after backing up an existing installation. Table labels fit estimated default Minecraft font metrics; custom client fonts need in-game acceptance.

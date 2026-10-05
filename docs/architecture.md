@@ -5,7 +5,7 @@
 - `src/main/java/dev/tabletop3d/`: plugin lifecycle, rooms, menus and physical table rendering.
 - `src/main/java/dev/tabletop3d/ui/`: shared Component formatting and label fitting, adapted from 3DCasinoGames.
 - `src/main/java/dev/tabletop3d/rules/`: bundled rules and preserved upstream sources.
-- `src/main/resources/`: metadata, configuration, language, Dialog layouts and notices.
+- `src/main/resources/`: metadata, configuration, language and notices.
 - `src/test/`: Java behavior tests.
 - `tools/standalone-probe/`: isolated loopback server probe.
 - `tools/`: resource validation and local packaging utilities.
@@ -24,7 +24,7 @@ The Tabletop renderer has its own plugin lifecycle. The text utilities are inclu
 
 ## Dialog and text
 
-`GameMenus` owns single-use sessions bound to player, world and expiry. `GameMenuLayouts` binds only server actions to editable layouts. `BoardWindow` renders native Paper Dialog; permissions are checked again on callbacks.
+`GameMenus` owns single-use sessions bound to player, world and expiry. `BoardWindow` owns fixed native Paper Dialog layouts, including button order, widths, styles and catalogue header links. It uses immutable menu data rather than YAML templates; permissions are checked again on callbacks.
 
 `Language.component(key, pairs)` formats named UI messages through `ui.MessageText`. `RoomText` supplies shared game/seat/phase/roster/outcome presentation. Dynamic arguments are Components/literal values. Current semantic templates are loaded from `languages/`; unknown keys and incompatible placeholders are reported. Styling supports MiniMessage and standard color codes. `ui.LabelLayout` fits table text without discarding the lower instruction lines.
 

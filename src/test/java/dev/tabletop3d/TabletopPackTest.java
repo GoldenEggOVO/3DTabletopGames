@@ -84,7 +84,7 @@ class TabletopPackTest {
         @SuppressWarnings("unchecked")
         Map<UUID, GameMenus.Session> sessions =
                 (Map<UUID, GameMenus.Session>) field.get(plugin.menus);
-        for (String page : GameMenuLayouts.PAGES) {
+        for (String page : List.of("dialog", "catalog", "room", "setup", "hand")) {
             plugin.menus.show(
                     player,
                     "Test",
