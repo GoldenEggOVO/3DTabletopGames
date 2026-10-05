@@ -598,7 +598,7 @@ public final class Tabletop3D extends JavaPlugin
             if (source != null) tell(source, Language.component("hint.roll.wait"));
             return;
         }
-        if (!ReplayBudget.allows(r.history, action)) {
+        if (!r.history.allows(action)) {
             finish(r, "result.limit");
             save();
             return;

@@ -1,15 +1,15 @@
 # Updating the current Tabletop build
 
-1.10.1 keeps the current `3dtabletop` configuration, semantic `languages/` catalogs, editable menus and schema 1 room data. CraftEngine remains optional. Old ServerBoards imports, 1.8.10 language converters, retired Aeroplane games and old game aliases are no longer supported.
+The current build keeps `3dtabletop` configuration, semantic `languages/` catalogs and schema 1 room data. Menu layouts are maintained in code; captions and styling remain editable in the language catalogs. CraftEngine remains optional. Old ServerBoards imports, 1.8.10 language converters, retired Aeroplane games and old game aliases are no longer supported.
 
 1. Stop the server cleanly and back up the complete plugin directory.
 2. Check the room file against the exact candidate shaded JAR:
 
    ```sh
-   java -cp target/3dtabletop-1.10.1-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifier /backup/3dtabletop/rooms.json
+   java -cp target/3dtabletop-1.10.23-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifier /backup/3dtabletop/rooms.json
    ```
 
-3. Replace the plugin with the new shaded JAR. Preserve current rooms, menus, custom language values and other plugins.
+3. Replace the plugin with the new shaded JAR. Preserve current rooms, custom language values and other plugins.
 4. Use the matching delivered resource pack when pack rendering is enabled. The plugin supplies the pack hash and ID; configuration only supplies its URL.
 5. Start the server and verify saved rooms, menus and player interactions. Keep the complete backup for rollback.
 

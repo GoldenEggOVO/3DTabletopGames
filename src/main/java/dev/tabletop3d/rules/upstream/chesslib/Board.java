@@ -1,4 +1,4 @@
-// ServerBoards adaptation: relocated package; original Apache-2.0 notice follows.
+// 3DTabletopGames adaptation: relocated package; removed unused undo snapshots; original Apache-2.0 notice follows.
 /*
  * Copyright 2017 Ben-Hur Carlos Vieira Langoni Junior
  *
@@ -28,7 +28,6 @@ import java.util.stream.IntStream;
 
 
 import static dev.tabletop3d.rules.upstream.chesslib.Bitboard.extractLsb;
-import static dev.tabletop3d.rules.upstream.chesslib.Constants.emptyMove;
 import dev.tabletop3d.rules.upstream.chesslib.game.GameContext;
 import dev.tabletop3d.rules.upstream.chesslib.game.VariationType;
 import dev.tabletop3d.rules.upstream.chesslib.move.Move;
@@ -37,7 +36,7 @@ import dev.tabletop3d.rules.upstream.chesslib.util.XorShiftRandom;
 
 /**
  * The definition of a chessboard position and its status. It exposes methods to manipulate the board, evolve the
- * position moving pieces around, revert already performed moves, and retrieve the status of the current configuration
+ * position moving pieces around and retrieve the status of the current configuration
  * on the board. Furthermore, it offers a handy way for loading a position from a Forsyth-Edwards Notation (FEN) string
  * and exporting it in the same format.
  * <p>
@@ -59,7 +58,6 @@ public class Board implements Cloneable {
         }
     }
 
-    private final LinkedList<MoveBackup> backup;
     private final long[] bitboard;
     private final long[] bbSide;
     private final Piece[] occupation;
@@ -97,7 +95,6 @@ public class Board implements Cloneable {
         bbSide = new long[Side.allSides.length];
         occupation = new Piece[Square.values().length];
         castleRight = new EnumMap<>(Side.class);
-        backup = new LinkedList<>();
         context = gameContext;
         this.updateHistory = updateHistory;
         setSideToMove(Side.WHITE);
@@ -186,7 +183,6 @@ public class Board implements Cloneable {
         Piece movingPiece = getPiece(move.getFrom());
         Side side = getSideToMove();
 
-        MoveBackup backupMove = new MoveBackup(this, move);
         final boolean isCastle;
         if (PieceType.KING.equals(movingPiece.getPieceType())
                 && getCastleRight(side) != CastleRight.NONE
@@ -229,7 +225,7 @@ public class Board implements Cloneable {
                     setPiece(rook, rookMove.getTo());
                     setPiece(king, kingDest);
                 } else {
-                    movePiece(rookMove, backupMove);
+                    movePiece(rookMove);
                 }
             }
             if (getCastleRight(side) != CastleRight.NONE) {
@@ -267,7 +263,7 @@ public class Board implements Cloneable {
             // Chess960: king and rook already placed above, no capture possible
             capturedPiece = Piece.NONE;
         } else {
-            capturedPiece = movePiece(move, backupMove);
+            capturedPiece = movePiece(move);
         }
 
         if (PieceType.ROOK == capturedPiece.getPieceType()) {
@@ -328,135 +324,29 @@ public class Board implements Cloneable {
             getHistory().addLast(getIncrementalHashKey());
         }
 
-        backup.add(backupMove);
         return true;
     }
 
-    /**
-     * Executes a <i>null</i> move on the board. It returns {@code true} if the operation has been successful.
-     * <p>
-     * A null move it is a special move that does not change the position of any piece, but simply updates the history
-     * of the board and switches the side to move. It could be useful in some scenarios to implement a <i>"passing
-     * turn"</i> behavior.
-     *
-     * @return {@code true} if the null move was successful
-     */
-    public boolean doNullMove() {
-
-        Side side = getSideToMove();
-        MoveBackup backupMove = new MoveBackup(this, emptyMove);
-
-        setHalfMoveCounter(getHalfMoveCounter() + 1);
-
-        if (getEnPassantTarget() != Square.NONE) {
-            incrementalHashKey ^= getEnPassantKey(getEnPassantTarget());
-        }
-        setEnPassantTarget(Square.NONE);
-        setEnPassant(Square.NONE);
-
-        incrementalHashKey ^= getSideKey(getSideToMove());
-        setSideToMove(side.flip());
-        incrementalHashKey ^= getSideKey(getSideToMove());
-        if (updateHistory) {
-            getHistory().addLast(getIncrementalHashKey());
-        }
-        backup.add(backupMove);
-        return true;
-    }
-
-    /**
-     * Reverts the latest move played on the board and returns it. If no moves were previously executed, it returns
-     * null.
-     *
-     * @return the reverted move, or null if no previous moves were played
-     */
-    public Move undoMove() {
-        Move move = null;
-        final MoveBackup b = backup.remove(backup.size() - 1);
-        if (updateHistory) {
-            getHistory().remove(getHistory().size() - 1);
-        }
-        if (b != null) {
-            move = b.getMove();
-            b.restore(this);
-        }
-        return move;
-    }
-
-    /**
-     * Moves a piece on the board and updates the backup passed in input. It returns the captured piece, if any, or
-     * {@link Piece#NONE} otherwise.
-     * <p>
-     * Same as invoking {@code movePiece(move.getFrom(), move.getTo(), move.getPromotion(), backup)}.
-     *
-     * @param move   the move to perform
-     * @param backup the move backup to update
-     * @return the captured piece, if present, or {@link Piece#NONE} otherwise
-     * @see Board#movePiece(Square, Square, Piece, MoveBackup)
-     */
-    protected Piece movePiece(Move move, MoveBackup backup) {
-        return movePiece(move.getFrom(), move.getTo(), move.getPromotion(), backup);
-    }
-
-    /**
-     * Moves a piece on the board and updates the backup passed in input. It returns the captured piece, if any, or
-     * {@link Piece#NONE} otherwise. The piece movement is described by its starting and destination squares, and by the
-     * piece to promote the moving piece to in case of a promotion.
-     *
-     * @param from      the starting square of the piece
-     * @param to        the destination square of the piece
-     * @param promotion the piece to set on the board to replace the moving piece after its promotion, or
-     *                  {@link Piece#NONE} in case the move is not a promotion
-     * @param backup    the move backup to update
-     * @return the captured piece, if present, or {@link Piece#NONE} otherwise
-     */
-    protected Piece movePiece(Square from, Square to, Piece promotion, MoveBackup backup) {
+    /** Move one piece and return its capture, including an en-passant pawn. */
+    private Piece movePiece(Move move) {
+        Square from = move.getFrom();
+        Square to = move.getTo();
+        Piece promotion = move.getPromotion();
         Piece movingPiece = getPiece(from);
         Piece capturedPiece = getPiece(to);
 
         unsetPiece(movingPiece, from);
-        if (!Piece.NONE.equals(capturedPiece)) {
-            unsetPiece(capturedPiece, to);
-        }
-        if (!Piece.NONE.equals(promotion)) {
-            setPiece(promotion, to);
-        } else {
-            setPiece(movingPiece, to);
-        }
+        if (capturedPiece != Piece.NONE) unsetPiece(capturedPiece, to);
+        setPiece(promotion == Piece.NONE ? movingPiece : promotion, to);
 
-        if (PieceType.PAWN.equals(movingPiece.getPieceType()) &&
-                !Square.NONE.equals(getEnPassantTarget()) &&
-                !to.getFile().equals(from.getFile()) &&
-                Piece.NONE.equals(capturedPiece)) {
+        if (movingPiece.getPieceType() == PieceType.PAWN
+                && getEnPassantTarget() != Square.NONE
+                && to.getFile() != from.getFile()
+                && capturedPiece == Piece.NONE) {
             capturedPiece = getPiece(getEnPassantTarget());
-            if (backup != null && !Piece.NONE.equals(capturedPiece)) {
-                unsetPiece(capturedPiece, getEnPassantTarget());
-                backup.setCapturedSquare(getEnPassantTarget());
-                backup.setCapturedPiece(capturedPiece);
-            }
+            if (capturedPiece != Piece.NONE) unsetPiece(capturedPiece, getEnPassantTarget());
         }
         return capturedPiece;
-    }
-
-    /**
-     * Reverts the effects of a piece previously moved. It restores the moved piece where it was and cancels any
-     * possible promotion to another piece.
-     *
-     * @param move the move to undo
-     */
-    protected void undoMovePiece(Move move) {
-        Square from = move.getFrom();
-        Square to = move.getTo();
-        Piece promotion = move.getPromotion();
-        Piece movingPiece = getPiece(to);
-
-        unsetPiece(movingPiece, to);
-
-        if (!Piece.NONE.equals(promotion)) {
-            setPiece(Piece.make(getSideToMove(), PieceType.PAWN), from);
-        } else {
-            setPiece(movingPiece, from);
-        }
     }
 
     /**
@@ -690,15 +580,6 @@ public class Board implements Cloneable {
     }
 
     /**
-     * Returns the current ordered list of move backups generated from the moves performed on the board.
-     *
-     * @return the list of move backups
-     */
-    public LinkedList<MoveBackup> getBackup() {
-        return backup;
-    }
-
-    /**
      * Clears the entire board and resets its status and all the flags to their default value.
      */
     public void clear() {
@@ -712,7 +593,6 @@ public class Board implements Cloneable {
         Arrays.fill(bitboard, 0L);
         Arrays.fill(bbSide, 0L);
         Arrays.fill(occupation, Piece.NONE);
-        backup.clear();
         incrementalHashKey = 0;
     }
 

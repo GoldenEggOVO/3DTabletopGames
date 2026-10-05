@@ -90,9 +90,7 @@ final class GameWorld implements Listener, AutoCloseable {
                             existing.anchorZ,
                             existing.sideTray,
                             tableHalfWidth(existing))) {
-                throw new IllegalArgumentException(
-                        dev.tabletop3d.ui.MessageText.plain(
-                                Language.component("error.table-overlap")));
+                throw new RuleViolation("error.table-overlap", "Another table is too close");
             }
         }
         if (room.sideTray) {
@@ -104,9 +102,7 @@ final class GameWorld implements Listener, AutoCloseable {
                             z <= Math.floor(snapped.getZ() + .70);
                             z++) {
                         if (!snapped.getWorld().getBlockAt(x, y, z).isPassable()) {
-                            throw new IllegalArgumentException(
-                                    dev.tabletop3d.ui.MessageText.plain(
-                                            Language.component("error.tray-space")));
+                            throw new RuleViolation("error.tray-space", "The dice tray needs clear space");
                         }
                     }
                 }
@@ -407,9 +403,9 @@ final class GameWorld implements Listener, AutoCloseable {
                                 return parts[1].equals(source);
                             }
                             try {
-                                int plane = Integer.parseInt(parts[1]);
-                                return plane / 4 == seat
-                                        && cell.piece().contains(String.valueOf(plane % 4 + 1));
+                                int pawn = Integer.parseInt(parts[1]);
+                                return pawn / 4 == seat
+                                        && cell.piece().contains(String.valueOf(pawn % 4 + 1));
                             } catch (NumberFormatException ex) {
                                 return false;
                             }

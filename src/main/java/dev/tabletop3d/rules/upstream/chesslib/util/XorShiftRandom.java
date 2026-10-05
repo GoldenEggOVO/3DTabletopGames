@@ -1,4 +1,4 @@
-// ServerBoards adaptation: relocated package; original Apache-2.0 notice follows.
+// 3DTabletopGames adaptation: relocated package; original Apache-2.0 notice follows.
 package dev.tabletop3d.rules.upstream.chesslib.util;
 
 /**

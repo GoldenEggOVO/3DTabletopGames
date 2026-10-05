@@ -18,8 +18,6 @@ public final class YachtGame implements BoardGame {
                     "small-straight",
                     "large-straight",
                     "yacht");
-    public static final List<String> LABELS =
-            List.of("Ones", "Twos", "Threes", "Fours", "Fives", "Sixes", "Choice", "Four of a Kind", "Full House", "Small Straight", "Large Straight", "Yacht");
     private final int[][] sheet;
     private final int[] dice = new int[5];
     private final boolean[] held = new boolean[5];

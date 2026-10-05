@@ -35,7 +35,7 @@ final class Room {
     final List<Seat> seats = new ArrayList<>();
     final Set<UUID> ready = new HashSet<>();
     final Map<UUID, Long> offline = new HashMap<>();
-    final JsonArray history = new JsonArray();
+    final RoomHistory history = new RoomHistory();
     Phase phase = Phase.LOBBY;
     long revision = 0;
     long changed = System.currentTimeMillis();
@@ -146,9 +146,6 @@ final class Room {
     }
 
     void event(int seat, JsonElement action) {
-        JsonObject e = new JsonObject();
-        e.addProperty("seat", seat);
-        e.add("action", action.deepCopy());
-        history.add(e);
+        history.record(seat, action);
     }
 }

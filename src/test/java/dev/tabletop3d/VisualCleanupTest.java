@@ -60,7 +60,7 @@ class VisualCleanupTest {
         var f=new TableViewTest.Fixture("chess");
         for(boolean compact:new boolean[]{false,true}) {
             int initial=f.entities.size();
-            var tray=new DiceTray(f.plugin,f.room,new Location(f.world,0,80,0),new NamespacedKey("servergames","board-cell"),compact);
+            var tray=new DiceTray(f.plugin,f.room,new Location(f.world,0,80,0),new NamespacedKey("3dtabletop","board-cell"),compact);
             List<Entity> parts=List.copyOf(f.entities.subList(initial,f.entities.size()));
             int surfaces=0;
             for(Entity part:parts)if(part instanceof BlockDisplay block) {

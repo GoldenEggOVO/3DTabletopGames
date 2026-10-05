@@ -148,6 +148,10 @@ final class PlayingCardTable implements AutoCloseable {
         void clear() {
             cards.values().forEach(CardVisual::remove);
             cards.clear();
+            clearControls();
+        }
+
+        void clearControls() {
             buttons.values().forEach(parts -> parts.forEach(audience::remove));
             buttons.clear();
             buttonPoses.clear();
@@ -555,25 +559,36 @@ final class PlayingCardTable implements AutoCloseable {
                 || view.packed != packed
                 || view.board != room.board
                 || view.phase != room.phase) {
-            view.clear();
+            if (view.packed != packed) {
+                view.clear();
+            } else {
+                view.clearControls();
+            }
             view.packed = packed;
             view.hover = null;
             var hand = game().hand(seat);
             boolean revealed = room.kind.equals("texas-holdem") && !game().exposed(seat).isEmpty();
+            Set<String> kept = new HashSet<>();
             if (!revealed)
                 for (int index = 0; index < hand.size(); index++) {
                     var card = hand.get(index);
-                    view.cards.put(
-                            card.id(),
-                            new CardVisual(
-                                    new CardSpec(
-                                            card.face(),
-                                            handPose(seat, index, hand.size(), 0),
-                                            true,
-                                            seat),
-                                    player,
-                                    packed));
+                    kept.add(card.id());
+                    Pose pose = handPose(seat, index, hand.size(), 0);
+                    CardVisual old = view.cards.get(card.id());
+                    if (old != null && old.spec.face.equals(card.face())
+                            && old.parts.stream().allMatch(Entity::isValid)) {
+                        old.pose(pose);
+                    } else {
+                        if (old != null) old.remove();
+                        view.cards.put(card.id(), new CardVisual(
+                                new CardSpec(card.face(), pose, true, seat), player, packed));
+                    }
                 }
+            view.cards.entrySet().removeIf(entry -> {
+                if (kept.contains(entry.getKey())) return false;
+                entry.getValue().remove();
+                return true;
+            });
             var controls =
                     room.phase == Room.Phase.PLAYING ? game().controls(seat) : List.<String>of();
             for (int index = 0; index < controls.size(); index++) {

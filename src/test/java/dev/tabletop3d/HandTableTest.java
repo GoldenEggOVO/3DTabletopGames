@@ -5,6 +5,9 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import dev.tabletop3d.rules.HandGame;
+import dev.tabletop3d.rules.MahjongGame;
+import dev.tabletop3d.rules.mahjong.Meld;
+import dev.tabletop3d.rules.mahjong.Tiles;
 
 import org.bukkit.*;
 import org.bukkit.entity.*;
@@ -161,13 +164,9 @@ class HandTableTest {
     void concealedKongUsesPublicBackMeshesWithoutTextAndRemainsVisibleToItsOwner() {
         Fixture f = new Fixture("mahjong");
         int initial = f.entities.size();
-        when(f.game.exposed(0))
-                .thenReturn(
-                        List.of(
-                                new HandGame.Piece("k0", "back"),
-                                new HandGame.Piece("k1", "back"),
-                                new HandGame.Piece("k2", "back"),
-                                new HandGame.Piece("k3", "back")));
+        when(((MahjongGame) f.game).melds(0)).thenReturn(List.of(new Meld(Meld.Kind.QUAD,
+                List.of(new Tiles.Tile("k0", 0, false), new Tiles.Tile("k1", 0, false),
+                        new Tiles.Tile("k2", 0, false), new Tiles.Tile("k3", 0, false)), false, 0)));
         f.room.revision++;
         f.table.sync();
         List<Entity> kong = List.copyOf(f.entities.subList(initial, f.entities.size()));
@@ -182,10 +181,16 @@ class HandTableTest {
     void sixteenTileProfilesDisplayAllFiveKongsAndEightFlowers() {
         Fixture f = new Fixture("mahjong");
         int initial = f.entities.size();
-        List<HandGame.Piece> exposed = new ArrayList<>();
-        for (int i = 0; i < 20; i++) exposed.add(new HandGame.Piece("kong" + i, "m" + (i / 4 + 1)));
-        for (int i = 1; i <= 8; i++) exposed.add(new HandGame.Piece("flower" + i, "f" + i));
-        when(f.game.exposed(0)).thenReturn(exposed);
+        List<Meld> melds = new ArrayList<>();
+        for (int group = 0; group < 5; group++) {
+            List<Tiles.Tile> tiles = new ArrayList<>();
+            for (int copy = 0; copy < 4; copy++) tiles.add(new Tiles.Tile("kong" + group + ":" + copy, group, false));
+            melds.add(new Meld(Meld.Kind.QUAD, tiles, true, 1));
+        }
+        List<HandGame.Piece> flowers = new ArrayList<>();
+        for (int i = 1; i <= 8; i++) flowers.add(new HandGame.Piece("flower" + i, "f" + i));
+        when(((MahjongGame) f.game).melds(0)).thenReturn(melds);
+        when(((MahjongGame) f.game).flowers(0)).thenReturn(flowers);
         f.room.revision++;
         f.table.sync();
         long bodies =
@@ -368,7 +373,7 @@ class HandTableTest {
         final Tabletop3D plugin = mock(Tabletop3D.class);
         final World world = mock(World.class);
         final Player owner = mock(Player.class), spectator = mock(Player.class);
-        final HandGame game = mock(HandGame.class);
+        final HandGame game;
         final List<Entity> entities = new ArrayList<>();
         final Map<Entity, Location> positions = new HashMap<>();
         final Room room;
@@ -376,6 +381,7 @@ class HandTableTest {
         final HandTable table;
 
         Fixture(String kind) {
+            game = kind.equals("mahjong") ? mock(MahjongGame.class) : mock(HandGame.class);
             when(world.spawn(any(Location.class), any(Class.class), any(Consumer.class)))
                     .thenAnswer(
                             inv -> {
@@ -430,7 +436,7 @@ class HandTableTest {
             when(game.deckSize()).thenReturn(30);
             table =
                     new HandTable(
-                            plugin, room, origin, new NamespacedKey("serverboards", "board-cell"));
+                            plugin, room, origin, new NamespacedKey("3dtabletop", "board-cell"));
         }
     }
 }

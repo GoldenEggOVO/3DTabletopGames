@@ -70,7 +70,6 @@ final class BoardWindow {
                                     "rule-profile",
                                     "details",
                                     "entry");
-                    case "hand" -> List.of("hand-action", "entry", "previous", "next");
                     default -> List.of("entry");
                 };
         List<GameMenus.Button> buttons = new ArrayList<>(supplied);
@@ -96,7 +95,6 @@ final class BoardWindow {
                 int width =
                         switch (page) {
                             case "catalog" -> 174;
-                            case "hand" -> 185;
                             default -> 330;
                         };
                 controls.add(new Control(caption, width, action));
@@ -105,8 +103,8 @@ final class BoardWindow {
         return new Menu(
                 MessageText.render("<white>{title}", "title", title),
                 MessageText.render("<white>{description}", "description", description),
-                page.equals("hand") ? 390 : 370,
-                page.equals("catalog") || page.equals("hand") ? 2 : 1,
+                370,
+                page.equals("catalog") ? 2 : 1,
                 List.copyOf(headers),
                 List.copyOf(controls),
                 exit,
@@ -129,7 +127,7 @@ final class BoardWindow {
                 switch (button.id()) {
                     case "close" -> "<dark_gray>[ <red>{label} <dark_gray>]";
                     case "main", "resume" -> "<yellow>{label}";
-                    case "back" -> page.equals("hand") ? "<gray>{label}" : "<yellow>{label}";
+                    case "back" -> "<yellow>{label}";
                     case "rooms" -> page.equals("catalog") ? "<aqua>{label}" : "<white>{label}";
                     case "ready", "play" ->
                             page.equals("room") ? "<green><bold>{label}</bold>" : "<white>{label}";
@@ -140,9 +138,6 @@ final class BoardWindow {
                     case "mode", "capacity", "board", "rule-profile" ->
                             page.equals("setup") ? "<aqua>{label}" : "<white>{label}";
                     case "details" -> page.equals("setup") ? "<yellow>{label}" : "<white>{label}";
-                    case "hand-action" -> page.equals("hand") ? "<aqua>{label}" : "<white>{label}";
-                    case "previous", "next" ->
-                            page.equals("hand") ? "<yellow>{label}" : "<white>{label}";
                     default -> "<white>{label}";
                 };
         String label =

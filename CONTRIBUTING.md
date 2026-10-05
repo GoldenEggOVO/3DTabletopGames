@@ -1,6 +1,6 @@
 # Contributing
 
-Use Java 25 and Maven 3.9+. Build with `mvn -B -ntp package`; run Python migration tests with `python -m unittest discover -s tests -p "test_*.py"`.
+Use Java 25 and Maven 3.9+. Build with `mvn -B -ntp package`; run Python resource and tooling tests with `python -m unittest discover -s tools -p "test_*.py"`.
 
 Write executable source, comments, diagnostics and configuration instructions in English. Put translated UI wording in `src/main/resources/languages/`; fixed piece artwork uses named Unicode symbols. Keep non-English regression inputs in catalog fixtures or explicit Unicode notation.
 

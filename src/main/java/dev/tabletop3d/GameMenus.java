@@ -560,9 +560,7 @@ final class GameMenus implements AutoCloseable {
                             b.add(
                                     new Button(
                                             action,
-                                            r.kind.equals("color-eight")
-                                                    ? HandText.action(r, seat, action)
-                                                    : actionLabel(r, action),
+                                            actionLabel(r, action),
                                             () ->
                                                     plugin.action(
                                                             p,
@@ -638,47 +636,6 @@ final class GameMenus implements AutoCloseable {
         return text;
     }
 
-    Component roomSummary(Room r) {
-        Component text =
-                Language.component(
-                        "room.summary",
-                        "phase",
-                        RoomText.phase(r),
-                        "occupied",
-                        r.seats.size(),
-                        "capacity",
-                        r.capacity);
-        int turn = r.turn();
-        for (int i = 0; i < r.seats.size(); i++) {
-            Room.Seat seat = r.seats.get(i);
-            Component state = Component.empty();
-            if (r.phase == Room.Phase.LOBBY || r.phase == Room.Phase.FINISHED)
-                state =
-                        Language.component(
-                                r.ready.contains(seat.id()) ? "room.ready" : "room.unready");
-            else if (turn == i) state = Language.component("room.turn");
-            text =
-                    text.append(Component.newline())
-                            .append(
-                                    Language.component(
-                                            "room.member",
-                                            "player",
-                                            RoomText.player(seat, i + 1),
-                                            "state",
-                                            state));
-        }
-        text = text.append(Component.newline()).append(RoomText.options(r.kind, r.options));
-        text = text.append(RoomText.ranking(r));
-        if (r.board instanceof dev.tabletop3d.rules.HandGame hand)
-            text =
-                    text.append(Component.newline())
-                            .append(HandText.status(r.kind, hand))
-                            .append(RoomText.scores(r));
-        if (r.phase == Room.Phase.FINISHED || r.phase == Room.Phase.PAUSED)
-            text = text.append(Component.newline()).append(RoomText.outcome(r, r.result));
-        return text;
-    }
-
     void observe(Player p, Room r) {
         if (plugin.rooms.get(r.id) != r) {
             plugin.tell(p, Language.component("error.page-changed"));
@@ -710,143 +667,6 @@ final class GameMenus implements AutoCloseable {
                 status(r).append(Language.component("menu.observe.description")),
                 b,
                 () -> games(p, r.kind));
-    }
-
-    void boardSources(Player p, Room r, int page) {
-        if (plugin.rooms.get(r.id) != r) {
-            main(p);
-            return;
-        }
-        if (r.board instanceof dev.tabletop3d.rules.HandGame) {
-            hand(p, r, page);
-            return;
-        }
-        int seat = r.seat(p.getUniqueId());
-        if (r.board == null) return;
-        long revision = r.revision;
-        List<String> legal = r.board.legalActions(seat);
-        Map<String, List<String>> bySource = new LinkedHashMap<>();
-        for (String action : legal) {
-            String[] split = action.split(":");
-            String key = split.length >= 2 ? split[1] : action;
-            bySource.computeIfAbsent(key, k -> new ArrayList<>()).add(action);
-        }
-        List<String> keys = new ArrayList<>(bySource.keySet());
-        List<Button> b = new ArrayList<>();
-        int from = Math.max(0, Math.min(page * 12, keys.size()));
-        for (String key : keys.subList(from, Math.min(from + 12, keys.size()))) {
-            List<String> choices = bySource.get(key);
-            String action = choices.getFirst();
-            boolean direct =
-                    choices.size() == 1
-                            && (r.kind.equals("ludo")
-                                    || action.startsWith("place:")
-                                    || action.startsWith("drop:")
-                                    || action.startsWith("dead:"));
-            Component label =
-                    direct
-                            ? actionLabel(r, action)
-                            : Language.component(
-                                    "menu.pieces.option",
-                                    "piece",
-                                    labelCell(r, key),
-                                    "count",
-                                    choices.size());
-            b.add(
-                    new Button(
-                            label,
-                            () -> {
-                                if (plugin.rooms.get(r.id) != r || r.revision != revision)
-                                    boardSources(p, r, 0);
-                                else if (direct)
-                                    plugin.action(p, r, revision, new JsonPrimitive(action));
-                                else boardChoices(p, r, choices, 0);
-                            }));
-        }
-        if (from > 0)
-            b.add(
-                    new Button(
-                            Language.component("menu.previous"),
-                            () -> boardSources(p, r, page - 1)));
-        if (from + 12 < keys.size())
-            b.add(new Button(Language.component("menu.next"), () -> boardSources(p, r, page + 1)));
-        boolean placement =
-                Set.of("gomoku", "go", "go9", "go13", "reversi", "connectfour").contains(r.kind);
-        show(
-                p,
-                Language.component(placement ? "menu.positions.title" : "menu.pieces.title"),
-                Language.component(
-                        legal.isEmpty()
-                                ? "menu.pieces.empty"
-                                : placement
-                                        ? "menu.positions.description"
-                                        : "menu.pieces.description"),
-                b,
-                () -> room(p, r));
-    }
-
-    void hand(Player p, Room r, int requestedPage) {
-        if (plugin.rooms.get(r.id) != r) {
-            main(p);
-            return;
-        }
-        int seat = r.seat(p.getUniqueId());
-        if (seat < 0 || !(r.board instanceof dev.tabletop3d.rules.HandGame hand)) {
-            observe(p, r);
-            return;
-        }
-        long revision = r.revision;
-        List<String> legal = r.board.legalActions(seat);
-        int page = Math.max(0, Math.min(requestedPage, Math.max(0, (legal.size() - 1) / 12))),
-                from = page * 12;
-        List<Button> buttons = new ArrayList<>();
-        for (String action : legal.subList(from, Math.min(from + 12, legal.size())))
-            buttons.add(
-                    new Button(
-                            "hand-action",
-                            HandText.action(r, seat, action),
-                            () -> {
-                                plugin.action(p, r, revision, new JsonPrimitive(action));
-                                if (plugin.rooms.get(r.id) == r && r.phase == Room.Phase.PLAYING)
-                                    hand(p, r, 0);
-                            }));
-        if (page > 0)
-            buttons.add(
-                    new Button(
-                            "previous",
-                            Language.component("menu.previous"),
-                            () -> hand(p, r, page - 1)));
-        if (from + 12 < legal.size())
-            buttons.add(
-                    new Button(
-                            "next", Language.component("menu.next"), () -> hand(p, r, page + 1)));
-        Component cards = Component.empty();
-        for (var piece : hand.hand(seat)) {
-            if (!cards.equals(Component.empty())) cards = cards.append(Component.text(" · "));
-            cards = cards.append(HandText.piece(r.kind, piece.face()));
-        }
-        Component description =
-                Language.component("hand.private", "cards", cards)
-                        .append(Component.newline())
-                        .append(Language.component(legal.isEmpty() ? "hand.wait" : "hand.choose"))
-                        .append(Component.newline())
-                        .append(compactRoomSummary(r))
-                        .append(Component.newline())
-                        .append(HandText.status(r.kind, hand));
-        show(p, RoomText.name(r), description, buttons, () -> room(p, r), "hand");
-    }
-
-    Component labelCell(Room r, String id) {
-        return r.board.cells().stream()
-                .filter(c -> c.id().equals(id))
-                .map(c -> Component.text(c.id() + " " + Language.glyph(c.piece())))
-                .map(c -> (Component) c)
-                .findFirst()
-                .orElseGet(
-                        () ->
-                                id.equals("roll")
-                                        ? Language.component("action.roll")
-                                        : Component.text(id));
     }
 
     void boardChoices(Player p, Room r, List<String> choices, int page) {
@@ -967,8 +787,7 @@ final class GameMenus implements AutoCloseable {
                                 ? kind
                                 : "default";
         Component text =
-                Language.component("rules." + (key.equals("color-eight") ? "color-eight" : key));
-        Room r = plugin.room(p);
+                Language.component("rules." + key);
         text =
                 text.append(Component.newline())
                         .append(Component.newline())

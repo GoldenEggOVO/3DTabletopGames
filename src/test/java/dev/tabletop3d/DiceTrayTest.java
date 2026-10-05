@@ -113,7 +113,7 @@ class DiceTrayTest {
         room.board=dev.tabletop3d.rules.GameFactory.create("ludo",2,0);room.phase=Room.Phase.PLAYING;
         TableMaps maps=mock(TableMaps.class);
         when(maps.get(eq(f.world),any())).thenReturn(java.util.Collections.nCopies(4,new org.bukkit.inventory.ItemStack(org.bukkit.Material.FILLED_MAP)));
-        var view=new TableView(f.plugin,room,new Location(f.world,0,80,0),new NamespacedKey("servergames","board-cell"),maps);
+        var view=new TableView(f.plugin,room,new Location(f.world,0,80,0),new NamespacedKey("3dtabletop","board-cell"),maps);
         long trayModels=f.entities.stream().filter(ItemDisplay.class::isInstance)
             .filter(entity->entity.getLocation().getX()>1.125).count();
         assertEquals(2,trayModels,"The Ludo view must layer the side tray together with its packed board");
@@ -156,6 +156,6 @@ class DiceTrayTest {
     }
 
     private static DiceTray tray(TableViewTest.Fixture f,boolean compact) {
-        return new DiceTray(f.plugin,f.room,new Location(f.world,0,80,0),new NamespacedKey("servergames","board-cell"),compact);
+        return new DiceTray(f.plugin,f.room,new Location(f.world,0,80,0),new NamespacedKey("3dtabletop","board-cell"),compact);
     }
 }

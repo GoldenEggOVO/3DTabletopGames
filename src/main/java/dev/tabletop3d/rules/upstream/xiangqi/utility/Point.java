@@ -1,4 +1,4 @@
-// Upstream MIT: James Wang 2022. Relocated for ServerBoards; see META-INF/licenses.
+// Upstream MIT: James Wang 2022. Relocated for 3DTabletopGames; see META-INF/licenses.
 package dev.tabletop3d.rules.upstream.xiangqi.utility;
 
 /**

@@ -211,7 +211,7 @@ final class TableView implements AutoCloseable {
                                 geometry.spacing * 1.50,
                                 true,
                                 cell.owner() == 0 ? NamedTextColor.DARK_RED : NamedTextColor.BLACK);
-                if (room.kind.equals("xiangqi") && cell.owner() == 0) {
+                if (cell.owner() == 0) {
                     label.setRotation(180, -90);
                 }
                 parts.add(label);
@@ -779,7 +779,7 @@ final class TableView implements AutoCloseable {
                                     new Token(
                                             cell.owner() + ":" + digit,
                                             cell,
-                                            stack++ * (room.kind.equals("ludo") ? .82 : .19)));
+                                            stack++ * .82));
                         }
                     }
                 } else {

@@ -78,7 +78,7 @@ final class RoomStore {
         record.addProperty("result", room.result);
         record.addProperty("revision", room.revision);
         record.add("seats", JSON.toJsonTree(room.seats));
-        record.add("history", room.history.deepCopy());
+        record.add("history", room.history.snapshot());
         return record;
     }
 
@@ -103,7 +103,7 @@ final class RoomStore {
         for (JsonElement seat : record.getAsJsonArray("seats"))
             room.seats.add(JSON.fromJson(seat, Room.Seat.class));
         if (room.owner == null && !room.seats.isEmpty()) room.owner = room.seats.getFirst().id();
-        room.history.addAll(record.getAsJsonArray("history"));
+        room.history.restore(record.getAsJsonArray("history"));
         room.revision = record.get("revision").getAsLong();
         room.phase = Room.Phase.valueOf(record.get("phase").getAsString());
         room.completed = record.has("completed") && record.get("completed").getAsBoolean();

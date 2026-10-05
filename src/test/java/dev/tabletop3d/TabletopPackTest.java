@@ -84,7 +84,7 @@ class TabletopPackTest {
         @SuppressWarnings("unchecked")
         Map<UUID, GameMenus.Session> sessions =
                 (Map<UUID, GameMenus.Session>) field.get(plugin.menus);
-        for (String page : List.of("dialog", "catalog", "room", "setup", "hand")) {
+        for (String page : List.of("dialog", "catalog", "room", "setup")) {
             plugin.menus.show(
                     player,
                     "Test",
@@ -169,6 +169,15 @@ class TabletopPackTest {
         assertTrue(pack.canPlay(player, "mahjong"));
         pack.toggle(player);
         assertNotEquals(first, pack.requestId(player));
+    }
+
+    @Test
+    void requiredPackKeepsItsSpecificTranslatedError() {
+        config.set("rendering.mode", "resource-pack");
+        pack = new TabletopPack(plugin, () -> available, id -> new ItemStack(Material.PAPER));
+        var error = assertThrows(IllegalArgumentException.class, () -> pack.require(player, "chess"));
+        assertEquals(Language.component("pack.required"), Language.error(error));
+        assertNotNull(pack.requestId(player));
     }
 
     @Test

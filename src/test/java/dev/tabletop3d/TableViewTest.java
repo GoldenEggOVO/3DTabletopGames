@@ -650,7 +650,7 @@ class TableViewTest {
                             plugin,
                             room,
                             new Location(world, 0, 80, 0),
-                            new NamespacedKey("servergames", "board-cell"),
+                            new NamespacedKey("3dtabletop", "board-cell"),
                             maps);
         }
 

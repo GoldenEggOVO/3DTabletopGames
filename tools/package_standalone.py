@@ -69,6 +69,8 @@ with zipfile.ZipFile(jar) as artifact:
 
     if any(name.startswith("menus/") or "GameMenuLayouts" in name for name in names):
         raise SystemExit("Retired menu templates were bundled")
+    if any(name.endswith(("/ReplayBudget.class", "/MoveBackup.class")) for name in names):
+        raise SystemExit("Retired replay or undo implementation was bundled")
 
 source = package_source()
 output = project / "deliverables" / version

@@ -681,25 +681,13 @@ final class HandTable implements AutoCloseable {
             Pose pose = seatPose(seat, players, centered * unit, 1.02 + index * CardLayout.DEPTH_STEP);
             return new Pose(pose.x(), pose.z(), pose.yaw(), index * CardLayout.HEIGHT_STEP);
         }
-        int columns = mahjong ? 17 : 18,
-                row = index / columns,
-                inRow = Math.min(columns, Math.max(1, count - row * columns));
-        if (mahjong && inRow % 3 == 2) inRow--;
-        double unit =
-                mahjong
-                        ? .101
-                        : Math.min(.155, (players == 3 ? 1.24 : 1.62) / Math.max(1, inRow - 1));
-        double centered = index % columns - (inRow - 1) / 2.0, tangent = centered * unit;
-        if (mahjong && index % columns >= inRow) tangent += .075;
-        Pose base =
-                seatPose(
-                        seat,
-                        players,
-                        tangent,
-                        (mahjong ? 1.27 : players == 3 ? .78 : .91) - row * (mahjong ? .085 : .27));
-        return mahjong
-                ? base
-                : new Pose(base.x(), base.z(), base.yaw() + (float) (centered * 1.2), row * .055);
+        int columns = 17;
+        int row = index / columns;
+        int inRow = Math.min(columns, Math.max(1, count - row * columns));
+        if (inRow % 3 == 2) inRow--;
+        double tangent = (index % columns - (inRow - 1) / 2.0) * .101;
+        if (index % columns >= inRow) tangent += .075;
+        return seatPose(seat, players, tangent, 1.27 - row * .085);
     }
 
     static Pose riverPose(int seat, int players, int index) {
@@ -896,25 +884,7 @@ final class HandTable implements AutoCloseable {
                                 true,
                                 true,
                                 seat));
-            if (mahjong) {
-                if (game instanceof MahjongGame tiles) mahjongPublicRows(wanted, tiles, seat);
-                else {
-                    publicRow(
-                            wanted,
-                            game.discards(seat),
-                            "discard:" + seat,
-                            seat,
-                            game.playerCount(),
-                            false);
-                    publicRow(
-                            wanted,
-                            game.exposed(seat),
-                            "exposed:" + seat,
-                            seat,
-                            game.playerCount(),
-                            true);
-                }
-            }
+            if (mahjong) mahjongPublicRows(wanted, (MahjongGame) game, seat);
         }
         if (!mahjong)
             game.cells().stream()
@@ -1030,32 +1000,6 @@ final class HandTable implements AutoCloseable {
                         piece.face().equals("back"),
                         false,
                         seat));
-    }
-
-    private void publicRow(
-            List<Spec> wanted,
-            List<HandGame.Piece> pieces,
-            String prefix,
-            int seat,
-            int players,
-            boolean exposed) {
-        // Older river tiles remain in the authoritative history and personal menu.
-        int start = Math.max(0, pieces.size() - (exposed ? 28 : 18));
-        for (int i = start; i < pieces.size(); i++) {
-            HandGame.Piece piece = pieces.get(i);
-            Pose pose =
-                    exposed
-                            ? exposedPose(seat, players, i - start)
-                            : riverPose(seat, players, i - start);
-            wanted.add(
-                    new Spec(
-                            prefix + ":" + piece.id(),
-                            piece.face(),
-                            pose,
-                            piece.face().equals("back"),
-                            false,
-                            seat));
-        }
     }
 
     private void reconcile(Map<String, PieceView> existing, List<Spec> wanted, Player viewer) {

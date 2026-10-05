@@ -255,25 +255,6 @@ class MenuFlowTest {
     }
 
     @Test
-    void sourceChoiceRebuildsAfterTheBoardRevisionChanges() throws Exception {
-        Fixture f = new Fixture();
-        Room r = f.addRoom(0);
-        r.join(f.player.getUniqueId(), "Player");
-        r.fillBots();
-        r.board = GameFactory.create("chess", 2, 0);
-        r.phase = Room.Phase.PLAYING;
-        f.menus.boardSources(f.player, r, 0);
-        var pawn =
-                f.buttons.stream().filter(b -> b.label().contains("e2")).findFirst().orElseThrow();
-        r.board.apply(0, "move:e2:e4");
-        r.revision++;
-        pawn.action().run();
-        assertTrue(
-                f.buttons.stream().noneMatch(b -> b.label().contains("e2")),
-                "A stale source must rebuild from current legal moves");
-    }
-
-    @Test
     void goRulesNeverAppendThePlayersCurrentGomokuRules() throws Exception {
         Fixture f = new Fixture();
         Room r = new Room(UUID.randomUUID(), "gomoku", 2, 0, 0);
@@ -283,30 +264,6 @@ class MenuFlowTest {
         when(r.board.publicInfo()).thenReturn(Map.of("rules", "GOMOKU_ONLY_RULES"));
         f.menus.rules(f.player, "go");
         assertFalse(MessageText.plain(f.description).contains("GOMOKU_ONLY_RULES"));
-    }
-
-    @Test
-    void aDropMenuNamesHumanColumnsAndPlaysWithoutASecondChoiceDialog() throws Exception {
-        Fixture f = new Fixture();
-        Room r = new Room(UUID.randomUUID(), "connectfour", 2, 0, 0);
-        f.plugin.rooms.put(r.id, r);
-        r.join(f.player.getUniqueId(), "Player");
-        r.fillBots();
-        r.board = GameFactory.create("connectfour", 2, 0);
-        r.phase = Room.Phase.PLAYING;
-        f.menus.boardSources(f.player, r, 0);
-        var column =
-                f.buttons.stream()
-                        .filter(b -> b.label().equals("Drop in column 1"))
-                        .findFirst()
-                        .orElseThrow();
-        column.action().run();
-        verify(f.plugin)
-                .action(
-                        eq(f.player),
-                        eq(r),
-                        eq(r.revision),
-                        eq(new com.google.gson.JsonPrimitive("drop:0")));
     }
 
     @Test

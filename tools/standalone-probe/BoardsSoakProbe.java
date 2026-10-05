@@ -51,7 +51,7 @@ public final class BoardsSoakProbe extends JavaPlugin {
         try{
             samples++;long elapsed=(System.currentTimeMillis()-started)/1000;
             for(Object room:rooms){
-                String kind=label(room);UUID id=(UUID)field(room,"id");JsonArray history=(JsonArray)field(room,"history");
+                String kind=label(room);UUID id=(UUID)field(room,"id");JsonArray history=(JsonArray)call(field(room,"history"),"snapshot",new Class<?>[0]);
                 int last=lengths.get(id);if(history.size()>last)moves.merge(kind,history.size()-last,Integer::sum);
                 String phase=field(room,"phase").toString();require(!phase.equals("PAUSED")&&!phase.equals("ABORTED"),kind+" unexpected "+phase);
                 if(phase.equals("FINISHED")){
@@ -59,7 +59,7 @@ public final class BoardsSoakProbe extends JavaPlugin {
                     invoke(roundType,null,"fresh",new Class<?>[]{roomType,long.class},room,2000L+rounds.get(kind));
                     call(arena,"platform",new Class<?>[]{int.class},(int)field(room,"table"));call(boards,"start",new Class<?>[]{roomType},room);
                 }
-                lengths.put(id,((JsonArray)field(room,"history")).size());
+                lengths.put(id,((JsonArray)call(field(room,"history"),"snapshot",new Class<?>[0])).size());
             }
             if(samples%60==0){
                 validateEntities();replay(rooms.get((samples/60-1)%rooms.size()));call(boards,"save",new Class<?>[0]);
@@ -80,7 +80,7 @@ public final class BoardsSoakProbe extends JavaPlugin {
         String kind=(String)field(room,"kind");BoardGame live=(BoardGame)field(room,"board");
         @SuppressWarnings("unchecked") Map<String,String> options=(Map<String,String>)field(room,"options");
         BoardGame copy=GameFactory.create(kind,(int)field(room,"capacity"),(long)field(room,"seed"),options);
-        for(JsonElement e:(JsonArray)field(room,"history")){var move=e.getAsJsonObject();copy.apply(move.get("seat").getAsInt(),move.get("action").getAsString());}
+        for(JsonElement e:(JsonArray)call(field(room,"history"),"snapshot",new Class<?>[0])){var move=e.getAsJsonObject();copy.apply(move.get("seat").getAsInt(),move.get("action").getAsString());}
         require(copy.cells().equals(live.cells())&&copy.currentPlayer()==live.currentPlayer()&&copy.finished()==live.finished()&&Objects.equals(copy.outcome(),live.outcome()),kind+" replay differs");
         if(copy instanceof HandGame expected&&live instanceof HandGame actual)for(int seat=0;seat<copy.playerCount();seat++)
             require(expected.hand(seat).equals(actual.hand(seat))&&expected.discards(seat).equals(actual.discards(seat))&&expected.exposed(seat).equals(actual.exposed(seat)),"hand replay differs");

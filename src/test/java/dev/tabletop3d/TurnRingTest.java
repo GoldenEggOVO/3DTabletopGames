@@ -15,7 +15,7 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import java.util.*;
 
 class TurnRingTest {
-    private static final NamespacedKey TAG = new NamespacedKey("serverboards", "board-cell");
+    private static final NamespacedKey TAG = new NamespacedKey("3dtabletop", "board-cell");
 
     @BeforeEach
     void setup() {

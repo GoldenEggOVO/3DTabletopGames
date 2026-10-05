@@ -14,7 +14,7 @@
 
 ## Rules, rooms and rendering
 
-`Room` stores authoritative state, seats, seed and action history. `Tabletop3D` owns local room/occupancy management. `GameWorld` routes physical input; `TableView` displays the state and does not apply game moves. `TableModels` describes native BlockDisplay parts. Boards also use map surfaces and TextDisplay labels.
+`Room` stores authoritative state, seats and seed. `RoomHistory` owns copied action events and their incremental UTF-8 budget; restore rebuilds that budget and a rematch clears it together with the events. `Tabletop3D` owns local room/occupancy management. `GameWorld` routes physical input; `TableView` displays the state and does not apply game moves. `TableModels` describes native BlockDisplay parts. Boards also use map surfaces and TextDisplay labels.
 
 Connect Four uses five strips per vertical disc, a rack, and a 12-tick vertical drop with a small contact bounce. Restored discs spawn directly at their rule positions. Reversi uses six blocks per two-sided piece; a 10-tick rotation changes the upper face without replacing the entities. Rapid updates start from the current visual angle and converge on the newest owner. No animation state is persisted.
 
@@ -32,13 +32,13 @@ Fixed labels share immutable Components within the active catalogue. Parameteriz
 
 ## Extension boundaries
 
-CraftEngine is the optional resource-model bridge. Vanilla rendering and native Paper Dialog menus run independently. No AuthMe, Geyser, Casino, ServerGames or ServerMenu runtime dependency is required.
+CraftEngine is the optional resource-model bridge. Vanilla rendering and native Paper Dialog menus run independently, without other custom runtime plugins.
 
 `CraftEngineModels` checks the current model definitions every two seconds. Unchanged definitions reuse their built item; a replaced definition rebuilds only that item, and a missing definition disables packed rendering until registration completes. Returned items are independent copies. Reflection stays isolated to the optional public API bridge.
 
 `TableAudience` keeps immutable native, packed and shared viewer sets. On a viewer change it sends only the necessary show/hide updates for that player's changed layers. Other viewers and shared parts keep their current visibility.
 
-The bundled chess rules no longer maintain unused Polyglot opening-book hashes, board event observers or deprecated FEN aliases. Position history and internal move backups remain necessary for repetition detection and legal-move analysis.
+The bundled chess rules no longer maintain unused Polyglot opening-book hashes, board event observers, deprecated FEN aliases or undo snapshots. Position hashes still record repetition; legal moves are checked directly against the current board.
 
 ## Reading the rendering and input code
 
@@ -52,7 +52,7 @@ Use descriptive player, material, graphics and model-part names, four-space inde
 
 ## Input validation and hover state
 
-Room callbacks recheck live registry identity before backend mutations. Piece-source menus retain their rendered revision; stale selections rebuild from current legal actions. A leave confirmation is tied to the room it displayed. This does not change persisted room identity or schema.
+Room callbacks recheck live registry identity before backend mutations. Move-choice menus retain their rendered revision; stale actions are rejected against the live room. A leave confirmation is tied to the room it displayed. This does not change persisted room identity or schema.
 
 Table geometry remains fixed, while hover labels use the current cells cached at each board revision. Connect Four normalizes hover to a column, reuses four private marker entities within unchanged state and resends unchanged feedback at most every ten pointer updates. Go dead marks are separate removable parts of the existing stone. Disc meshes remain three parts; no model entity budget increase is required for that change.
 

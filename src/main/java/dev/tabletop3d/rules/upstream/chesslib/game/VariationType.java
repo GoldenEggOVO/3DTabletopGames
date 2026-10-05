@@ -1,4 +1,4 @@
-// ServerBoards adaptation: relocated package; original Apache-2.0 notice follows.
+// 3DTabletopGames adaptation: relocated package; original Apache-2.0 notice follows.
 /*
  * Copyright 2017 Ben-Hur Carlos Vieira Langoni Junior
  *

@@ -45,28 +45,4 @@ class HandMenuTest {
         assertTrue(MessageText.plain(fixture.description).contains("Owner"));
     }
 
-    @Test
-    void ownHandMenuReadsOnlyTheRequestingSeatAndStaleMoveIsRevisionBound() throws Exception {
-        var fixture = new MenuFlowTest.Fixture();
-        Room room = new Room(UUID.randomUUID(), "color-eight", 2, 0, 0);
-        room.board = spy(new ColorEightGame(2, 0));
-        room.join(UUID.randomUUID(), "Other");
-        room.join(fixture.player.getUniqueId(), "Owner");
-        room.phase = Room.Phase.PLAYING;
-        fixture.plugin.rooms.put(room.id, room);
-        fixture.menus.hand(fixture.player, room, 0);
-        verify((HandGame) room.board, atLeastOnce()).hand(1);
-        verify((HandGame) room.board, never()).hand(0);
-        if (room.turn() == 1) {
-            var button =
-                    fixture.buttons.stream()
-                            .filter(b -> b.id().equals("hand-action"))
-                            .findFirst()
-                            .orElseThrow();
-            long revision = room.revision;
-            room.revision++;
-            button.action().run();
-            verify(fixture.plugin).action(eq(fixture.player), eq(room), eq(revision), any());
-        }
-    }
 }

@@ -116,29 +116,8 @@ class WindowMenuTest {
     }
 
     @Test
-    void handPaginationAndBackUseTheExistingTwoColumnLayout() {
-        var menu =
-                layout(
-                        "hand",
-                        List.of(
-                                button("back"),
-                                button("next"),
-                                button("entry"),
-                                button("hand-action"),
-                                button("previous")),
-                        UUID.randomUUID());
-        assertEquals(
-                List.of("hand-action", "entry", "previous", "next", "back"),
-                menu.buttons().stream().map(GameMenus.Button::id).toList());
-        assertEquals(2, menu.columns());
-        assertEquals(390, menu.descriptionWidth());
-        assertTrue(menu.controls().stream().allMatch(control -> control.width() == 185));
-        assertEquals(NamedTextColor.GRAY, menu.controls().getLast().caption().color());
-    }
-
-    @Test
     void everyPageUsesTheSameDedicatedCloseControlAndLocalizedNavigation() {
-        for (String page : List.of("dialog", "catalog", "room", "setup", "hand")) {
+        for (String page : List.of("dialog", "catalog", "room", "setup")) {
             UUID token = UUID.randomUUID();
             var menu =
                     layout(

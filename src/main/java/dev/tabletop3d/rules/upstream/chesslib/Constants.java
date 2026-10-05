@@ -1,4 +1,4 @@
-// ServerBoards adaptation: relocated package; original Apache-2.0 notice follows.
+// 3DTabletopGames adaptation: relocated package; original Apache-2.0 notice follows.
 /*
  * Copyright 2017 Ben-Hur Carlos Vieira Langoni Junior
  *
@@ -97,11 +97,7 @@ public class Constants {
      */
     public static final List<Square> DEFAULT_BLACK_OOO_ALL_SQUARES = new ArrayList<Square>();
 
-    /**
-     * A useful special value that represents an empty move, that is, a move that does nothing and leaves the board
-     * unchanged.
-     */
-    public static final Move emptyMove = new Move(Square.NONE, Square.NONE);
+
 
     static {
         DEFAULT_WHITE_OO_SQUARES.add(Square.F1);

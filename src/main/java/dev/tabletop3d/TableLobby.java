@@ -124,7 +124,7 @@ final class TableLobby implements Listener, AutoCloseable {
         clicks.put(p.getUniqueId(), now);
         if (plugin.comfort != null && plugin.comfort.focused(p)) plugin.comfort.release(p);
         String id = target.id;
-        // Defer so this joining click cannot also select a card in the newly joined provider.
+        // Defer so this joining click cannot also select a card in the newly joined table.
         Bukkit.getScheduler()
                 .runTask(
                         plugin,

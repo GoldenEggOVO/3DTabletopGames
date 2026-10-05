@@ -3,7 +3,7 @@ package dev.tabletop3d.rules;
 import java.util.List;
 import java.util.Map;
 
-/** Pure authoritative rules. Call from one serial executor per room. Never send internal state. */
+/** Pure authoritative rules, mutated on the server thread. Never send internal state. */
 public interface BoardGame {
     String id();
 

@@ -29,7 +29,8 @@ class PortableTableTest {
   World world=MockBukkit.getMock().addSimpleWorld("tables"),other=MockBukkit.getMock().addSimpleWorld("other");
   Room first=new Room(UUID.randomUUID(),"connectfour",2,0,0);arena.anchor(first,new Location(world,0,80,0));plugin.rooms.put(first.id,first);
   Room next=new Room(UUID.randomUUID(),"chess",2,0,1);
-  assertThrows(IllegalArgumentException.class,()->arena.anchor(next,new Location(world,0,80,0)));
+  var overlap = assertThrows(IllegalArgumentException.class,()->arena.anchor(next,new Location(world,0,80,0)));
+  assertEquals(Language.component("error.table-overlap"), Language.error(overlap));
   assertThrows(IllegalArgumentException.class,()->arena.anchor(next,new Location(world,2,80,2)));
   assertNull(next.anchorWorld,"A rejected placement must not set an anchor");
   assertDoesNotThrow(()->arena.anchor(next,new Location(world,3,80,0)));

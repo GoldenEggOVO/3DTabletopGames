@@ -1,5 +1,6 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.RuleViolation;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -123,8 +124,7 @@ final class TabletopPack implements Listener, AutoCloseable {
         if (canPlay(player, kind)) return;
         Request r = requests.get(player.getUniqueId());
         if (r == null || r.stage() == Stage.FAILED) request(player);
-        throw new IllegalArgumentException(
-                dev.tabletop3d.ui.MessageText.plain(Language.component("pack.required")));
+        throw new RuleViolation("pack.required", "Load the tabletop resource pack before playing");
     }
 
     Component button(Player player) {

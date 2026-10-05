@@ -20,7 +20,7 @@ final class RoundActions {
         if (r.phase != Room.Phase.FINISHED
                 || r.seats.stream().anyMatch(s -> !s.bot() && !r.ready.contains(s.id())))
             throw new RuleViolation("error.waiting-for-tablemates-to-ready-for-a", "Waiting for tablemates to ready for a rematch");
-        while (!r.history.isEmpty()) r.history.remove(r.history.size() - 1);
+        r.history.clear();
         r.seed = seed;
         r.board = null;
         r.result = "";

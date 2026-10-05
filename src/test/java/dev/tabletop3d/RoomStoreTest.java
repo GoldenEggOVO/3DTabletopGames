@@ -47,7 +47,7 @@ class RoomStoreTest {
             assertEquals(before.id, after.id);
             assertEquals(before.seats, after.seats);
             assertEquals(before.owner, after.owner);
-            assertEquals(before.history, after.history);
+            assertEquals(before.history.snapshot(), after.history.snapshot());
             assertEquals(before.anchorWorld, after.anchorWorld);
             assertEquals(before.anchorX, after.anchorX);
             assertEquals(before.revision, after.revision);

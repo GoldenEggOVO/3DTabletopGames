@@ -127,7 +127,7 @@ final class MahjongTableHud implements AutoCloseable {
         if (closed) return;
         syncPanel();
         syncOrientation();
-        // Rules mutate on the room executor. Keep the last public snapshot while it runs.
+        // Keep the last public snapshot while an action is in progress.
         if (!room.busy
                 && room.board instanceof HandGame game
                 && (rendered != game || revision != room.revision)) {

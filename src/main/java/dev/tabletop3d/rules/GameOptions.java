@@ -57,9 +57,10 @@ public final class GameOptions {
     public static Map<String, String> validate(String kind, Map<String, String> supplied) {
         Objects.requireNonNull(supplied, "Room options");
         Map<String, String> result = new LinkedHashMap<>();
+        List<Option> available = forGame(kind, supplied);
         for (var entry : supplied.entrySet()) {
             Option option =
-                    forGame(kind, supplied).stream()
+                    available.stream()
                             .filter(o -> o.key().equals(entry.getKey()))
                             .findFirst()
                             .orElseThrow(

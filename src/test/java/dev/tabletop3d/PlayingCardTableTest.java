@@ -38,6 +38,28 @@ class PlayingCardTableTest {
     }
 
     @Test
+    void unchangedPrivateFacesSurviveCommittedMovesInBothDisplayModes() {
+        for (boolean packed : List.of(false, true)) {
+            var f = new TableViewTest.Fixture("liars-bar", 4);
+            owner(f, packed);
+            var before = new LinkedHashMap<>(ownCards(f));
+            var hand = (dev.tabletop3d.rules.HandGame) f.room.board;
+            f.move("play:" + hand.hand(f.room.board.currentPlayer()).getFirst().id());
+            var after = ownCards(f);
+            assertFalse(after.isEmpty());
+            for (var entry : after.entrySet()) {
+                assertSame(before.get(entry.getKey()), entry.getValue(),
+                        "An unchanged face should retain its private displays: " + entry.getKey());
+                for (var part : (List<Entity>) get(entry.getValue(), "parts")) {
+                    verify(part, never()).remove();
+                    verify(part).setVisibleByDefault(false);
+                }
+            }
+            f.view.close();
+        }
+    }
+
+    @Test
     void multiCardSelectionIsPrivateAndCannotSurviveRevisionChanges() {
         var f = new TableViewTest.Fixture("doudizhu", 3);
         owner(f, false);

@@ -79,19 +79,6 @@ class MenuExperienceTest {
     }
 
     @Test
-    void privateHandOmitsRosterAndFullRules() throws Exception {
-        var f = new MenuFlowTest.Fixture();
-        Room r = handRoom(f);
-        f.menus.hand(f.player, r, 0);
-        String text = MessageText.plain(f.description);
-        assertFalse(text.contains("Other player"));
-        assertFalse(text.contains(MessageText.plain(RoomText.options(r.kind, r.options))));
-        assertTrue(ids(f).contains("hand-action"));
-        click(f, "back");
-        assertTrue(ids(f).contains("play"));
-    }
-
-    @Test
     void lobbyHasReadinessStartAndRoomOptionsAsItsPrimaryActions() throws Exception {
         var f = new MenuFlowTest.Fixture();
         Room r = f.addRoom(0);

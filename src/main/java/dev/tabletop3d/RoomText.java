@@ -43,15 +43,16 @@ final class RoomText {
     }
 
     static Component options(String kind, Map<String, String> settings) {
+        var available = GameOptions.forGame(kind, settings);
         Component result = Component.empty();
-        for (var option : GameOptions.forGame(kind, settings)) {
+        for (var option : available) {
             if (kind.equals("mahjong")
                     && !Set.of("profile", "rounds").contains(option.key())
                     && !settings.containsKey(option.key())) continue;
             if (!result.equals(Component.empty())) result = result.append(Component.newline());
             result = result.append(option(kind, option, settings));
         }
-        return GameOptions.forGame(kind, settings).isEmpty()
+        return available.isEmpty()
                 ? Language.component("setup.standard")
                 : result;
     }

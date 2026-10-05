@@ -112,7 +112,7 @@ class YachtTableTest {
         var f = new TableViewTest.Fixture("yacht");
         f.plugin.pack = new TabletopPack(f.plugin, () -> true, id -> new org.bukkit.inventory.ItemStack(org.bukkit.Material.PAPER));
         var audience = new TableAudience(f.plugin, f.view.origin);
-        var die = new YachtDie(f.plugin, f.room, f.view.origin, new org.bukkit.NamespacedKey("servergames", "board-cell"),
+        var die = new YachtDie(f.plugin, f.room, f.view.origin, new org.bukkit.NamespacedKey("3dtabletop", "board-cell"),
                 audience, true, .18, "die0");
         var item = (org.bukkit.entity.ItemDisplay) TableViewTest.field(die, "packed");
         for (int face = 1; face <= 6; face++) {
@@ -303,7 +303,7 @@ class YachtTableTest {
         when(f.world.getPlayers()).thenReturn(java.util.List.of(f.player));
         when(f.plugin.allowed(f.player)).thenReturn(true);
         f.plugin.pack = new TabletopPack(f.plugin, () -> true, id -> new org.bukkit.inventory.ItemStack(org.bukkit.Material.PAPER));
-        var table = new YachtTable(f.plugin, f.room, f.view.origin, new org.bukkit.NamespacedKey("servergames", "board-cell"));
+        var table = new YachtTable(f.plugin, f.room, f.view.origin, new org.bukkit.NamespacedKey("3dtabletop", "board-cell"));
         f.room.board.apply(0, "roll"); f.room.event(0, new com.google.gson.JsonPrimitive("roll")); f.room.revision++;
         table.sync(); table.tick(); assertTrue(table.rolling());
         f.plugin.pack.toggle(f.player);

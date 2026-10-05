@@ -447,7 +447,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
             require(saved.get("anchorWorld").getAsString().equals(field(room,"anchorWorld").toString()),"world preserved");
             for(String key:List.of("anchorX","anchorY","anchorZ"))require(saved.get(key).getAsDouble()==(double)field(room,key),"position preserved");
             require(new Gson().toJsonTree(field(room,"seats")).equals(saved.get("seats")),"seats preserved");
-            JsonArray history=(JsonArray)field(room,"history"),before=saved.getAsJsonArray("history");
+            JsonArray history=(JsonArray)call(field(room,"history"),"snapshot",new Class<?>[0]),before=saved.getAsJsonArray("history");
             require(history.size()>=before.size(),"saved history retained");
             for(int i=0;i<before.size();i++)require(history.get(i).equals(before.get(i)),"saved event unchanged");
             Map<String,String> options=new LinkedHashMap<>();

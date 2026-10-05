@@ -1,4 +1,4 @@
-ServerBoards 1.0.0 - board game room and native tabletop integration.
+3DTabletopGames - board game room and native tabletop integration.
 Derived from the existing ServerGames integration, GPL-3.0-or-later.
 Corresponding source and build instructions accompany this distribution.
 Upstream components retain their original copyrights and licenses:
