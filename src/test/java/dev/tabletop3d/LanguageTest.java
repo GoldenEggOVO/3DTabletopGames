@@ -70,6 +70,32 @@ class LanguageTest {
     }
 
     @Test
+    void chineseCatalogTranslatesProseWhileKeepingCommandsAndCardNotation() throws Exception {
+        var catalog = chineseCatalog();
+        var allowed = java.util.Set.of("A", "J", "Q", "K", "D", "X", "Z", "URL", "CraftEngine");
+        var untranslated = new java.util.ArrayList<String>();
+        for (String key : catalog.getKeys(false)) {
+            String text = catalog.getString(key)
+                    .replaceAll("\\{[^}]+}|<[^>]+>|§[0-9a-fk-or]", "")
+                    .replaceAll("/3dtabletop(?: [a-z-]+)?", "");
+            var words = java.util.regex.Pattern.compile("[A-Za-z]+").matcher(text);
+            while (words.find())
+                if (!allowed.contains(words.group())) untranslated.add(key + ": " + words.group());
+        }
+        assertTrue(untranslated.isEmpty(),
+                "Untranslated Chinese messages: " + untranslated.stream().limit(12).toList());
+        try {
+            assertTrue(Language.reload(temp, "zh_CN", w -> fail(w)));
+            assertEquals(catalog.getString("color-eight.turn").replace("{player}", "TestPlayer"),
+                    plain(Language.component("color-eight.turn", "player", "TestPlayer")));
+            assertTrue(plain(Language.component("chat.seat-held")).contains("/3dtabletop resume"));
+            assertEquals("A", plain(Language.component("playing-card.rank.ace")));
+        } finally {
+            Language.reload(temp, "en_US", w -> fail(w));
+        }
+    }
+
+    @Test
     void casinoStyleLanguagesAllowFlatAndNestedKeysAndKeepLastGoodReload() throws Exception {
         var warnings = new java.util.ArrayList<String>();
         Language.load(temp, "en_US", warnings::add);
