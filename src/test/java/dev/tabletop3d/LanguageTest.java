@@ -15,6 +15,21 @@ class LanguageTest {
     Path temp;
 
     @Test
+    void chineseMenuAndChatUseTheCurrentBrandAfterLoadingAndReloading() {
+        String brand = "3D\u684c\u6e38";
+        try {
+            assertTrue(Language.reload(temp, "zh_CN", warning -> fail(warning)));
+            assertEquals(brand, plain(Language.component("menu.title")));
+            assertEquals("[" + brand + "] Sample", plain(Language.component("chat.prefix", "message", "Sample")));
+            assertTrue(plain(Language.component("rules.mahjong")).contains(brand));
+            assertTrue(Language.reload(temp, "zh_CN", warning -> fail(warning)));
+            assertEquals(brand, plain(Language.component("menu.title")));
+        } finally {
+            Language.reload(temp, "en_US", warning -> fail(warning));
+        }
+    }
+
+    @Test
     void fixedLabelsAreReusedUntilAnAcceptedLanguageReload() throws Exception {
         Path folder = temp.resolve("cached-labels");
         Language.load(folder, "en_US", warning -> fail(warning));
