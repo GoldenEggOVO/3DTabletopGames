@@ -55,5 +55,9 @@ demonstrated model issue requires a change. Runtime evidence must match the fina
 - Red/green checks for errors, replay ownership/accounting and private face reuse passed.
 - Final package: 632 Java tests, zero failures/errors/skips. Python: 39 checks passed.
 - Differential checks: 98 games / 15,451 moves; 7,570 Mahjong solver shapes/waits, all equivalent.
-- Native final-JAR create/restart/restart and 20-room snapshot restore passed; packed and final
-  five-minute soak verification in progress. Initial sandbox loopback denial was rerun in isolation.
+- Native and packed final-JAR create/restart/restart and 20-room snapshot restore passed.
+  Five-minute soak: 43 replays, zero owned entities after close. Initial sandbox loopback denial
+  was rerun in isolation. Recovery probes now also check all 234 packed models on each restart.
+- 19:55 UTC checkpoint: source CI passed; authorized test-server backup, install, startup,
+  Chinese reload, HTTPS digest and protected-file checks passed. Remaining review covers the
+  packaged source, geometry helpers and the final evidence report; no Release was published.

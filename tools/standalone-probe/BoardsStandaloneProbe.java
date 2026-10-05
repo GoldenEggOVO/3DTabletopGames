@@ -36,12 +36,12 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 require(Bukkit.getPluginManager().getPlugin(absent) == null, "unexpected " + absent);
             Plugin boards = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("3dtabletop"));
             require(boards.isEnabled(), "Boards enabled");
+            World world = Bukkit.getWorlds().getFirst();
+            if(Boolean.getBoolean("boards.probe.craftengine")){craftEngineProbe(boards,world);}
             if (Boolean.getBoolean("boards.probe.snapshot")) {
                 snapshotProbe(boards);
                 return;
             }
-            World world = Bukkit.getWorlds().getFirst();
-            if(Boolean.getBoolean("boards.probe.craftengine")){craftEngineProbe(boards,world);}
             soundProbe(boards, world);
             modelProbe(boards, world);
             focusProbe(boards, world);
