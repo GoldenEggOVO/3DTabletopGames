@@ -94,8 +94,7 @@ final class HandTable implements AutoCloseable {
         void build(Player viewer) {
             Location at = at(spec.pose());
             String id = viewer == null ? "@board" : "@hand:" + spec.id();
-            double scale = 1;
-            double w = width() * scale, h = height() * scale, d = depth() * scale;
+            double w = width(), h = height(), d = depth();
             if (packed) {
                 String face =
                         spec.back()
@@ -167,11 +166,11 @@ final class HandTable implements AutoCloseable {
                 return;
             }
             add(block(at, Material.SMOOTH_QUARTZ, w, h, d, id, viewer), new Vector());
-            if (spec.back() && mahjong) {
+            if (spec.back()) {
                 Vector panel =
                         spec.standing()
                                 ? rotated(0, .012, d / 2 + .002, spec.pose())
-                                : new Vector(0, .014 * scale, 0);
+                                : new Vector(0, .014, 0);
                 add(
                         block(
                                 at.clone().add(panel),
@@ -183,7 +182,7 @@ final class HandTable implements AutoCloseable {
                                 viewer),
                         panel);
             } else
-                for (var part : HandModels.of(spec.back() ? "back" : spec.face()))
+                for (var part : HandModels.of(spec.face()))
                     modelPart(part, id, viewer);
             if (spec.standing()) {
                 Vector back = rotated(0, .012, -d / 2 - .002, spec.pose());
@@ -381,10 +380,9 @@ final class HandTable implements AutoCloseable {
 
         BoundingBox bounds(boolean sticky) {
             Location base = at(spec.pose()), at = base.clone().add(displacement);
-            double scale = 1;
             double angle = Math.toRadians(spec.pose().yaw()),
-                    w = width() * scale / 2 + .003,
-                    d = depth() * scale / 2 + .003;
+                    w = width() / 2 + .003,
+                    d = depth() / 2 + .003;
             double rx = Math.abs(Math.cos(angle)) * w + Math.abs(Math.sin(angle)) * d;
             double rz = Math.abs(Math.sin(angle)) * w + Math.abs(Math.cos(angle)) * d;
             BoundingBox box =
@@ -393,7 +391,7 @@ final class HandTable implements AutoCloseable {
                             at.getY(),
                             at.getZ() - rz,
                             at.getX() + rx,
-                            at.getY() + height() * scale,
+                            at.getY() + height(),
                             at.getZ() + rz);
             if (sticky && !drawing)
                 box.union(

@@ -1258,7 +1258,7 @@ final class TableView implements AutoCloseable {
             if (old.hover.isEmpty()) {
                 List<Entity> list = new ArrayList<>();
                 ring(list, hover, material, p, .82);
-                list.forEach(e -> oldHoverAdd(overlays.get(p.getUniqueId()), e));
+                for (Entity entity : list) old.hover.add((BlockDisplay) entity);
             } else {
                 Location at = origin.clone().add(geometry.x(cell), .025, geometry.z(cell));
                 for (BlockDisplay d : old.hover) {
@@ -1440,10 +1440,6 @@ final class TableView implements AutoCloseable {
                                                 aimed.x() + 1))
                         .colorIfAbsent(legal ? NamedTextColor.GREEN : NamedTextColor.GRAY);
         player.sendActionBar(overlay.feedback);
-    }
-
-    private static void oldHoverAdd(Overlay overlay, Entity entity) {
-        overlay.hover.add((BlockDisplay) entity);
     }
 
     private void ring(

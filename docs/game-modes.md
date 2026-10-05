@@ -2,9 +2,9 @@
 
 [English](game-modes.md) | [简体中文](game-modes.zh-CN.md)
 
-This page describes **1.8.0-SNAPSHOT**, an unpublished development build. It has not been deployed to production servers. Local artwork and model previews do not replace Minecraft client acceptance; see [verification](verification.md) for evidence and status.
+This page describes the current unpublished development build. It has not been deployed to production servers. See the [current feature checklist](features.zh-CN.md), [client acceptance checklist](acceptance.zh-CN.md), and [historical verification records](verification.md).
 
-Public Mahjong tiles now use the same width as hand tiles, and the central wall digits are larger again. Hover privately highlights matching own/public tiles; only the aimed hand tile rises. A draw leaves existing tiles in place and adds the new tile at the far right with a gap. Continuous clicks remain guarded across other seats’ turns, preventing a replacement tile at the same aim from being discarded. Only Mahjong tiles forbidden by kuikae after Chi/Pon dim through display brightness, preserving their materials and patterns; waiting and Riichi selection retain normal brightness. A complete Riichi shape without yaku shows a red No Yaku hint on its actual draw or pending public discard. Choose Chi/Pon/Kan first, then a complete combination. Riichi arms eligible discards; Ron and Tsumo have their own buttons. Dora indicator tiles sit at the middle of the frame, melds remain lower-right, and corner wind inscriptions stay clear of melds. Holding Shift temporarily enters Spectator mode with a private fixed camera. Position and orientation stay fixed, and the player and equipment do not enter the view. This view is read-only; release restores the entry game mode, pose, flight, gravity and invisibility before playing. The eye position keeps the previous 1-block inward and 0.2-block downward adjustment; standing hands and inset indicators may lie behind the camera. Floating round, turn, clock and last-discard information is raised by 0.4 blocks. Sichuan exchange selection/removal, exchange confirmation and missing-suit choice are available directly at the table. Color Eight retains its rotating direction ring and underlined 6/9 artwork, with a new 54-card deck.
+Mahjong hands and public tiles share dimensions and orientation. Hover raises only the aimed hand tile; matching-tile highlights are private. Choose Chi/Pon/Kan before a complete combination; Riichi accepts only legal discards and then automatically discards until a winning action is available. Riichi uses five dora slots and displays riichi deposits and repeat-round counters. Winning hands lie flat. Hold the sprint key (default Ctrl) for the fixed table camera and release to restore the previous view. Sneak and right-click opens the table menu. Sichuan exchange/missing-suit actions and Color Eight pass/color actions are directly available at the table.
 
 ## Set up a game
 
@@ -27,8 +27,12 @@ The lobby prioritizes readiness and starting. Playing rooms return to the physic
 | Chinese Checkers | 2, 3, 4 or 6 | Jump own pieces, other camps, finish condition |
 | Color Eight | 2–5 | First empty hand wins; fixed rules |
 | Mahjong | 4 | Four regional profiles and their room rules |
+| Doudizhu | 3 | Bidding, landlord/farmers and combination play |
+| Liar's Bar | 2–4 | Card claims, challenges and roulette |
+| Texas Hold'em | 2–6 | Betting, raising, all-in and side pots |
+| Yacht Dice | 2–4 | Up to three rolls, held dice and category scoring |
 
-Yacht Dice is available for 2–4 players. Aeroplane remains unavailable for creating new rooms. Existing supported historical room records can still be restored.
+Yacht Dice is available. Aeroplane is retired and its old rule records are not restored; current supported game records can still be restored.
 
 ## Optional board rules
 
@@ -141,7 +145,7 @@ See [migration](migration.md) for current-format updates. The [Nintendo game cat
 - A normal tile has four copies: own hand 2 / public 0 → Remaining 2; own 1 / public 1 → Remaining 2. Public rivers, melds, indicator tiles and offered tiles are counted once by physical ID. Red and normal fives share a type. The count is unseen copies, which can be in opponents’ hands or the dead wall; it is not a prediction of future draws. The central count is the rules engine’s actual drawable wall count.
 - Hands up to 17 tiles occupy one row. Call previews and unseen-copy labels are visible only to their owner; stale choices are rechecked against current legal actions.
 - The timer shares the actual human/bot/offline turn deadline and pauses for suspended play. No second timer or rule change is introduced.
-- Shift focus requires a seat, permission and proximity. Holding Shift temporarily enters Spectator mode with a private fixed camera. Position and orientation stay fixed, and the player and equipment do not enter the view. This view is read-only; release restores the entry game mode, pose, flight, gravity and invisibility before playing. The eye position keeps the previous 1-block inward and 0.2-block downward adjustment; standing hands and inset indicators may lie behind the camera. Menus, leaving, death, external teleports and shutdown restore temporary state. A cancelled game-mode restoration retains the fixed camera and retries on sync; an interrupted session records restoration state for login/reload. External mode changes keep their own mode. A blocked or cancelled return teleport is respected. Native client camera behavior and the Shift + right-click interaction packet still require in-game acceptance. Riichi sticks are now 0.24 blocks long, twice the previous length, with the same two entities each.
+- Sprint-key focus (default Ctrl) requires a seat, permission and proximity. Holding the sprint key temporarily enters Spectator mode with a private fixed camera. Position and orientation stay fixed, and the player and equipment do not enter the view. This view is read-only; release restores the entry game mode, pose, flight, gravity and invisibility before playing. The eye position keeps the previous 1-block inward and 0.2-block downward adjustment; standing hands and inset indicators may lie behind the camera. Menus, leaving, death, external teleports and shutdown restore temporary state. A cancelled game-mode restoration retains the fixed camera and retries on sync; an interrupted session records restoration state for login/reload. External mode changes keep their own mode. A blocked or cancelled return teleport is respected. Native client camera behavior and the Shift + right-click interaction packet still require in-game acceptance. Riichi sticks are now 0.24 blocks long, twice the previous length, with the same two entities each.
 
 ### Mahjong artwork, indicators and bonus hints
 
@@ -153,7 +157,7 @@ See [native display counts](model-counts.zh-CN.md) for entity costs; no client F
 
 ### Riichi assistance and settled hands
 
-Four owner-only controls run along the right rim: Sort, Win, No Call and Draw. Only Sort is enabled by default. On and off share the same model; brightness distinguishes their state. Aim at a control for a function-only action-bar explanation. Preferences remain with that player at the current table. Turning Sort off freezes the existing order and appends new tiles at the right.
+Four owner-only controls run along the right half of the front apron: Sort, Win, No Call and Draw. Only Sort is enabled by default. On and off share the same model; brightness distinguishes their state. Aim at a control for a function-only action-bar explanation. Preferences remain with that player at the current table. Turning Sort off freezes the existing order and appends new tiles at the right.
 
 Win takes only a legal Ron or Tsumo. No Call declines opponent Chi/Pon/open Kan while retaining wins and the player's own Kans. Draw discards only the newly drawn tile after the normal short delay and pauses for a legal win; Win takes precedence when both are enabled. Automatic actions use the same validation, sound and saved-history path as manual actions.
 

@@ -16,7 +16,7 @@
 
 `Room` stores authoritative state, seats, seed and action history. `Tabletop3D` owns local room/occupancy management. `GameWorld` routes physical input; `TableView` displays the state and does not apply game moves. `TableModels` describes native BlockDisplay parts. Boards also use map surfaces and TextDisplay labels.
 
-Connect Four uses five strips per vertical disc, rack supports, and a 12-tick vertical drop with a small contact bounce. Restored discs spawn directly at their rule positions. Reversi uses four blocks per two-sided piece; a 10-tick rotation changes the upper face without replacing the entities. Rapid updates start from the current visual angle and converge on the newest owner. No animation state is persisted.
+Connect Four uses five strips per vertical disc, a rack, and a 12-tick vertical drop with a small contact bounce. Restored discs spawn directly at their rule positions. Reversi uses six blocks per two-sided piece; a 10-tick rotation changes the upper face without replacing the entities. Rapid updates start from the current visual angle and converge on the newest owner. No animation state is persisted.
 
 The Tabletop renderer has its own plugin lifecycle. The text utilities are included in the Tabletop JAR; no dependency on Casino or a shared runtime plugin is introduced. Room data stays at schema 1.
 
@@ -32,8 +32,16 @@ The Tabletop renderer has its own plugin lifecycle. The text utilities are inclu
 
 CraftEngine is the optional resource-model bridge. Vanilla rendering and native Paper Dialog menus run independently. No AuthMe, Geyser, Casino, ServerGames or ServerMenu runtime dependency is required.
 
-## Interaction updates in 1.5.0
+## Input validation and hover state
 
 Room callbacks recheck live registry identity before backend mutations. Piece-source menus retain their rendered revision; stale selections rebuild from current legal actions. A leave confirmation is tied to the room it displayed. This does not change persisted room identity or schema.
 
 Table geometry remains fixed, while hover labels use the current cells cached at each board revision. Connect Four normalizes hover to a column, reuses four private marker entities within unchanged state and resends unchanged feedback at most every ten pointer updates. Go dead marks are separate removable parts of the existing stone. Disc meshes remain three parts; no model entity budget increase is required for that change.
+
+## Card faces, board maps and sounds
+
+`HandModels` owns the active native Mahjong artwork and pip coordinates. Card faces use signed head textures through `PlayingCardHeads` and `ColorEightHeads`; the retired `HandArt` raster renderer is removed. Public card backs remain two native blocks.
+
+`TableMaps` creates the static board map tiles once per world and game, caches immutable item lists, and saves their IDs under the existing `v1.<world UUID>.<game>.<tile index>` paths. The index and room schemas remain unchanged.
+
+`TableSounds` classifies committed actions before playback. Doudizhu combinations and Liars Bar challenges have separate cue selection methods. Playback chooses Mahjong-specific resources first, then shared resources, with native sounds for players without the pack. Rendering and history replay do not trigger sounds.

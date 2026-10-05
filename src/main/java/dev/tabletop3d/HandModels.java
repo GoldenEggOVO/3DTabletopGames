@@ -127,7 +127,7 @@ final class HandModels {
             for(int i=0;i<8;i++){double a=i*Math.PI/4;box(p,16+6.5*Math.cos(a),24+6.5*Math.sin(a),1.2,2.7,a,1,BLUE);}
         }else if(suit=='s'&&n==1)bird(p);
         else if(suit=='p'||suit=='s'){
-            int[][] points=HandArt.positions(n);
+            int[][] points=pipPositions(n);
             for(int i=0;i<points.length;i++){
                 Material m=red?RED:suit=='p'?(n==5&&i==4?RED:BLUE):(n==7&&i==0?RED:GREEN);
                 if(suit=='p')pip(p,points[i][0],points[i][1],n>=7?3.2:4.2,m,1);else bamboo(p,points[i][0],points[i][1],m);
@@ -144,5 +144,18 @@ final class HandModels {
             circle(p,18,31,1.2,3,RED);
         }
     }
+    private static int[][] pipPositions(int number) {
+        return switch (number) {
+            case 2 -> new int[][]{{11, 14}, {21, 34}};
+            case 3 -> new int[][]{{9, 12}, {16, 24}, {23, 36}};
+            case 4 -> new int[][]{{9, 13}, {23, 13}, {9, 35}, {23, 35}};
+            case 5 -> new int[][]{{9, 12}, {23, 12}, {9, 36}, {23, 36}, {16, 24}};
+            case 6 -> new int[][]{{9, 11}, {23, 11}, {9, 24}, {23, 24}, {9, 37}, {23, 37}};
+            case 7 -> new int[][]{{8, 9}, {16, 15}, {24, 21}, {9, 29}, {23, 29}, {9, 39}, {23, 39}};
+            case 8 -> new int[][]{{9, 9}, {23, 9}, {9, 19}, {23, 19}, {9, 29}, {23, 29}, {9, 39}, {23, 39}};
+            default -> new int[][]{{8, 11}, {16, 11}, {24, 11}, {8, 24}, {16, 24}, {24, 24}, {8, 37}, {16, 37}, {24, 37}};
+        };
+    }
+
     private HandModels(){}
 }
