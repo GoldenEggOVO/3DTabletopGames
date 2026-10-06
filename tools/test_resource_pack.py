@@ -73,7 +73,8 @@ class ResourcePackTest(unittest.TestCase):
             self.assertEqual(255, image.getpixel((image.width//2,image.height//2))[3], name)
 
     def test_landlord_cloth_has_the_bottom_card_marks_at_the_actual_centre(self):
-        cloth = Image.open(io.BytesIO(self.archive.read("assets/tabletop3d/textures/item/surface/doudizhu_table.png"))).convert("RGB")
+        model = json.loads(self.archive.read("assets/tabletop3d/models/item/doudizhu_table.json"))
+        cloth = self.face_image(model, model["elements"][0]["faces"]["up"]).convert("RGB")
         for x in (210, 256, 302):
             self.assertEqual((36, 90, 64), cloth.getpixel((x, 256)))
         self.assertEqual((40, 99, 70), cloth.getpixel((256, 190)))
@@ -197,11 +198,17 @@ class ResourcePackTest(unittest.TestCase):
                 used = {face["texture"][1:] for element in model["elements"] for face in element["faces"].values()}
                 self.assertEqual(used, set(model["textures"]), name)
                 paths.update(model["textures"].values())
+        referenced = {"assets/" + path.replace(":", "/textures/") + ".png" for path in paths}
+        packed = {name for name in self.names if name.startswith("assets/tabletop3d/textures/") and name.endswith(".png")}
+        self.assertEqual(referenced, packed, "Unused images are still loaded into the item atlas")
         pixels = 0
-        for path in paths:
-            image = Image.open(io.BytesIO(self.archive.read("assets/" + path.replace(":", "/textures/") + ".png")))
+        for path in packed:
+            image = Image.open(io.BytesIO(self.archive.read(path)))
             pixels += image.width * image.height
         self.assertLess(pixels, 40_000_000, "Geometry savings must not inflate the texture atlas")
+        manifest = json.loads((ROOT / "target/resource-pack-manifest.json").read_text())
+        self.assertEqual(len(packed), manifest["texture_count"])
+        self.assertEqual(pixels, manifest["texture_pixels"])
 
     def test_connect_four_has_real_open_holes_and_a_sealed_frame(self):
         data=json.loads(self.archive.read("assets/tabletop3d/models/item/board_connectfour.json"))
@@ -276,8 +283,8 @@ class ResourcePackTest(unittest.TestCase):
 
     def test_card_art_is_crisp_pixel_art(self):
         for name in ("card_r3", "card_b6", "card_y9", "card_p4", "card_wild", "card_rdraw", "card_breverse", "card_yskip"):
-            image = Image.open(io.BytesIO(self.archive.read(
-                f"assets/tabletop3d/textures/item/face/{name}.png"))).convert("RGB")
+            model = json.loads(self.archive.read(f"assets/tabletop3d/models/item/{name}.json"))
+            image = self.face_image(model, model["elements"][0]["faces"]["south"]).convert("RGB")
             self.assertLessEqual(len(image.getcolors(image.width * image.height)), 20, name)
 
     def test_table_edges_are_solid_and_mahjong_rim_leaves_the_cloth_open(self):

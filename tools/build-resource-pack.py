@@ -376,11 +376,27 @@ def main():
     version=ET.parse(ROOT/"pom.xml").getroot().find("{*}version").text
     (config.parent.parent/"pack.yml").write_text(f"name: Tabletop 3D\nauthor: Tabletop3D\nversion: {version}\n",encoding="utf-8")
     target=ROOT/"target/tabletop-resource-pack.zip"
+    used_textures = set()
+    for name in CATALOG:
+        data = json.loads((ASSETS / f"models/item/{name}.json").read_text(encoding="utf-8"))
+        used_textures.update("assets/" + source.replace(":", "/textures/") + ".png"
+                             for source in data["textures"].values())
+    texture_pixels = 0
+    for path in used_textures:
+        with Image.open(BUILD / path) as image:
+            texture_pixels += image.width * image.height
+    if texture_pixels >= 40_000_000:
+        raise ValueError("Packed textures exceed the item atlas budget")
     with zipfile.ZipFile(target,"w",zipfile.ZIP_DEFLATED) as z:
         for path in sorted(BUILD.rglob("*")):
-            if path.is_file():z.write(path,path.relative_to(BUILD).as_posix())
+            if path.is_file():
+                relative = path.relative_to(BUILD).as_posix()
+                if relative.startswith("assets/tabletop3d/textures/") and relative.endswith(".png") and relative not in used_textures:
+                    continue
+                z.write(path,relative)
     manifest={"models":sorted(CATALOG),"sounds_seconds":durations,"sha1":hashlib.sha1(target.read_bytes()).hexdigest(),
-              "sha256":hashlib.sha256(target.read_bytes()).hexdigest(),"bytes":target.stat().st_size}
+              "sha256":hashlib.sha256(target.read_bytes()).hexdigest(),"bytes":target.stat().st_size,
+              "texture_count":len(used_textures),"texture_pixels":texture_pixels}
     write_json(ROOT/"target/resource-pack-manifest.json",manifest)
     (ROOT/"src/main/resources/resource-pack.sha1").write_text(manifest["sha1"]+"\n",encoding="ascii")
     previews();print(json.dumps({k:v for k,v in manifest.items() if k!="models"},indent=2))
