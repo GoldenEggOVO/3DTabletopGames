@@ -137,7 +137,7 @@ public final class PlayingCardTable implements AutoCloseable {
         final Player player;
         final int seat;
         final LinkedHashSet<String> selection = new LinkedHashSet<>();
-        final Map<String, CardVisual> cards = new LinkedHashMap<>();
+        final LinkedHashMap<String, CardVisual> cards = new LinkedHashMap<>();
         final Map<String, List<Display>> buttons = new LinkedHashMap<>();
         final Map<String, Pose> buttonPoses = new LinkedHashMap<>();
         long revision = -1, language = -1;
@@ -589,6 +589,7 @@ public final class PlayingCardTable implements AutoCloseable {
                         view.cards.put(card.id(), new CardVisual(
                                 new CardSpec(card.face(), pose, true, seat), player, packed));
                     }
+                    view.cards.putLast(card.id(), view.cards.get(card.id()));
                 }
             view.cards.entrySet().removeIf(entry -> {
                 if (kept.contains(entry.getKey())) return false;

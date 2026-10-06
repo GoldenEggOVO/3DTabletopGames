@@ -71,6 +71,33 @@ class PlayingCardTableTest {
     }
 
     @Test
+    void landlordCardsJoinTheSortedHandWithoutReplacingExistingDisplays() {
+        for (boolean packed : List.of(false, true)) {
+            var f = new TableViewTest.Fixture("doudizhu", 3);
+            owner(f, packed);
+            var before = new LinkedHashMap<>(ownCards(f));
+            while (f.room.board.currentPlayer() != 0) f.move("bid:0");
+            f.move("bid:3");
+            var hand = (dev.tabletop3d.rules.HandGame) f.room.board;
+            var expected = hand.hand(0).stream().map(dev.tabletop3d.rules.HandGame.Piece::id).toList();
+            var cards = ownCards(f);
+            assertEquals(20, expected.size());
+            assertEquals(expected, List.copyOf(cards.keySet()), "Displays must follow the sorted rules hand");
+            before.forEach((id, visual) -> assertSame(visual, cards.get(id)));
+            var bottomId = hand.exposed(0).getFirst().id();
+            table(f).hover(f.player, bottomId);
+            table(f).hover(f.player, null);
+            double previousX = Double.NEGATIVE_INFINITY;
+            for (String id : expected) {
+                double x = body(cards.get(id)).getX();
+                assertTrue(x > previousX, "Hover must preserve rank order after the landlord receives cards");
+                previousX = x;
+            }
+            f.view.close();
+        }
+    }
+
+    @Test
     void unchangedPrivateFacesSurviveCommittedMovesInBothDisplayModes() {
         for (boolean packed : List.of(false, true)) {
             var f = new TableViewTest.Fixture("liars-bar", 4);
