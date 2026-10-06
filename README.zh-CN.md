@@ -1,5 +1,7 @@
 # 3DTabletopGames
 
+素材统一放在 `resource-pack/`：`textures/` 按游戏分类，`native-playing-cards/` 保存原版头颅卡牌素材；`sounds/` 保存音效和事件映射；`craftengine/` 保存模型注册配置；`sources.json` 保存素材来源与授权说明。`tools/` 保留构建与验证脚本，生成文件位于 `target/`。
+
 [English](README.md) | [简体中文](README.zh-CN.md)
 
 **带实体棋子、多人房间和原生 Dialog 菜单的 Minecraft 3D 桌游插件。**

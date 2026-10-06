@@ -4,7 +4,7 @@ from PIL import Image, ImageChops
 from face_art import playing_face, playing_back, joker_face, mahjong_face
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / 'resource-pack/source/playing-cards'
+SOURCE = ROOT / 'resource-pack/textures/playing-cards'
 
 
 class PlayingCardArtTest(unittest.TestCase):
@@ -45,7 +45,7 @@ class PlayingCardArtTest(unittest.TestCase):
                 self.assertLessEqual(bounds[3], 228)
                 self.assertLessEqual(abs(bounds[0] + bounds[2] - 160), 2)
                 self.assertLessEqual(abs(bounds[1] + bounds[3] - 240), 2)
-                original = Image.open(ROOT / f'resource-pack/source/mahjong/tiles/{key}.png').convert('RGBA')
+                original = Image.open(ROOT / f'resource-pack/textures/mahjong/tiles/{key}.png').convert('RGBA')
                 crop = original.getbbox()
                 old_scale = min(140 / original.width, 220 / original.height)
                 self.assertGreater(bounds[2] - bounds[0], (crop[2] - crop[0]) * old_scale * 1.18)

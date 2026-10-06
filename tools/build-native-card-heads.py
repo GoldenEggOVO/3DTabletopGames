@@ -72,7 +72,7 @@ def preview(cards, output):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--cards", type=Path, default=ROOT / "tools/assets/playing-cards")
+    parser.add_argument("--cards", type=Path, default=ROOT / "resource-pack/textures/native-playing-cards")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     cards, manifest = export(args.cards, args.output)

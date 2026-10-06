@@ -92,7 +92,7 @@ def main():
                               "sha256": hashlib.sha256(expected.encode()).hexdigest()}
         original_count += len(source["boxes"])
         merged_count += len(boxes)
-    (args.root / "tools/assets/playing-card-art.json").write_text(
+    (args.root / "resource-pack/textures/native-playing-cards/playing-card-art.json").write_text(
         json.dumps(models, separators=(",", ":")) + "\n", encoding="utf-8")
     (args.root / "src/test/resources/blackjack-card-fingerprints.json").write_text(
         json.dumps(fingerprints, indent=2) + "\n", encoding="utf-8")

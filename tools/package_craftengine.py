@@ -29,9 +29,9 @@ with zipfile.ZipFile(out / f"3dtabletop-{native['version']}.jar") as jar:
 shutil.copy2(pack, out / pack.name)
 shutil.copy2(ROOT / "target/resource-pack-manifest.json", out / "resource-pack-manifest.json")
 with zipfile.ZipFile(out / "craftengine-registration.zip", "w", zipfile.ZIP_DEFLATED) as z:
-    for p in sorted((ROOT / "craftengine/resources/tabletop3d").rglob("*")):
+    for p in sorted((ROOT / "resource-pack/craftengine/resources/tabletop3d").rglob("*")):
         if p.is_file():
-            z.write(p, "plugins/CraftEngine/" + p.relative_to(ROOT / "craftengine").as_posix())
+            z.write(p, "plugins/CraftEngine/" + p.relative_to(ROOT / "resource-pack/craftengine").as_posix())
 for mode in ("vanilla", "resource-pack", "mixed"):
     (out / f"rendering-{mode}.yml").write_text(
         "# Merge this rendering section into plugins/3dtabletop/config.yml; restart.\n"

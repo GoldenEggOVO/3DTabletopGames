@@ -9,7 +9,7 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-ART = ROOT / "tools/assets/playing-cards"
+ART = ROOT / "resource-pack/textures/native-playing-cards"
 
 class NativeCardHeadsTest(unittest.TestCase):
     def setUp(self):

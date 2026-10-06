@@ -49,7 +49,7 @@ if args.craftengine_jar:
     ce.mkdir()
     if args.craftengine_cache:
         shutil.copytree(args.craftengine_cache / "libs", ce / "libs")
-    shutil.copytree(project / "craftengine/resources/tabletop3d", ce / "resources/tabletop3d")
+    shutil.copytree(project / "resource-pack/craftengine/resources/tabletop3d", ce / "resources/tabletop3d")
     (ce / "config.yml").write_text("metrics: false\nupdate-checker: false\nresource-pack:\n  merge-external-folders: []\n  delivery:\n    send-on-join: false\n    auto-upload: false\n    resend-on-upload: false\n    hosting: []\n", encoding="utf-8")
 
 tested_digest = hashlib.sha256((plugins / jar.name).read_bytes()).hexdigest()

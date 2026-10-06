@@ -22,7 +22,7 @@ class PlayingCardSourceArtTest {
         try (var input = getClass().getResourceAsStream("/blackjack-card-fingerprints.json")) {
             var expected = JsonParser.parseString(new String(input.readAllBytes(), StandardCharsets.UTF_8))
                     .getAsJsonObject();
-            var source = java.nio.file.Files.readString(java.nio.file.Path.of("tools/assets/playing-card-art.json"));
+            var source = java.nio.file.Files.readString(java.nio.file.Path.of("resource-pack/textures/native-playing-cards/playing-card-art.json"));
             java.util.Map<String, List<Box>> artwork = new com.google.gson.Gson().fromJson(source,
                     new com.google.gson.reflect.TypeToken<java.util.Map<String, List<Box>>>() {}.getType());
             for (var entry : expected.entrySet()) {

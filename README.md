@@ -1,5 +1,7 @@
 # 3DTabletopGames
 
+Source assets are grouped under `resource-pack/`: `textures/` contains artwork by game, including `native-playing-cards/` for vanilla head faces; `sounds/` contains audio and event mappings; `craftengine/` contains item registrations; `sources.json` records provenance and license notices. `tools/` contains build and verification scripts. Generated files remain under `target/`.
+
 Optional CraftEngine rendering for board games, Mahjong and card games: vanilla, resource-pack, or mixed per-player display. Vanilla remains the default. See [installation](docs/craftengine.zh-CN.md) and [model counts](docs/model-counts.zh-CN.md).
 
 [![Build](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml/badge.svg)](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml)

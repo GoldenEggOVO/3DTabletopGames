@@ -3,776 +3,776 @@
   "note": "Mahjong Soul tablecloth and audio remain third-party assets. Tile faces use lietxia/mahjong_graphic. Resource-pack poker uses George Blackwell artwork; native head faces are unchanged.",
   "files": [
     {
-      "file": "audio-source/mahjong/draw.mp3",
+      "file": "resource-pack/sounds/mahjong/draw.mp3",
       "sha256": "ea1017d9f590aa2e73d9a0ebc542e34590e396ed9a9c38bab91d1c3352f322bf",
       "url": "https://files.riichi.moe/mjg/game%20resources%20and%20tools/Mahjong%20Soul/game%20files/sounds%20effects%2C%20game%20music/audio_mj/anpai_reverse.mp3"
     },
     {
-      "file": "audio-source/mahjong/select.mp3",
+      "file": "resource-pack/sounds/mahjong/select.mp3",
       "sha256": "ff7c24659bca772db6198e9b15644cfe92dc6de121678284f70a16a81a9b9c47",
       "url": "https://files.riichi.moe/mjg/game%20resources%20and%20tools/Mahjong%20Soul/game%20files/sounds%20effects%2C%20game%20music/audio_mj/click_pai.mp3"
     },
     {
-      "file": "audio-source/mahjong/countdown.mp3",
+      "file": "resource-pack/sounds/mahjong/countdown.mp3",
       "sha256": "ba32fd31774324e53f9689df06adfbc465599230be910306767cac7b5ae698a5",
       "url": "https://files.riichi.moe/mjg/game%20resources%20and%20tools/Mahjong%20Soul/game%20files/sounds%20effects%2C%20game%20music/audio_mj/countdown5.mp3"
     },
     {
-      "file": "audio-source/mahjong/discard.mp3",
+      "file": "resource-pack/sounds/mahjong/discard.mp3",
       "sha256": "fdc4b7a9ad8c078a2371fb89d2e784a10e16be3ce422d5dda98629a997b588c3",
       "url": "https://files.riichi.moe/mjg/game%20resources%20and%20tools/Mahjong%20Soul/game%20files/sounds%20effects%2C%20game%20music/audio_mj/discard_tile.mp3"
     },
     {
-      "file": "audio-source/mahjong/meld.mp3",
+      "file": "resource-pack/sounds/mahjong/meld.mp3",
       "sha256": "f9a7e2b6e60f3c55188671df65b2d9e92dec9c859a09109f6aba066f60acaafd",
       "url": "https://files.riichi.moe/mjg/game%20resources%20and%20tools/Mahjong%20Soul/game%20files/sounds%20effects%2C%20game%20music/audio_mj/fulu.mp3"
     },
     {
-      "file": "audio-source/mahjong/kan.mp3",
+      "file": "resource-pack/sounds/mahjong/kan.mp3",
       "sha256": "e6835e57ee5b65db6f6f29d7e2d3fde42363cbf489c01e4c628ca8eaf7f8eda0",
       "url": "https://files.riichi.moe/mjg/game%20resources%20and%20tools/Mahjong%20Soul/game%20files/sounds%20effects%2C%20game%20music/audio_mj/gang.mp3"
     },
     {
-      "file": "audio-source/mahjong/win.mp3",
+      "file": "resource-pack/sounds/mahjong/win.mp3",
       "sha256": "3f2b8d896ffb95ae5b3846c2fd37af0cda364b066d50116f488f49c7eeb50c6d",
       "url": "https://files.riichi.moe/mjg/game%20resources%20and%20tools/Mahjong%20Soul/game%20files/sounds%20effects%2C%20game%20music/audio_mj/hupai.mp3"
     },
     {
-      "file": "audio-source/mahjong/dora.mp3",
+      "file": "resource-pack/sounds/mahjong/dora.mp3",
       "sha256": "bdfc26741a32663bab9d182b71b89b788ee62d63485518c0eacadd76dc1c279a",
       "url": "https://files.riichi.moe/mjg/game%20resources%20and%20tools/Mahjong%20Soul/game%20files/sounds%20effects%2C%20game%20music/audio_mj/new_dora.mp3"
     },
     {
-      "file": "audio-source/mahjong/riichi.mp3",
+      "file": "resource-pack/sounds/mahjong/riichi.mp3",
       "sha256": "dd6fad2aa7bd344caef830d0d64a3d2fbb0ae33680f039491b0977d2952774bb",
       "url": "https://files.riichi.moe/mjg/game%20resources%20and%20tools/Mahjong%20Soul/game%20files/sounds%20effects%2C%20game%20music/audio_mj/put_liqi.mp3"
     },
     {
-      "file": "resource-pack/source/mahjong/tablecloth.jpg",
+      "file": "resource-pack/textures/mahjong/tablecloth.jpg",
       "sha256": "3e9b53472039422afa04498bed441c68c54bf4e2a019373c52d0360b6bb181f9",
       "url": "https://files.riichi.moe/mjg/game%20resources%20and%20tools/Mahjong%20Soul/game%20files/tablecloth/default.jpg"
     },
     {
-      "file": "audio-source/board/impactWood_light_000.ogg",
+      "file": "resource-pack/sounds/board/impactWood_light_000.ogg",
       "sha256": "eb45e35b4bed784d3f120de4afec4b0d6ac09d9e143cce8cfcb7d739e1b1f3c3",
       "url": "https://kenney.nl/assets/impact-sounds",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/board/impactWood_light_001.ogg",
+      "file": "resource-pack/sounds/board/impactWood_light_001.ogg",
       "sha256": "4b76bf3ccc8e60d19188f3165b778a7817786faa6887c55d9049bcbeef3b425f",
       "url": "https://kenney.nl/assets/impact-sounds",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/board/impactWood_light_002.ogg",
+      "file": "resource-pack/sounds/board/impactWood_light_002.ogg",
       "sha256": "b183cf7a5bd783817e0e4b82af34ac6658fa1927049089dadc8b15c2ecc771dc",
       "url": "https://kenney.nl/assets/impact-sounds",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/board/chip-lay-1.ogg",
+      "file": "resource-pack/sounds/board/chip-lay-1.ogg",
       "sha256": "4b2111252ccb64eed67f171e061053849cfbb29873536c03948646f244a3905c",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/board/chip-lay-2.ogg",
+      "file": "resource-pack/sounds/board/chip-lay-2.ogg",
       "sha256": "8ca8b2d450741c04ed7b4ba51ed3f73c2400c8b3dbe83b974be4fe4774a76712",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/board/chip-lay-3.ogg",
+      "file": "resource-pack/sounds/board/chip-lay-3.ogg",
       "sha256": "bf24ebb417b6279568800dffdb0205d3ec8854c7efe179e8964755a6341727aa",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/board/chips-handle-1.ogg",
+      "file": "resource-pack/sounds/board/chips-handle-1.ogg",
       "sha256": "a2c495237fb0dc0dc96ccc2c9840572edd226e6459398ecb631c6c9f9e5408f0",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/board/chips-handle-2.ogg",
+      "file": "resource-pack/sounds/board/chips-handle-2.ogg",
       "sha256": "099b6d7d3a71e7d22171a93d124e7366e326d32eb85d718ba29abded8a49c329",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/board/impactWood_medium_000.ogg",
+      "file": "resource-pack/sounds/board/impactWood_medium_000.ogg",
       "sha256": "1723a9fd25103ed41af06054814e84e65f4a772bac86ab2dc927da93d9592ff5",
       "url": "https://kenney.nl/assets/impact-sounds",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/dice/dice-throw-1.ogg",
+      "file": "resource-pack/sounds/dice/dice-throw-1.ogg",
       "sha256": "4e6581c73465cdd7ec32e86a709b4ea5c682e819c9bdb7989d1df1880ba67886",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/dice/dice-throw-2.ogg",
+      "file": "resource-pack/sounds/dice/dice-throw-2.ogg",
       "sha256": "e0b8c370503b2c5c2a72d311cccae30fe63a6afd48f2be32e771fcf1a98585d6",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/dice/dice-throw-3.ogg",
+      "file": "resource-pack/sounds/dice/dice-throw-3.ogg",
       "sha256": "09c13d35a9a30bfce31a5e9bca94adc5be189ddecd0b4500237d54c7fd05227c",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/dice/die-throw-1.ogg",
+      "file": "resource-pack/sounds/dice/die-throw-1.ogg",
       "sha256": "b31d716165be60e442da3c1ca25a3968aad1e0851a7f0859f495aecc02fd9e13",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/dice/die-throw-2.ogg",
+      "file": "resource-pack/sounds/dice/die-throw-2.ogg",
       "sha256": "a2702cfe14d24aab302483a1499daa88474a4af4acd794b58d97f4af16333b3d",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/dice/die-throw-3.ogg",
+      "file": "resource-pack/sounds/dice/die-throw-3.ogg",
       "sha256": "52fc44c7bb89328a147738574c925508c34abf4c19a014575b37ffb8c6b02437",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/dice/die-throw-4.ogg",
+      "file": "resource-pack/sounds/dice/die-throw-4.ogg",
       "sha256": "6253cabcb10c4152548cbc9d3ea87c1bf1bd484f0bd8d6b73c542e690509c0fd",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/dice/dice-grab-1.ogg",
+      "file": "resource-pack/sounds/dice/dice-grab-1.ogg",
       "sha256": "1952cf1987b2c1ebb035b30b5f0caf23604b6ce4c88b6a226fe6e6257ce730f3",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/dice/dice-grab-2.ogg",
+      "file": "resource-pack/sounds/dice/dice-grab-2.ogg",
       "sha256": "4eb4940d1e71aa3f6ac5f865b6b47748a492adf6a83d622c8efe6284dbebbd2c",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/cards/card-slide-1.ogg",
+      "file": "resource-pack/sounds/cards/card-slide-1.ogg",
       "sha256": "006cf9822d15d7063f8899e56041f41646df30adb6fbd8b974ee5d5420012690",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/cards/card-slide-2.ogg",
+      "file": "resource-pack/sounds/cards/card-slide-2.ogg",
       "sha256": "e674a1679ec87b507047fe012d068ad2c412125f56186f0e732684705c2a6888",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/cards/card-slide-3.ogg",
+      "file": "resource-pack/sounds/cards/card-slide-3.ogg",
       "sha256": "af2ab62656cb3df73316ce5771b8ee1111a840962b21607e3202151e7413c52c",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/chips/chips-stack-1.ogg",
+      "file": "resource-pack/sounds/chips/chips-stack-1.ogg",
       "sha256": "12bf175b9afcea112175b241ad3336c6244ac5fdcdff8b5942ecc03f2225e0c4",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/chips/chips-stack-2.ogg",
+      "file": "resource-pack/sounds/chips/chips-stack-2.ogg",
       "sha256": "9f985e766c3557eef1764240b48e30b2f0ffa870a99f05de85cd6bf0ea758ef5",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/chips/chips-stack-3.ogg",
+      "file": "resource-pack/sounds/chips/chips-stack-3.ogg",
       "sha256": "48cc0f01e2b62be7677f2e8c02177906cab80e96fa8176fa05b3ced35bc2a9c2",
       "url": "https://kenney.nl/assets/casino-audio",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/interface/select_001.ogg",
+      "file": "resource-pack/sounds/interface/select_001.ogg",
       "sha256": "aec0c31ea934a35936ae0d2ab8fac8123c93aa5647f935853a58dbaf90278b7a",
       "url": "https://kenney.nl/assets/interface-sounds",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/interface/back_001.ogg",
+      "file": "resource-pack/sounds/interface/back_001.ogg",
       "sha256": "07db973f79f6ae0f2edc34561e7592e24d0577455919fb602cb8ecc0da991dcf",
       "url": "https://kenney.nl/assets/interface-sounds",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/interface/confirmation_001.ogg",
+      "file": "resource-pack/sounds/interface/confirmation_001.ogg",
       "sha256": "063564703b6094d70718a3e787a55cc9141611e4ecd6b6637f8828f79b4a8c3a",
       "url": "https://kenney.nl/assets/interface-sounds",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/interface/open_001.ogg",
+      "file": "resource-pack/sounds/interface/open_001.ogg",
       "sha256": "a27c6bb0df7da1e6af5dd5937593c98bc58b6e513f42fe6a3254cd6a6949c648",
       "url": "https://kenney.nl/assets/interface-sounds",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/interface/confirmation_004.ogg",
+      "file": "resource-pack/sounds/interface/confirmation_004.ogg",
       "sha256": "568967a3d9f8a8f6af54ea01729c4882284308f2a27d78c07ffd7ee0d6951661",
       "url": "https://kenney.nl/assets/interface-sounds",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/interface/close_001.ogg",
+      "file": "resource-pack/sounds/interface/close_001.ogg",
       "sha256": "44af8249b933e0fd35ec957a638bb1a0b01f85b53fbe9674bf77bd3ca3168ef4",
       "url": "https://kenney.nl/assets/interface-sounds",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/interface/confirmation_003.ogg",
+      "file": "resource-pack/sounds/interface/confirmation_003.ogg",
       "sha256": "3091bf0be0497f825769ee0733ca7bdc3bcd59bd6c6e8f2ba8f93d580ff38022",
       "url": "https://kenney.nl/assets/interface-sounds",
       "license": "CC0-1.0"
     },
     {
-      "file": "audio-source/cards/play.mp3",
+      "file": "resource-pack/sounds/cards/play.mp3",
       "sha256": "8f7ee00b651b1e2aea89d191d8a01d03697b283bb667b440a939e877d6ebaef6",
       "supplied_file": "oxidvideos-taking-playing-card-522520.mp3"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f1.png",
+      "file": "resource-pack/textures/mahjong/tiles/f1.png",
       "sha256": "ef8fd4bdf39c39bceaf3b3da5845cd0682ef6d4a57388a921c3769e0ef54f86a",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/mei.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f1.svg",
+      "file": "resource-pack/textures/mahjong/tiles/f1.svg",
       "sha256": "1dd164b2b88520ed6dacc031aa8eb5dc4e3980005e3f726036c292f5053ebba8",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/mei.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f2.png",
+      "file": "resource-pack/textures/mahjong/tiles/f2.png",
       "sha256": "5b3c4d10d560ebfeb14c4a05c03a81348a2fb4ddf72c2faa4ce6c39f8516aa8b",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/lan.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f2.svg",
+      "file": "resource-pack/textures/mahjong/tiles/f2.svg",
       "sha256": "7287dfbae19cab5a262c9a5e3964dfdc800b4ab1ad9e6e533abdf069e6b81c9a",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/lan.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f3.png",
+      "file": "resource-pack/textures/mahjong/tiles/f3.png",
       "sha256": "17ba04eee72171bd881fb7b287e456e300d7d5257e5168e8f6262cce47389c94",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/zu.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f3.svg",
+      "file": "resource-pack/textures/mahjong/tiles/f3.svg",
       "sha256": "9be39553cbea1f14ba6b862b2bb12c3474e11263072702f8b4a3d4e84ff1c523",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/zu.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f4.png",
+      "file": "resource-pack/textures/mahjong/tiles/f4.png",
       "sha256": "63dd68dc64658a389ae04982aa419c2fb3e08e6f24366f9eb9aa01619c886c11",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/ju.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f4.svg",
+      "file": "resource-pack/textures/mahjong/tiles/f4.svg",
       "sha256": "845f6733a9b82274baa14632ea1d4e59174d901b068a5aaff15c3797922c9c16",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/ju.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f5.png",
+      "file": "resource-pack/textures/mahjong/tiles/f5.png",
       "sha256": "e9827fa43b5d42028f82b171154d7a11acb1ec9919345beaad243c1f608a9c14",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/chun.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f5.svg",
+      "file": "resource-pack/textures/mahjong/tiles/f5.svg",
       "sha256": "28a76771fb1afe1f2f6d8f9e4970a148f867c9f19154409318fefacf13fd06d2",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/chun.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f6.png",
+      "file": "resource-pack/textures/mahjong/tiles/f6.png",
       "sha256": "92f30fe553a4bdf828a998ee1e97cd64bac4e1e6668c311f81ac91b41a6d3374",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/xia.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f6.svg",
+      "file": "resource-pack/textures/mahjong/tiles/f6.svg",
       "sha256": "a15967001f366a60c7b12367ae7a035c264c1197a101e2db1676a95de198d1d5",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/xia.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f7.png",
+      "file": "resource-pack/textures/mahjong/tiles/f7.png",
       "sha256": "8864ba85d0ce9f8f480e5874196f105c6bca6c261b9817653640e881dab18c65",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/qiu.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f7.svg",
+      "file": "resource-pack/textures/mahjong/tiles/f7.svg",
       "sha256": "5336af1fb8de9b542ee0a2e49b80503d64e206e268a06165e30b0cd281d703e3",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/qiu.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f8.png",
+      "file": "resource-pack/textures/mahjong/tiles/f8.png",
       "sha256": "dc9a1015bc959d325ffb70a4c4782fc0dd17d228ea259636a0f07c51d52a3380",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/dong.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/f8.svg",
+      "file": "resource-pack/textures/mahjong/tiles/f8.svg",
       "sha256": "2984e52350f1994ae1fa316c8e3a29f743a164406a336df7010f786e83e3683a",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/dong.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m0.png",
+      "file": "resource-pack/textures/mahjong/tiles/m0.png",
       "sha256": "b18b1e5fc2b7f69c201a471a9c32d8582925eab000021043516dfbb903b7a243",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/0m.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m0.svg",
+      "file": "resource-pack/textures/mahjong/tiles/m0.svg",
       "sha256": "d1febbb0db0cef5fbe43aeba678c66cf9f91be14218004ad5af1f3a22ae6d65f",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/0m.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m1.png",
+      "file": "resource-pack/textures/mahjong/tiles/m1.png",
       "sha256": "f8ada398b6eb1c01c7ec05b5b57ccd026d2b90f241bd4cc628d806923b74d460",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/1m.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m1.svg",
+      "file": "resource-pack/textures/mahjong/tiles/m1.svg",
       "sha256": "bc4efedeb11fddbd6be582aaab9392aa7a2e6f4cc7b36020ad69ac7a52485c18",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/1m.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m2.png",
+      "file": "resource-pack/textures/mahjong/tiles/m2.png",
       "sha256": "292094c390db832a7cd4f04f600130ee1b8515496331e25f719c7eccfb411cd2",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/2m.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m2.svg",
+      "file": "resource-pack/textures/mahjong/tiles/m2.svg",
       "sha256": "046831736d6598f5ebcac62b0d7c12136e02e48ed4b61550e21e88924c38b8ba",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/2m.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m3.png",
+      "file": "resource-pack/textures/mahjong/tiles/m3.png",
       "sha256": "8345311e56b61e215df3bccf35292f8628c90047f32c366b884f6daffbf99a69",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/3m.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m3.svg",
+      "file": "resource-pack/textures/mahjong/tiles/m3.svg",
       "sha256": "ff9b015450f038d5d200db2ac9e79265e76d132d24df7d4d2a12a93b54698de6",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/3m.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m4.png",
+      "file": "resource-pack/textures/mahjong/tiles/m4.png",
       "sha256": "e6c13ad17b614efca8fa09e2656bb5bf9da3cb716759f8f9195bb8ffdedb4d0c",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/4m.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m4.svg",
+      "file": "resource-pack/textures/mahjong/tiles/m4.svg",
       "sha256": "3f580738e6ead641f140eff18c987ef30d65567088261360216aef279ff271b4",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/4m.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m5.png",
+      "file": "resource-pack/textures/mahjong/tiles/m5.png",
       "sha256": "a44a6b237f0c9325468994fa87a829d7b35b471c3e5a0ccfb3feabfd92cd04c3",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/5m.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m5.svg",
+      "file": "resource-pack/textures/mahjong/tiles/m5.svg",
       "sha256": "c0275be6adcba0a59e13a752ec360b97b5805aa0e4e047e575c00e6c77742e29",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/5m.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m6.png",
+      "file": "resource-pack/textures/mahjong/tiles/m6.png",
       "sha256": "ceff41b074b50dc34a0dca9cc86dbe2c9f17d315829624d8bc2185ba0838bab1",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/6m.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m6.svg",
+      "file": "resource-pack/textures/mahjong/tiles/m6.svg",
       "sha256": "3e70b7075076b8b099f88570ce6a62c3e73969476a0fcf4b1fcbf689e8727dae",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/6m.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m7.png",
+      "file": "resource-pack/textures/mahjong/tiles/m7.png",
       "sha256": "62d408f70806424948a2470e2405aea187ae594b8ce423086ca1e34dd6da8f48",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/7m.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m7.svg",
+      "file": "resource-pack/textures/mahjong/tiles/m7.svg",
       "sha256": "959bf26da563b8b21a5f4418a3a3b097dcc42950a195603577d35cb19e283fc4",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/7m.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m8.png",
+      "file": "resource-pack/textures/mahjong/tiles/m8.png",
       "sha256": "c6bd4fce3e8f76abf42d52fea5ab3a94877ca0ca33ecfd97838e7a2c446dd510",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/8m.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m8.svg",
+      "file": "resource-pack/textures/mahjong/tiles/m8.svg",
       "sha256": "df73b82c7288c3630abaa15d6c3328ce2d88bf5abb38047eb14492055728dfca",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/8m.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m9.png",
+      "file": "resource-pack/textures/mahjong/tiles/m9.png",
       "sha256": "e386c9fe81a0ea5cf436a9145b59bcd72febf08a462b6095e59ae89cd37c0e7a",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/9m.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/m9.svg",
+      "file": "resource-pack/textures/mahjong/tiles/m9.svg",
       "sha256": "975e13d9a3ed8fbc51630561d037e273d18ce4f17b65ba23eeed428c2bf0964b",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/9m.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p0.png",
+      "file": "resource-pack/textures/mahjong/tiles/p0.png",
       "sha256": "08b1804f6314c64562fbc5ae92da5266ff99ecfa5ded42ed44325430f9b2699e",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/0p.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p0.svg",
+      "file": "resource-pack/textures/mahjong/tiles/p0.svg",
       "sha256": "dca1b715c1216e2439efafff1cfa458ebb414379e83587dfde6c4850d33ddd24",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/0p.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p1.png",
+      "file": "resource-pack/textures/mahjong/tiles/p1.png",
       "sha256": "63c5b8eae3f8f4777ab042d25d289b0248468e8fdd4de9e5662c8f7d9ea5d0f5",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/1p.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p1.svg",
+      "file": "resource-pack/textures/mahjong/tiles/p1.svg",
       "sha256": "b4e7464ed909258552dc795bb52559433fad21abbcba4dda2bf4cbefb527b786",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/1p.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p2.png",
+      "file": "resource-pack/textures/mahjong/tiles/p2.png",
       "sha256": "b38f502d011ffe6a5cd3159bbc2a60315ce9ad91e9296ca68e1b721519b8df20",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/2p.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p2.svg",
+      "file": "resource-pack/textures/mahjong/tiles/p2.svg",
       "sha256": "f1800300f70e0b59f66c6134ffe56b06810eba82c4448e5043e6f82c8fb99c96",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/2p.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p3.png",
+      "file": "resource-pack/textures/mahjong/tiles/p3.png",
       "sha256": "609882f529ba91bbd69f05c66269b830ae55ed21ea9281ada03c6f7e83623808",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/3p.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p3.svg",
+      "file": "resource-pack/textures/mahjong/tiles/p3.svg",
       "sha256": "3fa045b721026ecc8d5e6c70852cb74b0564204f79d82ae44aeac146b37c2bfe",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/3p.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p4.png",
+      "file": "resource-pack/textures/mahjong/tiles/p4.png",
       "sha256": "d708589f818a7412a2dbe365c848b348b653342b87c5f8b4ac0fa1a41230ac09",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/4p.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p4.svg",
+      "file": "resource-pack/textures/mahjong/tiles/p4.svg",
       "sha256": "fbd38714a150824313e837c78d154b0b1ed04ad501815cf411b1898e9663d302",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/4p.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p5.png",
+      "file": "resource-pack/textures/mahjong/tiles/p5.png",
       "sha256": "6267ba06dacd2e71dddf2158c5806ef853cf4c9a42b73d9f52896df35280e8ac",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/5p.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p5.svg",
+      "file": "resource-pack/textures/mahjong/tiles/p5.svg",
       "sha256": "5ae607676a65359e58daaede0b3873c5e276cfaf39b0935a1444a0170b804486",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/5p.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p6.png",
+      "file": "resource-pack/textures/mahjong/tiles/p6.png",
       "sha256": "993621dd201755bea810ebc75c92bfb42d24e68df201f39b3c8bfb6c67f8b2a8",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/6p.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p6.svg",
+      "file": "resource-pack/textures/mahjong/tiles/p6.svg",
       "sha256": "e73c7ca37626cf0e6b4d9cb2dd461c9e7eff7149c19d92b13c21681f4ce16713",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/6p.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p7.png",
+      "file": "resource-pack/textures/mahjong/tiles/p7.png",
       "sha256": "436b1ca9f814d5f5f7f2e5222405469b8be09fcafd17f1d68bea090974bda2d6",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/7p.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p7.svg",
+      "file": "resource-pack/textures/mahjong/tiles/p7.svg",
       "sha256": "b355308c26807252f7806b7f8ba99c13b2b8254b23b66ce9adb7a7fa47f7548f",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/7p.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p8.png",
+      "file": "resource-pack/textures/mahjong/tiles/p8.png",
       "sha256": "f5d203a2d53d634c560e4ae772463a297f92dba41f5e93db8cfa7dba6b4bf63f",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/8p.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p8.svg",
+      "file": "resource-pack/textures/mahjong/tiles/p8.svg",
       "sha256": "ed577a8937add71330cd55100fdd752fad92c927d1120a6e911431b87b9806e6",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/8p.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p9.png",
+      "file": "resource-pack/textures/mahjong/tiles/p9.png",
       "sha256": "9fce1ed4764099d2ef199ce9d6072b72855fcf38d7b204388ad397ae3969000e",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/9p.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/p9.svg",
+      "file": "resource-pack/textures/mahjong/tiles/p9.svg",
       "sha256": "69fde8733cd2e6e51f91b47b948f87ddb23f3cddac8857f55ef3a8deac1ec684",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/9p.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s0.png",
+      "file": "resource-pack/textures/mahjong/tiles/s0.png",
       "sha256": "45c4015f5035c6c98147498769032f506d5cbe949b3e1db3aae940988bb656eb",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/0s.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s0.svg",
+      "file": "resource-pack/textures/mahjong/tiles/s0.svg",
       "sha256": "b4a83d95ff4c83540aa73478eede5002e3f66c9052d9fc4177322b93c75e33bc",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/0s.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s1.png",
+      "file": "resource-pack/textures/mahjong/tiles/s1.png",
       "sha256": "747ff11a92ac33cfc66fe136f317c1fe7086b58d2324841c8a252158a4046fdf",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/1s.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s1.svg",
+      "file": "resource-pack/textures/mahjong/tiles/s1.svg",
       "sha256": "fcbf0aeccb4a4d48cc00a54acb33aab3a3bf7e062440e75521738028742fb3df",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/1s.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s2.png",
+      "file": "resource-pack/textures/mahjong/tiles/s2.png",
       "sha256": "60d585d73672323eee2df8f945008e23c19b74c988037b9ceb9c0b91246bc713",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/2s.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s2.svg",
+      "file": "resource-pack/textures/mahjong/tiles/s2.svg",
       "sha256": "d796ab3b2933f1d2f3c1a383541bcef8ad4d209a6629c2c886610b129191ea53",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/2s.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s3.png",
+      "file": "resource-pack/textures/mahjong/tiles/s3.png",
       "sha256": "5d8f019d65353d95e641ece427c5b3da9fa1615e5e3d3c7ebbea6c36d446ff3a",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/3s.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s3.svg",
+      "file": "resource-pack/textures/mahjong/tiles/s3.svg",
       "sha256": "44331c02d705bf95ae62adf8b550659d8b97eaf8881a34ab02779fed40c62777",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/3s.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s4.png",
+      "file": "resource-pack/textures/mahjong/tiles/s4.png",
       "sha256": "12a4502a0a91638e6befca06238d1f739122821d18453769f212d75e0ae49080",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/4s.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s4.svg",
+      "file": "resource-pack/textures/mahjong/tiles/s4.svg",
       "sha256": "5a7b854a75c442619b42cfab8e5c8a0f653f89a9faadde4ff5ff7347d1f8429c",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/4s.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s5.png",
+      "file": "resource-pack/textures/mahjong/tiles/s5.png",
       "sha256": "fb8696cdd00ad0390a1914c6dacd7dd0259ed132d9654e70e7f8ac674b34c5bd",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/5s.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s5.svg",
+      "file": "resource-pack/textures/mahjong/tiles/s5.svg",
       "sha256": "5247e1a2491a3428f4c318b84895fba613c6d6c1f475c7e27e9c36c5f69cf57e",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/5s.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s6.png",
+      "file": "resource-pack/textures/mahjong/tiles/s6.png",
       "sha256": "4ad139c3116987c825d30e0fae9f9adf9da0334a1e101caf1909e17c5cf94bd5",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/6s.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s6.svg",
+      "file": "resource-pack/textures/mahjong/tiles/s6.svg",
       "sha256": "6b0014ae3ec8fcc71a183cb552d97821e0f0bca4de70e74c370fd1ce24e7c3d8",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/6s.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s7.png",
+      "file": "resource-pack/textures/mahjong/tiles/s7.png",
       "sha256": "c1e158dcb8872c192cfe03590be7f418b12e099f896f27044dca6d516239175d",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/7s.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s7.svg",
+      "file": "resource-pack/textures/mahjong/tiles/s7.svg",
       "sha256": "d4b43315c68ac82ea7f610afcb4503e3da7a5dc9a89ea7818ba9cd24296ab031",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/7s.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s8.png",
+      "file": "resource-pack/textures/mahjong/tiles/s8.png",
       "sha256": "d125764bd0cb449dd495b55b015389f689a8ef26e52063d46d3f4f75c2c0356e",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/8s.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s8.svg",
+      "file": "resource-pack/textures/mahjong/tiles/s8.svg",
       "sha256": "507413d33beec8de2381a6dcfe07760452bf5f9cd7f46e44f2fc5bd49dab4c71",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/8s.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s9.png",
+      "file": "resource-pack/textures/mahjong/tiles/s9.png",
       "sha256": "4e0b0041b9f6d49784a324ecf2ac35302a2fb42651ba06260210b4f0ecbb15c2",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/9s.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/s9.svg",
+      "file": "resource-pack/textures/mahjong/tiles/s9.svg",
       "sha256": "fa9ff4f21596ed6afe158939e3a87b060a4cdd704b678daa24f64515cf1203ae",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/9s.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/z1.png",
+      "file": "resource-pack/textures/mahjong/tiles/z1.png",
       "sha256": "a5c5fc98ad242e5a84074a1ee6bf322c7aefde85c5c8a0f5af4767df200a761e",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/1z.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/z1.svg",
+      "file": "resource-pack/textures/mahjong/tiles/z1.svg",
       "sha256": "f381974e5d499a839a0caefef878dd2954e56255d6df510248ed0407e8b91767",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/1z.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/z2.png",
+      "file": "resource-pack/textures/mahjong/tiles/z2.png",
       "sha256": "b1dcb352b2ee7dadf8b4751a7fc2ed65912f3b0e4e665143d115538d6995d45f",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/2z.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/z2.svg",
+      "file": "resource-pack/textures/mahjong/tiles/z2.svg",
       "sha256": "709c12ace122358169d3f32c17d984af35b7238c171580f60c9a7abf3271c684",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/2z.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/z3.png",
+      "file": "resource-pack/textures/mahjong/tiles/z3.png",
       "sha256": "5357e714d8baa8753202fd1f7fbbc220dfbc7acf41104050df44ce21e3b2d1bd",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/3z.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/z3.svg",
+      "file": "resource-pack/textures/mahjong/tiles/z3.svg",
       "sha256": "c323b83b7765bb775c9ff2d3c8450bd7aa3d46e58234f82e792a495612143844",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/3z.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/z4.png",
+      "file": "resource-pack/textures/mahjong/tiles/z4.png",
       "sha256": "6a221e417354e45e6a436f4a8d89096444c7d745de6ff5aa351c8697c1dda885",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/4z.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/z4.svg",
+      "file": "resource-pack/textures/mahjong/tiles/z4.svg",
       "sha256": "e892222d034f1901a1d7cda3f386c0f81b0427ee8ac7b1937f3ef07cbd31d27c",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/4z.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/z6.png",
+      "file": "resource-pack/textures/mahjong/tiles/z6.png",
       "sha256": "03c7fe2154a683525fc678c7f3cefe028c7f6298e7c8658848bd76c6b676c502",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/6z.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/z6.svg",
+      "file": "resource-pack/textures/mahjong/tiles/z6.svg",
       "sha256": "5e4cd55dd24c70d1b10b02e0a97c37e50323a589db013eb50c5430bcd9f47f44",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/6z.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/z7.png",
+      "file": "resource-pack/textures/mahjong/tiles/z7.png",
       "sha256": "54ceaabd35d54f64e967ff977c74909bac1b196241ef222a46c0d97e8afe9485",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/PNG%20%E4%BD%8D%E5%9B%BE/%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background/800px%E5%AE%BD%20weight%20800px/7z.png",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/mahjong/tiles/z7.svg",
+      "file": "resource-pack/textures/mahjong/tiles/z7.svg",
       "sha256": "978a6c639987a8424c7b2aa7bcc1a1fbc1e03c80075294ea1703ac8f7a973e92",
       "url": "https://raw.githubusercontent.com/lietxia/mahjong_graphic/3e275804ff58325306710bef3a7406860444bc6a/Vectors%20%E7%9F%A2%E9%87%8F%E5%9B%BE/SVG%28%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF%20Transparent%20background%29/7z.svg",
       "license": "M+ fonts license"
     },
     {
-      "file": "resource-pack/source/xiangqi/elephant.svg",
+      "file": "resource-pack/textures/xiangqi/elephant.svg",
       "sha256": "a3d60aaef4abc26194964ad4f17a33edf2478f17bd3009a42bc2836866fd28d7",
       "url": "https://upload.wikimedia.org/wikipedia/commons/0/0f/Xiangqi_Elephant_%28Trad%29.svg",
       "page": "https://commons.wikimedia.org/wiki/File:Xiangqi_Elephant_%28Trad%29.svg",
@@ -780,14 +780,14 @@
       "author": "Inductiveload; current vector revision by Wj654cj86"
     },
     {
-      "file": "resource-pack/source/xiangqi/elephant.png",
+      "file": "resource-pack/textures/xiangqi/elephant.png",
       "sha256": "01df172b63bc5674f520cc09ad1ce56213aef49a4c5751e1e7a8c20876c3fc1d",
-      "source": "resource-pack/source/xiangqi/elephant.svg",
+      "source": "resource-pack/textures/xiangqi/elephant.svg",
       "note": "Rendered from the SVG at 1600x400 with @napi-rs/canvas; first red and third black piece selected.",
       "license": "Public domain (PD-self)"
     },
     {
-      "file": "resource-pack/source/xiangqi/pawn.svg",
+      "file": "resource-pack/textures/xiangqi/pawn.svg",
       "sha256": "60ed90b4e98a093a03893dce078430e58ff80780793a89305c2efac272abfc5f",
       "url": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Xiangqi_Soldier_%28Trad%29.svg",
       "page": "https://commons.wikimedia.org/wiki/File:Xiangqi_Soldier_%28Trad%29.svg",
@@ -795,14 +795,14 @@
       "author": "Inductiveload; current vector revision by Wj654cj86"
     },
     {
-      "file": "resource-pack/source/xiangqi/pawn.png",
+      "file": "resource-pack/textures/xiangqi/pawn.png",
       "sha256": "5ebc0a3929575841bda7e6057fc1811ba1f057f11827f47fa74bebd5eab6d7ef",
-      "source": "resource-pack/source/xiangqi/pawn.svg",
+      "source": "resource-pack/textures/xiangqi/pawn.svg",
       "note": "Rendered from the SVG at 1600x400 with @napi-rs/canvas; first red and third black piece selected.",
       "license": "Public domain (PD-self)"
     },
     {
-      "file": "resource-pack/source/xiangqi/rook.svg",
+      "file": "resource-pack/textures/xiangqi/rook.svg",
       "sha256": "7e226d6504b682046b70b9a4647707fa640c8e2749212c6319a10a0b1017c1f0",
       "url": "https://upload.wikimedia.org/wikipedia/commons/3/35/Xiangqi_Chariot_%28Trad%29.svg",
       "page": "https://commons.wikimedia.org/wiki/File:Xiangqi_Chariot_%28Trad%29.svg",
@@ -810,14 +810,14 @@
       "author": "Inductiveload; current vector revision by Wj654cj86"
     },
     {
-      "file": "resource-pack/source/xiangqi/rook.png",
+      "file": "resource-pack/textures/xiangqi/rook.png",
       "sha256": "5ecff110ed4c3861118495b91cd038a1b181b56bab4c1f61a82201954a249700",
-      "source": "resource-pack/source/xiangqi/rook.svg",
+      "source": "resource-pack/textures/xiangqi/rook.svg",
       "note": "Rendered from the SVG at 1600x400 with @napi-rs/canvas; first red and third black piece selected.",
       "license": "Public domain (PD-self)"
     },
     {
-      "file": "resource-pack/source/xiangqi/horse.svg",
+      "file": "resource-pack/textures/xiangqi/horse.svg",
       "sha256": "55fc289f23b7fa6bc5c876951901dfac8795a397c03a47d9c92590f3be693dac",
       "url": "https://upload.wikimedia.org/wikipedia/commons/6/60/Xiangqi_Horse_%28Trad%29.svg",
       "page": "https://commons.wikimedia.org/wiki/File:Xiangqi_Horse_%28Trad%29.svg",
@@ -825,14 +825,14 @@
       "author": "Inductiveload; current vector revision by Wj654cj86"
     },
     {
-      "file": "resource-pack/source/xiangqi/horse.png",
+      "file": "resource-pack/textures/xiangqi/horse.png",
       "sha256": "ede7e1c2ef1298272b636662c490089aecad970ee7ea371e77cc724889afc351",
-      "source": "resource-pack/source/xiangqi/horse.svg",
+      "source": "resource-pack/textures/xiangqi/horse.svg",
       "note": "Rendered from the SVG at 1600x400 with @napi-rs/canvas; first red and third black piece selected.",
       "license": "Public domain (PD-self)"
     },
     {
-      "file": "resource-pack/source/xiangqi/advisor.svg",
+      "file": "resource-pack/textures/xiangqi/advisor.svg",
       "sha256": "dfd49d7af9b54012dafad675660a3031c977531fe41d3bca12d2581cebc2751c",
       "url": "https://upload.wikimedia.org/wikipedia/commons/4/48/Xiangqi_Advisor_%28Trad%29.svg",
       "page": "https://commons.wikimedia.org/wiki/File:Xiangqi_Advisor_%28Trad%29.svg",
@@ -840,14 +840,14 @@
       "author": "Inductiveload; current vector revision by Wj654cj86"
     },
     {
-      "file": "resource-pack/source/xiangqi/advisor.png",
+      "file": "resource-pack/textures/xiangqi/advisor.png",
       "sha256": "6d4cfada459e86863f0c831d546c799c86fd01a3f547691ca6a9aa625f7d11e8",
-      "source": "resource-pack/source/xiangqi/advisor.svg",
+      "source": "resource-pack/textures/xiangqi/advisor.svg",
       "note": "Rendered from the SVG at 1600x400 with @napi-rs/canvas; first red and third black piece selected.",
       "license": "Public domain (PD-self)"
     },
     {
-      "file": "resource-pack/source/xiangqi/general.svg",
+      "file": "resource-pack/textures/xiangqi/general.svg",
       "sha256": "609ced24769df64d1f7be031619f17e0c98b24cfd53603fefdba9b10872755f3",
       "url": "https://upload.wikimedia.org/wikipedia/commons/8/89/Xiangqi_General_%28Trad%29.svg",
       "page": "https://commons.wikimedia.org/wiki/File:Xiangqi_General_%28Trad%29.svg",
@@ -855,14 +855,14 @@
       "author": "Inductiveload; current vector revision by Wj654cj86"
     },
     {
-      "file": "resource-pack/source/xiangqi/general.png",
+      "file": "resource-pack/textures/xiangqi/general.png",
       "sha256": "5f6d7278960dc4ecaa0bd671948329016c8caa1fa0827a4ff742e2539274ea88",
-      "source": "resource-pack/source/xiangqi/general.svg",
+      "source": "resource-pack/textures/xiangqi/general.svg",
       "note": "Rendered from the SVG at 1600x400 with @napi-rs/canvas; first red and third black piece selected.",
       "license": "Public domain (PD-self)"
     },
     {
-      "file": "resource-pack/source/xiangqi/cannon.svg",
+      "file": "resource-pack/textures/xiangqi/cannon.svg",
       "sha256": "e8384fa922613b5fe3933d079f8c1a313ce366f4308df215abbdcf237e6fcc2a",
       "url": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Xiangqi_Cannon_%28Trad%29.svg",
       "page": "https://commons.wikimedia.org/wiki/File:Xiangqi_Cannon_%28Trad%29.svg",
@@ -870,385 +870,385 @@
       "author": "Inductiveload; current vector revision by Wj654cj86"
     },
     {
-      "file": "resource-pack/source/xiangqi/cannon.png",
+      "file": "resource-pack/textures/xiangqi/cannon.png",
       "sha256": "875003f0fd7dda9d44a982d2ba19413d7af6720f9f4df88561732d0fb437ab36",
-      "source": "resource-pack/source/xiangqi/cannon.svg",
+      "source": "resource-pack/textures/xiangqi/cannon.svg",
       "note": "Rendered from the SVG at 1600x400 with @napi-rs/canvas; first red and third black piece selected.",
       "license": "Public domain (PD-self)"
     },
     {
-      "file": "resource-pack/source/playing-cards/back_blue_basic.png",
+      "file": "resource-pack/textures/playing-cards/back_blue_basic.png",
       "sha256": "d8fe787ed51505a62d898d344c3eb6900399f587c98156f0833c4ed695187cfb",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "back_blue_basic.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/clubs_10.png",
+      "file": "resource-pack/textures/playing-cards/clubs_10.png",
       "sha256": "1573d380d8be8b55fc0807ea192819418bd6562eff91567bde6fff04a10f6208",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "10_clubs.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/clubs_2.png",
+      "file": "resource-pack/textures/playing-cards/clubs_2.png",
       "sha256": "b702c50fd8a3f47d9dc38a6ec586cb6d3f025e350c098048dd577f5042cf59a9",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "2_clubs.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/clubs_3.png",
+      "file": "resource-pack/textures/playing-cards/clubs_3.png",
       "sha256": "15c37ba32e114fb4e8a3b1f34c59c3901faab99e883f3bf08422111ec8f63cd4",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "3_clubs.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/clubs_4.png",
+      "file": "resource-pack/textures/playing-cards/clubs_4.png",
       "sha256": "7185a6bfcb3d6c4c37fb2c1b537996dbc0583f2146806194cd1453ee1a88a360",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "4_clubs.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/clubs_5.png",
+      "file": "resource-pack/textures/playing-cards/clubs_5.png",
       "sha256": "adaf22064e1896a36471115df9615796cf3b9353b4eac0b2910b783122e9a5c2",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "5_clubs.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/clubs_6.png",
+      "file": "resource-pack/textures/playing-cards/clubs_6.png",
       "sha256": "2890df5691f0364533f60ac086b25a31c2c6f23cffb4b822efa6cd150bce24c1",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "6_clubs.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/clubs_7.png",
+      "file": "resource-pack/textures/playing-cards/clubs_7.png",
       "sha256": "a106d46f286147366356f383a5532e9b60137deece491764a0b294dfbf73a1ff",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "7_clubs.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/clubs_8.png",
+      "file": "resource-pack/textures/playing-cards/clubs_8.png",
       "sha256": "fc26f2ae7e88f65f98f71a024b8a1aa7ac853999f5d706171716cfa25ae068b2",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "8_clubs.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/clubs_9.png",
+      "file": "resource-pack/textures/playing-cards/clubs_9.png",
       "sha256": "1f77bab09078b507fce0787a10ca1d9d57300b195968857d0eec9aaa2795c77f",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "9_clubs.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/clubs_ace.png",
+      "file": "resource-pack/textures/playing-cards/clubs_ace.png",
       "sha256": "fe546ebc72dd5b808ec84634627c7b1925180231b71c4f6447353da920cf21b3",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "ace_clubs.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/clubs_jack.png",
+      "file": "resource-pack/textures/playing-cards/clubs_jack.png",
       "sha256": "c0793000d98840740e1e6a848b559e7a4a5c1712605b27f95dc409083552504c",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "jack_clubs.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/clubs_king.png",
+      "file": "resource-pack/textures/playing-cards/clubs_king.png",
       "sha256": "b36c8af9783fbf8a6940c5b12956f20d91b1ff7041e5eea1814a61e5d5e33505",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "king_clubs.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/clubs_queen.png",
+      "file": "resource-pack/textures/playing-cards/clubs_queen.png",
       "sha256": "3517e9de050c646b03c0f843e0c83705ebf4b018a3399d9ca9e2a5f7b12052b1",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "queen_clubs.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/diamonds_10.png",
+      "file": "resource-pack/textures/playing-cards/diamonds_10.png",
       "sha256": "1441e45561077772e15de7a75963fc66ca2bc3f3ef47b2af0e654342dff3c311",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "10_diamonds.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/diamonds_2.png",
+      "file": "resource-pack/textures/playing-cards/diamonds_2.png",
       "sha256": "5cbf720e19b75ef3104653e4f011a4d461920cf508540e4b7236e00c5f844963",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "2_diamonds.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/diamonds_3.png",
+      "file": "resource-pack/textures/playing-cards/diamonds_3.png",
       "sha256": "eb13c2bce40f56bd01b3542c225f1d9e7ef4aa84d9af33994d2f7b5b9adebbd0",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "3_diamonds.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/diamonds_4.png",
+      "file": "resource-pack/textures/playing-cards/diamonds_4.png",
       "sha256": "ceb02e74bcef2a599c249f0fb02efb54137c275b70e34ff3bf1ca35dba4c70aa",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "4_diamonds.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/diamonds_5.png",
+      "file": "resource-pack/textures/playing-cards/diamonds_5.png",
       "sha256": "3f93b12d3596dc4852a68625f38ec235c6de78b27c508b65e472b6d319a466fe",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "5_diamonds.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/diamonds_6.png",
+      "file": "resource-pack/textures/playing-cards/diamonds_6.png",
       "sha256": "a609392c00614a1d817779a9a154accda82b81af6509e398208e0449e8e52855",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "6_diamonds.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/diamonds_7.png",
+      "file": "resource-pack/textures/playing-cards/diamonds_7.png",
       "sha256": "a46d0ddb1371116d34c5c40b692a10805894bce51aa77a46bc0d363291b2a45b",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "7_diamonds.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/diamonds_8.png",
+      "file": "resource-pack/textures/playing-cards/diamonds_8.png",
       "sha256": "9e1174c2d01706fc28186147c2b19b41b1eba291889e6c7e184c8fa8b1e543de",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "8_diamonds.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/diamonds_9.png",
+      "file": "resource-pack/textures/playing-cards/diamonds_9.png",
       "sha256": "222bd0b0d29e8957e14dff532138970641cafeec720a376851bde90a03928f68",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "9_diamonds.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/diamonds_ace.png",
+      "file": "resource-pack/textures/playing-cards/diamonds_ace.png",
       "sha256": "faa62dfdfba0ae87b3f5ee6ba59580450d8535660901c56e67c2428ae8353c7d",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "ace_diamonds.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/diamonds_jack.png",
+      "file": "resource-pack/textures/playing-cards/diamonds_jack.png",
       "sha256": "794c3421969e00551cf89c279a5f1d6f7f74a439864ff32fa6371489dc44c65e",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "jack_diamonds.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/diamonds_king.png",
+      "file": "resource-pack/textures/playing-cards/diamonds_king.png",
       "sha256": "f90fa0342801a1718e3ae091af580869b1eb9de9cd253aa0f68e92e95d781b18",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "king_diamonds.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/diamonds_queen.png",
+      "file": "resource-pack/textures/playing-cards/diamonds_queen.png",
       "sha256": "8e7a781f68bd8de1b4b9e0dfee4ad9d5cdd0d8b973473db30637a60bb100ba54",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "queen_diamonds.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/hearts_10.png",
+      "file": "resource-pack/textures/playing-cards/hearts_10.png",
       "sha256": "be335a506b0e9f46b05e4d08a1d26e794893d0330b39de1f954cc81c4b4666ac",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "10_hearts.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/hearts_2.png",
+      "file": "resource-pack/textures/playing-cards/hearts_2.png",
       "sha256": "c3dc3c07aa89ee319d698eda650b6fbfd418c023bb7d569dc3d0899ef46fe722",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "2_hearts.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/hearts_3.png",
+      "file": "resource-pack/textures/playing-cards/hearts_3.png",
       "sha256": "668420d528766b5bc05bb585592fbf40a3bbd2d2968390bf1f84a275172342d8",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "3_hearts.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/hearts_4.png",
+      "file": "resource-pack/textures/playing-cards/hearts_4.png",
       "sha256": "0924b9a6dfcf1db63da7a7c5f18ff199894ff602aaab3e2167fbe801d0f82ab9",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "4_hearts.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/hearts_5.png",
+      "file": "resource-pack/textures/playing-cards/hearts_5.png",
       "sha256": "09583d832834c13dc9c40d81f9552740168a32c60c03531bdfccb6ef18457f57",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "5_hearts.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/hearts_6.png",
+      "file": "resource-pack/textures/playing-cards/hearts_6.png",
       "sha256": "a5017529be982c66be8159f910de5c47c14eb98b6d650acdc66541f00f50e5ab",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "6_hearts.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/hearts_7.png",
+      "file": "resource-pack/textures/playing-cards/hearts_7.png",
       "sha256": "c7dfca4ada37e0224942aae6f0d5300673857b1236cf5052a5aa1f321227b7ce",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "7_hearts.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/hearts_8.png",
+      "file": "resource-pack/textures/playing-cards/hearts_8.png",
       "sha256": "9dcef19b64eeb1494fcc693f6114bfa8bee99cb7e4b2e4c2725a4ae8348d4f5e",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "8_hearts.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/hearts_9.png",
+      "file": "resource-pack/textures/playing-cards/hearts_9.png",
       "sha256": "8354ca4d9ac6d925b0bae44c95c93d198a0dea8e7c8d37325762884579901c54",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "9_hearts.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/hearts_ace.png",
+      "file": "resource-pack/textures/playing-cards/hearts_ace.png",
       "sha256": "476e3b35ee85077b408f85f1c5d71e2dfee813ddb87cf80fa2e5f4dff2a9d777",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "ace_hearts.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/hearts_jack.png",
+      "file": "resource-pack/textures/playing-cards/hearts_jack.png",
       "sha256": "afae37761f7edd1f52ffe9b05de4fb3620e2b74d76db0531144751605229c918",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "jack_hearts.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/hearts_king.png",
+      "file": "resource-pack/textures/playing-cards/hearts_king.png",
       "sha256": "c5d6fd43a6c12d883d248635b971b3465a6335524b0ffa4d9ce81439220586cb",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "king_hearts.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/hearts_queen.png",
+      "file": "resource-pack/textures/playing-cards/hearts_queen.png",
       "sha256": "5846f703280a450532d38a6ebf37d9f155a19824a7f5f50120e30b70cb4b0449",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "queen_hearts.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/joker.png",
+      "file": "resource-pack/textures/playing-cards/joker.png",
       "sha256": "a7f636ecffeb1be081b12023aba1f31f09ddb1e967bf1724488ed5da0c32bd89",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "joker.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/spades_10.png",
+      "file": "resource-pack/textures/playing-cards/spades_10.png",
       "sha256": "1337b18c31701a91e103150eb2043d1ff6da826258c4333480068aef73f13304",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "10_spades.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/spades_2.png",
+      "file": "resource-pack/textures/playing-cards/spades_2.png",
       "sha256": "b59bd560cba8d74172bc1f5391380c55490ab8ae200258bc7282e875cd3c4749",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "2_spades.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/spades_3.png",
+      "file": "resource-pack/textures/playing-cards/spades_3.png",
       "sha256": "de3a52d528f7548f0fedbd6a46d9e78cc37307a07b807960ffbeb40897e22a4e",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "3_spades.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/spades_4.png",
+      "file": "resource-pack/textures/playing-cards/spades_4.png",
       "sha256": "1cb457884504b83ee8c745214077a21c8d10e9f9b7efd970c94818bd9c1c8503",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "4_spades.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/spades_5.png",
+      "file": "resource-pack/textures/playing-cards/spades_5.png",
       "sha256": "5588f76fb9b0656eb68ac42673a4c38c5cbc25abc9ad11025cd67dbf269b5ee2",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "5_spades.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/spades_6.png",
+      "file": "resource-pack/textures/playing-cards/spades_6.png",
       "sha256": "29a314577bd782ce8cd20665244c15493a15521a8ba251054c6bf06563a7e72a",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "6_spades.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/spades_7.png",
+      "file": "resource-pack/textures/playing-cards/spades_7.png",
       "sha256": "d5c2ae887372df5aaf86420a3f93d86879907faab1252ec83aa578813e2c762c",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "7_spades.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/spades_8.png",
+      "file": "resource-pack/textures/playing-cards/spades_8.png",
       "sha256": "36d61c4c5b3f64e17308984e658411f864ff51cd54305f351ae51799e6dd22f9",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "8_spades.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/spades_9.png",
+      "file": "resource-pack/textures/playing-cards/spades_9.png",
       "sha256": "e0e284d2cf6390d243378331ba61a5690ac42b0048aecb305f06f29c5feec8bb",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "9_spades.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/spades_ace.png",
+      "file": "resource-pack/textures/playing-cards/spades_ace.png",
       "sha256": "a616de55fe6ec8b83698a865e2252d594f4f6ae8b3768890b8c707a57d67844b",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "ace_spades.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/spades_jack.png",
+      "file": "resource-pack/textures/playing-cards/spades_jack.png",
       "sha256": "6b145adc7f978b0d4f88bbddf5f5f009eab2bdcd07a15ed9baa20d367bcd9ff6",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "jack_spades.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/spades_king.png",
+      "file": "resource-pack/textures/playing-cards/spades_king.png",
       "sha256": "0622840e7d601e7385dbcce41f31604a740bd997db9ef8fd2a4b34e436c9fa05",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "king_spades.png",
       "license": "CC-BY-4.0"
     },
     {
-      "file": "resource-pack/source/playing-cards/spades_queen.png",
+      "file": "resource-pack/textures/playing-cards/spades_queen.png",
       "sha256": "5cddd84a1e456732550fa03d012207121014595743cb2ffbe16895b30cc0b2f8",
       "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
       "archive_file": "queen_spades.png",

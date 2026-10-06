@@ -216,7 +216,7 @@ def furniture():
          "disc":"tabletop3d:item/surface/wood-disc"}
     model("card_table",tex,disc(1.5,-.19,.19,"body","card")
           +disc(.25,-.95125,.76125,"body","disc",32)+disc(.70,-1.03125,.08,"body","disc",64))
-    cloth=ImageOps.colorize(ImageOps.grayscale(Image.open(ROOT/"resource-pack/source/mahjong/tablecloth.jpg")),"#213344","#34495a").resize((936,936))
+    cloth=ImageOps.colorize(ImageOps.grayscale(Image.open(ROOT/"resource-pack/textures/mahjong/tablecloth.jpg")),"#213344","#34495a").resize((936,936))
     mj=Image.new("RGB",(1024,1024),"#38251d");d=ImageDraw.Draw(mj)
     d.rounded_rectangle((0,0,1023,1023),radius=48,fill="#38251d")
     d.rounded_rectangle((12,12,1011,1011),radius=39,outline="#92684b",width=4)
@@ -279,7 +279,7 @@ def audio():
     import soundfile as sf
     events={};durations={}
     for event in MAHJONG_SOUNDS:
-        data,rate=sf.read(ROOT/f"audio-source/mahjong/{event}.mp3",dtype="float32",always_2d=True)
+        data,rate=sf.read(ROOT/f"resource-pack/sounds/mahjong/{event}.mp3",dtype="float32",always_2d=True)
         data=data.mean(axis=1)  # Positional sounds must be mono.
         target=ASSETS/f"sounds/mahjong/{event}.ogg";target.parent.mkdir(parents=True,exist_ok=True)
         sf.write(target,data,rate,format="OGG",subtype="VORBIS")
@@ -287,14 +287,14 @@ def audio():
         assert checked==rate and abs(len(decoded)-len(data))<=1
         durations[event]=round(len(data)/rate,4)
         events["mahjong."+event]={"sounds":[{"name":"tabletop3d:mahjong/"+event,"stream":False}]}
-    data,rate=sf.read(ROOT/"audio-source/cards/play.mp3",dtype="float32",always_2d=True)
+    data,rate=sf.read(ROOT/"resource-pack/sounds/cards/play.mp3",dtype="float32",always_2d=True)
     data=data.mean(axis=1)
     data*=min(1,.79/max(abs(data)))
     target=ASSETS/"sounds/cards/play.ogg";target.parent.mkdir(parents=True,exist_ok=True)
     sf.write(target,data,rate,format="OGG",subtype="VORBIS",compression_level=.1)
     durations["cards.play"]=round(len(data)/rate,4)
     events["cards.play"]={"sounds":[{"name":"tabletop3d:cards/play","stream":False}]}
-    sources=ROOT/"audio-source"
+    sources=ROOT/"resource-pack/sounds"
     for event,variants in json.loads((sources/"events.json").read_text()).items():
         samples=[]
         for source in variants:
@@ -371,7 +371,7 @@ def main():
         raise ValueError("Generated model catalog differs from CraftEngineModels: " + str(set(expected)^set(CATALOG)))
     durations=audio()
     write_json(BUILD/"pack.mcmeta",{"pack":{"pack_format":88,"min_format":88,"max_format":88,"description":"Tabletop 3D · Boards & Card Games"}})
-    config=ROOT/"craftengine/resources/tabletop3d/configuration/items.yml";config.parent.mkdir(parents=True,exist_ok=True)
+    config=ROOT/"resource-pack/craftengine/resources/tabletop3d/configuration/items.yml";config.parent.mkdir(parents=True,exist_ok=True)
     config.write_text("items:\n"+"".join(f"  tabletop3d:{name}:\n    material: paper\n    item_model: tabletop3d:{name}\n" for name in sorted(CATALOG)),encoding="utf-8")
     version=ET.parse(ROOT/"pom.xml").getroot().find("{*}version").text
     (config.parent.parent/"pack.yml").write_text(f"name: Tabletop 3D\nauthor: Tabletop3D\nversion: {version}\n",encoding="utf-8")

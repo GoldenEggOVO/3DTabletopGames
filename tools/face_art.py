@@ -5,7 +5,7 @@ def mahjong_face(root, key):
     image = Image.new("RGB", (160, 240), "#fff9eb")
     if key == "z5":
         return image
-    artwork = Image.open(root / f"resource-pack/source/mahjong/tiles/{key}.png").convert("RGBA")
+    artwork = Image.open(root / f"resource-pack/textures/mahjong/tiles/{key}.png").convert("RGBA")
     scale = min(140 / artwork.width, 220 / artwork.height) * 1.3
     artwork = artwork.crop(artwork.getbbox())
     scale = min(scale, 144 / artwork.width, 216 / artwork.height)
@@ -15,7 +15,7 @@ def mahjong_face(root, key):
 
 
 def xiangqi_face(root, side, piece):
-    sheet = Image.open(root / f"resource-pack/source/xiangqi/{piece}.png").convert("RGBA")
+    sheet = Image.open(root / f"resource-pack/textures/xiangqi/{piece}.png").convert("RGBA")
     size = sheet.height
     column = 0 if side == "red" else 2
     artwork = sheet.crop((column*size, 0, (column+1)*size, size))
@@ -30,12 +30,12 @@ def playing_texture(image):
 
 
 def playing_face(root, kind, rank):
-    source = root / f"resource-pack/source/playing-cards/{kind}_{rank}.png"
+    source = root / f"resource-pack/textures/playing-cards/{kind}_{rank}.png"
     return playing_texture(Image.open(source).convert("RGB"))
 
 
 def joker_face(root, size):
-    image = Image.open(root / "resource-pack/source/playing-cards/joker.png").convert("RGB")
+    image = Image.open(root / "resource-pack/textures/playing-cards/joker.png").convert("RGB")
     if size == "big":
         for y in range(3, 39):
             for x in range(3, 12):
@@ -46,5 +46,5 @@ def joker_face(root, size):
 
 
 def playing_back(root):
-    source = root / "resource-pack/source/playing-cards/back_blue_basic.png"
+    source = root / "resource-pack/textures/playing-cards/back_blue_basic.png"
     return playing_texture(Image.open(source).convert("RGB"))

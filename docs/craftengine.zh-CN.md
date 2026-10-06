@@ -62,7 +62,7 @@ python tools/test_resource_pack.py
 
 生成 `target/tabletop-resource-pack.zip`、`target/resource-pack-manifest.json` 与 `target/pack-preview/`。脚本真实解码 MP3 再编码为单声道 OGG，并检查解码长度；不会把 MP3 直接改扩展名。Windows 使用系统字体，Linux 使用 DejaVu。麻将与象棋字形直接来自素材，不再依赖系统中文字体。
 
-麻将原始 PNG 与 SVG 位于 `resource-pack/source/mahjong/tiles/`；象棋原图位于 `resource-pack/source/xiangqi/`。`tools/face_art.py` 负责这些资源包牌面和扑克像素图案。象棋 PNG 已离线渲染并保存在源码中，正常构建无须 Node.js；修改 SVG 后可使用安装了 `@napi-rs/canvas` 的 Node.js 执行 `node tools/rasterize-xiangqi.js` 更新 PNG。原版头颅纹理不使用这些新牌面。
+麻将原始 PNG 与 SVG 位于 `resource-pack/textures/mahjong/tiles/`；象棋原图位于 `resource-pack/textures/xiangqi/`。`tools/face_art.py` 负责这些资源包牌面和扑克像素图案。象棋 PNG 已离线渲染并保存在源码中，正常构建无须 Node.js；修改 SVG 后可使用安装了 `@napi-rs/canvas` 的 Node.js 执行 `node tools/rasterize-xiangqi.js` 更新 PNG。原版头颅纹理不使用这些新牌面。
 
 ## 客户端待验清单
 
