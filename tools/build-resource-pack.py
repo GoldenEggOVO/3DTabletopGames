@@ -18,9 +18,7 @@ ASSETS = BUILD / "assets/tabletop3d"
 COLORS = {"r": "#ba151d", "b": "#0865b4", "y": "#e5af00", "p": "#6c28a9"}
 CREAM = "#fff5db"
 RANKS = list(map(str, range(1, 11))) + ["draw", "skip", "reverse"]
-SOUNDS = {"select": "click_pai", "countdown": "countdown5", "discard": "discard_tile",
-          "meld": "fulu", "kan": "gang", "win": "hupai", "dora": "new_dora",
-          "riichi": "put_liqi", "draw": "anpai_reverse"}
+MAHJONG_SOUNDS = ("select", "countdown", "discard", "meld", "kan", "win", "dora", "riichi", "draw")
 BASE = "https://files.riichi.moe/mjg/game%20resources%20and%20tools/Mahjong%20Soul/game%20files/"
 
 
@@ -299,8 +297,8 @@ def audio():
     sys.path.insert(0,str(ROOT/"target/audio-tools"))
     import soundfile as sf
     events={};durations={}
-    for event,source in SOUNDS.items():
-        data,rate=sf.read(ROOT/f"audio-source/{source}.mp3",dtype="float32",always_2d=True)
+    for event in MAHJONG_SOUNDS:
+        data,rate=sf.read(ROOT/f"audio-source/mahjong/{event}.mp3",dtype="float32",always_2d=True)
         data=data.mean(axis=1)  # Positional sounds must be mono.
         target=ASSETS/f"sounds/mahjong/{event}.ogg";target.parent.mkdir(parents=True,exist_ok=True)
         sf.write(target,data,rate,format="OGG",subtype="VORBIS")
@@ -315,7 +313,7 @@ def audio():
     sf.write(target,data,rate,format="OGG",subtype="VORBIS",compression_level=.1)
     durations["cards.play"]=round(len(data)/rate,4)
     events["cards.play"]={"sounds":[{"name":"tabletop3d:cards/play","stream":False}]}
-    sources=ROOT/"audio-source/kenney"
+    sources=ROOT/"audio-source"
     for event,variants in json.loads((sources/"events.json").read_text()).items():
         samples=[]
         for source in variants:
@@ -329,9 +327,10 @@ def audio():
             samples.append({"name":"tabletop3d:"+name,"stream":False})
         events[event]={"sounds":samples}
     licenses=BUILD/"licenses";licenses.mkdir(exist_ok=True)
+    notices=json.loads((ROOT/"resource-pack/sources.json").read_text(encoding="utf-8"))["audio_notices"]["kenney"]
     for pack in ("casino","interface","impact"):
-        (licenses/f"kenney-{pack}.txt").write_bytes((sources/f"LICENSE-{pack}.txt").read_bytes())
-    (licenses/"kenney-sources.md").write_bytes((sources/"README.md").read_bytes())
+        (licenses/f"kenney-{pack}.txt").write_bytes(notices["licenses"][pack].encode("utf-8"))
+    (licenses/"kenney-sources.md").write_bytes(notices["sources"].encode("utf-8"))
     write_json(ASSETS/"sounds.json",events)
     return durations
 

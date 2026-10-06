@@ -1,0 +1,67 @@
+{
+  "board.wood": [
+    "board/impactWood_light_000.ogg",
+    "board/impactWood_light_001.ogg",
+    "board/impactWood_light_002.ogg"
+  ],
+  "board.stone": [
+    "board/chip-lay-1.ogg",
+    "board/chip-lay-2.ogg"
+  ],
+  "board.drop": [
+    "board/chip-lay-3.ogg"
+  ],
+  "board.flip": [
+    "board/chips-handle-1.ogg",
+    "board/chips-handle-2.ogg"
+  ],
+  "board.capture": [
+    "board/impactWood_medium_000.ogg"
+  ],
+  "dice.roll": [
+    "dice/dice-throw-1.ogg",
+    "dice/dice-throw-2.ogg",
+    "dice/dice-throw-3.ogg"
+  ],
+  "dice.single": [
+    "dice/die-throw-1.ogg",
+    "dice/die-throw-2.ogg",
+    "dice/die-throw-3.ogg",
+    "dice/die-throw-4.ogg"
+  ],
+  "dice.hold": [
+    "dice/dice-grab-1.ogg",
+    "dice/dice-grab-2.ogg"
+  ],
+  "cards.draw": [
+    "cards/card-slide-1.ogg",
+    "cards/card-slide-2.ogg",
+    "cards/card-slide-3.ogg"
+  ],
+  "chips.bet": [
+    "chips/chips-stack-1.ogg",
+    "chips/chips-stack-2.ogg",
+    "chips/chips-stack-3.ogg"
+  ],
+  "table.select": [
+    "interface/select_001.ogg"
+  ],
+  "table.pass": [
+    "interface/back_001.ogg"
+  ],
+  "table.confirm": [
+    "interface/confirmation_001.ogg"
+  ],
+  "table.start": [
+    "interface/open_001.ogg"
+  ],
+  "table.win": [
+    "interface/confirmation_004.ogg"
+  ],
+  "table.draw": [
+    "interface/close_001.ogg"
+  ],
+  "table.home": [
+    "interface/confirmation_003.ogg"
+  ]
+}

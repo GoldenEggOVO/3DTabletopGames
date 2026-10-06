@@ -1,4 +1,4 @@
-# 游戏音效（1.10.15）
+# 游戏音效
 
 声音仅在服务端确认操作成功时触发。非法动作、显示刷新与重启回放保持静音；不会按模型数量或旁观人数重复播放。
 
@@ -31,7 +31,13 @@ Color Eight、斗地主、骗子酒馆与德州扑克共用 `tabletop3d:cards.pl
 
 骰子、筹码和部分落子使用随机变体，一次事件只选一个样本，不会将变体叠加播放。新素材统一转为单声道，并适当降低峰值；声音时长和动作触发节奏保留。
 
-素材来自 [Kenney Casino Audio](https://kenney.nl/assets/casino-audio)、[Interface Sounds](https://kenney.nl/assets/interface-sounds)、[Impact Sounds](https://kenney.nl/assets/impact-sounds)，均为 CC0 1.0，可用于商业项目。原始许可文件保存在 `audio-source/kenney`，也随资源包放入 `licenses` 目录。事件与原始文件的对应关系见 `audio-source/kenney/events.json`。
+素材来自 [Kenney Casino Audio](https://kenney.nl/assets/casino-audio)、[Interface Sounds](https://kenney.nl/assets/interface-sounds)、[Impact Sounds](https://kenney.nl/assets/impact-sounds)，均为 CC0 1.0。来源、文件摘要和许可说明集中记录在 `resource-pack/sources.json`；生成的资源包继续包含 Kenney 许可说明。事件与原始文件的对应关系见 `audio-source/events.json`。
+
+## 源文件目录
+
+`audio-source/` 只保留音频和事件映射，按用途分类：`mahjong/` 为九项麻将音效，`cards/` 为出牌与摸牌，`dice/` 为骰子，`board/` 为棋子操作，`chips/` 为筹码，`interface/` 为界面与通用反馈。分类不改变声音事件、录音内容或播放方式。
+
+`resource-pack/source/mahjong/` 的牌面和桌布原图仍是生成模型纹理的输入，不是可删除的构建缓存。CraftEngine 安装说明统一位于 `docs/craftengine.zh-CN.md`。
 
 ## 配置
 
