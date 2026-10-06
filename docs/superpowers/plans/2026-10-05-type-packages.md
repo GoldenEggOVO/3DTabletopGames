@@ -28,8 +28,8 @@ Continue the previously authorized directory organization, inline, without subag
 - [x] Compare normalized Java content and verify access changes separately.
 - [x] Run all Java/Python tests and inspect the final JAR for retired class paths.
 - [x] Verify native/packed startup, previous-build room recovery and entity cleanup.
-- [ ] Update source guides, review the scoped diff and sync source without publishing a Release.
-- [ ] Deliver locally and back up/update the authorized isolated test server.
+- [x] Update source guides, review the scoped diff and sync source without publishing a Release.
+- [x] Deliver locally and back up/update the authorized isolated test server.
 
 ## Rulings
 
@@ -43,3 +43,5 @@ Continue the previously authorized directory organization, inline, without subag
 Moved 49 implementation files and 63 test files. All 222 normalized Java bodies match baseline 8ca2eacd; 1,342 private declarations remain unchanged. The access audit records 394 production and 32 test declarations that cross the new boundaries. Root executable names and absolute resource lookups are preserved.
 
 Java: 632 tests, zero failures/errors/skips. Python: 39 tests passed. Native and packed modes each passed three boots and recovered the previous build's 20 rooms, 17 game kinds and 416 saved actions. The 60-second soak completed 21 replay checks and left zero owned entities. The final JAR contains no retired flat implementation paths; 16 unchanged non-code resources match the previous artifact.
+
+Source ea69e6cb synchronized to feat/craftengine-tabletop; GitHub run 37407982218 passed. The authorized server 25589 was fully backed up at /var/opt/minecraft/crafty/test-deployment-backups/tabletop-types125-20261006-031443 and updated to 1.10.25. Startup, 234 models, Chinese reload, HTTPS digest and protected data checks passed. Configuration, language files, resource assets and map IDs were preserved. No Release was published; no Minecraft client or FPS measurement was performed.
