@@ -3,11 +3,11 @@ package dev.tabletop3d.rules.liarsbar;
 import dev.tabletop3d.rules.HandGame;
 import dev.tabletop3d.rules.RuleViolation;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class LiarsBarGameTest {
     @Test

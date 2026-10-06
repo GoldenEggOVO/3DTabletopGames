@@ -4,15 +4,13 @@ import dev.tabletop3d.rules.BoardGame;
 import dev.tabletop3d.rules.Cell;
 import dev.tabletop3d.rules.RuleMessage;
 import dev.tabletop3d.rules.RuleViolation;
-
-import dev.tabletop3d.ui.GameSymbols;
-
 import dev.tabletop3d.rules.chess.engine.Board;
 import dev.tabletop3d.rules.chess.engine.Piece;
 import dev.tabletop3d.rules.chess.engine.PieceType;
 import dev.tabletop3d.rules.chess.engine.Side;
 import dev.tabletop3d.rules.chess.engine.Square;
 import dev.tabletop3d.rules.chess.engine.move.Move;
+import dev.tabletop3d.ui.GameSymbols;
 
 import java.util.*;
 

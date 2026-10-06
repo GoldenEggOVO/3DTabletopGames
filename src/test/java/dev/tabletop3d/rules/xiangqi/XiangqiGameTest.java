@@ -1,10 +1,11 @@
 package dev.tabletop3d.rules.xiangqi;
 
 import dev.tabletop3d.rules.BoardGame;
-
 import dev.tabletop3d.rules.xiangqi.engine.model.*;
 import dev.tabletop3d.rules.xiangqi.engine.utility.Point;
+
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class XiangqiGameTest {

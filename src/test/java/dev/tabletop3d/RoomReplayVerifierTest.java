@@ -1,12 +1,13 @@
 package dev.tabletop3d;
 
-import dev.tabletop3d.rules.GameOptions;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.google.gson.JsonParser;
 
+import dev.tabletop3d.room.Room;
+import dev.tabletop3d.rules.GameOptions;
+
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class RoomReplayVerifierTest {
     @Test

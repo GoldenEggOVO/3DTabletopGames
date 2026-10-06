@@ -3,12 +3,12 @@ package dev.tabletop3d.rules.doudizhu;
 import dev.tabletop3d.rules.RuleViolation;
 import dev.tabletop3d.rules.cards.PlayingCard;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class DoudizhuGameTest {
     private List<Integer> ranks(int... values) {

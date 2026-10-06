@@ -11,3 +11,5 @@ Keep generated worlds, caches, credentials, server/plugin binaries and local acc
 Ordinary commits may be synchronized to GitHub. Publishing a Release requires the maintainer's explicit approval after local acceptance. The CI workflow only builds, tests and uploads development artifacts.
 
 Place game-specific rules, options and helpers under `rules/<game>/`, and mirror the layout for single-game tests. Shared contracts and registration stay at `rules/`; shared cards live at `rules/cards/`. Embedded third-party engines belong under the owning game's `engine/`; preserve source attribution and license notices.
+
+Place shared implementation under `room/`, `bot/`, `menu/`, `interaction/`, `text/`, `render/`, `resource/` or `audio/` by responsibility. Specialized card, Mahjong and dice rendering belongs under `render/cards/`, `render/mahjong/` and `render/dice/`. Mirror tests beside their primary implementation; shared test infrastructure belongs under `support/`. Keep the plugin and offline replay executable entry points at the root. See `docs/code-structure.zh-CN.md` for entry points.

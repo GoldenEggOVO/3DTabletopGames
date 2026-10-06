@@ -2,11 +2,11 @@ package dev.tabletop3d.rules.texasholdem;
 
 import dev.tabletop3d.rules.cards.PlayingCard;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class PokerHandsDistributionTest {
     @Test

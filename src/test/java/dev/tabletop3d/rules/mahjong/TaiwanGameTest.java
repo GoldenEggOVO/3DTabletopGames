@@ -1,9 +1,12 @@
 package dev.tabletop3d.rules.mahjong;
 
 import dev.tabletop3d.rules.HandGame;
+
+import org.junit.jupiter.api.Test;
+
 import java.lang.reflect.Field;
 import java.util.*;
-import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class TaiwanGameTest {

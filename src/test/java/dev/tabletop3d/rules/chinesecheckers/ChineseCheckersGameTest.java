@@ -3,8 +3,10 @@ package dev.tabletop3d.rules.chinesecheckers;
 import dev.tabletop3d.rules.BoardGame;
 
 import org.junit.jupiter.api.Test;
+
 import java.lang.reflect.Field;
 import java.util.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class ChineseCheckersGameTest {

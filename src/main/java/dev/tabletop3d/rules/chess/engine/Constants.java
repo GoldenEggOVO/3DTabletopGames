@@ -17,10 +17,10 @@
 
 package dev.tabletop3d.rules.chess.engine;
 
+import dev.tabletop3d.rules.chess.engine.move.Move;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import dev.tabletop3d.rules.chess.engine.move.Move;
 
 /**
  * A handy collection of constant values to be used in common scenarios.

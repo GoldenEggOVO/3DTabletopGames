@@ -2,11 +2,12 @@ package dev.tabletop3d.rules.chess;
 
 import dev.tabletop3d.rules.BoardGame;
 import dev.tabletop3d.rules.Cell;
-
 import dev.tabletop3d.ui.GameSymbols;
 
 import org.junit.jupiter.api.Test;
+
 import java.util.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class ChessGameTest {

@@ -3,7 +3,6 @@ package dev.tabletop3d.rules.connectfour;
 import dev.tabletop3d.rules.BoardGame;
 import dev.tabletop3d.rules.Cell;
 import dev.tabletop3d.rules.RuleViolation;
-
 import dev.tabletop3d.ui.GameSymbols;
 
 import java.util.*;

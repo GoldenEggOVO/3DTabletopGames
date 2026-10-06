@@ -1,0 +1,698 @@
+package dev.tabletop3d.audio;
+
+import com.google.gson.JsonPrimitive;
+
+import dev.tabletop3d.Tabletop3D;
+import dev.tabletop3d.TabletopTest;
+import dev.tabletop3d.interaction.GameWorld;
+import dev.tabletop3d.menu.GameMenus;
+import dev.tabletop3d.render.TableViewTest;
+import dev.tabletop3d.resource.TabletopPack;
+import dev.tabletop3d.room.Room;
+import dev.tabletop3d.rules.*;
+import dev.tabletop3d.rules.doudizhu.DoudizhuCombination;
+import dev.tabletop3d.rules.mahjong.MahjongGame;
+
+import org.bukkit.*;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.junit.jupiter.api.*;
+import org.mockbukkit.mockbukkit.MockBukkit;
+
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+class TableSoundsTest {
+    @Test
+    void physicalActionsUseSamplesForTheirMaterialAndKeepCardPlayUnchanged() {
+        assertEquals("cards.draw", TableSounds.move("color-eight", 0, "draw", List.of(), List.of()).resource());
+        assertEquals("dice.roll", TableSounds.move("yacht", 0, "roll", List.of(), List.of()).resource());
+        assertEquals("dice.single", TableSounds.move("ludo", 0, "roll", List.of(), List.of()).resource());
+        assertEquals("dice.hold", TableSounds.move("yacht", 0, "hold:0", List.of(), List.of()).resource());
+        assertEquals("board.wood", TableSounds.move("chess", 0, "move:a2:a3", List.of(), List.of()).resource());
+        assertEquals("board.stone", TableSounds.move("gomoku", 0, "place:0,0", List.of(), List.of()).resource());
+        assertEquals("board.drop", TableSounds.move("connectfour", 0, "drop:0", List.of(), List.of()).resource());
+        assertEquals("board.flip", TableSounds.move("reversi", 0, "place:0,0", List.of(), List.of()).resource());
+        assertEquals("chips.bet", TableSounds.cards("texas-holdem", "raise:20", Map.of(), Map.of(), true).getLast().resource());
+        assertEquals("cards.play", TableSounds.CARD.resource());
+    }
+
+    @Test
+    void mixedBoardViewersUseTheirOwnSoundAndMahjongKeepsItsSelectionRecording() {
+        var plugin = mock(Tabletop3D.class);
+        when(plugin.getConfig()).thenReturn(new YamlConfiguration());
+        plugin.pack = mock(TabletopPack.class);
+        var world = mock(World.class);
+        var at = new Location(world, 0, 80, 0);
+        var nativePlayer = mock(org.bukkit.entity.Player.class);
+        var packedPlayer = mock(org.bukkit.entity.Player.class);
+        when(world.getPlayers()).thenReturn(List.of(nativePlayer, packedPlayer));
+        for (var player : List.of(nativePlayer, packedPlayer)) {
+            when(player.getLocation()).thenReturn(at);
+            when(plugin.allowed(player)).thenReturn(true);
+        }
+        when(plugin.pack.packed(packedPlayer)).thenReturn(true);
+        TableSounds.play(plugin, at, TableSounds.WOOD, "chess");
+        verify(packedPlayer).playSound(at, "tabletop3d:board.wood", SoundCategory.BLOCKS, TableSounds.WOOD.volume(), 1f);
+        verify(nativePlayer).playSound(at, TableSounds.WOOD.sound(), SoundCategory.BLOCKS, TableSounds.WOOD.volume(), TableSounds.WOOD.pitch());
+        TableSounds.play(plugin, at, TableSounds.SELECT, "mahjong");
+        verify(packedPlayer).playSound(at, "tabletop3d:mahjong.select", SoundCategory.BLOCKS, TableSounds.SELECT.volume(), 1f);
+        verify(packedPlayer, never()).playSound(at, "tabletop3d:table.select", SoundCategory.BLOCKS, TableSounds.SELECT.volume(), 1f);
+        verify(packedPlayer, never()).playSound(any(Location.class), any(Sound.class), any(SoundCategory.class), anyFloat(), anyFloat());
+        verify(world, never()).playSound(any(Location.class), any(Sound.class), any(SoundCategory.class), anyFloat(), anyFloat());
+    }
+
+    @Test
+    void cardDrawingPassingAndYachtScoringHaveDifferentNativeCues() {
+        assertNotEquals(TableSounds.move("color-eight", 0, "draw", List.of(), List.of()),
+                TableSounds.move("color-eight", 0, "play:card", List.of(), List.of()));
+        assertNotEquals(TableSounds.move("yacht", 0, "score:yacht", List.of(), List.of()),
+                TableSounds.move("yacht", 0, "score:ones", List.of(), List.of()));
+    }
+
+    @Test
+    void landlordSoundsDistinguishEveryAcceptedCombinationAndPassReason() {
+        var cues = new HashSet<TableSounds.Cue>();
+        for (var type : DoudizhuCombination.Type.values()) {
+            var cue = TableSounds.cards("doudizhu", "play:cards", Map.of(),
+                    Map.of("combination", type.name()), true).getFirst();
+            assertTrue(cues.add(cue), type.name());
+        }
+        assertNull(TableSounds.cards("doudizhu", "play:cards", Map.of(),
+                Map.of("combination", "BOMB"), true).getFirst().resource());
+        for (var type : DoudizhuCombination.Type.values())
+            assertEquals(List.of("cards.play"), TableSounds.cards("doudizhu", "play:cards", Map.of(),
+                    Map.of("combination", type.name()), true).stream()
+                    .filter(cue -> cue.resource() != null).map(TableSounds.Cue::resource).toList());
+        assertNotEquals(TableSounds.cards("doudizhu", "pass", Map.of(), Map.of(), true),
+                TableSounds.cards("doudizhu", "pass", Map.of(), Map.of(), false));
+        assertNotEquals(TableSounds.cards("doudizhu", "bid:2", Map.of("bid", "0"), Map.of(), true),
+                TableSounds.cards("doudizhu", "bid:2", Map.of("bid", "1"), Map.of(), true));
+        for (boolean canBeat : List.of(true, false))
+            assertNull(TableSounds.cards("doudizhu", "pass", Map.of(), Map.of(), canBeat).getFirst().resource());
+        for (String bid : List.of("0", "1"))
+            assertNull(TableSounds.cards("doudizhu", "bid:2", Map.of("bid", bid), Map.of(), true).getFirst().resource());
+    }
+
+    @Test
+    void liarsChallengeUsesGunshotOnlyWhenSomeoneWasEliminated() {
+        var before = Map.of("alive.0", "true", "alive.1", "true");
+        var live = TableSounds.cards("liars-bar", "challenge", before, before, true);
+        var shot = TableSounds.cards("liars-bar", "challenge", before,
+                Map.of("alive.0", "false", "alive.1", "true"), true);
+        assertNull(live.getFirst().resource());
+        assertNull(live.getLast().resource());
+        assertNull(shot.getLast().resource());
+        assertNotEquals(live.getLast().sound(), shot.getLast().sound());
+        assertTrue(shot.getLast().delayTicks() >= 20);
+    }
+
+    @Test
+    void mixedCardViewersHearOneSampleOrNativeEffectWithoutDuplicatingEither() {
+        var plugin = mock(Tabletop3D.class);
+        when(plugin.getConfig()).thenReturn(new YamlConfiguration());
+        plugin.pack = mock(TabletopPack.class);
+        var world = mock(World.class);
+        var at = new Location(world, 0, 80, 0);
+        var nativePlayer = mock(org.bukkit.entity.Player.class);
+        var packedPlayer = mock(org.bukkit.entity.Player.class);
+        when(world.getPlayers()).thenReturn(List.of(nativePlayer, packedPlayer));
+        for (var player : List.of(nativePlayer, packedPlayer)) {
+            when(player.getLocation()).thenReturn(at);
+            when(plugin.allowed(player)).thenReturn(true);
+        }
+        when(plugin.pack.packed(packedPlayer)).thenReturn(true);
+        var cue = TableSounds.CARD;
+        TableSounds.play(plugin, at, cue, "liars-bar");
+        verify(packedPlayer).playSound(at, "tabletop3d:cards.play", SoundCategory.BLOCKS, cue.volume(), 1f);
+        verify(nativePlayer).playSound(at, cue.sound(), SoundCategory.BLOCKS, cue.volume(), cue.pitch());
+        verify(packedPlayer, never()).playSound(any(Location.class), any(Sound.class), any(SoundCategory.class), anyFloat(), anyFloat());
+        verify(world, never()).playSound(any(Location.class), any(Sound.class), any(SoundCategory.class), anyFloat(), anyFloat());
+    }
+
+    @Test
+    void allCardGamesUseTheSameSampleForTheirCardCue() {
+        assertEquals("cards.play", TableSounds.move("color-eight", 0, "play:card", List.of(), List.of()).resource());
+        for (var type : DoudizhuCombination.Type.values()) {
+            var cues = TableSounds.cards("doudizhu", "play:cards", Map.of(), Map.of("combination", type.name()), true);
+            assertEquals(List.of("cards.play"), cues.stream().map(TableSounds.Cue::resource).filter(Objects::nonNull).toList());
+        }
+        assertEquals("cards.play", TableSounds.cards("liars-bar", "play:cards", Map.of(), Map.of(), true).getFirst().resource());
+        assertEquals("cards.play", TableSounds.cards("texas-holdem", "raise:20", Map.of(), Map.of(), true).getFirst().resource());
+    }
+    @Test
+    void mixedViewersEachHearOnlyTheirOwnMahjongSound() {
+        var plugin = mock(Tabletop3D.class);
+        when(plugin.getConfig()).thenReturn(new YamlConfiguration());
+        plugin.pack = mock(TabletopPack.class);
+        var world = mock(World.class);
+        var at = new Location(world, 0, 80, 0);
+        var nativePlayer = mock(org.bukkit.entity.Player.class);
+        var packedPlayer = mock(org.bukkit.entity.Player.class);
+        when(world.getPlayers()).thenReturn(List.of(nativePlayer, packedPlayer));
+        for (var player : List.of(nativePlayer, packedPlayer)) {
+            when(player.getLocation()).thenReturn(at);
+            when(plugin.allowed(player)).thenReturn(true);
+        }
+        when(plugin.pack.packed(packedPlayer)).thenReturn(true);
+        TableSounds.play(plugin, at, TableSounds.TILE_DISCARD, "mahjong");
+        verify(nativePlayer)
+                .playSound(
+                        at,
+                        TableSounds.TILE_DISCARD.sound(),
+                        SoundCategory.BLOCKS,
+                        TableSounds.TILE_DISCARD.volume(),
+                        TableSounds.TILE_DISCARD.pitch());
+        verify(packedPlayer)
+                .playSound(
+                        at,
+                        "tabletop3d:mahjong.discard",
+                        SoundCategory.BLOCKS,
+                        TableSounds.TILE_DISCARD.volume(),
+                        1f);
+        verify(nativePlayer, never())
+                .playSound(
+                        any(Location.class),
+                        anyString(),
+                        any(SoundCategory.class),
+                        anyFloat(),
+                        anyFloat());
+        verify(packedPlayer, never())
+                .playSound(
+                        any(Location.class),
+                        any(Sound.class),
+                        any(SoundCategory.class),
+                        anyFloat(),
+                        anyFloat());
+        verify(world, never())
+                .playSound(
+                        any(Location.class),
+                        any(Sound.class),
+                        any(SoundCategory.class),
+                        anyFloat(),
+                        anyFloat());
+    }
+
+    @Test
+    void doraCueOnlyFollowsANewPublicIndicator() {
+        var before =
+                new TableSounds.MahjongState(
+                        Map.of("phase", "TURN", "wall", "40", "lastWin", "", "doraIds", "a"), 0);
+        var after =
+                new TableSounds.MahjongState(
+                        Map.of("phase", "TURN", "wall", "39", "lastWin", "", "doraIds", "a,b"), 4);
+        assertEquals(
+                List.of(TableSounds.TILE_KAN, TableSounds.TILE_DORA, TableSounds.TILE_DRAW),
+                TableSounds.mahjong("kan-closed:x", before, after));
+        assertFalse(TableSounds.mahjong("discard:x", after, after).contains(TableSounds.TILE_DORA));
+    }
+
+    @Test
+    void countdownIsOncePerSecondAndSilentDuringReplay() {
+        var server = MockBukkit.getMock();
+        var world = server.addSimpleWorld("countdown");
+        var player = server.addPlayer();
+        player.teleport(new Location(world, 0, 80, 0));
+        var plugin = mock(Tabletop3D.class);
+        when(plugin.getConfig()).thenReturn(new YamlConfiguration());
+        when(plugin.allowed(player)).thenReturn(true);
+        var room = new Room(UUID.randomUUID(), "mahjong", 4, 0, 0);
+        room.join(player.getUniqueId(), "Player");
+        room.fillBots();
+        room.board = mock(HandGame.class);
+        when(room.board.currentPlayer()).thenReturn(0);
+        room.phase = Room.Phase.PLAYING;
+        room.changed = 1_000;
+        when(plugin.turnWaitMillis(room)).thenReturn(10_000L);
+        TableSounds.countdown(plugin, room, player.getLocation(), 6_000);
+        TableSounds.countdown(plugin, room, player.getLocation(), 6_200);
+        assertEquals(1, player.getHeardSounds().size());
+        TableSounds.countdown(plugin, room, player.getLocation(), 7_000);
+        assertEquals(2, player.getHeardSounds().size());
+        room.restoring = true;
+        TableSounds.countdown(plugin, room, player.getLocation(), 8_000);
+        assertEquals(2, player.getHeardSounds().size());
+    }
+
+    @BeforeEach
+    void setup() {
+        MockBukkit.mock();
+    }
+
+    @AfterEach
+    void close() {
+        MockBukkit.unmock();
+    }
+
+    @Test
+    void refreshingMetadataOrReplayingABoardDoesNotMakeAMoveSound() throws Exception {
+        var f = new TableViewTest.Fixture("gomoku", "place:0,0");
+        f.room.revision++;
+        f.view.sync();
+        f.room.board = f.room.newBoard();
+        for (var event : f.room.history) {
+            var record = event.getAsJsonObject();
+            f.room.board.apply(record.get("seat").getAsInt(), record.get("action").getAsString());
+        }
+        f.view.sync();
+        verify(f.world, never())
+                .playSound(any(Location.class), any(Sound.class), anyFloat(), anyFloat());
+        verify(f.world, never())
+                .playSound(
+                        any(Location.class),
+                        any(Sound.class),
+                        any(SoundCategory.class),
+                        anyFloat(),
+                        anyFloat());
+        f.view.close();
+    }
+
+    @Test
+    void everyCatalogGameHasABoundedNativeMoveSound() {
+        Set<Sound> palette = new HashSet<>();
+        var kinds = new ArrayList<>(Tabletop3D.GAMES);
+        for (String kind : kinds) {
+            BoardGame game = GameFactory.create(kind, Tabletop3D.defaultCapacity(kind), 0);
+            int seat = game.currentPlayer();
+            List<Cell> before = game.cells();
+            String action = game.legalActions(seat).getFirst();
+            game.apply(seat, action);
+            var cue = TableSounds.move(kind, seat, action, before, game.cells());
+            assertNotNull(cue.sound(), kind);
+            assertTrue(cue.volume() > 0 && cue.volume() <= .4f, kind);
+            assertTrue(cue.pitch() >= .5f && cue.pitch() <= 2f, kind);
+            palette.add(cue.sound());
+        }
+        assertTrue(palette.size() >= 6, "Materials and dice should sound different");
+    }
+
+    @Test
+    void capturesUseRuleChangesIncludingEnPassantAndLudoStacks() throws Exception {
+        var chess = GameFactory.create("chess", 2, 0);
+        for (String action : List.of("move:e2:e4", "move:a7:a6", "move:e4:e5", "move:d7:d5"))
+            chess.apply(chess.currentPlayer(), action);
+        var before = chess.cells();
+        chess.apply(0, "move:e5:d6");
+        assertEquals(
+                TableSounds.CAPTURE,
+                TableSounds.move("chess", 0, "move:e5:d6", before, chess.cells()));
+        var ludo = GameFactory.create("ludo", 2, 0);
+        int[] positions = (int[]) TableViewTest.field(ludo, "progress");
+        positions[0] = 24;
+        positions[4] = 0;
+        positions[5] = 0;
+        TabletopTest.set(ludo, "pendingRoll", 2);
+        before = ludo.cells();
+        ludo.apply(0, "move:0:sk26");
+        assertEquals(
+                TableSounds.CAPTURE,
+                TableSounds.move("ludo", 0, "move:0:sk26", before, ludo.cells()));
+        positions[0] = 55;
+        TabletopTest.set(ludo, "current", 0);
+        TabletopTest.set(ludo, "pendingRoll", 1);
+        before = ludo.cells();
+        ludo.apply(0, "move:0:go0");
+        assertEquals(
+                TableSounds.HOME, TableSounds.move("ludo", 0, "move:0:go0", before, ludo.cells()));
+    }
+
+    @Test
+    void goScoringAndReversiFlipsDoNotSoundLikeCaptures() {
+        var go = GameFactory.create("go9", 2, 0);
+        var before = go.cells();
+        go.apply(0, "place:0,0");
+        assertEquals(
+                TableSounds.STONE, TableSounds.move("go9", 0, "place:0,0", before, go.cells()));
+        assertEquals(TableSounds.PASS, TableSounds.move("go9", 0, "pass", before, before));
+        assertEquals(TableSounds.SELECT, TableSounds.move("go9", 0, "dead:0,0", before, before));
+        assertEquals(TableSounds.CONFIRM, TableSounds.move("go9", 0, "accept", before, before));
+        var reversi = GameFactory.create("reversi", 2, 0);
+        before = reversi.cells();
+        String action = reversi.legalActions(0).getFirst();
+        reversi.apply(0, action);
+        assertEquals(
+                TableSounds.FLIP, TableSounds.move("reversi", 0, action, before, reversi.cells()));
+    }
+
+    @Test
+    void validBotAndPlayerMovesSoundOnceWhileRejectedActionsAndRefreshesStayQuiet()
+            throws Exception {
+        var f = application("gomoku");
+        f.plugin.menus = mock(GameMenus.class);
+        when(f.player.isOnline()).thenReturn(true);
+        f.plugin.apply(f.room, 0, new JsonPrimitive("place:0,0"), f.player);
+        verify(f.plugin.menus).room(f.player, f.room);
+        for (int i = 0; i < 10; i++) f.view.sync();
+        f.plugin.apply(f.room, 0, new JsonPrimitive("place:0,1"), null);
+        f.plugin.apply(f.room, 1, new JsonPrimitive("place:0,0"), null);
+        verify(f.world, times(1))
+                .playSound(
+                        eq(f.view.origin),
+                        eq(TableSounds.STONE.sound()),
+                        eq(SoundCategory.BLOCKS),
+                        anyFloat(),
+                        anyFloat());
+        f.plugin.apply(f.room, 1, new JsonPrimitive("place:1,0"), null);
+        verify(f.world, times(2))
+                .playSound(
+                        eq(f.view.origin),
+                        eq(TableSounds.STONE.sound()),
+                        eq(SoundCategory.BLOCKS),
+                        anyFloat(),
+                        anyFloat());
+        assertEquals(2, f.room.history.size());
+        f.view.close();
+    }
+
+    @Test
+    void restoreIsSilentButNewRoundsAndResultsHaveDedicatedCues() throws Exception {
+        var f = application("gomoku");
+        f.room.restoring = true;
+        f.plugin.start(f.room);
+        verify(f.world, never())
+                .playSound(
+                        any(Location.class),
+                        any(Sound.class),
+                        any(SoundCategory.class),
+                        anyFloat(),
+                        anyFloat());
+        f.room.restoring = false;
+        f.plugin.start(f.room);
+        verify(f.world)
+                .playSound(
+                        any(Location.class),
+                        eq(TableSounds.START.sound()),
+                        eq(SoundCategory.BLOCKS),
+                        anyFloat(),
+                        eq(TableSounds.START.pitch()));
+        f.plugin.apply(f.room, 0, new JsonPrimitive("place:0,0"), null);
+        f.plugin.finish(f.room, "winner:0");
+        f.plugin.finish(f.room, "winner:0");
+        verify(f.world, times(1))
+                .playSound(
+                        any(Location.class),
+                        eq(TableSounds.WIN.sound()),
+                        eq(SoundCategory.BLOCKS),
+                        anyFloat(),
+                        anyFloat());
+        f.view.close();
+    }
+
+    @Test
+    void winningMoveAndDrawFinishSoundOnceWithoutRepeatingOnRender() throws Exception {
+        var f = application("connectfour");
+        for (String action :
+                List.of("drop:0", "drop:1", "drop:0", "drop:1", "drop:0", "drop:1", "drop:0"))
+            f.plugin.apply(f.room, f.room.turn(), new JsonPrimitive(action), null);
+        assertEquals(Room.Phase.FINISHED, f.room.phase);
+        f.view.sync();
+        f.view.sync();
+        verify(f.world, times(7))
+                .playSound(
+                        any(Location.class),
+                        eq(TableSounds.DROP.sound()),
+                        eq(SoundCategory.BLOCKS),
+                        anyFloat(),
+                        anyFloat());
+        verify(f.world, times(1))
+                .playSound(
+                        any(Location.class),
+                        eq(TableSounds.WIN.sound()),
+                        eq(SoundCategory.BLOCKS),
+                        anyFloat(),
+                        anyFloat());
+        f.view.close();
+        var draw = application("chess");
+        draw.plugin.finish(draw.room, "draw:threefold-repetition");
+        verify(draw.world)
+                .playSound(
+                        any(Location.class),
+                        eq(TableSounds.DRAW.sound()),
+                        eq(SoundCategory.BLOCKS),
+                        anyFloat(),
+                        eq(TableSounds.DRAW.pitch()));
+        draw.view.close();
+    }
+
+    @Test
+    void settingsMuteAllFeedbackAndClampVolume() {
+        var plugin = mock(Tabletop3D.class);
+        var config = new YamlConfiguration();
+        when(plugin.getConfig()).thenReturn(config);
+        var world = mock(World.class);
+        var at = new Location(world, 0, 80, 0);
+        var player = mock(org.bukkit.entity.Player.class);
+        when(player.getLocation()).thenReturn(at);
+        config.set("sounds.enabled", false);
+        TableSounds.play(plugin, at, TableSounds.WIN);
+        TableSounds.select(plugin, player);
+        verifyNoInteractions(world);
+        verify(player, never())
+                .playSound(
+                        any(Location.class),
+                        any(Sound.class),
+                        any(SoundCategory.class),
+                        anyFloat(),
+                        anyFloat());
+        config.set("sounds.enabled", true);
+        config.set("sounds.volume", .5);
+        TableSounds.play(plugin, at, TableSounds.STONE);
+        verify(world)
+                .playSound(
+                        eq(at),
+                        eq(TableSounds.STONE.sound()),
+                        eq(SoundCategory.BLOCKS),
+                        eq(TableSounds.STONE.volume() * .5f),
+                        eq(TableSounds.STONE.pitch()));
+        clearInvocations(world);
+        config.set("sounds.volume", 999);
+        TableSounds.play(plugin, at, TableSounds.STONE);
+        verify(world)
+                .playSound(
+                        eq(at),
+                        eq(TableSounds.STONE.sound()),
+                        eq(SoundCategory.BLOCKS),
+                        eq(TableSounds.STONE.volume()),
+                        anyFloat());
+        clearInvocations(world);
+        for (double volume : new double[] {0, -1, Double.NaN, Double.POSITIVE_INFINITY}) {
+            config.set("sounds.volume", volume);
+            TableSounds.play(plugin, at, TableSounds.STONE);
+        }
+        verifyNoInteractions(world);
+    }
+
+    @Test
+    void startingAndChangingTurnsDoNotPlayPersonalPrompts() throws Exception {
+        var f = application("gomoku");
+        when(f.player.getWorld()).thenReturn(f.world);
+        when(f.player.getLocation()).thenReturn(f.view.origin.clone());
+        when(f.plugin.allowed(f.player)).thenReturn(true);
+        try (var bukkit = mockStatic(Bukkit.class, CALLS_REAL_METHODS)) {
+            bukkit.when(() -> Bukkit.getPlayer(f.player.getUniqueId())).thenReturn(f.player);
+            f.plugin.start(f.room);
+            f.plugin.apply(f.room, 0, new JsonPrimitive("place:0,0"), null);
+            f.plugin.apply(f.room, 1, new JsonPrimitive("place:1,0"), null);
+            f.view.tick();
+            verify(f.player, never()).playSound(any(Location.class), any(Sound.class),
+                    any(SoundCategory.class), anyFloat(), anyFloat());
+            verify(f.player, never()).playSound(any(Location.class), anyString(),
+                    any(SoundCategory.class), anyFloat(), anyFloat());
+        }
+        f.view.close();
+    }
+
+    @Test
+    void mahjongDiscardAndFinalPassIncludeOnlyTheDrawThatActuallyHappened() throws Exception {
+        MahjongGame game =
+                mahjong(
+                        "z1 m1 m2 m3 m4 m5 m6 p1 p2 p3 s4 s5 s6 z2",
+                        "z1 z1 p1 p2 p4 p5 s1 s2 s4 s5 z2 z3 z4",
+                        "",
+                        "");
+        assertEquals(List.of(TableSounds.TILE_DISCARD), mahjongMove(game, "discard:s0_0"));
+        assertEquals(List.of(TableSounds.PASS, TableSounds.TILE_DRAW), mahjongMove(game, "pass"));
+        game = mahjong("z1 m1 m2 m3 m4 m5 m6 p1 p2 p3 s4 s5 s6 z2", "", "", "");
+        assertEquals(
+                List.of(TableSounds.TILE_DISCARD, TableSounds.TILE_DRAW),
+                mahjongMove(game, "discard:s0_0"));
+    }
+
+    @Test
+    void mahjongMeldsAndReplacementDrawsHaveDistinctMaterialCues() throws Exception {
+        MahjongGame game =
+                mahjong(
+                        "z1 m1 m2 m3 m4 m5 m6 p1 p2 p3 s4 s5 s6 z2",
+                        "z1 z1 p1 p2 p4 p5 s1 s2 s4 s5 z2 z3 z4",
+                        "",
+                        "");
+        mahjongMove(game, "discard:s0_0");
+        assertEquals(List.of(TableSounds.TILE_PON), mahjongMove(game, "pon:s1_0,s1_1"));
+        game =
+                mahjongProfile(
+                        "riichi", "m3 m1 m2 m4 m5 m6 p1 p2 p3 s4 s5 s6 z1 z2", "m1 m2 z1", "", "");
+        mahjongMove(game, "discard:s0_0");
+        assertEquals(List.of(TableSounds.TILE_CHI), mahjongMove(game, "chi:s1_0,s1_1"));
+        game = mahjong("m1 m1 m1 m1 m2 m3 p4 p5 p6 s7 s8 s9 z1 z1", "", "", "");
+        assertEquals(
+                List.of(TableSounds.TILE_KAN, TableSounds.TILE_DRAW),
+                mahjongMove(game, "kan-closed:s0_0"));
+    }
+
+    @Test
+    void mahjongRobbedKongDoesNotSoundLikeACompletedKongAndWinWaitsForResponses() throws Exception {
+        MahjongGame game =
+                mahjong(
+                        "z1 m1 m2 m3 p1 p2 p3 s1 s2 s3 z2",
+                        "m1 m2 m3 m4 m5 m6 p2 p3 p4 s7 s8 s9 z1",
+                        "m1 m2 m3 m4 m5 m6 p2 p3 p4 s7 s8 s9 z1",
+                        "");
+        addPon(game);
+        assertEquals(List.of(TableSounds.SELECT), mahjongMove(game, "kan-added:s0_0"));
+        assertEquals(List.of(TableSounds.CONFIRM), mahjongMove(game, "ron"));
+        assertEquals(List.of(TableSounds.MAHJONG_WIN), mahjongMove(game, "pass"));
+        assertEquals("ROUND_END", game.publicInfo().get("phase"));
+        assertEquals(List.of(TableSounds.START), mahjongMove(game, "next-hand"));
+    }
+
+    @Test
+    void mahjongRiichiIncludesTheDiscardAndKongCompletesAfterRobbersPass() throws Exception {
+        var game =
+                mahjongProfile("riichi", "m1 m2 m3 m4 m5 m6 p2 p3 p4 s7 s8 s9 z1 z2", "", "", "");
+        assertEquals(
+                List.of(TableSounds.TILE_DISCARD, TableSounds.RIICHI, TableSounds.TILE_DRAW),
+                mahjongMove(game, "riichi:s0_13"));
+        game =
+                mahjong(
+                        "z1 m1 m2 m3 p1 p2 p3 s1 s2 s3 z2",
+                        "m1 m2 m3 m4 m5 m6 p2 p3 p4 s7 s8 s9 z1",
+                        "",
+                        "");
+        addPon(game);
+        assertEquals(List.of(TableSounds.SELECT), mahjongMove(game, "kan-added:s0_0"));
+        assertEquals(
+                List.of(TableSounds.TILE_KAN, TableSounds.TILE_DRAW), mahjongMove(game, "pass"));
+    }
+
+    @Test
+    void mahjongCommittedActionsPlayOnceAndRejectedActionsAndRestoreStayQuiet() throws Exception {
+        var plugin = mock(Tabletop3D.class);
+        plugin.arena = mock(GameWorld.class);
+        var room = new Room(UUID.randomUUID(), "mahjong", 4, 0, 0);
+        room.fillBots();
+        room.phase = Room.Phase.PLAYING;
+        room.board = mahjong("z1 m1 m2 m3 m4 m5 m6 p1 p2 p3 s4 s5 s6 z2", "", "", "");
+        TabletopTest.set(plugin, "rooms", new LinkedHashMap<>(Map.of(room.id, room)));
+        doCallRealMethod().when(plugin).apply(any(), anyInt(), any(), any());
+        plugin.apply(room, 1, new JsonPrimitive("discard:s0_0"), null);
+        verify(plugin.arena, never()).sound(any(), any());
+        plugin.apply(room, 0, new JsonPrimitive("discard:s0_0"), null);
+        verify(plugin.arena).sound(room, TableSounds.TILE_DISCARD);
+        verify(plugin.arena).sound(room, TableSounds.TILE_DRAW);
+        clearInvocations(plugin.arena);
+        room.restoring = true;
+        plugin.apply(
+                room,
+                room.turn(),
+                new JsonPrimitive(room.board.legalActions(room.turn()).getFirst()),
+                null);
+        verify(plugin.arena, never()).sound(any(), any());
+    }
+
+    @Test
+    void mahjongFinalSelfDrawHasOneWinCueWithoutTheGenericFinishSound() throws Exception {
+        var plugin = mock(Tabletop3D.class);
+        plugin.arena = mock(GameWorld.class);
+        var room = new Room(UUID.randomUUID(), "mahjong", 4, 0, 0);
+        room.fillBots();
+        room.phase = Room.Phase.PLAYING;
+        room.board = mahjong("m1 m2 m3 m4 m5 m6 p2 p3 p4 s7 s8 s9 z1 z1", "", "", "");
+        TabletopTest.set(room.board, "roundLimit", 1);
+        TabletopTest.set(plugin, "rooms", new LinkedHashMap<>(Map.of(room.id, room)));
+        doCallRealMethod().when(plugin).apply(any(), anyInt(), any(), any());
+        doCallRealMethod().when(plugin).finish(any(), anyString());
+        plugin.apply(room, 0, new JsonPrimitive("tsumo"), null);
+        assertEquals(Room.Phase.FINISHED, room.phase);
+        verify(plugin.arena, times(1)).sound(any(), any());
+        verify(plugin.arena).sound(room, TableSounds.MAHJONG_WIN);
+    }
+
+    @Test
+    void drawingAndReplacingAFlowerAfterPassingRonIsNotAKong() {
+        var game = mock(HandGame.class);
+        when(game.playerCount()).thenReturn(4);
+        when(game.exposed(anyInt())).thenReturn(List.of());
+        when(game.publicInfo()).thenReturn(Map.of("phase", "RON", "wall", "10", "lastWin", ""));
+        var before = TableSounds.mahjongState(game);
+        when(game.exposed(1)).thenReturn(List.of(new HandGame.Piece("flower", "f1")));
+        when(game.publicInfo()).thenReturn(Map.of("phase", "TURN", "wall", "8", "lastWin", ""));
+        assertEquals(
+                List.of(TableSounds.PASS, TableSounds.TILE_DRAW),
+                TableSounds.mahjong("pass", before, TableSounds.mahjongState(game)));
+    }
+
+    private static List<TableSounds.Cue> mahjongMove(MahjongGame game, String action) {
+        var before = TableSounds.mahjongState(game);
+        game.apply(game.currentPlayer(), action);
+        return TableSounds.mahjong(action, before, TableSounds.mahjongState(game));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void addPon(MahjongGame game) throws Exception {
+        var melds =
+                (List<List<dev.tabletop3d.rules.mahjong.Meld>>) TableViewTest.field(game, "melds");
+        melds.getFirst()
+                .add(
+                        new dev.tabletop3d.rules.mahjong.Meld(
+                                dev.tabletop3d.rules.mahjong.Meld.Kind.TRIPLET,
+                                List.of(
+                                        new dev.tabletop3d.rules.mahjong.Tiles.Tile("a", 27, false),
+                                        new dev.tabletop3d.rules.mahjong.Tiles.Tile("b", 27, false),
+                                        new dev.tabletop3d.rules.mahjong.Tiles.Tile(
+                                                "c", 27, false)),
+                                true,
+                                3));
+    }
+
+    private static MahjongGame mahjong(String... hands) throws Exception {
+        return mahjongProfile("guangdong", hands);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static MahjongGame mahjongProfile(String profile, String... hands) throws Exception {
+        var game = new MahjongGame(4, 0, Map.of("profile", profile, "rounds", "4"));
+        var values =
+                (List<List<dev.tabletop3d.rules.mahjong.Tiles.Tile>>)
+                        TableViewTest.field(game, "hands");
+        for (int seat = 0; seat < 4; seat++) {
+            values.get(seat).clear();
+            int index = 0;
+            for (String face : hands[seat].split(" "))
+                if (!face.isEmpty())
+                    values.get(seat)
+                            .add(
+                                    new dev.tabletop3d.rules.mahjong.Tiles.Tile(
+                                            "s" + seat + "_" + index++,
+                                            dev.tabletop3d.rules.mahjong.Tiles.type(face),
+                                            false));
+        }
+        return game;
+    }
+
+    private TableViewTest.Fixture application(String kind) throws Exception {
+        var f = new TableViewTest.Fixture(kind);
+        when(f.plugin.getConfig()).thenReturn(new YamlConfiguration());
+        TabletopTest.set(f.plugin, "rooms", new LinkedHashMap<>(Map.of(f.room.id, f.room)));
+        f.plugin.arena = mock(GameWorld.class, CALLS_REAL_METHODS);
+        TabletopTest.set(f.plugin.arena, "plugin", f.plugin);
+        TabletopTest.set(f.plugin.arena, "views", new HashMap<>(Map.of(f.room.id, f.view)));
+        TabletopTest.set(f.plugin.arena, "selections", new HashMap<>());
+        doCallRealMethod().when(f.plugin).apply(any(), anyInt(), any(), any());
+        doCallRealMethod().when(f.plugin).start(any());
+        doCallRealMethod().when(f.plugin).prepareSeats(any());
+        doCallRealMethod().when(f.plugin).finish(any(), anyString());
+        return f;
+    }
+}

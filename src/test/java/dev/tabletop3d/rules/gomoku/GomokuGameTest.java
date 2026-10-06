@@ -3,7 +3,9 @@ package dev.tabletop3d.rules.gomoku;
 import dev.tabletop3d.rules.BoardGame;
 
 import org.junit.jupiter.api.Test;
+
 import java.util.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class GomokuGameTest {

@@ -2,8 +2,11 @@ package dev.tabletop3d.rules.connectfour;
 
 import dev.tabletop3d.rules.BoardGame;
 import dev.tabletop3d.rules.GameFactory;
+
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
+
 class ConnectFourGameTest {
     private BoardGame game(){return GameFactory.create("connectfour",2,1);}
     private void play(BoardGame game,int... columns){for(int col:columns)game.apply(game.currentPlayer(),"drop:"+col);}

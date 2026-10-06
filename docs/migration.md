@@ -6,7 +6,7 @@ The current build keeps `3dtabletop` configuration, semantic `languages/` catalo
 2. Check the room file against the exact candidate shaded JAR:
 
    ```sh
-   java -cp target/3dtabletop-1.10.24-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifier /backup/3dtabletop/rooms.json
+   java -cp target/3dtabletop-1.10.25-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifier /backup/3dtabletop/rooms.json
    ```
 
 3. Replace the plugin with the new shaded JAR. Preserve current rooms, custom language values and other plugins.

@@ -2,12 +2,12 @@ package dev.tabletop3d.rules.coloreight;
 
 import dev.tabletop3d.rules.HandGame;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class ColorEightGameTest {
     Object field(ColorEightGame g, String name) throws Exception {

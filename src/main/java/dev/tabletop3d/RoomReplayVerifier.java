@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import dev.tabletop3d.room.Room;
 import dev.tabletop3d.rules.GameFactory;
 
 import java.nio.charset.StandardCharsets;

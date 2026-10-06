@@ -1,12 +1,12 @@
 package dev.tabletop3d;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import dev.tabletop3d.rules.GameFactory;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CurrentGameCatalogTest {
     @Test

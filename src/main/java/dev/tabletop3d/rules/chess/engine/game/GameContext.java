@@ -17,9 +17,6 @@
 
 package dev.tabletop3d.rules.chess.engine.game;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import dev.tabletop3d.rules.chess.engine.CastleRight;
 import dev.tabletop3d.rules.chess.engine.Constants;
 import dev.tabletop3d.rules.chess.engine.File;
@@ -27,6 +24,9 @@ import dev.tabletop3d.rules.chess.engine.Rank;
 import dev.tabletop3d.rules.chess.engine.Side;
 import dev.tabletop3d.rules.chess.engine.Square;
 import dev.tabletop3d.rules.chess.engine.move.Move;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The definition of a game context, a support structure used to provide contextual information to a chess position, and

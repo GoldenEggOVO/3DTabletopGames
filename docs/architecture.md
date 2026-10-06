@@ -2,7 +2,12 @@
 
 ## Repository layout
 
-- `src/main/java/dev/tabletop3d/`: plugin lifecycle, rooms, menus and physical table rendering.
+- `src/main/java/dev/tabletop3d/`: stable plugin and offline replay executable entry points.
+- `room/`: authoritative room state, history, persistence, occupancy and turn policy.
+- `bot/`, `menu/`, `interaction/`: bot policies, native dialogs and physical input.
+- `text/`, `audio/`: language presentation and committed-action sound playback.
+- `render/`: common table views, geometry, audiences, board maps and furniture; `cards/`, `mahjong/` and `dice/` contain specialized presentation.
+- `resource/`: optional CraftEngine model bridge and resource-pack delivery.
 - `src/main/java/dev/tabletop3d/ui/`: shared Component formatting and label fitting, adapted from 3DCasinoGames.
 - `src/main/java/dev/tabletop3d/rules/`: shared rule contracts and per-game packages. Embedded engines live under their owning game.
 - `src/main/resources/`: metadata, configuration, language and notices.
@@ -71,3 +76,7 @@ Each game owns its rules, options and helpers under `rules/<game>/`. Single-game
 Embedded chess, Xiangqi and Chinese Checkers engines live at `chess/engine/`, `xiangqi/engine/` and `chinesecheckers/engine/`. Their original notices remain in source and `META-INF/`. Package names are implementation details; game IDs, action events and room schema 1 are unchanged.
 
 See the [Chinese source guide](code-structure.zh-CN.md) for the full game map.
+
+## Responsibility packages
+
+Shared implementation belongs to the responsibility directories above; tests follow their primary implementation. Reusable test fixtures remain under their owning test class, and the JUnit temporary directory factory lives under `support/`. Relocation preserves method bodies and private declarations. Existing package-scoped declarations become public only where an actual caller crosses a package boundary; the [relocation audit](validation/type-packages-1.10.25.json) records those changes. No compatibility copies remain at the old paths.

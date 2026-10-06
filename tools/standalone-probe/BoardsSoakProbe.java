@@ -4,10 +4,12 @@ import dev.tabletop3d.internal.gson.*;
 import dev.tabletop3d.rules.BoardGame;
 import dev.tabletop3d.rules.GameFactory;
 import dev.tabletop3d.rules.HandGame;
+
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+
 import java.lang.reflect.*;
 import java.nio.file.*;
 import java.util.*;
@@ -25,8 +27,8 @@ public final class BoardsSoakProbe extends JavaPlugin {
             require(Bukkit.getIp().equals("127.0.0.1")&&Bukkit.getPort()==25618,"isolated loopback server");
             for(String name:List.of("ServerGames","ServerMenu","ServerCasino","KaMenu"))require(Bukkit.getPluginManager().getPlugin(name)==null,"unexpected dependency "+name);
             boards=Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("3dtabletop"));arena=field(boards,"arena");
-            roomType=Class.forName("dev.tabletop3d.Room",true,boards.getClass().getClassLoader());
-            roundType=Class.forName("dev.tabletop3d.RoundActions",true,boards.getClass().getClassLoader());
+            roomType=Class.forName("dev.tabletop3d.room.Room",true,boards.getClass().getClassLoader());
+            roundType=Class.forName("dev.tabletop3d.room.RoundActions",true,boards.getClass().getClassLoader());
             Map<UUID,Object> registry=(Map<UUID,Object>)field(boards,"rooms");require(registry.isEmpty(),"fresh fixture required");
             var ctor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class,Map.class);ctor.setAccessible(true);
             List<String> kinds=List.of("chess","xiangqi","gomoku","ludo","checkers","draughts","reversi","go9","go13","go","connectfour","color-eight",

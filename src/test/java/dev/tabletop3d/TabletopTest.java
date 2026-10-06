@@ -1,12 +1,19 @@
 package dev.tabletop3d;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 import com.google.gson.JsonPrimitive;
 
+import dev.tabletop3d.interaction.GameWorld;
+import dev.tabletop3d.interaction.TableComfort;
+import dev.tabletop3d.interaction.TableLobby;
+import dev.tabletop3d.menu.GameMenus;
+import dev.tabletop3d.render.TableArt;
+import dev.tabletop3d.render.TableGeometry;
+import dev.tabletop3d.render.TableModels;
+import dev.tabletop3d.render.TableView;
+import dev.tabletop3d.render.TableViewTest;
+import dev.tabletop3d.room.Room;
 import dev.tabletop3d.rules.*;
+import dev.tabletop3d.text.Language;
 
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -21,7 +28,11 @@ import java.util.*;
 
 import javax.imageio.ImageIO;
 
-class TabletopTest {
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+public class TabletopTest {
     static final List<String> KINDS =
             List.of(
                     "chess",
@@ -461,7 +472,7 @@ class TabletopTest {
         }
     }
 
-    static void set(Object object, String name, Object value) throws Exception {
+    public static void set(Object object, String name, Object value) throws Exception {
         Field f = object.getClass().getDeclaredField(name);
         f.setAccessible(true);
         f.set(object, value);

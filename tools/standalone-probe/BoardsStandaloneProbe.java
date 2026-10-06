@@ -1,10 +1,10 @@
 package dev.tabletop3d.probe;
-import static dev.tabletop3d.ui.MessageText.plain;
 
 import dev.tabletop3d.internal.gson.*;
 import dev.tabletop3d.rules.BoardGame;
 import dev.tabletop3d.rules.GameFactory;
 import dev.tabletop3d.rules.HandGame;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -22,6 +22,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static dev.tabletop3d.ui.MessageText.plain;
 
 /** Test-only plugin for an isolated, loopback Purpur server. */
 public final class BoardsStandaloneProbe extends JavaPlugin {
@@ -114,7 +116,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
     /** Uses the real event bus and world with a stateful player proxy, not a connected player. */
     @SuppressWarnings("unchecked")
     private void focusProbe(Plugin plugin,World world) throws Exception {
-        Class<?> roomType=Class.forName("dev.tabletop3d.Room",true,plugin.getClass().getClassLoader());
+        Class<?> roomType=Class.forName("dev.tabletop3d.room.Room",true,plugin.getClass().getClassLoader());
         var constructor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class);constructor.setAccessible(true);
         UUID id=UUID.randomUUID(),roomId=UUID.randomUUID();Object room=constructor.newInstance(roomId,"mahjong",4,1L,999);
         Object arena=field(plugin,"arena"),comfort=field(plugin,"comfort");Map<UUID,Object> rooms=(Map<UUID,Object>)field(plugin,"rooms");
@@ -179,8 +181,8 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
 
     /** Real Paper visibility metadata: no connected client or screenshot is implied. */
     private void handModelProbe(Plugin plugin,World world) throws Exception {
-        ClassLoader loader=plugin.getClass().getClassLoader();Class<?> roomType=Class.forName("dev.tabletop3d.Room",true,loader);
-        Class<?> viewType=Class.forName("dev.tabletop3d.TableView",true,loader),pickType=Class.forName("dev.tabletop3d.GameWorld$Pick",true,loader);
+        ClassLoader loader=plugin.getClass().getClassLoader();Class<?> roomType=Class.forName("dev.tabletop3d.room.Room",true,loader);
+        Class<?> viewType=Class.forName("dev.tabletop3d.render.TableView",true,loader),pickType=Class.forName("dev.tabletop3d.interaction.GameWorld$Pick",true,loader);
         var roomConstructor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class,Map.class);roomConstructor.setAccessible(true);
         var constructor=viewType.getDeclaredConstructors()[0];constructor.setAccessible(true);
         for(String kind:List.of("color-eight","mahjong")){
@@ -323,8 +325,8 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
     /** Exercise new private hands and real ray targets without persisting synthetic rooms. */
     private void playingCardProbe(Plugin plugin, World world) throws Exception {
         ClassLoader loader = plugin.getClass().getClassLoader();
-        Class<?> roomType = Class.forName("dev.tabletop3d.Room", true, loader);
-        Class<?> viewType = Class.forName("dev.tabletop3d.TableView", true, loader);
+        Class<?> roomType = Class.forName("dev.tabletop3d.room.Room", true, loader);
+        Class<?> viewType = Class.forName("dev.tabletop3d.render.TableView", true, loader);
         var roomConstructor = roomType.getDeclaredConstructor(UUID.class, String.class, int.class, long.class, int.class);
         roomConstructor.setAccessible(true);
         var viewConstructor = viewType.getDeclaredConstructors()[0];
@@ -390,7 +392,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         world.getChunkAt(0,0).addPluginChunkTicket(this);
         Plugin ce=Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("CraftEngine"));
         require(ce.isEnabled(),"CraftEngine enabled");
-        Class<?> type=Class.forName("dev.tabletop3d.CraftEngineModels",true,plugin.getClass().getClassLoader());
+        Class<?> type=Class.forName("dev.tabletop3d.resource.CraftEngineModels",true,plugin.getClass().getClassLoader());
         var ctor=type.getDeclaredConstructor();ctor.setAccessible(true);Object models=ctor.newInstance();
         require((boolean)call(models,"ready",new Class<?>[0]),"all CE models registered and buildable");
         Field ids=type.getDeclaredField("IDS");ids.setAccessible(true);int count=0;
@@ -416,8 +418,8 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
     /** Resolve native sounds against the real server registry and exercise their dispatch. */
     private void soundProbe(Plugin plugin, World world) throws Exception {
         ClassLoader loader=plugin.getClass().getClassLoader();
-        Class<?> sounds=Class.forName("dev.tabletop3d.TableSounds",true,loader);
-        Class<?> cueType=Class.forName("dev.tabletop3d.TableSounds$Cue",true,loader);
+        Class<?> sounds=Class.forName("dev.tabletop3d.audio.TableSounds",true,loader);
+        Class<?> cueType=Class.forName("dev.tabletop3d.audio.TableSounds$Cue",true,loader);
         Method move=sounds.getDeclaredMethod("move",String.class,int.class,String.class,List.class,List.class);move.setAccessible(true);
         Method play=sounds.getDeclaredMethod("play",plugin.getClass(),Location.class,cueType);play.setAccessible(true);
         Method nativeSound=cueType.getDeclaredMethod("sound");nativeSound.setAccessible(true);
@@ -471,7 +473,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
     @SuppressWarnings("unchecked")
     private void pokerRaiseProbe(Plugin plugin, Object menus, World world) throws Exception {
         ClassLoader loader = plugin.getClass().getClassLoader();
-        Class<?> roomType = Class.forName("dev.tabletop3d.Room", true, loader);
+        Class<?> roomType = Class.forName("dev.tabletop3d.room.Room", true, loader);
         Class<?> factory = Class.forName("dev.tabletop3d.rules.GameFactory", true, loader);
         var constructor = roomType.getDeclaredConstructor(UUID.class, String.class, int.class, long.class, int.class);
         constructor.setAccessible(true);
@@ -506,7 +508,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
     @SuppressWarnings("unchecked")
     private void menuExperienceProbe(Plugin plugin,Object menus,Player player) throws Exception {
         Map<UUID,Object> rooms=(Map<UUID,Object>)field(plugin,"rooms");List<UUID> added=new ArrayList<>();
-        Class<?> roomType=Class.forName("dev.tabletop3d.Room",true,plugin.getClass().getClassLoader());
+        Class<?> roomType=Class.forName("dev.tabletop3d.room.Room",true,plugin.getClass().getClassLoader());
         var constructor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class);constructor.setAccessible(true);
         try {
             for(Object room:rooms.values())if((int)call(room,"seat",new Class<?>[]{UUID.class},player.getUniqueId())>=0){
@@ -573,10 +575,10 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         // Match GameWorld.platform: keep the model's chunks active before spawning Displays.
         for(int z=-1;z<=0;z++)world.getChunkAt(0,z).addPluginChunkTicket(this);
         ClassLoader loader=plugin.getClass().getClassLoader();
-        Class<?> roomType=Class.forName("dev.tabletop3d.Room",true,loader);
+        Class<?> roomType=Class.forName("dev.tabletop3d.room.Room",true,loader);
         Class<?> factory=Class.forName("dev.tabletop3d.rules.GameFactory",true,loader);
         Class<?> gameType=Class.forName("dev.tabletop3d.rules.BoardGame",true,loader);
-        Class<?> viewType=Class.forName("dev.tabletop3d.TableView",true,loader);
+        Class<?> viewType=Class.forName("dev.tabletop3d.render.TableView",true,loader);
         var roomConstructor=roomType.getDeclaredConstructor(UUID.class,String.class,int.class,long.class,int.class);
         roomConstructor.setAccessible(true);
         for(String kind:List.of("connectfour","reversi","go9","chess","ludo")) {
@@ -594,7 +596,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                 new org.bukkit.NamespacedKey("3dtabletop","probe-model"),field(field(plugin,"arena"),"maps"));
             try {
                 if(kind.equals("connectfour")){
-                    Class<?> pickType=Class.forName("dev.tabletop3d.GameWorld$Pick",true,loader);
+                    Class<?> pickType=Class.forName("dev.tabletop3d.interaction.GameWorld$Pick",true,loader);
                     call(view,"cursor",new Class<?>[]{Player.class,pickType,String.class},viewer,null,"3,5");
                     Object overlay=((Map<?,?>)field(view,"overlays")).get(viewer.getUniqueId());
                     @SuppressWarnings("unchecked") List<org.bukkit.entity.BlockDisplay> preview=(List<org.bukkit.entity.BlockDisplay>)field(overlay,"hover");
@@ -645,7 +647,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
                     for(var part:parts)require(Math.abs(Math.IEEEremainder(part.getLocation().getYaw()-(id.equals("b1")?180:0),360))<.001,"knight faces opponent: "+id+" yaw="+part.getLocation().getYaw());
                 }
                 if(kind.equals("ludo")){
-                    Class<?> pickType=Class.forName("dev.tabletop3d.GameWorld$Pick",true,loader);
+                    Class<?> pickType=Class.forName("dev.tabletop3d.interaction.GameWorld$Pick",true,loader);
                     call(view,"cursor",new Class<?>[]{Player.class,pickType,String.class},viewer,null,"sk0");
                     Object overlay=((Map<?,?>)field(view,"overlays")).get(viewer.getUniqueId());
                     @SuppressWarnings("unchecked") List<org.bukkit.entity.BlockDisplay> hints=(List<org.bukkit.entity.BlockDisplay>)field(overlay,"hover");

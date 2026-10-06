@@ -3,9 +3,11 @@ package dev.tabletop3d.rules.ludo;
 import dev.tabletop3d.rules.BoardGame;
 import dev.tabletop3d.rules.GameFactory;
 
+import org.junit.jupiter.api.Test;
+
 import java.lang.reflect.Field;
 import java.util.*;
-import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class LudoGameTest {

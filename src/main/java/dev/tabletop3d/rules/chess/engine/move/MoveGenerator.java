@@ -17,12 +17,7 @@
 
 package dev.tabletop3d.rules.chess.engine.move;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import dev.tabletop3d.rules.chess.engine.Bitboard;
-import static dev.tabletop3d.rules.chess.engine.Bitboard.bitScanForward;
-import static dev.tabletop3d.rules.chess.engine.Bitboard.extractLsb;
 import dev.tabletop3d.rules.chess.engine.Board;
 import dev.tabletop3d.rules.chess.engine.CastleRight;
 import dev.tabletop3d.rules.chess.engine.Piece;
@@ -31,6 +26,12 @@ import dev.tabletop3d.rules.chess.engine.Rank;
 import dev.tabletop3d.rules.chess.engine.Side;
 import dev.tabletop3d.rules.chess.engine.Square;
 import dev.tabletop3d.rules.chess.engine.game.VariationType;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import static dev.tabletop3d.rules.chess.engine.Bitboard.bitScanForward;
+import static dev.tabletop3d.rules.chess.engine.Bitboard.extractLsb;
 
 /**
  * A handy collection of static utility methods for generating moves from a chess position.
