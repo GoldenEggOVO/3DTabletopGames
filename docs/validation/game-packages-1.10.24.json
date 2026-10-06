@@ -500,5 +500,22 @@
     "jar_sha256": "17f6578f2a5060ac1a7ba9217ab9063121e008a2a8bdaef808a07c325b8bfa56",
     "runtime": "D:\\chatGPT\\minecraft\\.worktrees\\color-eight\\target\\soak-20261005-213413",
     "client_visual_test": false
-  }
+  },
+  "source_commit": "8965ff10d98a5b4f9b0f293b98d9507a6f685e35",
+  "github_ci": {
+    "run_id": 37405081332,
+    "conclusion": "success"
+  },
+  "test_server": {
+    "port": 25589,
+    "server_id": "ad13acc6-ac62-4508-8a31-efc1b0fb385f",
+    "version": "1.10.24-SNAPSHOT",
+    "startup_errors": [],
+    "models": 234,
+    "language_reload_verified": true,
+    "protected_files_preserved": true,
+    "resource_pack_unchanged": true,
+    "backup": "/var/opt/minecraft/crafty/test-deployment-backups/tabletop-packages124-20261006-023908/test-server.tar"
+  },
+  "release_published": false
 }
