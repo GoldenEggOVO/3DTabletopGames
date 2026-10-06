@@ -315,6 +315,7 @@ def audio():
     (licenses/"kenney-sources.md").write_bytes(notices["sources"].encode("utf-8"))
     (licenses/"mahjong-graphic.txt").write_text(sources["artwork_notices"]["mahjong_graphic"]["license"],encoding="utf-8")
     (licenses/"xiangqi-art.txt").write_text(sources["artwork_notices"]["xiangqi"]["notice"],encoding="utf-8")
+    (licenses/"playing-cards.txt").write_text(sources["artwork_notices"]["playing_cards"]["notice"],encoding="utf-8")
     write_json(ASSETS/"sounds.json",events)
     return durations
 

@@ -11,6 +11,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ResourcePackTest(unittest.TestCase):
+    def test_playing_card_author_and_license_are_bundled(self):
+        notice = self.archive.read('licenses/playing-cards.txt').decode('utf-8')
+        self.assertIn('George Blackwell', notice)
+        self.assertIn('https://creativecommons.org/licenses/by/4.0/', notice)
+        self.assertIn('Changes:', notice)
+
     def test_hole_mask_does_not_remove_pixels_from_the_solid_frame(self):
         from solid_mesh import circle
         model = json.loads(self.archive.read("assets/tabletop3d/models/item/board_connectfour.json"))

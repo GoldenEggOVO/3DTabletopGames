@@ -167,15 +167,15 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
         for z in (-.99,.99):parts.append(block(x,-1.03125,z,.15,.84125,.15,"STRIPPED_BIRCH_WOOD",2))
     model("board_connectfour",textures,parts)
 
-    back=playing_back().resize((256,384),Image.Resampling.NEAREST)
+    back=playing_back(root)
     backtex=texture("surface/playing-back",back)
     ranks=["ace"]+list(map(str,range(2,11)))+["jack","queen","king"]
     for kind in ("spades","hearts","diamonds","clubs"):
         for rank in ranks:
-            image=playing_face(root,kind,rank,pixel_text).resize((256,384),Image.Resampling.NEAREST)
+            image=playing_face(root,kind,rank)
             face_model("playing_"+kind+"_"+rank,image,True,backtex)
     for size in ("small","big"):
-        image=joker_face(root,size).resize((256,384),Image.Resampling.NEAREST)
+        image=joker_face(root,size)
         face_model("playing_joker_"+size,image,True,backtex)
     face_model("playing_back",back,True,backtex)
     for name,color,squash in (("doudizhu_table","#286346",1),("liars_bar_table","#473129",1),("texas_holdem_table","#245346",.76)):

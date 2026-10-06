@@ -1,6 +1,6 @@
 {
   "source_root": "https://files.riichi.moe/mjg/game%20resources%20and%20tools/Mahjong%20Soul/game%20files/",
-  "note": "Mahjong Soul tablecloth and audio remain third-party assets. Tile faces use lietxia/mahjong_graphic. Resource-pack poker layouts are original project artwork; native head faces are unchanged.",
+  "note": "Mahjong Soul tablecloth and audio remain third-party assets. Tile faces use lietxia/mahjong_graphic. Resource-pack poker uses George Blackwell artwork; native head faces are unchanged.",
   "files": [
     {
       "file": "audio-source/mahjong/draw.mp3",
@@ -875,6 +875,384 @@
       "source": "resource-pack/source/xiangqi/cannon.svg",
       "note": "Rendered from the SVG at 1600x400 with @napi-rs/canvas; first red and third black piece selected.",
       "license": "Public domain (PD-self)"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/back_blue_basic.png",
+      "sha256": "d8fe787ed51505a62d898d344c3eb6900399f587c98156f0833c4ed695187cfb",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "back_blue_basic.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/clubs_10.png",
+      "sha256": "1573d380d8be8b55fc0807ea192819418bd6562eff91567bde6fff04a10f6208",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "10_clubs.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/clubs_2.png",
+      "sha256": "b702c50fd8a3f47d9dc38a6ec586cb6d3f025e350c098048dd577f5042cf59a9",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "2_clubs.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/clubs_3.png",
+      "sha256": "15c37ba32e114fb4e8a3b1f34c59c3901faab99e883f3bf08422111ec8f63cd4",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "3_clubs.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/clubs_4.png",
+      "sha256": "7185a6bfcb3d6c4c37fb2c1b537996dbc0583f2146806194cd1453ee1a88a360",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "4_clubs.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/clubs_5.png",
+      "sha256": "adaf22064e1896a36471115df9615796cf3b9353b4eac0b2910b783122e9a5c2",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "5_clubs.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/clubs_6.png",
+      "sha256": "2890df5691f0364533f60ac086b25a31c2c6f23cffb4b822efa6cd150bce24c1",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "6_clubs.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/clubs_7.png",
+      "sha256": "a106d46f286147366356f383a5532e9b60137deece491764a0b294dfbf73a1ff",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "7_clubs.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/clubs_8.png",
+      "sha256": "fc26f2ae7e88f65f98f71a024b8a1aa7ac853999f5d706171716cfa25ae068b2",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "8_clubs.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/clubs_9.png",
+      "sha256": "1f77bab09078b507fce0787a10ca1d9d57300b195968857d0eec9aaa2795c77f",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "9_clubs.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/clubs_ace.png",
+      "sha256": "fe546ebc72dd5b808ec84634627c7b1925180231b71c4f6447353da920cf21b3",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "ace_clubs.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/clubs_jack.png",
+      "sha256": "c0793000d98840740e1e6a848b559e7a4a5c1712605b27f95dc409083552504c",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "jack_clubs.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/clubs_king.png",
+      "sha256": "b36c8af9783fbf8a6940c5b12956f20d91b1ff7041e5eea1814a61e5d5e33505",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "king_clubs.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/clubs_queen.png",
+      "sha256": "3517e9de050c646b03c0f843e0c83705ebf4b018a3399d9ca9e2a5f7b12052b1",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "queen_clubs.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/diamonds_10.png",
+      "sha256": "1441e45561077772e15de7a75963fc66ca2bc3f3ef47b2af0e654342dff3c311",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "10_diamonds.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/diamonds_2.png",
+      "sha256": "5cbf720e19b75ef3104653e4f011a4d461920cf508540e4b7236e00c5f844963",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "2_diamonds.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/diamonds_3.png",
+      "sha256": "eb13c2bce40f56bd01b3542c225f1d9e7ef4aa84d9af33994d2f7b5b9adebbd0",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "3_diamonds.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/diamonds_4.png",
+      "sha256": "ceb02e74bcef2a599c249f0fb02efb54137c275b70e34ff3bf1ca35dba4c70aa",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "4_diamonds.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/diamonds_5.png",
+      "sha256": "3f93b12d3596dc4852a68625f38ec235c6de78b27c508b65e472b6d319a466fe",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "5_diamonds.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/diamonds_6.png",
+      "sha256": "a609392c00614a1d817779a9a154accda82b81af6509e398208e0449e8e52855",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "6_diamonds.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/diamonds_7.png",
+      "sha256": "a46d0ddb1371116d34c5c40b692a10805894bce51aa77a46bc0d363291b2a45b",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "7_diamonds.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/diamonds_8.png",
+      "sha256": "9e1174c2d01706fc28186147c2b19b41b1eba291889e6c7e184c8fa8b1e543de",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "8_diamonds.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/diamonds_9.png",
+      "sha256": "222bd0b0d29e8957e14dff532138970641cafeec720a376851bde90a03928f68",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "9_diamonds.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/diamonds_ace.png",
+      "sha256": "faa62dfdfba0ae87b3f5ee6ba59580450d8535660901c56e67c2428ae8353c7d",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "ace_diamonds.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/diamonds_jack.png",
+      "sha256": "794c3421969e00551cf89c279a5f1d6f7f74a439864ff32fa6371489dc44c65e",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "jack_diamonds.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/diamonds_king.png",
+      "sha256": "f90fa0342801a1718e3ae091af580869b1eb9de9cd253aa0f68e92e95d781b18",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "king_diamonds.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/diamonds_queen.png",
+      "sha256": "8e7a781f68bd8de1b4b9e0dfee4ad9d5cdd0d8b973473db30637a60bb100ba54",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "queen_diamonds.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/hearts_10.png",
+      "sha256": "be335a506b0e9f46b05e4d08a1d26e794893d0330b39de1f954cc81c4b4666ac",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "10_hearts.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/hearts_2.png",
+      "sha256": "c3dc3c07aa89ee319d698eda650b6fbfd418c023bb7d569dc3d0899ef46fe722",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "2_hearts.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/hearts_3.png",
+      "sha256": "668420d528766b5bc05bb585592fbf40a3bbd2d2968390bf1f84a275172342d8",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "3_hearts.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/hearts_4.png",
+      "sha256": "0924b9a6dfcf1db63da7a7c5f18ff199894ff602aaab3e2167fbe801d0f82ab9",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "4_hearts.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/hearts_5.png",
+      "sha256": "09583d832834c13dc9c40d81f9552740168a32c60c03531bdfccb6ef18457f57",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "5_hearts.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/hearts_6.png",
+      "sha256": "a5017529be982c66be8159f910de5c47c14eb98b6d650acdc66541f00f50e5ab",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "6_hearts.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/hearts_7.png",
+      "sha256": "c7dfca4ada37e0224942aae6f0d5300673857b1236cf5052a5aa1f321227b7ce",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "7_hearts.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/hearts_8.png",
+      "sha256": "9dcef19b64eeb1494fcc693f6114bfa8bee99cb7e4b2e4c2725a4ae8348d4f5e",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "8_hearts.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/hearts_9.png",
+      "sha256": "8354ca4d9ac6d925b0bae44c95c93d198a0dea8e7c8d37325762884579901c54",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "9_hearts.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/hearts_ace.png",
+      "sha256": "476e3b35ee85077b408f85f1c5d71e2dfee813ddb87cf80fa2e5f4dff2a9d777",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "ace_hearts.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/hearts_jack.png",
+      "sha256": "afae37761f7edd1f52ffe9b05de4fb3620e2b74d76db0531144751605229c918",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "jack_hearts.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/hearts_king.png",
+      "sha256": "c5d6fd43a6c12d883d248635b971b3465a6335524b0ffa4d9ce81439220586cb",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "king_hearts.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/hearts_queen.png",
+      "sha256": "5846f703280a450532d38a6ebf37d9f155a19824a7f5f50120e30b70cb4b0449",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "queen_hearts.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/joker.png",
+      "sha256": "a7f636ecffeb1be081b12023aba1f31f09ddb1e967bf1724488ed5da0c32bd89",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "joker.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/spades_10.png",
+      "sha256": "1337b18c31701a91e103150eb2043d1ff6da826258c4333480068aef73f13304",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "10_spades.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/spades_2.png",
+      "sha256": "b59bd560cba8d74172bc1f5391380c55490ab8ae200258bc7282e875cd3c4749",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "2_spades.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/spades_3.png",
+      "sha256": "de3a52d528f7548f0fedbd6a46d9e78cc37307a07b807960ffbeb40897e22a4e",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "3_spades.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/spades_4.png",
+      "sha256": "1cb457884504b83ee8c745214077a21c8d10e9f9b7efd970c94818bd9c1c8503",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "4_spades.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/spades_5.png",
+      "sha256": "5588f76fb9b0656eb68ac42673a4c38c5cbc25abc9ad11025cd67dbf269b5ee2",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "5_spades.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/spades_6.png",
+      "sha256": "29a314577bd782ce8cd20665244c15493a15521a8ba251054c6bf06563a7e72a",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "6_spades.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/spades_7.png",
+      "sha256": "d5c2ae887372df5aaf86420a3f93d86879907faab1252ec83aa578813e2c762c",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "7_spades.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/spades_8.png",
+      "sha256": "36d61c4c5b3f64e17308984e658411f864ff51cd54305f351ae51799e6dd22f9",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "8_spades.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/spades_9.png",
+      "sha256": "e0e284d2cf6390d243378331ba61a5690ac42b0048aecb305f06f29c5feec8bb",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "9_spades.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/spades_ace.png",
+      "sha256": "a616de55fe6ec8b83698a865e2252d594f4f6ae8b3768890b8c707a57d67844b",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "ace_spades.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/spades_jack.png",
+      "sha256": "6b145adc7f978b0d4f88bbddf5f5f009eab2bdcd07a15ed9baa20d367bcd9ff6",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "jack_spades.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/spades_king.png",
+      "sha256": "0622840e7d601e7385dbcce41f31604a740bd997db9ef8fd2a4b34e436c9fa05",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "king_spades.png",
+      "license": "CC-BY-4.0"
+    },
+    {
+      "file": "resource-pack/source/playing-cards/spades_queen.png",
+      "sha256": "5cddd84a1e456732550fa03d012207121014595743cb2ffbe16895b30cc0b2f8",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "archive_file": "queen_spades.png",
+      "license": "CC-BY-4.0"
     }
   ],
   "audio_notices": {
@@ -900,6 +1278,15 @@
       "author": "Inductiveload; current vector revision by Wj654cj86",
       "selection": "First red piece and third black piece from each traditional-character SVG.",
       "notice": "Xiangqi artwork by Inductiveload, with current vector revisions by Wj654cj86, from Wikimedia Commons. The author released the work into the public domain worldwide. File pages and exact imported hashes are recorded in the source manifest."
+    },
+    "playing_cards": {
+      "title": "Pixel Playing Cards Pack",
+      "author": "George Blackwell",
+      "url": "https://georgeblackwell.itch.io/playing-cards-sprite-pack",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "archive_sha256": "e0bd9ea41be8c3c05dc9933875b85b731e6f691866c4d5400199fb5cc82221f3",
+      "notice": "Pixel Playing Cards Pack by George Blackwell.\nSource: https://georgeblackwell.itch.io/playing-cards-sprite-pack\nLicensed under Creative Commons Attribution 4.0 International (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/\nChanges: original 60x84 pixel faces are centered with three pixels of vertical padding and enlarged by nearest-neighbor 2x. The large joker uses red corner lettering; the original joker portrait is retained.\n"
     }
   }
 }
