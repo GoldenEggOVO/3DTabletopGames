@@ -6,7 +6,6 @@ import dev.tabletop3d.ui.GameSymbols;
 
 import java.util.*;
 
-/** Named model choices shared by the asset exporter and world renderer. */
 public final class PackedBoardModels {
     public static final List<String> COLORS = List.of("red", "blue", "green", "yellow", "purple", "pink");
     static final List<String> KINDS = List.of("chess", "connectfour", "xiangqi", "gomoku", "go",

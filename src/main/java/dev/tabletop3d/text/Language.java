@@ -18,7 +18,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-/** Complete named templates, English fallback and atomic language reloads. */
 public final class Language {
     private static final Map<String, String> ENGLISH = bundled("en_US");
     private record Catalogue(Map<String, String> templates, Map<String, Component> labels) {

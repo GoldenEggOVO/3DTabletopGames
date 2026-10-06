@@ -31,7 +31,6 @@ import org.joml.Vector3f;
 
 import java.util.*;
 
-/** Public table information only; concealed hands never enter this renderer. */
 public final class MahjongTableHud implements AutoCloseable {
     private final Tabletop3D plugin;
     private final Room room;
@@ -133,7 +132,7 @@ public final class MahjongTableHud implements AutoCloseable {
         if (closed) return;
         syncPanel();
         syncOrientation();
-        // Keep the last public snapshot while an action is in progress.
+
         if (!room.busy
                 && room.board instanceof HandGame game
                 && (rendered != game || revision != room.revision)) {

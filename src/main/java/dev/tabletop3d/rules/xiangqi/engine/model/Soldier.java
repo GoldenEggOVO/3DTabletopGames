@@ -1,4 +1,4 @@
-// Upstream MIT: James Wang 2022. Relocated for 3DTabletopGames; see META-INF/licenses.
+
 package dev.tabletop3d.rules.xiangqi.engine.model;
 
 import dev.tabletop3d.rules.xiangqi.engine.utility.Point;
@@ -15,9 +15,6 @@ public class Soldier extends Piece {
             this.code = -7;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean canMove(Board board, Point start, Point end) {
         if (!board.containsPoint(start) || !board.containsPoint(end)
@@ -43,13 +40,6 @@ public class Soldier extends Piece {
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * The soldier moves and captures forward 1 step. After crossing the river, can
-     * also
-     * go sideways 1 step.
-     */
     @Override
     public List<Point> validMoves(Board board, Point start) {
         List<Point> moves = new ArrayList<>();

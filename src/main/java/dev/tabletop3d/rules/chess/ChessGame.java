@@ -14,7 +14,6 @@ import dev.tabletop3d.ui.GameSymbols;
 
 import java.util.*;
 
-/** Standard chess using the Apache-2.0 chesslib move generator, without Stockfish. */
 public final class ChessGame implements BoardGame {
     private RuleMessage lastMessage = RuleMessage.of("board.ready");
 
@@ -150,7 +149,7 @@ public final class ChessGame implements BoardGame {
     }
 
     private void updateResult() {
-        // Checkmate takes precedence over a halfmove draw on the same final move.
+
         if (board.isMated()) {
             result = "winner:" + (1 - currentPlayer());
             reason = "Checkmate";
@@ -170,10 +169,7 @@ public final class ChessGame implements BoardGame {
     }
 
     private boolean deadMaterial() {
-        // Upstream marks several four-piece mixed-minor positions as dead. A
-        // cooperative mate can exist there. Only automatically adjudicate the
-        // unambiguous material cases; do not confuse inability to FORCE mate with
-        // inability to reach ANY mating position (notably KNN v K and KN v KN).
+
         List<Square> minors = new ArrayList<>();
         for (Square square : Square.values()) {
             if (square == Square.NONE) continue;

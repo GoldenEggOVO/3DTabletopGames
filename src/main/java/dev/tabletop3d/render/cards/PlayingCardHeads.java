@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** Twenty-four thin heads carry a 32 by 48 pixel card without a resource pack. */
 public final class PlayingCardHeads {
     public record Texture(String value, String signature) {}
 
@@ -60,8 +59,7 @@ public final class PlayingCardHeads {
                 (float) ((standing ? height : height / 2) - (tile / columns) * cellHeight), 0);
         rotation.transform(translation);
         if (!standing) translation.y += .006f;
-        // NONE has a half-block skull, top at y=0 and bottom at y=-.5.
-        // Cancel ItemDisplay's Y180 so the north skin face points toward the owner.
+
         return new Transformation(translation, rotation,
                 new Vector3f((float) (cellWidth * 2), (float) (cellHeight * 2), .016f),
                 new Quaternionf().rotateY((float) Math.PI));

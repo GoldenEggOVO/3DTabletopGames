@@ -2,7 +2,6 @@ package dev.tabletop3d.rules.mahjong;
 
 import java.util.List;
 
-/** An exposed group retains every original physical tile, including an added fourth tile. */
 public record Meld(
         Kind kind,
         List<Tiles.Tile> tiles,

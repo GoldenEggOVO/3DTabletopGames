@@ -9,7 +9,6 @@ import dev.tabletop3d.ui.GameSymbols;
 
 import java.util.*;
 
-/** Room-safe adapter around James Wang's MIT Xiangqi model. */
 public final class XiangqiGame implements BoardGame {
     private RuleMessage lastMessage = RuleMessage.of("board.ready");
 
@@ -31,7 +30,6 @@ public final class XiangqiGame implements BoardGame {
         this(Board.initialPosition());
     }
 
-    // Only package tests can inject positions; production always starts with a normal board.
     XiangqiGame(Board position) {
         board = position.copy();
         positions.put(positionKey(), new ArrayList<>(List.of(0)));

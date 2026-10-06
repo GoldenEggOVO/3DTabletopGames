@@ -1,4 +1,4 @@
-// Adapted from Stephane Coutant, GPL-3.0-or-later; see META-INF/licenses.
+
 package dev.tabletop3d.rules.chinesecheckers.engine;
 
 public class Point {
@@ -17,11 +17,10 @@ public class Point {
         return String.format("(%d, %d)", i, j);
     }
 
-    /** --> */
     public void increment() {
         if ( odd(j)) i++;
     }
-    /** <-- */
+
     public void decrement() {
         if ( even(j)) i--;
     }

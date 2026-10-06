@@ -2,7 +2,6 @@ package dev.tabletop3d.rules.texasholdem;
 
 import java.util.*;
 
-/** Contribution layers handle side pots, uncalled refunds, ties and clockwise odd chips. */
 public final class PokerPots {
     private PokerPots() {}
 

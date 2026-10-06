@@ -1,4 +1,4 @@
-// Upstream MIT: James Wang 2022. Relocated for 3DTabletopGames; see META-INF/licenses.
+
 package dev.tabletop3d.rules.xiangqi.engine.model;
 
 import dev.tabletop3d.rules.xiangqi.engine.utility.Point;
@@ -15,9 +15,6 @@ public class Chariot extends Piece {
             this.code = -5;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean canMove(Board board, Point start, Point end) {
         if (!board.containsPoint(start) || !board.containsPoint(end)
@@ -62,11 +59,6 @@ public class Chariot extends Piece {
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * The chariot moves and captures orthogonally any number of unlocked steps.
-     */
     @Override
     public List<Point> validMoves(Board board, Point start) {
         List<Point> moves = new ArrayList<>();

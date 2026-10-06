@@ -1,4 +1,4 @@
-// Upstream MIT: James Wang 2022. Relocated for 3DTabletopGames; see META-INF/licenses.
+
 package dev.tabletop3d.rules.xiangqi.engine.model;
 
 import dev.tabletop3d.rules.xiangqi.engine.utility.Point;

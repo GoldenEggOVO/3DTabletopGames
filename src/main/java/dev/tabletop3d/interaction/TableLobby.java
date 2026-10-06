@@ -15,7 +15,6 @@ import org.bukkit.util.Vector;
 import java.util.*;
 import java.util.function.Consumer;
 
-/** Public seats and table-only picking. No private hands or extra collision entities. */
 public final class TableLobby implements Listener, AutoCloseable {
     public record Entry(
             String id,
@@ -129,7 +128,7 @@ public final class TableLobby implements Listener, AutoCloseable {
         clicks.put(p.getUniqueId(), now);
         if (plugin.comfort != null && plugin.comfort.focused(p)) plugin.comfort.release(p);
         String id = target.id;
-        // Defer so this joining click cannot also select a card in the newly joined table.
+
         Bukkit.getScheduler()
                 .runTask(
                         plugin,

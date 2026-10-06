@@ -6,7 +6,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 
-/** Conservative default-font advances; user resource-pack fonts may differ. */
 public final class LabelLayout {
     public record Fit(Component text, float scale) {}
     private record Glyph(int code, Style style) {
@@ -54,7 +53,7 @@ public final class LabelLayout {
         float minimum = height / (.2f * lines) * .35f;
         float scale = Math.min(height / (.2f * lines), width / (Math.max(1, width(text)) * .025f));
         if (scale >= minimum) return new Fit(text, scale);
-        // An ellipsis must fit even on unusually narrow labels.
+
         minimum = Math.min(minimum, width / (.025f * 10));
         int budget = (int) (width / (.025f * minimum));
         var result = Component.text();

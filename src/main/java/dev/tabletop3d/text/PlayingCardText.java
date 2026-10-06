@@ -6,7 +6,6 @@ import net.kyori.adventure.text.Component;
 
 import java.util.*;
 
-/** Locale-neutral card data is translated only at the presentation boundary. */
 public final class PlayingCardText {
     private PlayingCardText() {}
 

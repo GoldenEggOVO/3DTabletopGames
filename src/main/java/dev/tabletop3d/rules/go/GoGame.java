@@ -8,9 +8,6 @@ import dev.tabletop3d.ui.GameSymbols;
 
 import java.util.*;
 
-/**
- * Area-scoring Go: no suicide, positional superko, and an explicit two-player dead-stone agreement.
- */
 public final class GoGame implements BoardGame {
     private RuleMessage lastMessage = RuleMessage.of("board.ready");
 
@@ -241,7 +238,6 @@ public final class GoGame implements BoardGame {
         lastMessage = RuleMessage.of("board.placed", "player", seat + 1, "coordinate", key(pos));
     }
 
-    /** Both colours count stones plus surrounded empty points; mixed boundaries remain neutral. */
     public double[] score() {
         int[] state = board.clone();
         dead.forEach(i -> state[i] = -1);

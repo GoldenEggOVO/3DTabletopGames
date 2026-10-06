@@ -8,7 +8,6 @@ import org.bukkit.Material;
 
 import java.util.*;
 
-/** Small original voxel meshes: dimensions are in units of one cell spacing. */
 public final class TableModels {
     public record Part(double x, double y, double z, double w, double h, double d, Material material) {}
 
@@ -113,14 +112,13 @@ public final class TableModels {
     }
 
     public static void disc(List<Part> parts, Material material, double width, double height) {
-        // Adjacent strips preserve the octagonal footprint without overlapping top faces.
+
         box(parts, 0, 0, 0, width * .68, height, width, material);
         for (double side : new double[] {-.42, .42}) {
             box(parts, side * width, 0, 0, width * .16, height, width * .68, material);
         }
     }
 
-    /** Five adjoining strips soften larger pieces; dense Go boards keep the compact mesh. */
     static void roundedDisc(List<Part> parts, Material material, double width, double height) {
         box(parts, 0, 0, 0, width * .4, height, width, material);
         for (double side : new double[] {-1, 1}) {
@@ -136,7 +134,6 @@ public final class TableModels {
                 new Part(0, .16, .1875, .10, .035, .275, Material.RED_CONCRETE));
     }
 
-    /** Five horizontal strips approximate a round vertical chip, in world block units. */
     static List<Part> connectFour(int owner) {
         List<Part> parts = new ArrayList<>();
         Material material = owner == 0 ? Material.RED_CONCRETE : Material.YELLOW_CONCRETE;
@@ -147,7 +144,6 @@ public final class TableModels {
         return List.copyOf(parts);
     }
 
-    /** Black upper face and white lower face; owner changes rotate this same mesh. */
     public static List<Part> reversi() {
         List<Part> parts = new ArrayList<>();
         for (int side = 0; side < 2; side++) {

@@ -1,4 +1,4 @@
-// 3DTabletopGames adaptation: relocated package; original Apache-2.0 notice follows.
+
 /*
  * Copyright 2017 Ben-Hur Carlos Vieira Langoni Junior
  *
@@ -22,82 +22,41 @@ import dev.tabletop3d.rules.chess.engine.move.Move;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A handy collection of constant values to be used in common scenarios.
- */
 public class Constants {
 
-    /**
-     * The FEN definition of the standard starting position.
-     */
     public static final String startStandardFENPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    /**
-     * The shift of the white king in a default short castle move.
-     */
+
     public static final Move DEFAULT_WHITE_OO = new Move(Square.E1, Square.G1);
-    /**
-     * The shift of the white king in a default long castle move.
-     */
+
     public static final Move DEFAULT_WHITE_OOO = new Move(Square.E1, Square.C1);
-    /**
-     * The shift of the black king in a default short castle move.
-     */
+
     public static final Move DEFAULT_BLACK_OO = new Move(Square.E8, Square.G8);
-    /**
-     * The shift of the black king in a default long castle move.
-     */
+
     public static final Move DEFAULT_BLACK_OOO = new Move(Square.E8, Square.C8);
-    /**
-     * The shift of the white rook in a default short castle move.
-     */
+
     public static final Move DEFAULT_WHITE_ROOK_OO = new Move(Square.H1, Square.F1);
-    /**
-     * The shift of the white rook in a default long castle move.
-     */
+
     public static final Move DEFAULT_WHITE_ROOK_OOO = new Move(Square.A1, Square.D1);
-    /**
-     * The shift of the black rook in a default short castle move.
-     */
+
     public static final Move DEFAULT_BLACK_ROOK_OO = new Move(Square.H8, Square.F8);
-    /**
-     * The shift of the black rook in a default long castle move.
-     */
+
     public static final Move DEFAULT_BLACK_ROOK_OOO = new Move(Square.A8, Square.D8);
-    /**
-     * The list of squares crossed by the white king in the case of short castle.
-     */
+
     public static final List<Square> DEFAULT_WHITE_OO_SQUARES = new ArrayList<Square>();
-    /**
-     * The list of squares crossed by the white king in the case of long castle.
-     */
+
     public static final List<Square> DEFAULT_WHITE_OOO_SQUARES = new ArrayList<Square>();
-    /**
-     * The list of squares crossed by the black king in the case of short castle.
-     */
+
     public static final List<Square> DEFAULT_BLACK_OO_SQUARES = new ArrayList<Square>();
-    /**
-     * The list of squares crossed by the black king in the case of long castle.
-     */
+
     public static final List<Square> DEFAULT_BLACK_OOO_SQUARES = new ArrayList<Square>();
 
-    /**
-     * The list of all squares involved in the case of short castle of white.
-     */
     public static final List<Square> DEFAULT_WHITE_OO_ALL_SQUARES = new ArrayList<Square>();
-    /**
-     * The list of all squares involved in the case of long castle of white.
-     */
+
     public static final List<Square> DEFAULT_WHITE_OOO_ALL_SQUARES = new ArrayList<Square>();
-    /**
-     * The list of all squares involved in the case of short castle of black.
-     */
+
     public static final List<Square> DEFAULT_BLACK_OO_ALL_SQUARES = new ArrayList<Square>();
-    /**
-     * The list of all squares involved in the case of long castle of black.
-     */
+
     public static final List<Square> DEFAULT_BLACK_OOO_ALL_SQUARES = new ArrayList<Square>();
-
-
 
     static {
         DEFAULT_WHITE_OO_SQUARES.add(Square.F1);
@@ -121,7 +80,6 @@ public class Constants {
         DEFAULT_BLACK_OOO_ALL_SQUARES.add(Square.D8);
         DEFAULT_BLACK_OOO_ALL_SQUARES.add(Square.C8);
         DEFAULT_BLACK_OOO_ALL_SQUARES.add(Square.B8);
-
 
     }
 

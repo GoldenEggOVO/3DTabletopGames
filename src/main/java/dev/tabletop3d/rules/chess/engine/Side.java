@@ -1,4 +1,4 @@
-// 3DTabletopGames adaptation: relocated package; original Apache-2.0 notice follows.
+
 /*
  * Copyright 2017 Ben-Hur Carlos Vieira Langoni Junior
  *
@@ -17,49 +17,22 @@
 
 package dev.tabletop3d.rules.chess.engine;
 
-/**
- * One of the two sides in a chess game, {@link Side#WHITE} or {@link Side#BLACK}.
- */
 public enum Side {
 
-    /**
-     * The white side.
-     */
     WHITE,
-    /**
-     * The black side.
-     */
+
     BLACK;
 
     public static final Side[] allSides = values();
 
-    /**
-     * Returns a side given its name.
-     * <p>
-     * Same as invoking {@link Side#valueOf(String)}.
-     *
-     * @param v name of the side
-     * @return the side with the specified name
-     * @throws IllegalArgumentException if the name does not correspond to any side
-     */
     public static Side fromValue(String v) {
         return valueOf(v);
     }
 
-    /**
-     * Returns the name of the side.
-     *
-     * @return the name of the side
-     */
     public String value() {
         return name();
     }
 
-    /**
-     * Returns the opposite of this side, that is the other side.
-     *
-     * @return the opposite side
-     */
     public Side flip() {
         return Side.WHITE.equals(this) ?
                 Side.BLACK : Side.WHITE;

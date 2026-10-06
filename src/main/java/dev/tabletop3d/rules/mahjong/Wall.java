@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-/** Seeded live wall and, for riichi, a fixed fourteen-tile dead wall. */
 public final class Wall {
     private final List<Tiles.Tile> tiles;
     private final boolean deadWall;

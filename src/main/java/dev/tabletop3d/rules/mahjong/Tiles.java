@@ -3,7 +3,6 @@ package dev.tabletop3d.rules.mahjong;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Physical identity is separate from the normalized face used by hand rules. */
 public final class Tiles {
     public record Tile(String id,int type,boolean red) {
         public Tile {

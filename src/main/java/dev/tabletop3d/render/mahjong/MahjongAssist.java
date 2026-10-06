@@ -6,7 +6,6 @@ import dev.tabletop3d.rules.mahjong.MahjongGame;
 
 import java.util.*;
 
-/** Optional assistance for one player's current table; game rules remain authoritative. */
 public final class MahjongAssist {
     public enum Option {
         SORT("sort"), WIN("win"), NO_CALLS("no-calls"), DRAW_DISCARD("draw-discard");

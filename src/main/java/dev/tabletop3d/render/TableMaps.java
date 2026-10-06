@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Static native board maps shared by every table, with stable IDs across restarts. */
 public final class TableMaps {
     private final File file;
     private final YamlConfiguration index;

@@ -164,7 +164,7 @@ class TableLobbyTest {
         assertEquals(0, joined.get());
         MockBukkit.getMock().getScheduler().performOneTick();
         assertEquals(1, joined.get());
-        // Another player takes the last seat before the deferred callback executes.
+
         Player second = player(world);
         assertTrue(lobby.request(second));
         var full =

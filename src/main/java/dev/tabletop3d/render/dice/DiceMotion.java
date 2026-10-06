@@ -7,7 +7,6 @@ import org.joml.Vector3f;
 
 import java.util.Random;
 
-/** A short deterministic throw; the supplied face, never the animation seed, decides the result. */
 public final class DiceMotion {
     public static final int FRAMES=24;
     private static final double CLEARANCE=.006;
@@ -25,7 +24,7 @@ public final class DiceMotion {
         spin=new Vector3f(random.nextBoolean()?1:-1,.55f+random.nextFloat()*.35f,random.nextBoolean()?.55f:-.55f);
         double angle=random.nextDouble()*Math.PI*2,velocity=.12*halfWidth/.61;
         double vx=Math.cos(angle)*velocity,vz=Math.sin(angle)*velocity;
-        // A circumscribed sphere also leaves room for the shallow raised pips at every orientation.
+
         double limit=halfWidth-size*Math.sqrt(3)/2-CLEARANCE;
         x[0]=start.x();z[0]=start.z();
         for(int frame=1;frame<=FRAMES;frame++) {

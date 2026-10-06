@@ -10,7 +10,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Original native cuboid artwork. Coordinates are centers on a 32 by 48 face. */
 public final class HandModels {
     public record Part(
             double x,
@@ -48,7 +47,7 @@ public final class HandModels {
     }
 
     private static List<Part> separatePlanes(List<Part> source) {
-        // Reuse a relief plane for disjoint strokes; intersecting strokes get distinct depths.
+
         List<Part> parts = new ArrayList<>();
         List<Area> footprints = new ArrayList<>();
         for (Part part : new LinkedHashSet<>(source)) {
@@ -207,7 +206,6 @@ public final class HandModels {
         }
     }
 
-    /** Hand-drawn character centerlines; each stroke is a rotated native cuboid. */
     private static void glyph(
             List<Part> parts,
             char glyph,

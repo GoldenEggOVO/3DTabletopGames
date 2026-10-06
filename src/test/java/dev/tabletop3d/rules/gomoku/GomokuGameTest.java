@@ -39,7 +39,7 @@ class GomokuGameTest {
         assertTrue(edge.legalActions(0).contains("place:1,7"));
         GomokuGame blocked = configured(true, true, true);
         position(blocked, 0, new int[][]{{6,7},{8,7},{7,6},{7,8}}, new int[][]{{4,7},{10,7}});
-        // A white stone at each outer extension still leaves a straight open four impossible.
+
         assertTrue(blocked.legalActions(0).contains("place:7,7"));
     }
     @Test void brokenOpenThreeCountsButAnOpenFourIsOneFour() throws Exception {
@@ -116,7 +116,7 @@ class GomokuGameTest {
         assertEquals(List.of("place:1,0"), game.actionsForCell(1, "1,0"));
     }
     @Test void winning225thPlacementBeatsFullBoardDraw() {
-        // Balanced no-win fixture: every prefix is legal; last black move bridges an overline.
+
         String[] rows = {"001100110011001","110011001100110","001100110011001","110011101100110",
                 "001100110011001","110011001100110","001100110011001","110010000.00110",
                 "101100110011001","110011001100110","001100110011001","110011001100110",

@@ -16,7 +16,6 @@ import org.joml.Vector3f;
 
 import java.util.*;
 
-/** Four native curved arrows around the draw and discard piles. */
 public final class TurnRing implements AutoCloseable {
     private final Room room;
     private final Location origin;
@@ -146,7 +145,7 @@ public final class TurnRing implements AutoCloseable {
         if (closed || room.phase != Room.Phase.PLAYING) {
             return;
         }
-        // HandTable is updated every two server ticks: about 26 seconds per revolution.
+
         angle = (angle + direction * .024) % (2 * Math.PI);
         position();
     }

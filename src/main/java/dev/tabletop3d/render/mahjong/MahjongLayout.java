@@ -6,7 +6,6 @@ import dev.tabletop3d.rules.mahjong.Tiles;
 
 import java.util.*;
 
-/** Owner-relative public tile placement, shared by native and resource-pack displays. */
 public final class MahjongLayout {
     public record Tile(HandGame.Piece piece, double offset, int row, boolean sideways, double lift) {}
 

@@ -4,7 +4,6 @@ import dev.tabletop3d.rules.RuleViolation;
 
 import java.util.*;
 
-/** Readiness and state transitions for a fresh round. */
 public final class RoundActions {
     public static boolean rematchReady(Room r, UUID player) {
         if (r.phase != Room.Phase.FINISHED || r.busy || r.seat(player) < 0)

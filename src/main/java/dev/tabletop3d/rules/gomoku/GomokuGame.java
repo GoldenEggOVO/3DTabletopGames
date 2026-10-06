@@ -9,11 +9,6 @@ import dev.tabletop3d.ui.GameSymbols;
 import java.util.*;
 import java.util.function.IntUnaryOperator;
 
-/**
- * Pure-Java adaptation of NucleoidMC/Gomoku Board (MIT, see META-INF/licenses). The four
- * directional run scans are retained; render code is separated and a winning final placement is
- * checked before a full-board draw.
- */
 public final class GomokuGame implements BoardGame {
     private RuleMessage lastMessage = RuleMessage.of("board.ready");
 
@@ -150,7 +145,6 @@ public final class GomokuGame implements BoardGame {
         return false;
     }
 
-    /** RIF 9.2/9.3: a three must extend to a legal straight four; fake threes do not count. */
     private boolean forbidden(int x, int y, Map<String, Boolean> memo) {
         if (five(x, y)) return false;
         if (options.forbidOverline())
@@ -191,7 +185,7 @@ public final class GomokuGame implements BoardGame {
                 board[gapY][gapX] = 0;
                 boolean completesFive = run(gapX, gapY, d[0], d[1]) == WIN;
                 board[gapY][gapX] = -1;
-                // A straight four has two winning endpoints but is only one four.
+
                 if (completesFive) threats.add(stones);
             }
         return threats.size();

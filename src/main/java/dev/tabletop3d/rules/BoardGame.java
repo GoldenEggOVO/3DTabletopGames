@@ -3,7 +3,6 @@ package dev.tabletop3d.rules;
 import java.util.List;
 import java.util.Map;
 
-/** Pure authoritative rules, mutated on the server thread. Never send internal state. */
 public interface BoardGame {
     String id();
 
@@ -27,7 +26,6 @@ public interface BoardGame {
         return List.of();
     }
 
-    /** Related source/destination actions for a world cell click. Empty means no valid action. */
     default List<String> actionsForCell(int seat, String cellId) {
         if (cellId == null) return List.of();
         return legalActions(seat).stream()

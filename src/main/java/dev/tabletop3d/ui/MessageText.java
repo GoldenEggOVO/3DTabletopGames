@@ -10,7 +10,6 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
-/** Templates may style text; values are inserted as components, never parsed as markup. */
 public final class MessageText {
     public static final Pattern PLACEHOLDER = Pattern.compile("\\{([A-Za-z][A-Za-z0-9_-]*)}");
     private static final TagResolver STYLES = TagResolver.resolver(
@@ -89,7 +88,6 @@ public final class MessageText {
         render(template);
     }
 
-    /** Legacy color changes clear decorations; formatting codes apply until reset/color. */
     static String legacy(String value) {
         var result = new StringBuilder();
         for (int i = 0; i < value.length(); i++) {

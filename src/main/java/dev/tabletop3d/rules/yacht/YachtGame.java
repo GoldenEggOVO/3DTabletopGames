@@ -6,7 +6,6 @@ import dev.tabletop3d.rules.RuleViolation;
 
 import java.util.*;
 
-/** Casual 12-category Yacht variant. Seeded randomness makes replay deterministic. */
 public final class YachtGame implements BoardGame {
     public static final List<String> CATEGORIES =
             List.of(

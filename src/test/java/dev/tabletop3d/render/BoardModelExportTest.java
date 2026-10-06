@@ -18,7 +18,6 @@ import javax.imageio.ImageIO;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Export the same board coordinates/art used by native rendering for the pack builder. */
 class BoardModelExportTest {
     @Test
     void exportOriginalBoardsAndPieceMeshesAtTheirNativeCoordinates() throws Exception {

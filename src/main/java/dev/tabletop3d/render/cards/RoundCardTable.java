@@ -6,7 +6,6 @@ import org.bukkit.Material;
 
 import java.util.*;
 
-/** Native circular card furniture, in block units relative to the playing surface. */
 public final class RoundCardTable {
     public static final double RADIUS=1.5;
     public static final double RIM_TOP=.017;
@@ -17,13 +16,13 @@ public final class RoundCardTable {
         double apothem=RADIUS*Math.cos(halfAngle), center=apothem-depth/2;
         for(int side=0;side<36;side++){
             double angle=side*2*halfAngle;
-            // Adjacent bars overlap inside the rim; offset their top and underside to avoid coplanar faces.
+
             double seam=(side%2)*.00025, bottom=-.19-seam;
             parts.add(new Part(-center*Math.sin(angle),bottom,center*Math.cos(angle),
                     2*RADIUS*Math.sin(halfAngle),RIM_TOP+seam-bottom,depth,
                     Material.STRIPPED_DARK_OAK_WOOD,(float)Math.toDegrees(angle)));
         }
-        // The wider strip endpoints remain hidden beneath the rim's inner lip.
+
         double span=1.32, radius=1.48;
         for(int row=0;row<16;row++){
             double near=-span+2*span*row/16, far=-span+2*span*(row+1)/16;

@@ -1,4 +1,4 @@
-// Upstream MIT: James Wang 2022. Relocated for 3DTabletopGames; see META-INF/licenses.
+
 package dev.tabletop3d.rules.xiangqi.engine.model;
 
 import dev.tabletop3d.rules.xiangqi.engine.utility.Point;
@@ -16,9 +16,6 @@ public class Advisor extends Piece {
             this.code = -2;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean canMove(Board board, Point start, Point end) {
         if (!board.containsPoint(start) || !board.containsPoint(end)
@@ -45,11 +42,6 @@ public class Advisor extends Piece {
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * The advisor moves and captures diagonally 1 step and cannot leave the palace.
-     */
     @Override
     public List<Point> validMoves(Board board, Point start) {
         List<Point> moves = new ArrayList<>();

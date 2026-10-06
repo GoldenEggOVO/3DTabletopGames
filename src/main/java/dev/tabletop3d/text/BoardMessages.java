@@ -6,7 +6,6 @@ import net.kyori.adventure.text.Component;
 
 import java.util.*;
 
-/** Converts explicitly identified board symbols and status choices before rendering. */
 public final class BoardMessages {
     public static Component render(RuleMessage message) {
         List<Object> parameters = new ArrayList<>();

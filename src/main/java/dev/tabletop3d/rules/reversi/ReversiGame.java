@@ -8,7 +8,6 @@ import dev.tabletop3d.ui.GameSymbols;
 
 import java.util.*;
 
-/** 8x8 Othello: mandatory flips, automatic forced pass, count only when neither side can move. */
 public final class ReversiGame implements BoardGame {
     private RuleMessage lastMessage = RuleMessage.of("board.ready");
 

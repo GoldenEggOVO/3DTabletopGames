@@ -15,7 +15,6 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/** Count the production displays of fixed starting positions, including all private hands. */
 class NativeEntityCountTest {
     @BeforeEach void setup() { MockBukkit.mock(); }
     @AfterEach void cleanup() { MockBukkit.unmock(); }

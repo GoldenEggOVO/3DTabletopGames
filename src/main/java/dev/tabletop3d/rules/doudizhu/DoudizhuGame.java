@@ -7,7 +7,6 @@ import dev.tabletop3d.rules.cards.PlayingCard;
 
 import java.util.*;
 
-/** Classic three-seat landlord game with deterministic dealing and team scoring. */
 public final class DoudizhuGame implements SelectedHandGame {
     private final Random random;
     private final List<List<PlayingCard>> hands = new ArrayList<>();

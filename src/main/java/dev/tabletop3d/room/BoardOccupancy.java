@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/** Board-owned reservations, including seats restored for offline players. */
 public final class BoardOccupancy {
     private final Map<UUID, String> seats = new HashMap<>();
 

@@ -9,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Presentation uses only the seated owner's hand and public information. */
 public final class MahjongPresentation {
     private MahjongPresentation() {}
     public static boolean bonus(Map<String,String> info,String face){

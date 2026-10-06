@@ -1,4 +1,4 @@
-// 3DTabletopGames adaptation: relocated package; original Apache-2.0 notice follows.
+
 /*
  * Copyright 2017 Ben-Hur Carlos Vieira Langoni Junior
  *
@@ -17,32 +17,17 @@
 
 package dev.tabletop3d.rules.chess.engine.game;
 
-/**
- * The possible types of chess variation.
- */
 public enum VariationType {
-    /**
-     * The normal (standard) chess variation.
-     */
+
     NORMAL,
-    /**
-     * The chess 960 variation.
-     */
+
     CHESS960,
-    /**
-     * The no-castle variation.
-     */
+
     NOCASTLE,
-    /**
-     * The wild-castle variation.
-     */
+
     WILDCASTLE,
-    /**
-     * The bughouse variation.
-     */
+
     BUGHOUSE,
-    /**
-     * The crazyhouse variation.
-     */
+
     CRAZYHOUSE
 }

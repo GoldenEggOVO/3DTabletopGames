@@ -9,7 +9,6 @@ import dev.tabletop3d.rules.mahjong.MahjongGame;
 
 import java.util.Random;
 
-/** Chooses automatic actions; submitting and recording them stays in the normal action path. */
 public final class TurnPolicy {
     public static final long RIICHI_DISCARD_DELAY_MILLIS = 600;
 

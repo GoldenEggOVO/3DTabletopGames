@@ -1,4 +1,4 @@
-// Upstream MIT: James Wang 2022. Relocated for 3DTabletopGames; see META-INF/licenses.
+
 package dev.tabletop3d.rules.xiangqi.engine.model;
 
 import dev.tabletop3d.rules.xiangqi.engine.utility.Point;
@@ -15,9 +15,6 @@ public class Horse extends Piece {
             this.code = -4;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean canMove(Board board, Point start, Point end) {
         List<Point> moves = validMoves(board, start);
@@ -28,11 +25,6 @@ public class Horse extends Piece {
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * The horse moves and captures 1 step orthogonally then 1 outwards diagonally.
-     */
     @Override
     public List<Point> validMoves(Board board, Point start) {
         List<Point> moves = new ArrayList<>();

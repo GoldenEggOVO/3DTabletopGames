@@ -2,7 +2,6 @@ package dev.tabletop3d.rules;
 
 import java.util.*;
 
-/** Locale-independent description; the UI renders a complete template. */
 public record RuleMessage(String key, Map<String, Object> parameters) {
     public RuleMessage {
         parameters = Collections.unmodifiableMap(new LinkedHashMap<>(parameters));

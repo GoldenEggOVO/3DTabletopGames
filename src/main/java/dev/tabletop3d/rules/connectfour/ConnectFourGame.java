@@ -7,7 +7,6 @@ import dev.tabletop3d.ui.GameSymbols;
 
 import java.util.*;
 
-/** Standard 7-column, 6-row gravity Connect Four. Row zero is the bottom. */
 public final class ConnectFourGame implements BoardGame {
     private final int[][] board = new int[6][7];
     private final int[] heights = new int[7];

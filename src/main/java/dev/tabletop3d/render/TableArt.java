@@ -6,7 +6,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
-/** Original server artwork. No artwork or decompiled source from BoardGames is bundled. */
 public final class TableArt {
     static final int[] COLORS = {0xc64a45, 0x4598c1, 0x4eab7b, 0xe2b64b, 0x9b72c2, 0xe88ca4};
 
@@ -22,7 +21,7 @@ public final class TableArt {
         graphics.drawRect(6, 6, 243, 243);
         graphics.setColor(new Color(geometry.kind.equals("checkers") ? 0xe8dfbf : 0xe5c48b));
         graphics.fillRect(10, 10, 236, 236);
-        // Fine wood grain is static pixels, not extra entities or per-tick packets.
+
         graphics.setColor(new Color(128, 103, 56, 18));
         for (int y = 13; y < 244; y += 5) {
             graphics.drawLine(11, y, 244, y);
@@ -86,7 +85,7 @@ public final class TableArt {
                                     (row + 2 - geometry.layout.midY()) * geometry.layout.zUnit()));
                 }
             }
-            // River lettering uses Minecraft's font on a TextDisplay, portable across server fonts.
+
         } else {
             int edge = maxX == 8 ? 2 : 3, mid = maxX / 2;
             for (int x : new int[] {edge, mid, maxX - edge}) {

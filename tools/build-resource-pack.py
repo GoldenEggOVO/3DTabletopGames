@@ -186,25 +186,6 @@ def ImageColor_mix(a,b,ratio):
     return tuple(round(x*(1-ratio)+y*ratio) for x,y in zip(a,b))
 
 
-def flower_image(n):
-    im=Image.new("RGB",(256,384),"#fff9eb");d=ImageDraw.Draw(im)
-    d.line((128,296,128,150),fill="#356648",width=7)
-    for side in (-1,1):
-        d.ellipse((128+side*55-30,220,128+side*55+30,254),fill="#44815d")
-    petals=5 if n%4==1 else 8
-    for i in range(petals):
-        a=i*math.tau/petals;x=128+math.sin(a)*44;y=145+math.cos(a)*44
-        d.ellipse((x-24,y-24,x+24,y+24),fill=["#cd5978","#9772bb","#6d9d72","#d4a840"][(n-1)%4])
-    d.ellipse((106,123,150,167),fill="#dfbe5a")
-    # Fixed flower-tile artwork glyphs.
-    plum, orchid, bamboo, chrysanthemum = "\u6885", "\u862d", "\u7af9", "\u83ca"
-    spring, summer, autumn, winter = "\u6625", "\u590f", "\u79cb", "\u51ac"
-    chars = (plum, orchid, bamboo, chrysanthemum, spring, summer, autumn, winter)
-    cjk=ImageFont.truetype("C:/Windows/Fonts/msyh.ttc",38)
-    d.text((128,338),chars[n-1],font=cjk,anchor="mm",fill="#a0413d" if n<=4 else "#315783")
-    return im
-
-
 def disc(radius,y,height,tex,cap_tex,segments=96):
     from solid_mesh import extrusion
     return extrusion(radius,y,height,tex,cap_tex,segments)
@@ -327,10 +308,13 @@ def audio():
             samples.append({"name":"tabletop3d:"+name,"stream":False})
         events[event]={"sounds":samples}
     licenses=BUILD/"licenses";licenses.mkdir(exist_ok=True)
-    notices=json.loads((ROOT/"resource-pack/sources.json").read_text(encoding="utf-8"))["audio_notices"]["kenney"]
+    sources=json.loads((ROOT/"resource-pack/sources.json").read_text(encoding="utf-8"))
+    notices=sources["audio_notices"]["kenney"]
     for pack in ("casino","interface","impact"):
         (licenses/f"kenney-{pack}.txt").write_bytes(notices["licenses"][pack].encode("utf-8"))
     (licenses/"kenney-sources.md").write_bytes(notices["sources"].encode("utf-8"))
+    (licenses/"mahjong-graphic.txt").write_text(sources["artwork_notices"]["mahjong_graphic"]["license"],encoding="utf-8")
+    (licenses/"xiangqi-art.txt").write_text(sources["artwork_notices"]["xiangqi"]["notice"],encoding="utf-8")
     write_json(ASSETS/"sounds.json",events)
     return durations
 
@@ -365,11 +349,11 @@ def main():
     tile_back_draw=ImageDraw.Draw(tile_back_image)
     tile_back_draw.rectangle((5,5,122,186),outline="#319878",width=4)
     tile_back=texture("surface/mahjong-back",tile_back_image)
-    atlas=Image.open(ROOT/"resource-pack/source/mahjong/hand_ui.png").convert("RGB")
-    for suit,row in (("s",0),("m",1),("p",2)):
-        for n in range(10):face_model(f"mahjong_{suit}{n}",atlas.crop((n*80+5,row*129+15,n*80+75,row*129+124)),back=tile_back)
-    for n in range(1,8):face_model(f"mahjong_z{n}",atlas.crop(((n-1)*80+5,402,(n-1)*80+75,511)),back=tile_back)
-    for n in range(1,9):face_model(f"mahjong_f{n}",flower_image(n),back=tile_back)
+    from face_art import mahjong_face
+    for suit in ("m", "p", "s"):
+        for n in range(10):face_model(f"mahjong_{suit}{n}",mahjong_face(ROOT,f"{suit}{n}"),back=tile_back)
+    for n in range(1,8):face_model(f"mahjong_z{n}",mahjong_face(ROOT,f"z{n}"),back=tile_back)
+    for n in range(1,9):face_model(f"mahjong_f{n}",mahjong_face(ROOT,f"f{n}"),back=tile_back)
     face_model("mahjong_back",tile_back_image,back=tile_back)
     for color in COLORS:
         for rank in RANKS:face_model(f"card_{color}{rank}",card_image(rank,color),True,back)

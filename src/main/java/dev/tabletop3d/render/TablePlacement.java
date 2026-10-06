@@ -2,7 +2,6 @@ package dev.tabletop3d.render;
 
 import org.bukkit.Location;
 
-/** Even-width map mosaics meet at a block corner; odd-width mosaics at a block centre. */
 public final class TablePlacement {
     public static boolean overlaps(
             double x,
@@ -34,7 +33,7 @@ public final class TablePlacement {
                 && Math.abs(z - otherZ) < 3) {
             return true;
         }
-        // Retain the original board/seat clearance; add only the side stand's footprint.
+
         if (tray
                 && Math.abs(x + 2 - otherX) < otherHalfWidth + .925
                 && Math.abs(z - otherZ) < otherHalfWidth + .925) {

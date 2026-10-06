@@ -5,7 +5,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-/** Complete concealed-hand decomposition, including regional wildcards and sixteen-tile hands. */
 public final class HandSolver {
     public record Group(boolean sequence, int type, int wildcards) {}
     public record Shape(int pair, int pairWildcards, List<Group> groups) {
@@ -63,7 +62,7 @@ public final class HandSolver {
         }
         if (first >= 27) return;
         for (int start = Math.max(first / 9 * 9, first - 2); start <= first && start % 9 <= 6; start++) {
-            // Each bit selects a wildcard instead of a natural tile in this sequence.
+
             for (int wildcardMask = 0; wildcardMask < 8; wildcardMask++) {
                 int missing = Integer.bitCount(wildcardMask);
                 if (missing > wildcards || (wildcardMask & (1 << (first - start))) != 0) continue;

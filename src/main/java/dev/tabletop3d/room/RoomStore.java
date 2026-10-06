@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 
-/** Current room file format. No Bukkit access, admission checks or world creation. */
 public final class RoomStore {
     private static final int SCHEMA = 1;
     private static final Gson JSON = new GsonBuilder().setPrettyPrinting().create();

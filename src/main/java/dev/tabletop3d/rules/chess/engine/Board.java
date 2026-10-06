@@ -1,4 +1,4 @@
-// 3DTabletopGames adaptation: relocated package; removed unused undo snapshots; original Apache-2.0 notice follows.
+
 /*
  * Copyright 2017 Ben-Hur Carlos Vieira Langoni Junior
  *
@@ -33,16 +33,6 @@ import dev.tabletop3d.rules.chess.engine.move.Move;
 import dev.tabletop3d.rules.chess.engine.move.MoveGenerator;
 import dev.tabletop3d.rules.chess.engine.util.XorShiftRandom;
 
-/**
- * The definition of a chessboard position and its status. It exposes methods to manipulate the board, evolve the
- * position moving pieces around and retrieve the status of the current configuration
- * on the board. Furthermore, it offers a handy way for loading a position from a Forsyth-Edwards Notation (FEN) string
- * and exporting it in the same format.
- * <p>
- * Each position in uniquely identified by hashes that could be retrieved using {@link Board#getIncrementalHashKey()}
- * and {@link Board#getZobristKey()} methods. Also, the implementation supports comparison against other board instances
- * using either the strict ({@link Board#strictEquals(Object)}) or the non-strict ({@link Board#equals(Object)}) mode.
- */
 public class Board implements Cloneable {
 
     private static final List<Long> keys = new ArrayList<>();
@@ -71,23 +61,10 @@ public class Board implements Cloneable {
     private final boolean updateHistory;
     private long incrementalHashKey;
 
-    /**
-     * Constructs a new board using a default game context. The board will keep its history updated, that is, will store
-     * a hash value for each position encountered.
-     *
-     * @see Board#Board(GameContext, boolean)
-     */
     public Board() {
         this(new GameContext(), true);
     }
 
-    /**
-     * Constructs a new board, using the game context provided in input. When history updates are enabled, the board
-     * will keep the hashes of all positions encountered.
-     *
-     * @param gameContext   the game context to use for this board
-     * @param updateHistory whether to keep the history updated or not
-     */
     public Board(GameContext gameContext, boolean updateHistory) {
 
         bitboard = new long[Piece.allPieces.length];
@@ -104,9 +81,6 @@ public class Board implements Cloneable {
         loadFromFen(gameContext.getStartFEN());
     }
 
-    /*
-     * does move lead to a promotion?
-     */
     private static boolean isPromoRank(Side side, Move move) {
         if (side.equals(Side.WHITE) &&
                 move.getTo().getRank().equals(Rank.RANK_8)) {
@@ -144,35 +118,10 @@ public class Board implements Cloneable {
         return IntStream.iterate(7, i -> i - 1).limit(8);
     }
 
-    /**
-     * Executes a move on the board without performing a full validation of the position. It returns {@code true} if the
-     * operation has been successful and the position changed after the move.
-     * <p>
-     * Same as invoking {@code doMove(move, false)}.
-     *
-     * @param move the move to execute
-     * @return {@code true} if the move was successful and the resulting position is valid
-     * @see #doMove(Move, boolean)
-     */
     public boolean doMove(final Move move) {
         return doMove(move, false);
     }
 
-    /**
-     * Executes a move on the board. It returns {@code true} if the operation has been successful and the position
-     * changed after the move. When a full validation is requested, additional checks are performed to assess the
-     * outcome of the operation, such as if the side to move is the expected one, if castling or promotion moves are
-     * allowed, if the move replaces another piece of the same side, etc.
-     * <p>
-     * <b>N.B.</b>: the method does not check whether the move is legal or not according to the standard chess rules,
-     * but rather if the resulting configuration is valid. For instance, it is totally fine to move the king by two or
-     * more squares, or a rook beyond its friendly pieces, as long as the position obtained after the move does not
-     * violate any chess constraint.
-     *
-     * @param move           the move to execute
-     * @param fullValidation whether to perform a full validation of the position or not
-     * @return {@code true} if the move was successful and the resulting position is valid
-     */
     public boolean doMove(final Move move, boolean fullValidation) {
 
         if (!isMoveLegal(move, fullValidation)) {
@@ -207,8 +156,7 @@ public class Board implements Cloneable {
                         CastleRight.QUEEN_SIDE;
                 Move rookMove = context.getRookCastleMove(side, c);
                 if (context.getVariationType() == VariationType.CHESS960) {
-                    // Chess960: manually handle piece placement to avoid capture issues
-                    // Determine the king's final destination square (always c1/g1 or c8/g8)
+
                     Square kingDest;
                     if (side == Side.WHITE) {
                         kingDest = c == CastleRight.KING_SIDE ? Square.G1 : Square.C1;
@@ -259,7 +207,7 @@ public class Board implements Cloneable {
 
         Piece capturedPiece;
         if (isCastle && context.getVariationType() == VariationType.CHESS960) {
-            // Chess960: king and rook already placed above, no capture possible
+
             capturedPiece = Piece.NONE;
         } else {
             capturedPiece = movePiece(move);
@@ -326,7 +274,6 @@ public class Board implements Cloneable {
         return true;
     }
 
-    /** Move one piece and return its capture, including an en-passant pawn. */
     private Piece movePiece(Move move) {
         Square from = move.getFrom();
         Square to = move.getTo();
@@ -348,13 +295,6 @@ public class Board implements Cloneable {
         return capturedPiece;
     }
 
-    /**
-     * Searches the piece in any of the squares provided in input and returns {@code true} if found.
-     *
-     * @param piece    the piece to search in any of the given squares
-     * @param location an array of squares where to look the piece for
-     * @return {@code true} if the piece is found
-     */
     public boolean hasPiece(Piece piece, Square[] location) {
         for (Square sq : location) {
             if ((getBitboard(piece) & sq.getBitboard()) != 0L) {
@@ -364,62 +304,27 @@ public class Board implements Cloneable {
         return false;
     }
 
-    /**
-     * Returns the piece at the specified square, or {@link Piece#NONE} if the square is empty.
-     *
-     * @param sq the square to get the piece from
-     * @return the found piece, or {@link Piece#NONE} if no piece is present on the square
-     */
     public Piece getPiece(Square sq) {
 
         return occupation[sq.ordinal()];
     }
 
-    /**
-     * Returns the bitboard that represents all the pieces on the board, for both sides.
-     *
-     * @return the bitboard of all the pieces on the board
-     */
     public long getBitboard() {
         return bbSide[0] | bbSide[1];
     }
 
-    /**
-     * Returns the bitboard that represents all the pieces of a given side and type present on the board.
-     *
-     * @param piece the piece for which the bitboard must be returned
-     * @return the bitboard of the given piece definition
-     */
     public long getBitboard(Piece piece) {
         return bitboard[piece.ordinal()];
     }
 
-    /**
-     * Returns the bitboard that represents all the pieces of a given side present on the board.
-     *
-     * @param side the side for which the bitboard must be returned
-     * @return the bitboard of all the pieces of the side
-     */
     public long getBitboard(Side side) {
         return bbSide[side.ordinal()];
     }
 
-    /**
-     * Returns the bitboards that represents all the pieces present on the board, one for each side. The bitboard for
-     * white is stored at index 0, the bitboard for black at index 1.
-     *
-     * @return the bitboards of all the pieces for both sides
-     */
     public long[] getBbSide() {
         return bbSide;
     }
 
-    /**
-     * Returns the list of squares that contain all the pieces of a given side and type.
-     *
-     * @param piece the piece for which the list of squares must be returned
-     * @return the list of squares that contain the given piece definition
-     */
     public List<Square> getPieceLocation(Piece piece) {
         if (getBitboard(piece) != 0L) {
             return Bitboard.bbToSquareList(getBitboard(piece));
@@ -427,14 +332,6 @@ public class Board implements Cloneable {
         return Collections.emptyList();
     }
 
-    /**
-     * Returns the square of the first piece of a given side and type found on the board, scanning from lower
-     * ranks/files. If no piece is found, {@link Square#NONE} is returned.
-     *
-     * @param piece the piece for which the first encountered square must be returned
-     * @return the first square that contain the given piece definition, or {@link Square#NONE} if the piece is not
-     * found
-     */
     public Square getFistPieceLocation(Piece piece) {
         if (getBitboard(piece) != 0L) {
             return Square.squareAt(Bitboard.bitScanForward(getBitboard(piece)));
@@ -442,145 +339,62 @@ public class Board implements Cloneable {
         return Square.NONE;
     }
 
-    /**
-     * Returns the next side to move.
-     *
-     * @return the next side to move
-     */
     public Side getSideToMove() {
         return sideToMove;
     }
 
-    /**
-     * Sets the next side to move.
-     *
-     * @param sideToMove the side to move to set
-     */
     public void setSideToMove(Side sideToMove) {
         this.sideToMove = sideToMove;
     }
 
-    /**
-     * Returns the target square of an en passant capture, if any. In other words, the square which contains the pawn
-     * that can be captured en passant.
-     *
-     * @return the en passant target square, or {@link Square#NONE} if en passant is not possible
-     * @see Board#getEnPassant()
-     */
     public Square getEnPassantTarget() {
         return enPassantTarget;
     }
 
-    /**
-     * Sets the en passant target square.
-     *
-     * @param enPassant the en passant target square to set
-     * @see Board#getEnPassantTarget()
-     */
     public void setEnPassantTarget(Square enPassant) {
         this.enPassantTarget = enPassant;
     }
 
-    /**
-     * Returns the destination square of an en passant capture, if any. In other words, the square a pawn will move to
-     * in case an enemy pawn is captured en passant.
-     *
-     * @return the en passant destination square, or {@link Square#NONE} if en passant is not possible
-     * @see Board#getEnPassantTarget()
-     */
     public Square getEnPassant() {
         return enPassant;
     }
 
-    /**
-     * Sets the en passant destination square.
-     *
-     * @param enPassant the en passant destination square to set
-     * @see Board#getEnPassant()
-     */
     public void setEnPassant(Square enPassant) {
         this.enPassant = enPassant;
     }
 
-    /**
-     * Returns the counter of full moves played. The counter is incremented after each move played by black.
-     *
-     * @return the counter of full moves
-     */
     public Integer getMoveCounter() {
         return moveCounter;
     }
 
-    /**
-     * Sets the counter of full moves.
-     *
-     * @param moveCounter the counter of full moves to set
-     * @see Board#getMoveCounter()
-     */
     public void setMoveCounter(Integer moveCounter) {
         this.moveCounter = moveCounter;
     }
 
-    /**
-     * Returns the counter of half moves. The counter is incremented after each capture or pawn move, and it is used to
-     * apply the fifty-move rule.
-     *
-     * @return the counter of half moves
-     */
     public Integer getHalfMoveCounter() {
         return halfMoveCounter;
     }
 
-    /**
-     * Sets the counter of half moves.
-     *
-     * @param halfMoveCounter the counter of half moves to set
-     * @see Board#getHalfMoveCounter()
-     */
     public void setHalfMoveCounter(Integer halfMoveCounter) {
         this.halfMoveCounter = halfMoveCounter;
     }
 
-    /**
-     * Returns the castle right of a given side.
-     *
-     * @param side the side for which the castle right must be returned
-     * @return the castle right of the side
-     */
     public CastleRight getCastleRight(Side side) {
         return castleRight.get(side);
     }
 
-    /**
-     * Returns the castle rights for both sides, stored in an {@link EnumMap}.
-     *
-     * @return the map containing the castle rights for both sides
-     */
     public EnumMap<Side, CastleRight> getCastleRight() {
         return castleRight;
     }
 
-    /**
-     * Returns the game context used for this board.
-     *
-     * @return the game context
-     */
     public GameContext getContext() {
         return context;
     }
 
-    /**
-     * Sets the game context of the board.
-     *
-     * @param context the game context to set
-     */
     public void setContext(GameContext context) {
         this.context = context;
     }
 
-    /**
-     * Clears the entire board and resets its status and all the flags to their default value.
-     */
     public void clear() {
         setSideToMove(Side.WHITE);
         setEnPassantTarget(Square.NONE);
@@ -595,14 +409,6 @@ public class Board implements Cloneable {
         incrementalHashKey = 0;
     }
 
-    /**
-     * Sets a piece on a square.
-     * <p>
-     * The operation does not perform any move, but rather simply puts a piece onto a square.
-     *
-     * @param piece the piece to be placed on the square
-     * @param sq    the square the piece has to be set to
-     */
     public void setPiece(Piece piece, Square sq) {
         bitboard[piece.ordinal()] |= sq.getBitboard();
         bbSide[piece.getPieceSide().ordinal()] |= sq.getBitboard();
@@ -612,12 +418,6 @@ public class Board implements Cloneable {
         }
     }
 
-    /**
-     * Unsets a piece from a square.
-     *
-     * @param piece the piece to be removed from the square
-     * @param sq    the square the piece has to be unset from
-     */
     public void unsetPiece(Piece piece, Square sq) {
         bitboard[piece.ordinal()] ^= sq.getBitboard();
         bbSide[piece.getPieceSide().ordinal()] ^= sq.getBitboard();
@@ -627,25 +427,10 @@ public class Board implements Cloneable {
         }
     }
 
-    /**
-     * Loads a specific chess position from a valid Forsyth-Edwards Notation (FEN) string. The status of the current
-     * board is replaced with the one of the FEN string (e.g. en passant squares, castle rights, etc.).
-     *
-     * @param fen the FEN string representing the chess position to load
-     */
     public void loadFromFen(String fen) {
         loadFromFen(fen, false);
     }
 
-    /**
-     * Loads a specific chess position from a valid Forsyth-Edwards Notation (FEN) string. When {@code chess960} is
-     * {@code true}, the position is treated as Chess960 regardless of the castling notation — this is useful when
-     * the PGN tag {@code [Variant "Chess960"]} is present but the FEN uses standard {@code KQkq} notation with
-     * the king on the e-file.
-     *
-     * @param fen     the FEN string representing the chess position to load
-     * @param chess960 if {@code true}, force Chess960 mode
-     */
     public void loadFromFen(String fen, boolean chess960) {
         clear();
         String squares = fen.substring(0, fen.indexOf(' '));
@@ -674,7 +459,6 @@ public class Board implements Cloneable {
         String[] flags = state.split(" ");
         String castlingField = flags.length >= 2 ? flags[1] : "-";
 
-        // Detect Chess960: Shredder-FEN uses file letters (A-H, a-h) for castling rights
         boolean isShredderFen = false;
         boolean isChess960 = false;
         Square whiteRookOO = null, whiteRookOOO = null;
@@ -695,7 +479,7 @@ public class Board implements Cloneable {
         }
 
         if (isShredderFen) {
-            // Parse Shredder-FEN castling rights
+
             isChess960 = true;
             Square wKing = getKingSquare(Side.WHITE);
             Square bKing = getKingSquare(Side.BLACK);
@@ -721,7 +505,6 @@ public class Board implements Cloneable {
                 }
             }
 
-            // Set castle rights based on what we found
             if (whiteRookOO != null && whiteRookOOO != null) {
                 castleRight.put(Side.WHITE, CastleRight.KING_AND_QUEEN_SIDE);
             } else if (whiteRookOO != null) {
@@ -742,7 +525,7 @@ public class Board implements Cloneable {
                 castleRight.put(Side.BLACK, CastleRight.NONE);
             }
         } else {
-            // Standard KQkq notation
+
             if (castlingField.contains("K") && castlingField.contains("Q")) {
                 castleRight.put(Side.WHITE, CastleRight.KING_AND_QUEEN_SIDE);
             } else if (castlingField.contains("K")) {
@@ -763,8 +546,6 @@ public class Board implements Cloneable {
                 castleRight.put(Side.BLACK, CastleRight.NONE);
             }
 
-            // Detect Chess960 with KQkq notation: king not on e-file but has castling rights,
-            // or explicitly requested via chess960 flag (e.g. from PGN [Variant "Chess960"] tag)
             if (!castlingField.equals("-")) {
                 Square wKing = getKingSquare(Side.WHITE);
                 Square bKing = getKingSquare(Side.BLACK);
@@ -775,12 +556,12 @@ public class Board implements Cloneable {
 
                 if (chess960 || whiteNonStandard || blackNonStandard) {
                     isChess960 = true;
-                    // Find rooks by scanning the back rank
+
                     if (castleRight.get(Side.WHITE) != CastleRight.NONE && wKing != Square.NONE) {
                         int wkf = wKing.getFile().ordinal();
                         if (castleRight.get(Side.WHITE) == CastleRight.KING_SIDE
                                 || castleRight.get(Side.WHITE) == CastleRight.KING_AND_QUEEN_SIDE) {
-                            // Find rook to the right of king
+
                             for (int f = wkf + 1; f <= 7; f++) {
                                 Square sq = Square.encode(Rank.RANK_1, File.allFiles[f]);
                                 if (getPiece(sq) == Piece.WHITE_ROOK) {
@@ -791,7 +572,7 @@ public class Board implements Cloneable {
                         }
                         if (castleRight.get(Side.WHITE) == CastleRight.QUEEN_SIDE
                                 || castleRight.get(Side.WHITE) == CastleRight.KING_AND_QUEEN_SIDE) {
-                            // Find rook to the left of king
+
                             for (int f = wkf - 1; f >= 0; f--) {
                                 Square sq = Square.encode(Rank.RANK_1, File.allFiles[f]);
                                 if (getPiece(sq) == Piece.WHITE_ROOK) {
@@ -828,7 +609,6 @@ public class Board implements Cloneable {
             }
         }
 
-        // Configure Chess960 context if detected
         if (isChess960) {
             Square wKing = getKingSquare(Side.WHITE);
             Square bKing = getKingSquare(Side.BLACK);
@@ -839,7 +619,7 @@ public class Board implements Cloneable {
                     blackRookOO, blackRookOOO
             );
         } else if (context.getVariationType() == VariationType.CHESS960) {
-            // Reset to standard if previously was Chess960 (e.g., thread-local board reuse)
+
             context = new GameContext();
         }
 
@@ -870,46 +650,14 @@ public class Board implements Cloneable {
         }
     }
 
-    /**
-     * Generates the Forsyth-Edwards Notation (FEN) representation of the current position and its status. Full and half
-     * moves counters are included in the output.
-     * <p>
-     * Same as invoking {@code getFen(true, false)}.
-     *
-     * @return the string that represents the current position in FEN notation
-     * @see Board#getFen(boolean, boolean)
-     */
     public String getFen() {
         return getFen(true);
     }
 
-    /**
-     * Generates the Forsyth-Edwards Notation (FEN) representation of the current position and its status. Full and half
-     * moves counters are included in the output if the relative flag is enabled.
-     * <p>
-     * Same as invoking {@code getFen(includeCounters, false)}.
-     *
-     * @param includeCounters if {@code true}, move counters are included in the resulting string
-     * @return the string that represents the current position in FEN notation
-     * @see Board#getFen(boolean, boolean)
-     */
     public String getFen(boolean includeCounters) {
         return getFen(includeCounters, false);
     }
 
-    /**
-     * Generates the Forsyth-Edwards Notation (FEN) representation of the current position and its status. Full and half
-     * moves counters are included in the output if the relative flag is enabled. Furthermore, it is possible to control
-     * whether to include the en passant square in the result only when the pawn can be captured or every time the en
-     * passant target exists.
-     *
-     * @param includeCounters                 if {@code true}, move counters are included in the resulting string
-     * @param onlyOutputEnPassantIfCapturable if {@code true}, the en passant square is included in the output only if
-     *                                        the pawn that just moved can be captured. Otherwise, if {@code false}, the
-     *                                        en passant square is always included in the output when the en passant
-     *                                        target exists
-     * @return the string that represents the current position in FEN notation
-     */
     public String getFen(boolean includeCounters, boolean onlyOutputEnPassantIfCapturable) {
 
         StringBuilder fen = new StringBuilder();
@@ -955,7 +703,7 @@ public class Board implements Cloneable {
 
         String rights = "";
         if (context.getVariationType() == VariationType.CHESS960) {
-            // Shredder-FEN: use file letters for castling rights
+
             if (CastleRight.KING_AND_QUEEN_SIDE.equals(castleRight.get(Side.WHITE))
                     || CastleRight.KING_SIDE.equals(castleRight.get(Side.WHITE))) {
                 if (context.getWhiteRookooFile() != null) {
@@ -1029,12 +777,6 @@ public class Board implements Cloneable {
         return fen.toString();
     }
 
-    /**
-     * Returns an array of pieces that represents the current position on the board. For each index, the array holds
-     * the piece present on the square with the same index, or {@link Piece#NONE} if the square is empty.
-     *
-     * @return the array that contains the pieces on the board
-     */
     public Piece[] boardToArray() {
 
         final Piece[] pieces = new Piece[65];
@@ -1049,29 +791,10 @@ public class Board implements Cloneable {
         return pieces;
     }
 
-    /**
-     * Returns the bitboard representing the pieces of a specific side that can attack the given square.
-     * <p>
-     * Same as invoking {@code squareAttackedBy(square, side, getBitboard())}.
-     *
-     * @param square the target square
-     * @param side   the attacking side
-     * @return the bitboard of all the pieces of the given side that can attack the square
-     * @see Board#squareAttackedBy(Square, Side, long)
-     */
     public long squareAttackedBy(Square square, Side side) {
         return squareAttackedBy(square, side, getBitboard());
     }
 
-    /**
-     * Returns the bitboard representing the pieces of a specific side that can attack the given square. It takes a
-     * bitboard mask in input to filter the result for a specific set of occupied squares only.
-     *
-     * @param square the target square
-     * @param side   the attacking side
-     * @param occ    a mask of occupied squares
-     * @return the bitboard of all the pieces of the given side that can attack the square
-     */
     public long squareAttackedBy(Square square, Side side, long occ) {
         long result;
         result = Bitboard.getPawnAttacks(side.flip(), square) &
@@ -1089,14 +812,6 @@ public class Board implements Cloneable {
         return result;
     }
 
-    /**
-     * Returns the bitboard representing the pieces of a specific side and type that can attack the given square.
-     *
-     * @param square the target square
-     * @param side   the attacking side
-     * @param type   the type of the attacking pieces
-     * @return the bitboard of all the pieces of the given side and type that can attack the square
-     */
     public long squareAttackedByPieceType(Square square, Side side, PieceType type) {
         long result = 0L;
         long occ = getBitboard();
@@ -1131,12 +846,6 @@ public class Board implements Cloneable {
         return result;
     }
 
-    /**
-     * Returns the square occupied by the king of the given side.
-     *
-     * @param side the side of the king
-     * @return the square occupied by the king
-     */
     public Square getKingSquare(Side side) {
         Square result = Square.NONE;
         long piece = getBitboard(Piece.make(side, PieceType.KING));
@@ -1147,22 +856,10 @@ public class Board implements Cloneable {
         return result;
     }
 
-    /**
-     * Checks if the king of the side to move is attacked by any enemy piece.
-     *
-     * @return {@code true} if the king of the next side to move is attacked
-     */
     public boolean isKingAttacked() {
         return squareAttackedBy(getKingSquare(getSideToMove()), getSideToMove().flip()) != 0;
     }
 
-    /**
-     * Checks if any of the squares provided in input is attacked by the given side in the current position.
-     *
-     * @param squares the target squares
-     * @param side    the attacking side
-     * @return {@code true} if any square is attacked
-     */
     public boolean isSquareAttackedBy(List<Square> squares, Side side) {
         for (Square sq : squares) {
             if (squareAttackedBy(sq, side) != 0L) {
@@ -1172,28 +869,6 @@ public class Board implements Cloneable {
         return false;
     }
 
-    /**
-     * Verifies if the move still to be executed will leave the resulting board in a valid (legal) position. Optionally,
-     * it can perform a full validation, a stricter check to assess if the final board configuration could be considered
-     * valid or not.
-     * <p>
-     * The full validation checks:
-     * <ul>
-     *     <li>if a piece is actually moving;</li>
-     *     <li>if the moving side is the next side to move in the position;</li>
-     *     <li>if the destination square does not contain a piece of the same side of the moving one;</li>
-     *     <li>in case of a promotion, if a promoting piece is present;</li>
-     *     <li>in case of castling, if the castle move can be performed.</li>
-     * </ul>
-     * <b>N.B.</b>: the method does not check whether the move is legal or not according to the standard chess rules,
-     * but only if the resulting configuration is valid. For instance, it is considered valid moving the king by two or
-     * more squares, or a rook beyond its friendly pieces, as long as the position obtained after the move does not
-     * violate any chess constraint.
-     *
-     * @param move           the move to validate
-     * @param fullValidation performs a full validation of the move
-     * @return {@code true} if the move is considered valid
-     */
     public boolean isMoveLegal(Move move, boolean fullValidation) {
 
         final Piece fromPiece = getPiece(move.getFrom());
@@ -1206,8 +881,6 @@ public class Board implements Cloneable {
                 return false;
             }
 
-            // In Chess960 castling, the king moves to the rook's square (own piece).
-            // Special case: when from == to (king already on final square), skip capture check.
             if (fromPiece.getPieceSide().equals(capturedPiece.getPieceSide())) {
                 boolean allowCapture = false;
                 if (fromType.equals(PieceType.KING)
@@ -1231,9 +904,7 @@ public class Board implements Cloneable {
                 return false;
             }
             if (fromType.equals(PieceType.KING)) {
-                // In Chess960, only enter castling validation if:
-                // - rook is on its initial square AND
-                // - destination does NOT have an enemy piece (captures are never castles)
+
                 boolean rookOnSquareOO = true;
                 boolean rookOnSquareOOO = true;
                 if (context.getVariationType() == VariationType.CHESS960) {
@@ -1286,14 +957,14 @@ public class Board implements Cloneable {
             }
         }
         if (fromType.equals(PieceType.KING)) {
-            // For Chess960 castling, skip the attack check on king destination
+
             if (context.getVariationType() != VariationType.CHESS960 || !isChess960Castle(move, side)) {
                 if (squareAttackedBy(move.getTo(), side.flip()) != 0L) {
                     return false;
                 }
             }
         }
-        // For Chess960 castling, the pin/attack detection below doesn't apply
+
         if (context.getVariationType() == VariationType.CHESS960 && isChess960Castle(move, side)) {
             return true;
         }
@@ -1335,13 +1006,6 @@ public class Board implements Cloneable {
                 (Bitboard.getPawnAttacks(side, kingSq) & pawns) == 0L;
     }
 
-    /**
-     * Checks if the squares of a move are consistent, that is, if the destination square is attacked by the piece
-     * placed on the starting square.
-     *
-     * @param move the move to check
-     * @return {@code true} if the move is coherent
-     */
     public boolean isAttackedBy(Move move) {
 
         PieceType pieceType = getPiece(move.getFrom()).getPieceType();
@@ -1378,21 +1042,10 @@ public class Board implements Cloneable {
         return (attacks & move.getTo().getBitboard()) != 0L;
     }
 
-    /**
-     * Returns the history of the board, represented by the hashes of all the positions occurred on the board.
-     *
-     * @return the list of hashes of all the positions occurred on the board
-     * @see Board#getIncrementalHashKey()
-     */
     public LinkedList<Long> getHistory() {
         return history;
     }
 
-    /**
-     * Verifies in the current position if the king of the side to move is mated.
-     *
-     * @return {@code true} if the king of the side to move is checkmated
-     */
     public boolean isMated() {
         try {
             if (isKingAttacked()) {
@@ -1407,18 +1060,6 @@ public class Board implements Cloneable {
         return false;
     }
 
-    /**
-     * Verifies if the current position is a forced draw because any of the standard chess rules. Specifically, the
-     * method checks for:
-     * <ul>
-     *     <li>threefold repetition;</li>
-     *     <li>insufficient material;</li>
-     *     <li>fifty-move rule;</li>
-     *     <li>stalemate.</li>
-     * </ul>
-     *
-     * @return {@code true} if the position is a draw
-     */
     public boolean isDraw() {
         if (isRepetition()) {
             return true;
@@ -1433,12 +1074,6 @@ public class Board implements Cloneable {
 
     }
 
-    /**
-     * Verifies if the current position has been repeated at least <i>n</i> times, where <i>n</i> is provided in input.
-     *
-     * @param n the number of repetitions to check in the position
-     * @return {@code true} if the position has been repeated at least <i>n</i> times
-     */
     public boolean isRepetition(int n) {
 
         final int i = Math.min(getHistory().size() - 1, getHalfMoveCounter());
@@ -1455,25 +1090,11 @@ public class Board implements Cloneable {
         return false;
     }
 
-    /**
-     * Verifies if the current position has been repeated at least three times (threefold repetition).
-     * <p>
-     * Same as invoking {@code isRepetition(3)}.
-     *
-     * @return {@code true} if the position has been repeated at least three times
-     * @see Board#isRepetition(int)
-     */
     public boolean isRepetition() {
 
         return isRepetition(3);
     }
 
-    /**
-     * Verifies if the current position has insufficient material to continue the game, and thus it must be considered a
-     * forced draw.
-     *
-     * @return {@code true} if the position has insufficient material
-     */
     public boolean isInsufficientMaterial() {
 
         if ((getBitboard(Piece.WHITE_QUEEN) +
@@ -1523,12 +1144,6 @@ public class Board implements Cloneable {
         return false;
     }
 
-    /**
-     * Verifies in the current position if the king of the side to move is stalemated, and thus if the position must be
-     * considered a forced draw.
-     *
-     * @return {@code true} if the king of the side to move is stalemated
-     */
     public boolean isStaleMate() {
         try {
             if (!isKingAttacked()) {
@@ -1543,42 +1158,17 @@ public class Board implements Cloneable {
         return false;
     }
 
-    /**
-     * Returns the unique position ID for the current position and status. The identifier is nothing more than the
-     * Forsyth-Edwards Notation (FEN) representation of the board without the move counters.
-     * <p>
-     * Although this is a reliable way for identifying a unique position, it is much slower than using
-     * {@link Board#hashCode()} or {@link Board#getZobristKey()}.
-     *
-     * @return the unique position ID
-     * @see Board#hashCode()
-     * @see Board#getZobristKey()
-     */
     public String getPositionId() {
         String[] parts = this.getFen(false).split(" ");
         return parts[0] + " " + parts[1] + " " + parts[2] +
                 " " + (this.getEnPassantTarget() != Square.NONE ? parts[3] : "-");
     }
 
-    /**
-     * Returns the list of all possible legal moves for the current position according to the standard rules of chess.
-     * If such moves are played, it is guaranteed the resulting position will also be legal.
-     *
-     * @return the list of legal moves available in the current position
-     */
     public List<Move> legalMoves() {
 
         return MoveGenerator.generateLegalMoves(this);
     }
 
-    /**
-     * Converts a move to its UCI string representation. In Chess960, castling is encoded as
-     * king-to-rook (e.g. "e1h1" for O-O when rook is on h1), following the official UCI Chess960 convention.
-     * In standard chess, castling is encoded as king-to-destination (e.g. "e1g1" for O-O).
-     *
-     * @param move the move to convert
-     * @return the UCI string representation of the move
-     */
     public String toUci(Move move) {
         if (context.getVariationType() == VariationType.CHESS960 && context.isCastleMove(move)) {
             Side side = getSideToMove();
@@ -1596,20 +1186,13 @@ public class Board implements Cloneable {
         return uci;
     }
 
-    /**
-     * Parses a UCI string into a Move, handling Chess960 castling notation. In Chess960, castling is
-     * encoded as king-to-rook (e.g. "e1h1"), which is converted to the internal king-to-destination format.
-     *
-     * @param uci the UCI string to parse (e.g. "e2e4", "e1h1" for Chess960 castling)
-     * @return the parsed Move
-     */
     public Move fromUci(String uci) {
         if (uci.length() >= 4 && context.getVariationType() == VariationType.CHESS960) {
             Square from = Square.valueOf(uci.substring(0, 2).toUpperCase());
             Square to = Square.valueOf(uci.substring(2, 4).toUpperCase());
             Piece fromPiece = getPiece(from);
             Piece toPiece = getPiece(to);
-            // King moving to own rook = castling in UCI Chess960
+
             if (fromPiece.getPieceType() == PieceType.KING && toPiece.getPieceType() == PieceType.ROOK
                     && fromPiece.getPieceSide() == toPiece.getPieceSide()) {
                 int fromFile = from.getFile().ordinal();
@@ -1631,48 +1214,16 @@ public class Board implements Cloneable {
         return new Move(from, to, promotion);
     }
 
-    /**
-     * Returns the list of all possible pseudo-legal moves for the current position.
-     * <p>
-     * A move is considered pseudo-legal when it is legal according to the standard rules of chess piece movements, but
-     * the resulting position might not be legal because of other rules (e.g. checks to the king).
-     *
-     * @return the list of pseudo-legal moves available in the current position
-     */
     public List<Move> pseudoLegalMoves() {
 
         return MoveGenerator.generatePseudoLegalMoves(this);
     }
 
-    /**
-     * Returns the list of all possible pseudo-legal captures for the current position.
-     * <p>
-     * A move is considered a pseudo-legal capture when it takes an enemy piece and it is legal according to the
-     * standard rules of chess piece movements, but the resulting position might not be legal because of other rules
-     * (e.g. checks to the king).
-     *
-     * @return the list of pseudo-legal captures available in the current position
-     */
     public List<Move> pseudoLegalCaptures() {
 
         return MoveGenerator.generatePseudoLegalCaptures(this);
     }
 
-    /**
-     * Checks if this board is equivalent to another.
-     * <p>
-     * Two boards are considered equivalent when:
-     * <ul>
-     *     <li>the pieces are the same, placed on the very same squares;</li>
-     *     <li>the side to move is the same;</li>
-     *     <li>the castling rights are the same;</li>
-     *     <li>the en passant target is the same.</li>
-     * </ul>
-     *
-     * @param obj the other object reference to compare to this board
-     * @return {@code true} if this board and the object reference are equivalent
-     * @see Board#strictEquals(Object)
-     */
     @Override
     public boolean equals(Object obj) {
 
@@ -1693,19 +1244,6 @@ public class Board implements Cloneable {
         return false;
     }
 
-    /**
-     * Checks if this board is equivalent to another performing a strict comparison.
-     * <p>
-     * Two boards are considered strictly equivalent when:
-     * <ul>
-     *     <li>they are equivalent;</li>
-     *     <li>their history is the same.</li>
-     * </ul>
-     *
-     * @param obj the other object reference to compare to this board
-     * @return {@code true} if this board and the object reference are strictly equivalent
-     * @see Board#equals(Object)
-     */
     public boolean strictEquals(Object obj) {
         if (obj instanceof Board) {
             Board board = (Board) obj;
@@ -1714,24 +1252,11 @@ public class Board implements Cloneable {
         return false;
     }
 
-    /**
-     * Returns a hash code value for this board.
-     *
-     * @return a hash value for this board
-     */
     @Override
     public int hashCode() {
         return (int) incrementalHashKey;
     }
 
-    /**
-     * Returns a Zobrist hash code value for this board. A Zobrist hashing assures the same position returns the same
-     * hash value. It is calculated using the position of the pieces, the side to move, the castle rights and the en
-     * passant target.
-     *
-     * @return a Zobrist hash value for this board
-     * @see <a href="https://en.wikipedia.org/wiki/Zobrist_hashing">Zobrist hashing in Wikipedia</a>
-     */
     public long getZobristKey() {
         long hash = 0;
         if (getCastleRight(Side.WHITE) != CastleRight.NONE) {
@@ -1771,39 +1296,14 @@ public class Board implements Cloneable {
         return keys.get(57 * piece.ordinal() + 13 * square.ordinal());
     }
 
-    /**
-     * Returns a human-readable representation of the board taking the perspective of white, with the 1st rank at the
-     * bottom and the 8th rank at the top.
-     * <p>
-     * Same as invoking {@code toStringFromViewPoint(Side.WHITE)}.
-     *
-     * @return a string representation of the board from white player's point of view
-     * @see Board#toStringFromViewPoint(Side)
-     */
     public String toStringFromWhiteViewPoint() {
         return toStringFromViewPoint(Side.WHITE);
     }
 
-    /**
-     * Returns a human-readable representation of the board taking the perspective of black, with the 8th rank at the
-     * bottom and the 1st rank at the top.
-     * <p>
-     * Same as invoking {@code toStringFromViewPoint(Side.BLACK)}.
-     *
-     * @return a string representation of the board from black player's point of view
-     * @see Board#toStringFromViewPoint(Side)
-     */
     public String toStringFromBlackViewPoint() {
         return toStringFromViewPoint(Side.BLACK);
     }
 
-    /**
-     * Returns a human-readable representation of the board taking the perspective of one side, with the 1st rank at the
-     * bottom in case of white, or the 8th rank at the bottom in case of black.
-     *
-     * @param side the side whose home rank should be at the bottom of the resulting representation
-     * @return a string representation of the board using one of the two player's point of view
-     */
     public String toStringFromViewPoint(Side side) {
         StringBuilder sb = new StringBuilder();
 
@@ -1828,24 +1328,11 @@ public class Board implements Cloneable {
         return sb.toString();
     }
 
-    /**
-     * Returns a string representation of this board.
-     * <p>
-     * The result of {@link Board#toStringFromWhiteViewPoint()} is used to print the position of the board.
-     *
-     * @return a string representation of the board
-     * @see Board#toStringFromWhiteViewPoint()
-     */
     @Override
     public String toString() {
         return toStringFromWhiteViewPoint() + "Side: " + getSideToMove();
     }
 
-    /**
-     * Returns a reference to a copy of the board. The board history is copied as well.
-     *
-     * @return a copy of the board
-     */
     @Override
     public Board clone() {
         Board copy = new Board(getContext(), this.updateHistory);
@@ -1859,54 +1346,24 @@ public class Board implements Cloneable {
         return copy;
     }
 
-    /**
-     * Returns the current incremental hash key. This hash value changes every time the position changes, hence it is
-     * unique for every position.
-     *
-     * @return the current incremental hash key
-     */
     public long getIncrementalHashKey() {
         return incrementalHashKey;
     }
 
-    /**
-     * Sets the current incremental hash key, replacing the previous one.
-     *
-     * @param hashKey the incremental hash key to set
-     */
     public void setIncrementalHashKey(long hashKey) {
         incrementalHashKey = hashKey;
     }
 
-    /**
-     * Determines whether the given move is an actual Chess960 castling move.
-     * <p>
-     * In Chess960, the king "captures" its own rook to castle, but certain king moves
-     * to squares occupied by friendly rooks could also be normal captures in some edge cases.
-     * This helper resolves the ambiguity by checking:
-     * <ul>
-     *   <li>The move is recognized as a castle by the game context</li>
-     *   <li>The side still has castling rights</li>
-     *   <li>The destination is not occupied by an enemy piece (which would make it a capture)</li>
-     *   <li>The rook is on its expected initial square (or king from==to, meaning it stays in place)</li>
-     * </ul>
-     * <p>
-     * This method should only be called when the variant is Chess960 and the moving piece is a king.
-     *
-     * @param move the king move to evaluate
-     * @param side the side of the moving king
-     * @return {@code true} if the move is a genuine Chess960 castle
-     */
     boolean isChess960Castle(Move move, Side side) {
         if (!context.isCastleMove(move) || getCastleRight(side) == CastleRight.NONE) {
             return false;
         }
         if (move.getFrom() == move.getTo()) {
-            return true; // King already on final square — always a castle
+            return true;
         }
         Piece destPiece = getPiece(move.getTo());
         if (destPiece != Piece.NONE && !destPiece.getPieceSide().equals(side)) {
-            return false; // Destination has enemy piece — this is a capture, not a castle
+            return false;
         }
         CastleRight c = context.isKingSideCastle(move) ? CastleRight.KING_SIDE : CastleRight.QUEEN_SIDE;
         Move rookMove = context.getRookCastleMove(side, c);

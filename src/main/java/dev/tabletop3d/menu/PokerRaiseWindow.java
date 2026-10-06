@@ -22,7 +22,6 @@ import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
 
-/** A raise form captures one room revision and accepts one response from its seated owner. */
 final class PokerRaiseWindow {
     private PokerRaiseWindow() {}
 

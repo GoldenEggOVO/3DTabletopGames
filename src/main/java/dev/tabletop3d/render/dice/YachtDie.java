@@ -20,7 +20,6 @@ import org.joml.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 
-/** One reusable cube: native six-face pips or a single packed item display. */
 final class YachtDie implements AutoCloseable {
     private record Pip(BlockDisplay display, Vector3f center, Quaternionf face) {}
     private final TableAudience audience;

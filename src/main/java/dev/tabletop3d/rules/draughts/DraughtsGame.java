@@ -8,7 +8,6 @@ import dev.tabletop3d.ui.GameSymbols;
 
 import java.util.*;
 
-/** English draughts / American checkers: short kings and compulsory forward captures by men. */
 public final class DraughtsGame implements BoardGame {
     @Override
     public List<RuleMessage> messages() {
@@ -18,7 +17,7 @@ public final class DraughtsGame implements BoardGame {
                         : RuleMessage.of("board.draughts.chain", "coordinate", key(chain)));
     }
 
-    private final int[] board = new int[64]; // -1 empty; 0/1 men; 2/3 kings
+    private final int[] board = new int[64];
     private final Map<String, Integer> repetitions = new HashMap<>();
     private int turn, chain = -1, quiet;
     private String result = "ongoing";

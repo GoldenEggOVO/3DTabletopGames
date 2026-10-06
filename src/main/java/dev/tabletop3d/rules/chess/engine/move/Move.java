@@ -1,4 +1,4 @@
-// 3DTabletopGames adaptation: relocated package; original Apache-2.0 notice follows.
+
 /*
  * Copyright 2017 Ben-Hur Carlos Vieira Langoni Junior
  *
@@ -21,10 +21,6 @@ import dev.tabletop3d.rules.chess.engine.Piece;
 import dev.tabletop3d.rules.chess.engine.Side;
 import dev.tabletop3d.rules.chess.engine.Square;
 
-/**
- * The definition of a chess move, that is, a piece movement from its starting square (the origin square) to a
- * destination square. Optionally, the move could specify a promotion piece used to replace a pawn in case of promotion.
- */
 public class Move {
 
     private final Square from;
@@ -32,41 +28,16 @@ public class Move {
     private final Piece promotion;
     private String san;
 
-    /**
-     * Creates a new move, using its origin and destination squares.
-     * <p>
-     * Same as {@code new Move(from, to, Piece.NONE)}.
-     *
-     * @param from the origin square
-     * @param to   the destination square
-     */
     public Move(Square from, Square to) {
         this(from, to, Piece.NONE);
     }
 
-    /**
-     * Creates a new move, defined by its origin square, its destination, and a promotion piece.
-     *
-     * @param from      the origin square
-     * @param to        the destination square
-     * @param promotion the promotion piece
-     */
     public Move(Square from, Square to, Piece promotion) {
         this.promotion = promotion;
         this.from = from;
         this.to = to;
     }
 
-    /**
-     * Creates a new move using a string representing the coordinates of the origin and destination squares, and
-     * possibly a promotion piece. The side is used to disambiguate the color of the promotion piece.
-     * <p>
-     * Valid examples of strings that can be used to instantiate the move are {@code "e2e4"}, {@code "f1b5"} or
-     * {@code "a7a8Q"}.
-     *
-     * @param move the string representing the coordinates of the move
-     * @param side the side used to disambiguate the promotion piece
-     */
     public Move(String move, Side side) {
         this(Square.valueOf(move.substring(0, 2).toUpperCase()),
                 Square.valueOf(move.substring(2, 4).toUpperCase()),
@@ -77,39 +48,18 @@ public class Move {
                                 move.substring(4, 5).toLowerCase()));
     }
 
-    /**
-     * Returns the origin square.
-     *
-     * @return the origin square
-     */
     public Square getFrom() {
         return from;
     }
 
-    /**
-     * Returns the destination square.
-     *
-     * @return the destination square
-     */
     public Square getTo() {
         return to;
     }
 
-    /**
-     * Returns the promotion piece, if present.
-     *
-     * @return the promotion piece, or {@link Piece#NONE} if move is not a promotion
-     */
     public Piece getPromotion() {
         return promotion;
     }
 
-    /**
-     * Checks if this move is equivalent to another, according to its definition.
-     *
-     * @param obj the other object reference to compare to this move
-     * @return {@code true} if this move and the object reference are equivalent
-     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null || !(obj instanceof Move)) {
@@ -122,21 +72,11 @@ public class Move {
 
     }
 
-    /**
-     * Returns a hash code value for this move.
-     *
-     * @return a hash value for this move
-     */
     @Override
     public int hashCode() {
         return toString().hashCode();
     }
 
-    /**
-     * Returns a string representation of this move.
-     *
-     * @return a string representation of this move
-     */
     @Override
     public String toString() {
         String promo = "";
@@ -148,24 +88,10 @@ public class Move {
                 promo.toLowerCase();
     }
 
-    /**
-     * Returns the Short Algebraic Notation (SAN) of the move, if previously set.
-     *
-     * @return the representation of the move in SAN notation, or null if not present
-     * @see Move#setSan(String)
-     */
     public String getSan() {
         return san;
     }
 
-    /**
-     * Sets the Short Algebraic Notation (SAN) of the move.
-     * <p>
-     * The SAN notation should be set explicitly after the instantiation of the move because it can not be inferred
-     * without the full context of the specific position.
-     *
-     * @param san the representation of the move in SAN notation
-     */
     public void setSan(String san) {
         this.san = san;
     }

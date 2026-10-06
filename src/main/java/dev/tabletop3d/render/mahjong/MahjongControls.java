@@ -2,7 +2,6 @@ package dev.tabletop3d.render.mahjong;
 
 import java.util.*;
 
-/** Groups the current seat's legal calls without choosing a tile combination for them. */
 public final class MahjongControls {
     private MahjongControls() {}
     public static Map<String,List<String>> groups(List<String> legal) {
@@ -14,7 +13,7 @@ public final class MahjongControls {
             }).toList();
             if(!choices.isEmpty())result.put(group,choices);
         }
-        // Declining an optional self-turn call leaves the turn available for a discard.
+
         if(!result.isEmpty()&&!result.containsKey("pass")&&legal.stream().anyMatch(a->a.startsWith("discard:")))
             result.put("dismiss",List.of());
         return Collections.unmodifiableMap(result);

@@ -2,7 +2,6 @@ package dev.tabletop3d.rules.doudizhu;
 
 import java.util.*;
 
-/** Every valid decomposition of a submitted group, including ambiguous airplane bodies. */
 public record DoudizhuCombination(Type type, int rank, int size) {
     public enum Type {
         SINGLE,

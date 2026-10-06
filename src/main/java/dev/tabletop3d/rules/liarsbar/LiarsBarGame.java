@@ -7,7 +7,6 @@ import dev.tabletop3d.rules.cards.PlayingCard;
 
 import java.util.*;
 
-/** Bluffing card adaptation. Concealed groups and fatal chambers never enter public state. */
 public final class LiarsBarGame implements SelectedHandGame {
     private static final List<Integer> TABLE_RANKS = List.of(14, 13, 12);
     private final Random random;

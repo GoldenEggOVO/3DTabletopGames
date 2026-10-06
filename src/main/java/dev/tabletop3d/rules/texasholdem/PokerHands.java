@@ -4,9 +4,8 @@ import dev.tabletop3d.rules.cards.PlayingCard;
 
 import java.util.List;
 
-/** Comparable five-card strength encoded as category followed by five base-15 kickers. */
 public final class PokerHands {
-    private static final long CATEGORY_UNIT = 759375; // 15^5
+    private static final long CATEGORY_UNIT = 759375;
 
     private PokerHands() {}
 

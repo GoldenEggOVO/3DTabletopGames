@@ -174,7 +174,7 @@ class MahjongTableHudTest {
                 assertTrue(width<=.461,"Three-digit count retains its allotted width");
                 double radius=Math.hypot(at.getX(),at.getZ());
                 assertTrue(radius+height/2<pad/2,"Count remains within its pad");
-                // Only the viewer-facing count is shown; the four orientations share the center.
+
                 double stickRadius=Math.hypot(f.locations.get(f.stick(seat)).getX(),f.locations.get(f.stick(seat)).getZ());
                 assertTrue(stickRadius-.009>radius+height/2,"Riichi stick clears the larger count");
                 assertTrue(stickRadius+.009<pad/2,"Riichi stick remains within the center pad");

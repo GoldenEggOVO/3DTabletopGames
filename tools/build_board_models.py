@@ -3,6 +3,7 @@ import json
 import math
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
+from face_art import xiangqi_face, playing_face, joker_face, playing_back
 
 MATERIALS = {
     "SMOOTH_QUARTZ":"#f3ead6", "POLISHED_BLACKSTONE":"#252b34", "BLACK_CONCRETE":"#19202b",
@@ -92,9 +93,6 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
         model("board_"+path.stem,{"body":wood,"wood":wood,"board":art},parts)
 
     meshes = json.loads((source/"meshes.json").read_text(encoding="utf-8"))
-    glyphs = {"general":("\u5e05","\u5c06"),"advisor":("\u4ed5","\u58eb"),
-              "elephant":("\u76f8","\u8c61"),"horse":("\u99ac","\u99ac"),
-              "rook":("\u8f66","\u8f66"),"cannon":("\u70ae","\u7832"),"pawn":("\u5175","\u5352")}
     for name, native in meshes.items():
         textures = dict(material_textures)
         textures["body"] = wood
@@ -143,11 +141,7 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
                     for x,z in ((-.16,0),(.16,0),(0,-.16),(0,.16)):parts.append(block(x,.30,z,.12,.10,.12,material))
                 if name.startswith("xiangqi_"):
                     side,piece=name.split("_")[1:]
-                    image=Image.new("RGB",(128,128),"#dfc595");draw=ImageDraw.Draw(image)
-                    ink="#b52324" if side=="red" else "#22242b"
-                    draw.ellipse((5,5,122,122),outline=ink,width=3)
-                    draw.text((64,63),glyphs[piece][0 if side=="red" else 1],font=ImageFont.truetype("C:/Windows/Fonts/msyh.ttc",82),fill=ink,anchor="mm")
-                    textures["engraving"]=texture("surface/"+name,image)
+                    textures["engraving"]=texture("surface/"+name,xiangqi_face(root,side,piece))
                     for part in parts:
                         if part["faces"].get("up",{}).get("texture")=="#"+material:
                             part["faces"]["up"]["texture"]="#engraving"
@@ -173,41 +167,15 @@ def build(root, texture, export_model, cube, disc_mesh, rounded_square, face_mod
         for z in (-.99,.99):parts.append(block(x,-1.03125,z,.15,.84125,.15,"STRIPPED_BIRCH_WOOD",2))
     model("board_connectfour",textures,parts)
 
-    def suit(draw,kind,x,y,r,color):
-        if kind=="diamonds":draw.polygon([(x,y-r),(x+r,y),(x,y+r),(x-r,y)],fill=color)
-        elif kind=="hearts":
-            draw.polygon([(x-r,y-r//3),(x-r,y+r//4),(x,y+r),(x+r,y+r//4),(x+r,y-r//3),(x+r//2,y-r),(x,y-r//2),(x-r//2,y-r)],fill=color)
-        elif kind=="spades":
-            draw.polygon([(x,y-r),(x+r,y),(x+r//2,y+r//2),(x+r//4,y+r//3),(x+r//3,y+r),(x-r//3,y+r),(x-r//4,y+r//3),(x-r//2,y+r//2),(x-r,y)],fill=color)
-        else:
-            for dx,dy in ((0,-r//2),(-r//2,r//4),(r//2,r//4)):draw.ellipse((x+dx-r//2,y+dy-r//2,x+dx+r//2,y+dy+r//2),fill=color)
-            draw.rectangle((x-r//5,y,x+r//5,y+r),fill=color)
-    back=Image.new("RGB",(128,192),"#091b2c");d=ImageDraw.Draw(back)
-    d.rounded_rectangle((2,2,125,189),8,outline="#fff5db",width=5)
-    d.rounded_rectangle((10,10,117,181),4,outline="#49657d",width=2)
-    for y in range(25,177,16):
-        for x in range(23,113,16):suit(d,"diamonds",x,y,4,"#3c566e")
+    back=playing_back().resize((256,384),Image.Resampling.NEAREST)
     backtex=texture("surface/playing-back",back)
     ranks=["ace"]+list(map(str,range(2,11)))+["jack","queen","king"]
     for kind in ("spades","hearts","diamonds","clubs"):
-        ink="#b52324" if kind in ("hearts","diamonds") else "#142638"
         for rank in ranks:
-            image=Image.new("RGB",(128,192),"#142638");d=ImageDraw.Draw(image)
-            d.rounded_rectangle((2,2,125,189),8,fill="#fff5db")
-            d.rounded_rectangle((9,9,118,182),4,outline="#e1cfad",width=2)
-            value=rank[0].upper() if not rank.isdigit() else rank
-            pixel_text(d,(23,26),value,3 if value!="10" else 2,ink,False)
-            suit(d,kind,23,51,9,ink);suit(d,kind,64,101,31,ink)
-            corner=image.crop((10,13,37,66)).rotate(180)
-            image.paste(corner,(91,126))
+            image=playing_face(root,kind,rank,pixel_text).resize((256,384),Image.Resampling.NEAREST)
             face_model("playing_"+kind+"_"+rank,image,True,backtex)
-    for size,color in (("small","#142638"),("big","#b52324")):
-        image=Image.new("RGB",(128,192),"#142638");d=ImageDraw.Draw(image)
-        d.rounded_rectangle((2,2,125,189),8,fill="#fff5db")
-        d.polygon([(28,76),(36,51),(55,73),(64,43),(74,73),(95,51),(101,77)],fill=color)
-        d.ellipse((34,84,95,144),outline=color,width=7);d.rectangle((48,110,55,116),fill=color);d.rectangle((75,110,82,116),fill=color)
-        d.line((48,132,82,132),fill=color,width=4)
-        pixel_text(d,(23,26),"J",3,color,False)
+    for size in ("small","big"):
+        image=joker_face(root,size).resize((256,384),Image.Resampling.NEAREST)
         face_model("playing_joker_"+size,image,True,backtex)
     face_model("playing_back",back,True,backtex)
     for name,color,squash in (("doudizhu_table","#286346",1),("liars_bar_table","#473129",1),("texas_holdem_table","#245346",.76)):

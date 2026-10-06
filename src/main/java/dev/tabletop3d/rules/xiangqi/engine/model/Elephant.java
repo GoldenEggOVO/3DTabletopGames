@@ -1,4 +1,4 @@
-// Upstream MIT: James Wang 2022. Relocated for 3DTabletopGames; see META-INF/licenses.
+
 package dev.tabletop3d.rules.xiangqi.engine.model;
 
 import dev.tabletop3d.rules.xiangqi.engine.utility.Point;
@@ -15,9 +15,6 @@ public class Elephant extends Piece {
             this.code = -3;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean canMove(Board board, Point start, Point end) {
         List<Point> moves = validMoves(board, start);
@@ -28,33 +25,11 @@ public class Elephant extends Piece {
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * The elephant moves and captures diagonally exactly 2 steps and cannot cross
-     * the river.
-     */
     @Override
     public List<Point> validMoves(Board board, Point start) {
         List<Point> moves = new ArrayList<>();
         if (board.turn() % 2 != this.color)
             return moves;
-
-        /*
-        Point c1 = start.add(new Point(-2, -2));
-        Point c2 = start.add(new Point(2, -2));
-        Point c3 = start.add(new Point(-2, 2));
-        Point c4 = start.add(new Point(2, 2));
-
-        if (canMove(board, start, c1))
-            moves.add(c1);
-        if (canMove(board, start, c2))
-            moves.add(c2);
-        if (canMove(board, start, c3))
-            moves.add(c3);
-        if (canMove(board, start, c4))
-            moves.add(c4);
-        */
 
         Point t1 = start.add(new Point(1, 1));
         if (board.containsPoint(t1) && board.pieceAt(t1) == null) {
@@ -88,7 +63,6 @@ public class Elephant extends Piece {
                 moves.add(c);
         }
 
-        // Adaptation fix: an elephant must stay on its own bank.
         moves.removeIf(p -> color == 0 ? p.x > 4 : p.x < 5);
         return moves;
     }

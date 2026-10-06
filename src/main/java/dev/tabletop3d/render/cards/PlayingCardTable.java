@@ -21,11 +21,10 @@ import org.joml.Vector3f;
 
 import java.util.*;
 
-/** Standard cards share rendering and selection; each pure engine owns its legal controls. */
 public final class PlayingCardTable implements AutoCloseable {
     private static final double WIDTH = .168, HEIGHT = .25;
     private static final double CARD_SPACING = .15, CARD_LIFT = .085;
-    // Five frames on the 512-pixel cloth span a three-block table, compressed in Z.
+
     private static final double COMMUNITY_CARD_SPACING = 51 * 3.0 / 512;
     private static final double COMMUNITY_CARD_Z = 3 * 3.0 * .76 / 512;
     private final Tabletop3D plugin;
@@ -719,7 +718,7 @@ public final class PlayingCardTable implements AutoCloseable {
         else {
             int index = 0;
             for (var entry : view.cards.entrySet()) {
-                // A visual lift must never move the target and undo its own hover.
+
                 double distance =
                         ray(
                                 eye,

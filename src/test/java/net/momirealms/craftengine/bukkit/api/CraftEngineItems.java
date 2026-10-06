@@ -6,7 +6,6 @@ import net.momirealms.craftengine.core.item.ItemBuildContext;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-/** Counts real bridge builds against a registry that can be replaced or unloaded. */
 public final class CraftEngineItems {
     public static final Map<String, Definition> REGISTRY = new HashMap<>();
     public static int builds;

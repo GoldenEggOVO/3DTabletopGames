@@ -5,7 +5,6 @@ import dev.tabletop3d.rules.RuleViolation;
 
 import java.util.*;
 
-/** Physical identity is opaque; rank and suit are disclosed only when a card is visible. */
 public record PlayingCard(String id, String suit, int rank) {
     public static final List<String> SUITS = List.of("spades", "hearts", "diamonds", "clubs");
 

@@ -7,7 +7,6 @@ import dev.tabletop3d.rules.RuleViolation;
 
 import java.util.*;
 
-/** Deterministic Ludo with immutable room rules and optional full placements. */
 public final class LudoGame implements BoardGame {
     private RuleMessage lastMessage = RuleMessage.of("board.ready");
 

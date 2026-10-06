@@ -1,4 +1,4 @@
-// 3DTabletopGames adaptation: relocated package; original Apache-2.0 notice follows.
+
 /*
  * Copyright 2017 Ben-Hur Carlos Vieira Langoni Junior
  *
@@ -17,44 +17,22 @@
 
 package dev.tabletop3d.rules.chess.engine.move;
 
-/**
- * Thrown to indicate a failure generating a move.
- */
 public class MoveGeneratorException extends RuntimeException {
 
     private static final long serialVersionUID = 6523240383760826752L;
 
-    /**
-     * Constructs a new move generator exception.
-     */
     public MoveGeneratorException() {
         super();
     }
 
-    /**
-     * Constructs a new move generator exception with the specified detail message and cause.
-     *
-     * @param message the error message
-     * @param cause   the cause
-     */
     public MoveGeneratorException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    /**
-     * Constructs a new move generator exception with the specified detail message.
-     *
-     * @param message the error message
-     */
     public MoveGeneratorException(String message) {
         super(message);
     }
 
-    /**
-     * Constructs a new move generator exception with the specified cause.
-     *
-     * @param cause the cause
-     */
     public MoveGeneratorException(Throwable cause) {
         super(cause);
     }

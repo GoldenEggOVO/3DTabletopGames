@@ -14,7 +14,6 @@ import org.bukkit.util.Transformation;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-/** Two shared displays identify the active seat in both rendering modes. */
 public final class CardTurnIndicator implements AutoCloseable {
     private final Room room;
     private final Location origin;

@@ -10,7 +10,6 @@ import dev.tabletop3d.rules.RuleViolation;
 
 import java.util.*;
 
-/** Main-thread room state. No Minecraft types: identity and replay are independently testable. */
 public final class Room {
     public enum Phase {
         LOBBY,

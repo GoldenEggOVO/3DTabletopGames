@@ -139,7 +139,7 @@ class TexasHoldemGameTest {
     @Test
     void shortAllInDoesNotReopenButCumulativeFullIncreaseDoes() {
         var game = new TexasHoldemGame(4, 0, new int[] {100, 100, 16, 20});
-        // Dealer 0, small blind 1, big blind 2; seat 3 calls first.
+
         assertEquals(3, game.currentPlayer());
         game.apply(3, "call");
         game.apply(0, "call");

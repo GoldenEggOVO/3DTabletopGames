@@ -7,7 +7,6 @@ import dev.tabletop3d.rules.cards.PlayingCard;
 
 import java.util.*;
 
-/** Fixed-blind tournament chips, isolated from player inventories and server economy. */
 public final class TexasHoldemGame implements SelectedHandGame {
     private final Random random;
     private final int[] chips, contributions, bets, lastActedBet;
@@ -262,7 +261,7 @@ public final class TexasHoldemGame implements SelectedHandGame {
             settle(false);
             return;
         }
-        // A lone funded player still owes an outstanding call, but cannot make an uncontested bet.
+
         if (acting <= 1) {
             int remaining = -1, opponentBet = 0;
             for (int seat = 0; seat < playerCount(); seat++)

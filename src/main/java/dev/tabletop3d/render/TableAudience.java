@@ -8,7 +8,6 @@ import org.bukkit.entity.*;
 
 import java.util.*;
 
-/** One nearby-player snapshot per table refresh, shared by all public model parts. */
 public final class TableAudience {
     private final Tabletop3D plugin;
     private final Location origin;
@@ -51,7 +50,7 @@ public final class TableAudience {
     public void refresh() {
         if (!managed()) return;
         Set<Player> natives = new HashSet<>(), packs = new HashSet<>();
-        // Display view range .35 corresponds to 22.4 blocks; include the whole visible envelope.
+
         for (Player player : origin.getWorld().getPlayers()) {
             if (!player.isOnline() || !plugin.allowed(player)
                     || player.getLocation().distanceSquared(origin) > 24 * 24) continue;

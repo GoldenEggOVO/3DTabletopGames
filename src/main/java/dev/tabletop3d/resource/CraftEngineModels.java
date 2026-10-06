@@ -7,7 +7,6 @@ import org.bukkit.plugin.Plugin;
 import java.lang.reflect.Method;
 import java.util.*;
 
-/** Optional public API bridge; item definitions are checked again after model reloads. */
 public final class CraftEngineModels {
     public static final List<String> IDS = ids();
     private record Model(Object definition, ItemStack item) {}

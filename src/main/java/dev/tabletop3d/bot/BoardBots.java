@@ -11,7 +11,6 @@ import dev.tabletop3d.rules.yacht.YachtGame;
 
 import java.util.*;
 
-/** Small bounded casual heuristics; never simulate on the live rules engine. */
 public final class BoardBots {
     public static String choose(BoardGame board, int seat, Random random) {
         List<String> legalActions = board.legalActions(seat);
@@ -212,7 +211,6 @@ public final class BoardBots {
                 random);
     }
 
-    /** Keep pairs/triplets and nearby suited tiles; isolated honors and terminals leave first. */
     private static int tileRetentionScore(HandGame.Piece piece, int[] counts) {
         int type = Tiles.type(piece.face()), value = (counts[type] - 1) * 8;
         if (type < 27) {

@@ -67,7 +67,7 @@ class PlayingCardHeadsTest {
 
     @Test
     void twentyFourHeadFacesTileTheCardEnvelopeWithoutGapsAndPointTowardTheOwnerOrUp() {
-        // Verified 26.2 ItemDisplay Y180, NONE centring, and player_head special model X180.
+
         var client = new Matrix4f().rotateY((float) Math.PI)
                 .translate(0, -.5f, 0).rotateX((float) Math.PI);
         for (boolean standing : List.of(true, false)) {

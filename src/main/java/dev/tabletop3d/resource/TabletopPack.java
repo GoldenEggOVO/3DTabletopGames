@@ -21,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.*;
 
-/** Only a successful status for the current request selects resource-pack rendering. */
 public final class TabletopPack implements Listener, AutoCloseable {
     private static final byte[] RESOURCE_PACK_HASH = bundledHash();
 
@@ -170,7 +169,7 @@ public final class TabletopPack implements Listener, AutoCloseable {
             return;
         }
         remove(player);
-        // Per-attempt IDs reject delayed callbacks after disabling or retrying the pack.
+
         UUID id = UUID.randomUUID();
         requests.put(player.getUniqueId(), new Request(id, Stage.LOADING));
         try {

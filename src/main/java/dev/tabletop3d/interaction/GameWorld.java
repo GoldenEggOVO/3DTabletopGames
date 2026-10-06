@@ -30,7 +30,6 @@ import org.bukkit.util.Vector;
 
 import java.util.*;
 
-/** Public boards only: private card views never enter this renderer. */
 public final class GameWorld implements Listener, AutoCloseable {
     private final Tabletop3D plugin;
     private final NamespacedKey tag;
@@ -61,7 +60,7 @@ public final class GameWorld implements Listener, AutoCloseable {
     }
 
     public void initialize() {
-        // Portable rooms own their world anchors; no dedicated dimension is created.
+
         pointerTask = Bukkit.getScheduler().runTaskTimer(plugin, this::pointers, 2, 2);
     }
 
@@ -192,7 +191,7 @@ public final class GameWorld implements Listener, AutoCloseable {
         double unit = 1.80 / Math.max(maxX - minX + 1, maxY - minY + 1);
         if (kind.equals("yacht")) {
             unit = .17;
-        } // Five wide dice slots stay inside the felt border.
+        }
         if (kind.equals("checkers")) {
             double scale =
                     Math.min(
@@ -760,8 +759,7 @@ public final class GameWorld implements Listener, AutoCloseable {
                 return;
             }
             room.requireAction(player.getUniqueId(), room.revision);
-            // Keep the same identity/revision gate as menu actions, but do not
-            // force a menu to cover the board after each successful world click.
+
             plugin.apply(
                     room,
                     room.seat(player.getUniqueId()),

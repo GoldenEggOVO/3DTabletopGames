@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
 
-/** Completion for public commands; internal dialog callback tokens are never exposed. */
 public final class CommandSuggestions {
     public static void hideDuplicateRoot(Collection<String> commands) {
         commands.remove("3dtabletop:3dtabletop");

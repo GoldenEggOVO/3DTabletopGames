@@ -7,7 +7,6 @@ import net.kyori.adventure.text.Component;
 
 import java.util.*;
 
-/** Private action captions are built from the requesting seat's hand only. */
 public final class HandText {
     public static Component status(String kind, HandGame game) {
         var info = game.publicInfo();

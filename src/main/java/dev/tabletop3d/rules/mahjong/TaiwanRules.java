@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** Sixteen-tile additive-tai house rules; scoring values are explicit room options. */
 public final class TaiwanRules {
     public record Context(int winningType,int seatWind,boolean tsumo,boolean kongBloom,boolean robKong,
                           boolean lastTile,boolean heavenly,boolean earthly,List<Tiles.Tile> flowers) {

@@ -34,7 +34,6 @@ import org.joml.Vector3f;
 
 import java.util.*;
 
-/** Native tabletop rendering, reusable piece entities, bounded animation and private pointers. */
 public final class TableView implements AutoCloseable {
     final Tabletop3D plugin;
     public final Room room;
@@ -574,8 +573,7 @@ public final class TableView implements AutoCloseable {
                                             e.setItem(images.get(tile), false);
                                             e.setItemDropChance(0);
                                         });
-                // Hanging-entity creation snaps to a block face. Reposition once before any players
-                // receive the next frame.
+
                 mapFrame.teleport(at);
                 mapFrame.setFacingDirection(BlockFace.UP, true);
                 furniture.add(mapFrame);
@@ -1120,7 +1118,7 @@ public final class TableView implements AutoCloseable {
             if (!value.equals(lastTitle)) {
                 var fit = LabelLayout.fit(value, 2.8f, .48f);
                 title.text(fit.text());
-                // LabelLayout owns wrapping; prevent the client from wrapping a fitted line again.
+
                 title.setLineWidth(Integer.MAX_VALUE);
                 title.setTransformation(
                         new Transformation(
@@ -1599,8 +1597,7 @@ public final class TableView implements AutoCloseable {
             Location at =
                     origin.clone().add((landing.x() - 3) * .28, .05 + landing.y() * .28 + .12, 0);
             if (overlay.hover.isEmpty()) {
-                // Project past both .12-deep rack faces so the opaque frame cannot hide the
-                // preview.
+
                 for (double side : new double[] {-.132, .132}) {
                     overlay.hover.add(
                             block(

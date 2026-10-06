@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** Blood-battle fan values and exhaustive-draw readiness, independent of turn state and payments. */
 public final class SichuanRules {
     public record Context(int missingSuit,boolean tsumo,boolean kongBloom,boolean robKong,boolean kongDiscard,
                           boolean lastTile,boolean heavenly,boolean earthly) {}

@@ -27,7 +27,7 @@ class GameWorldTest {
         int[] progress=(int[])field.get(game);
         progress[0]=5;progress[1]=5;progress[2]=4;
         game.apply(0,"roll");
-        // Selecting a stack excludes a pawn whose destination is the selected cell.
+
         assertEquals(3,game.actionsForCell(0,"sk5").size());
         List<String> actions=GameWorld.sourceActions(game,0,"sk5");
         assertEquals(List.of("move:0:sk6","move:1:sk6"),actions);

@@ -2,12 +2,6 @@ package dev.tabletop3d.rules.mahjong;
 
 import java.util.*;
 
-/**
- * Original evaluator for the EMA 2025 hand patterns, with explicit room overrides.
- * Double-wind pairs are two fu; distinct natural yakuman do not stack. Renhou is not enabled.
- * Payments exclude counters, riichi deposits and responsibility payments, which belong to the round.
- * @see <a href="https://mahjong-europe.org/portal/images/docs/Riichi-rules-2025-EN.pdf">EMA 2025, chapter 4</a>
- */
 public final class RiichiScore {
     public record Options(boolean openTanyao,boolean kiriage,boolean countedYakuman,boolean doubleYakuman) {
         public static final Options DEFAULT=new Options(true,false,true,false);

@@ -4,7 +4,6 @@ import dev.tabletop3d.rules.ludo.LudoOptions;
 
 import java.util.*;
 
-/** Validated, immutable room rules. Missing values use the current defaults. */
 public final class GameOptions {
     public record Option(String key, String defaultValue, List<String> values) {
         public Option {
@@ -103,7 +102,6 @@ public final class GameOptions {
         return Collections.unmodifiableMap(result);
     }
 
-    /** Switching regional rules deliberately resets that region's settings in the unsaved draft. */
     public static Map<String, String> change(
             String kind, Map<String, String> settings, Option option) {
         Map<String, String> changed = new LinkedHashMap<>(settings);

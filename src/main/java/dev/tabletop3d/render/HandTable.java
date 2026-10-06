@@ -35,7 +35,6 @@ import org.joml.Vector3f;
 
 import java.util.*;
 
-/** Public backs and public discards are separate from owner-only face entities. */
 public final class HandTable implements AutoCloseable {
     private final Tabletop3D plugin;
     private final Room room;
@@ -238,7 +237,7 @@ public final class HandTable implements AutoCloseable {
                 sz = ph;
                 rotation = new Quaternionf().rotateY((float) -part.roll());
             }
-            // Rotate about the cuboid center, then place it in the card's local plane.
+
             Vector offset = rotated(x, y, z, spec.pose());
             add(
                     modelBlock(
@@ -360,8 +359,7 @@ public final class HandTable implements AutoCloseable {
             var meta = item.getItemMeta();
             meta.setEnchantmentGlintOverride(true);
             item.setItemMeta(meta);
-            // Use the opaque tile material for native foil, outside the body but behind its
-            // strokes.
+
             Vector offset =
                     spec.standing()
                             ? rotated(0, height() / 2, depth() / 2 + .001, spec.pose())
@@ -738,7 +736,7 @@ public final class HandTable implements AutoCloseable {
     }
 
     private void configure(Display display, String id, Player viewer) {
-        // Set before materials/text are assigned in the spawn callback.
+
         if (viewer != null) display.setVisibleByDefault(false);
         display.setPersistent(false);
         display.setGravity(false);
@@ -1509,8 +1507,7 @@ public final class HandTable implements AutoCloseable {
                     if (piece.spec.back()
                             || !MahjongPresentation.sameType(piece.spec.face(), target.spec.face()))
                         continue;
-                    // Replace only this viewer's public body with an identical private glowing
-                    // body.
+
                     Entity body = piece.parts.getFirst();
                     player.hideEntity(plugin, body);
                     Display copy;

@@ -19,7 +19,6 @@ import org.bukkit.util.Vector;
 
 import java.util.*;
 
-/** Owns table collision and the temporary, seat-relative Mahjong focus position. */
 public final class TableComfort implements Listener, AutoCloseable {
     private final Tabletop3D plugin;
     private final Map<UUID, Boolean> previousCollision = new HashMap<>();
@@ -139,7 +138,7 @@ public final class TableComfort implements Listener, AutoCloseable {
                         .center(room.table)
                         .clone()
                         .add(Math.sin(angle) * .65, .88 + 1.27, Math.cos(angle) * .65);
-        // A marker's eye height is zero: preserve the previous close view's eye position.
+
         anchor.setDirection(
                 new Vector(
                         -Math.sin(angle) * .65,
@@ -399,7 +398,7 @@ public final class TableComfort implements Listener, AutoCloseable {
     public void input(PlayerInputEvent event) {
         Player player = event.getPlayer();
         UUID id = player.getUniqueId();
-        // Dialogs reset client key bindings; keep the sprint latch until the menu closes.
+
         if (plugin.menus != null && plugin.menus.active(player)) {
             release(player);
             return;
@@ -441,8 +440,7 @@ public final class TableComfort implements Listener, AutoCloseable {
             event.setTo(player.getLocation());
             return;
         }
-        // Cancellation uses Paper's internal correction; setTo would trigger a plugin teleport and
-        // end focus.
+
         event.setCancelled(true);
         player.setVelocity(new Vector());
         player.setFallDistance(0);
@@ -470,7 +468,7 @@ public final class TableComfort implements Listener, AutoCloseable {
         if (internalModeChanges.contains(event.getPlayer().getUniqueId())) {
             return;
         }
-        // Another plugin owns this mode change; clean up without restoring our previous game mode.
+
         finish(event.getPlayer(), false, false);
     }
 

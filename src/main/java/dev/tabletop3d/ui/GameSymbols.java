@@ -1,6 +1,5 @@
 package dev.tabletop3d.ui;
 
-/** Fixed Unicode artwork symbols; these are piece shapes, not localizable UI prose. */
 public final class GameSymbols {
     private GameSymbols() {}
 

@@ -3,7 +3,6 @@ package dev.tabletop3d.rules.mahjong;
 import java.util.List;
 import java.util.Map;
 
-/** Versioned flat-payment Guangdong house rules: no chi, standard/seven pairs/orphans. */
 public final class GuangdongRules {
     private final boolean standard,sevenPairs,orphans;
     public final int ronPayment,tsumoPayment;

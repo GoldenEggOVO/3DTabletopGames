@@ -1,4 +1,4 @@
-// Adapted from Stephane Coutant, GPL-3.0-or-later; see META-INF/licenses.
+
 /*
 * Copyright (C) 2012- stephane coutant
 *
@@ -16,39 +16,39 @@ package dev.tabletop3d.rules.chinesecheckers.engine;
 
 public class Board {
     private static final boolean[][] holeJI = {
-        { false, false, false, false, false, false, true, false, false, false, false, false, false }, // 0
+        { false, false, false, false, false, false, true, false, false, false, false, false, false },
 
-            { false, false, false, false, false,  true, true, false, false, false, false, false, false }, // 1
+            { false, false, false, false, false,  true, true, false, false, false, false, false, false },
 
-        { false, false, false, false, false,  true, true,  true, false, false, false, false, false }, // 2
+        { false, false, false, false, false,  true, true,  true, false, false, false, false, false },
 
-            { false, false, false, false,  true,  true, true,  true, false, false, false, false, false }, // 3
+            { false, false, false, false,  true,  true, true,  true, false, false, false, false, false },
 
-        {  true,  true,  true,  true,  true,  true, true,  true,  true,  true,  true,  true,  true }, // 4
+        {  true,  true,  true,  true,  true,  true, true,  true,  true,  true,  true,  true,  true },
 
-            {  true,  true,  true,  true,  true,  true, true,  true,  true,  true,  true,  true, false }, // 5
+            {  true,  true,  true,  true,  true,  true, true,  true,  true,  true,  true,  true, false },
 
-        { false,  true,  true,  true,  true,  true, true,  true,  true,  true,  true,  true, false }, // 6
+        { false,  true,  true,  true,  true,  true, true,  true,  true,  true,  true,  true, false },
 
-            { false,  true,  true,  true,  true,  true, true,  true,  true,  true,  true, false, false }, // 7
+            { false,  true,  true,  true,  true,  true, true,  true,  true,  true,  true, false, false },
 
-        { false, false,  true,  true,  true,  true, true,  true,  true,  true,  true, false, false }, // 8 ----------------------
+        { false, false,  true,  true,  true,  true, true,  true,  true,  true,  true, false, false },
 
-            { false,  true,  true,  true,  true,  true, true,  true,  true,  true,  true, false, false }, // 7
+            { false,  true,  true,  true,  true,  true, true,  true,  true,  true,  true, false, false },
 
-        { false,  true,  true,  true,  true,  true, true,  true,  true,  true,  true,  true, false }, // 6
+        { false,  true,  true,  true,  true,  true, true,  true,  true,  true,  true,  true, false },
 
-            {  true,  true,  true,  true,  true,  true, true,  true,  true,  true,  true,  true, false }, // 5
+            {  true,  true,  true,  true,  true,  true, true,  true,  true,  true,  true,  true, false },
 
-        {  true,  true,  true,  true,  true,  true, true,  true,  true,  true,  true,  true,  true }, // 4
+        {  true,  true,  true,  true,  true,  true, true,  true,  true,  true,  true,  true,  true },
 
-            { false, false, false, false,  true,  true, true,  true, false, false, false, false, false }, // 3
+            { false, false, false, false,  true,  true, true,  true, false, false, false, false, false },
 
-        { false, false, false, false, false,  true, true,  true, false, false, false, false, false }, // 2
+        { false, false, false, false, false,  true, true,  true, false, false, false, false, false },
 
-            { false, false, false, false, false,  true, true, false, false, false, false, false, false }, // 1
+            { false, false, false, false, false,  true, true, false, false, false, false, false, false },
 
-        { false, false, false, false, false, false, true, false, false, false, false, false, false }, // 0
+        { false, false, false, false, false, false, true, false, false, false, false, false, false },
         };
 
     public static final int sizeI = 13;
@@ -59,15 +59,6 @@ public class Board {
                 && holeJI[point.j][point.i];
     }
 
-    /**
-     * Hop to neighbor hole in provided direction @param d
-     *<p>   0  1
-     *<p> 5  *  2
-     *<p>   4  3
-     * @return the new Point identified by a hop in provided direction @param dir.
-     * Or null if hopping out of board.
-     * <p> Does not check if target happens to be filled with a ball
-     */
     public final Point hop(Point p, int d) {
         if (p==null || d<0 || d> 5) return null;
         Point t = p.clone();

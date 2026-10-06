@@ -1,10 +1,10 @@
 # CraftEngine 与独立桌游资源包
 
-适用于本地验收版 **1.10.25-SNAPSHOT**：Paper／Purpur 26.2、Java 25。麻将、彩八、新卡牌游戏、快艇骰子和其他棋盘均提供资源包显示。CraftEngine 26.8.2 的物品注册与 ItemDisplay 已在隔离服务器验证；客户端画面、音效和加载仍须按文末清单验收。
+适用于本地验收版 **1.10.26-SNAPSHOT**：Paper／Purpur 26.2、Java 25。麻将、彩八、新卡牌游戏、快艇骰子和其他棋盘均提供资源包显示。CraftEngine 26.8.2 的物品注册与 ItemDisplay 已在隔离服务器验证；客户端画面、音效和加载仍须按文末清单验收。
 
 ## 安装
 
-1. 备份 `plugins/3dtabletop/`，停服后替换 `3dtabletop-1.10.25-SNAPSHOT.jar`，只保留一个版本。
+1. 备份 `plugins/3dtabletop/`，停服后替换 `3dtabletop-1.10.26-SNAPSHOT.jar`，只保留一个版本。
 2. 若选择资源包或混合模式，安装 CraftEngine。将交付的 `craftengine-registration.zip` 解压到服务器根目录，最终路径为 `plugins/CraftEngine/resources/tabletop3d/configuration/items.yml` 和同目录包的 `pack.yml`。已有同名目录先备份。该配置注册 234 个 `tabletop3d:*` 自定义物品，物品使用独立 ZIP 中的 `item_model`。
 3. 将 `tabletop-resource-pack.zip` 放到你已有的静态文件托管服务，取得客户端可直接下载的 HTTP／HTTPS 地址。不要使用需要登录的网页或分享页。保留 ZIP 文件内容不变。
 4. 修改 **`plugins/3dtabletop/config.yml`**，参考下例，只填实际 URL。校验值内置在插件中，请上传同一交付包中的 ZIP；每次请求的 UUID 自动生成。旧配置的 `sha1`、`uuid` 可以删除，插件不再读取。
@@ -35,7 +35,7 @@ rendering:
 
 ## 图片、桌布与声音
 
-麻将使用用户指定目录中的默认牌面、默认桌布，以及选牌、摸牌、打牌、副露、杠、立直、翻宝牌、和牌和倒计时共 9 个短音效。原版观看者继续听原版声音，包观看者听对应自定义音效，每人只收到对应显示模式的音效。
+麻将牌面使用指定的透明图案，桌布和选牌、摸牌、打牌、副露、杠、立直、翻宝牌、和牌及倒计时共 9 个短音效保持原样。原版观看者继续听原版声音，包观看者听对应自定义音效，每人只收到对应显示模式的音效。
 
 斗地主语音与旧牌型音效、骗子酒馆旧质疑与实弹录音均已删除。当前资源包包含 27 个声音事件：麻将共用的九项录音、用户提供的统一出牌录音，以及 Kenney CC0 的落子、翻面、骰子、筹码和菜单音效。没有额外的‘我的回合’提示音。原版观看者使用对应原版声音；骗子酒馆轮盘仍按实际结果区分空枪与实弹。
 
@@ -47,7 +47,7 @@ sounds:
   volume: 1.0 # 0.0～1.0，作用于两种声音
 ```
 
-彩八为本项目绘制的高清卡面；花牌为本项目绘制。来源和原始文件 SHA-256 见 `resource-pack/sources.json`。第三方素材的来源记录不构成再分发许可；本地验收包尚未作为公开 Release 发布。
+麻将牌面和花牌采用 lietxia/mahjong_graphic 的透明素材，保留 PNG 与 SVG 原图及其允许修改、商用的许可说明。资源包扑克采用新像素布局；象棋棋面采用用户指定的维基共享资源矢量图，使用每张的第一枚红子和第三枚黑子；原 SVG 与离线渲染 PNG 均保留。彩八仍为本项目绘制的卡面。来源和原始文件 SHA-256 见 `resource-pack/sources.json`；剩余第三方桌布与音效的来源记录不构成再分发许可，本地验收包尚未作为公开 Release 发布。
 
 中央面板约 1.10 格宽：四方分数移入面板，局数与余牌文字各自朝向观看者，余 0 红色，立直棒位于方位之间，青色边缘条提示当前行动方；暂停／结束时隐藏。原版继续使用原版桌面，只有包观看者看到默认桌布。见 [实体数量](model-counts.zh-CN.md)。
 
@@ -60,7 +60,9 @@ python tools/build-resource-pack.py
 python tools/test_resource_pack.py
 ```
 
-生成 `target/tabletop-resource-pack.zip`、`target/resource-pack-manifest.json` 与 `target/pack-preview/`。脚本真实解码 MP3 再编码为单声道 OGG，并检查解码长度；不会把 MP3 直接改扩展名。Windows 使用系统字体，Linux 使用 DejaVu；中文花牌字形还需可用中文字体。
+生成 `target/tabletop-resource-pack.zip`、`target/resource-pack-manifest.json` 与 `target/pack-preview/`。脚本真实解码 MP3 再编码为单声道 OGG，并检查解码长度；不会把 MP3 直接改扩展名。Windows 使用系统字体，Linux 使用 DejaVu。麻将与象棋字形直接来自素材，不再依赖系统中文字体。
+
+麻将原始 PNG 与 SVG 位于 `resource-pack/source/mahjong/tiles/`；象棋原图位于 `resource-pack/source/xiangqi/`。`tools/face_art.py` 负责这些资源包牌面和扑克像素图案。象棋 PNG 已离线渲染并保存在源码中，正常构建无须 Node.js；修改 SVG 后可使用安装了 `@napi-rs/canvas` 的 Node.js 执行 `node tools/rasterize-xiangqi.js` 更新 PNG。原版头颅纹理不使用这些新牌面。
 
 ## 客户端待验清单
 

@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** Five physical dice, fixed keep slots and direct score controls. Rules stay in YachtGame. */
 public final class YachtTable implements AutoCloseable {
     private static final double SIZE = .18;
     private final Tabletop3D plugin;
@@ -210,7 +209,7 @@ public final class YachtTable implements AutoCloseable {
         for (int i = 0; i < 5; i++) {
             if (throwsByDie[i] != null) {
                 DiceMotion.Pose p = throwsByDie[i].pose(frame);
-                // Each throw stays in its own lane; the last frame snaps to the ordered row.
+
                 poses[i] =
                         frame >= DiceMotion.FRAMES
                                 ? rest(i, false, board.dice()[i])

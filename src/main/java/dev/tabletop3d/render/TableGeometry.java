@@ -10,9 +10,8 @@ import org.bukkit.util.Vector;
 
 import java.util.*;
 
-/** Shared coordinates for the map, models and hit testing; never clamps a miss to an edge cell. */
 public final class TableGeometry {
-    // Up-facing item frames are snapped to integer block height + 1/32 by Purpur.
+
     public static final double SURFACE = 1.03125, REACH = 5.5;
     public final String kind;
     final GameWorld.Layout layout;
@@ -145,7 +144,7 @@ public final class TableGeometry {
 
     private static double roundHit(Vector from, Vector ray) {
         double nearest = Double.POSITIVE_INFINITY;
-        // The card table has a circular top, so its empty bounding-box corners are not targets.
+
         if (Math.abs(ray.getY()) > 1e-6) {
             for (double y : new double[] {-.20, .025}) {
                 double t = (y - from.getY()) / ray.getY();

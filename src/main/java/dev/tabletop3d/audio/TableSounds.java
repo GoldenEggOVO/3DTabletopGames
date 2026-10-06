@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Short native cues emitted by committed actions, never by rendering or replay. */
 public final class TableSounds {
     public record Cue(Sound sound, float volume, float pitch, String resource, int delayTicks) {
         public Cue(Sound sound, float volume, float pitch) { this(sound, volume, pitch, null, 0); }
@@ -75,7 +74,7 @@ public final class TableSounds {
                 current.get("phase").equals("TURN")
                         && Integer.parseInt(current.get("wall"))
                                 < Integer.parseInt(previous.get("wall"));
-        // A kong can finish on another player's pass after a rob-kong response.
+
         boolean kong =
                 after.exposedTiles() > before.exposedTiles()
                         && (action.startsWith("kan-") || previous.get("phase").equals("RON"));

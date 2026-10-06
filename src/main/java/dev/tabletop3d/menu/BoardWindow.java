@@ -23,7 +23,6 @@ import io.papermc.paper.registry.data.dialog.action.DialogAction;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
 
-/** Fixed native Dialog presentation. GameMenus owns permissions and single-use sessions. */
 public final class BoardWindow {
     record Control(Component caption, int width, String action) {}
 

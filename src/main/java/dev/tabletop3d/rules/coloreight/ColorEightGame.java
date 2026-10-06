@@ -6,7 +6,6 @@ import dev.tabletop3d.rules.RuleViolation;
 
 import java.util.*;
 
-/** Color Eight: match a color or rank, with draws, skips, reversals and hand swaps. */
 public final class ColorEightGame implements HandGame {
     private static final List<String> COLORS = List.of("r", "y", "b", "p");
     private static final List<Piece> CARDS = cards();
@@ -29,7 +28,7 @@ public final class ColorEightGame implements HandGame {
         for (int seat = 0; seat < players; seat++) hands.add(new ArrayList<>());
         for (int card = 0; card < 5; card++)
             for (int seat = 0; seat < players; seat++) drawCards(seat, 1);
-        // Opening special cards establish matching only; wilds and swaps cannot open.
+
         int index = deck.size() - 1;
         while (deck.get(index) >= 48) index--;
         int opening = deck.remove(index);

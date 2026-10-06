@@ -7,17 +7,16 @@ import com.google.gson.JsonObject;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
-/** Owns replay events and their UTF-8 size without serializing the full history on every move. */
 public final class RoomHistory implements Iterable<JsonElement> {
     private static final int MAX_EVENTS = 4_000;
     private static final int MAX_ROOM_BYTES = 800_000;
     private static final int RESERVED_ROOM_BYTES = 4_096;
     private JsonArray events = new JsonArray();
-    private long bytes = 2; // The empty JSON array: [].
+    private long bytes = 2;
 
     public boolean allows(JsonElement action) {
         if (action == null || action.isJsonNull() || size() >= MAX_EVENTS) return false;
-        // Reserve the longest integer seat representation, regardless of room capacity.
+
         long nextBytes = utf8Length(event(Integer.MIN_VALUE, action)) + (isEmpty() ? 0 : 1);
         return bytes + nextBytes + RESERVED_ROOM_BYTES < MAX_ROOM_BYTES;
     }

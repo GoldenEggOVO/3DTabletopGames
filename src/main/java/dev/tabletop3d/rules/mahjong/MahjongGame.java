@@ -10,7 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Pure physical-tile game. Responses are serialized in priority order through currentPlayer. */
 public final class MahjongGame implements HandGame {
     private enum Phase {
         EXCHANGE,
@@ -330,7 +329,6 @@ public final class MahjongGame implements HandGame {
                 : null;
     }
 
-    /** Reveal only settled riichi winners, including the claimed winning tile on ron. */
     public List<Piece> revealedHand(int seat) {
         if (!riichiProfile || !winners.contains(seat)
                 || phase != Phase.ROUND_END && phase != Phase.FINISHED) return List.of();
@@ -346,7 +344,6 @@ public final class MahjongGame implements HandGame {
         return discard != null && winning(seat, drawnTile, true) == null ? discard : null;
     }
 
-    /** Active player's physical hand tiles blocked specifically by kuikae after a call. */
     public boolean kuikaeForbidden(int seat, String tileId) {
         return phase == Phase.TURN
                 && seat == current
@@ -358,10 +355,6 @@ public final class MahjongGame implements HandGame {
                                                 && forbiddenDiscards.contains(tile.type()));
     }
 
-    /**
-     * Checks the observer's complete hand for missing yaku on the current draw or pending public
-     * discard.
-     */
     public boolean noYaku(int seat, String tileId) {
         if (!riichiProfile || seat < 0 || seat >= 4 || tileId == null) return false;
         boolean tsumo = phase == Phase.TURN && seat == current;

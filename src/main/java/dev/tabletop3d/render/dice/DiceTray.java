@@ -28,7 +28,6 @@ import org.joml.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Layered side table and one reusable die, advanced by the owning table's existing tick. */
 public final class DiceTray implements AutoCloseable {
     private static final double FELT=.015;
     private final Tabletop3D plugin;

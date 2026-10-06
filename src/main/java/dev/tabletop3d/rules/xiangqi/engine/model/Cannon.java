@@ -1,4 +1,4 @@
-// Upstream MIT: James Wang 2022. Relocated for 3DTabletopGames; see META-INF/licenses.
+
 package dev.tabletop3d.rules.xiangqi.engine.model;
 
 import dev.tabletop3d.rules.xiangqi.engine.utility.Point;
@@ -15,9 +15,6 @@ public class Cannon extends Piece {
             this.code = -6;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean canMove(Board board, Point start, Point end) {
         if (!board.containsPoint(start) || !board.containsPoint(end)
@@ -106,12 +103,6 @@ public class Cannon extends Piece {
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * The cannon moves orthogonally any number of unblocked steps,
-     * but can only capture by jumping over exactly 1 piece.
-     */
     @Override
     public List<Point> validMoves(Board board, Point start) {
         List<Point> moves = new ArrayList<>();

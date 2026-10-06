@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Shared presentation for menus, chat and physical tables; never changes stored rule data. */
 public final class RoomText {
     private RoomText() {}
 

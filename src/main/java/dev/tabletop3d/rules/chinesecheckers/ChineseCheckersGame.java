@@ -9,11 +9,6 @@ import dev.tabletop3d.rules.chinesecheckers.engine.Point;
 
 import java.util.*;
 
-/**
- * Standard 121-hole star using Stephane Coutant's GPL board geometry and original starting camps.
- * Network/player state is separate; only adjacent-peg short jumps are enabled, instead of the
- * upstream long-jump variant.
- */
 public final class ChineseCheckersGame implements BoardGame {
     private RuleMessage lastMessage = RuleMessage.of("board.ready");
 
@@ -22,7 +17,6 @@ public final class ChineseCheckersGame implements BoardGame {
         return List.of(lastMessage);
     }
 
-    // Exact six camps from upstream Game(boolean[]); colors 0..5 clockwise from bottom.
     private static final int[][][] CAMPS = {
         {{6, 16}, {5, 15}, {6, 15}, {5, 14}, {6, 14}, {7, 14}, {4, 13}, {5, 13}, {6, 13}, {7, 13}},
         {{0, 12}, {1, 12}, {2, 12}, {3, 12}, {0, 11}, {1, 11}, {2, 11}, {1, 10}, {2, 10}, {1, 9}},
@@ -103,7 +97,7 @@ public final class ChineseCheckersGame implements BoardGame {
                 if (!Board.hole(new Point(i, j))) continue;
                 String id = i + "," + j;
                 int owner = occupied.getOrDefault(id, -1);
-                // Double x plus row parity preserves the hex-grid stagger for generic renderers.
+
                 out.add(new Cell(id, 2 * i + j % 2, j, owner < 0 ? "" : "●", owner));
             }
         return List.copyOf(out);
@@ -149,8 +143,7 @@ public final class ChineseCheckersGame implements BoardGame {
                         && (!goal.contains(origin) || goal.contains(id(to))))
                     out.put("move:" + origin + ":" + id(to), List.of(origin, id(to)));
             }
-            // Other pieces stay fixed during a multi-jump. The moving piece's origin
-            // is empty for the entire search, so it can never become its own bridge.
+
             ArrayDeque<List<String>> queue = new ArrayDeque<>();
             Set<String> seen = new HashSet<>();
             seen.add(origin);
