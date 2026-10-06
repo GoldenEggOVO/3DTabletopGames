@@ -1,13 +1,15 @@
 """Resource-pack face artwork; native head textures remain independent."""
-from PIL import Image, ImageOps
+from PIL import Image
 
 def mahjong_face(root, key):
     image = Image.new("RGB", (160, 240), "#fff9eb")
     if key == "z5":
         return image
     artwork = Image.open(root / f"resource-pack/source/mahjong/tiles/{key}.png").convert("RGBA")
-    # Transparent files include the complete arrangement, including its whitespace.
-    artwork = ImageOps.contain(artwork, (140, 220), Image.Resampling.LANCZOS)
+    scale = min(140 / artwork.width, 220 / artwork.height) * 1.3
+    artwork = artwork.crop(artwork.getbbox())
+    scale = min(scale, 144 / artwork.width, 216 / artwork.height)
+    artwork = artwork.resize((round(artwork.width * scale), round(artwork.height * scale)), Image.Resampling.LANCZOS)
     image.paste(artwork, ((160-artwork.width)//2, (240-artwork.height)//2), artwork)
     return image
 
@@ -24,9 +26,7 @@ def xiangqi_face(root, side, piece):
 
 
 def playing_texture(image):
-    canvas = Image.new("RGB", (60, 90), "#ffc7ad")
-    canvas.paste(image, (0, 3))
-    return canvas.resize((120, 180), Image.Resampling.NEAREST)
+    return image.resize((120, 168), Image.Resampling.NEAREST)
 
 
 def playing_face(root, kind, rank):

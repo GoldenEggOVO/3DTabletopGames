@@ -1286,7 +1286,7 @@
       "license": "CC-BY-4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0/",
       "archive_sha256": "e0bd9ea41be8c3c05dc9933875b85b731e6f691866c4d5400199fb5cc82221f3",
-      "notice": "Pixel Playing Cards Pack by George Blackwell.\nSource: https://georgeblackwell.itch.io/playing-cards-sprite-pack\nLicensed under Creative Commons Attribution 4.0 International (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/\nChanges: original 60x84 pixel faces are centered with three pixels of vertical padding and enlarged by nearest-neighbor 2x. The large joker uses red corner lettering; the original joker portrait is retained.\n"
+      "notice": "Pixel Playing Cards Pack by George Blackwell.\nSource: https://georgeblackwell.itch.io/playing-cards-sprite-pack\nLicensed under Creative Commons Attribution 4.0 International (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/\nChanges: original 60x84 pixel faces are enlarged by nearest-neighbor 2x without added padding, and displayed at their original aspect ratio. The large joker uses red corner lettering; the original joker portrait is retained.\n"
     }
   }
 }

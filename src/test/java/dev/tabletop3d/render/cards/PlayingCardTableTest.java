@@ -44,6 +44,33 @@ class PlayingCardTableTest {
     }
 
     @Test
+    void packedFacesUseTheImportedSixtyByEightyFourAspectRatio() {
+        var f = new TableViewTest.Fixture("liars-bar", 4);
+        owner(f, true);
+        Object card = ownCards(f).values().iterator().next();
+        var parts = (List<Entity>) get(card, "parts");
+        var item = (ItemDisplay) parts.getFirst();
+        var captured = org.mockito.ArgumentCaptor.forClass(org.bukkit.util.Transformation.class);
+        verify(item).setTransformation(captured.capture());
+        var transform = captured.getValue();
+        assertEquals(84.0 / 60, transform.getScale().y / transform.getScale().x, .00001);
+        assertEquals(transform.getScale().y / 2, transform.getTranslation().y, .00001);
+        f.view.close();
+    }
+
+    @Test
+    void packedHandTargetsEndAtTheShorterCardEdge() {
+        var f = new TableViewTest.Fixture("liars-bar", 4);
+        owner(f, true);
+        Object card = ownCards(f).values().iterator().next();
+        Location base = body(card);
+        var direction = new org.bukkit.util.Vector(0, 0, -1);
+        assertNotNull(table(f).handHit(f.player, base.clone().add(0, .23, 1.5), direction));
+        assertNull(table(f).handHit(f.player, base.clone().add(0, .24, 1.5), direction));
+        f.view.close();
+    }
+
+    @Test
     void unchangedPrivateFacesSurviveCommittedMovesInBothDisplayModes() {
         for (boolean packed : List.of(false, true)) {
             var f = new TableViewTest.Fixture("liars-bar", 4);

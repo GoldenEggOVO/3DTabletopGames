@@ -23,6 +23,7 @@ import java.util.*;
 
 public final class PlayingCardTable implements AutoCloseable {
     private static final double WIDTH = .168, HEIGHT = .25;
+    private static final double PACKED_HEIGHT = WIDTH * 84 / 60;
     private static final double CARD_SPACING = .15, CARD_LIFT = .085;
 
     private static final double COMMUNITY_CARD_SPACING = 51 * 3.0 / 512;
@@ -74,7 +75,7 @@ public final class PlayingCardTable implements AutoCloseable {
                                                             new Vector3f(
                                                                     0,
                                                                     spec.standing
-                                                                            ? (float) HEIGHT / 2
+                                                                            ? (float) PACKED_HEIGHT / 2
                                                                             : .006f,
                                                                     0),
                                                             spec.standing
@@ -85,7 +86,7 @@ public final class PlayingCardTable implements AutoCloseable {
                                                                                             / 2),
                                                             new Vector3f(
                                                                     (float) WIDTH,
-                                                                    (float) HEIGHT,
+                                                                    (float) PACKED_HEIGHT,
                                                                     .008f),
                                                             new Quaternionf()));
                                         });
@@ -725,7 +726,7 @@ public final class PlayingCardTable implements AutoCloseable {
                                 direction,
                                 handPose(view.seat, index++, view.cards.size(), 0),
                                 WIDTH,
-                                HEIGHT,
+                                view.packed ? PACKED_HEIGHT : HEIGHT,
                                 true);
                 if (distance > 0 && distance < nearest) {
                     nearest = distance;
