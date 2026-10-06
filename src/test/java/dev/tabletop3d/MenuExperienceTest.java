@@ -3,7 +3,7 @@ package dev.tabletop3d;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import dev.tabletop3d.rules.ColorEightGame;
+import dev.tabletop3d.rules.coloreight.ColorEightGame;
 import dev.tabletop3d.rules.GameFactory;
 import dev.tabletop3d.ui.MessageText;
 

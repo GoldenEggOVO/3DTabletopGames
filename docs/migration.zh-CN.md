@@ -6,7 +6,7 @@
 2. 用实际候选 JAR 校验存档：
 
    ```sh
-   java -cp target/3dtabletop-1.10.23-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifier /backup/3dtabletop/rooms.json
+   java -cp target/3dtabletop-1.10.24-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifier /backup/3dtabletop/rooms.json
    ```
 
 3. 更换为新的 shaded JAR，保留当前房间、自定义翻译与其他插件。

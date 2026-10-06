@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dev.tabletop3d</groupId>
     <artifactId>3dtabletop</artifactId>
-    <version>1.10.23-SNAPSHOT</version>
+    <version>1.10.24-SNAPSHOT</version>
     <licenses>
         <license>
             <name>GPL-3.0-or-later</name>

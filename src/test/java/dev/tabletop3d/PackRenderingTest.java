@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import dev.tabletop3d.rules.ColorEightGame;
+import dev.tabletop3d.rules.coloreight.ColorEightGame;
 import dev.tabletop3d.rules.HandGame;
 
 import org.bukkit.*;

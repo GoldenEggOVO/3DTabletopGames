@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.GameFactory;
+
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;

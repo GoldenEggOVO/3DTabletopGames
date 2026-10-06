@@ -1,5 +1,8 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.Cell;
+import dev.tabletop3d.rules.RuleMessage;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 

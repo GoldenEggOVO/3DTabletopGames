@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.HandGame;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;

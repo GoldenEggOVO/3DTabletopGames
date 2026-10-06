@@ -1,7 +1,7 @@
 package dev.tabletop3d;
 
 import dev.tabletop3d.rules.HandGame;
-import dev.tabletop3d.rules.MahjongGame;
+import dev.tabletop3d.rules.mahjong.MahjongGame;
 import dev.tabletop3d.rules.mahjong.Tiles;
 import java.util.List;
 import java.util.Map;

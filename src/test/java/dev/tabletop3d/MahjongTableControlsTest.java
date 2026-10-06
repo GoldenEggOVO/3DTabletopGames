@@ -1,5 +1,8 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.HandGame;
+import dev.tabletop3d.rules.mahjong.MahjongGame;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -78,7 +81,7 @@ class MahjongTableControlsTest {
     @Test
     void settledWinnerTilesArePublicFaceUpAndTheirPrivateHandIsRemoved() throws Exception {
         var f = new HandTableTest.Fixture("mahjong");
-        var game = mock(dev.tabletop3d.rules.MahjongGame.class);
+        var game = mock(dev.tabletop3d.rules.mahjong.MahjongGame.class);
         var winning = List.of(new dev.tabletop3d.rules.HandGame.Piece("winning", "m1"));
         when(game.playerCount()).thenReturn(4);
         when(game.handSize(0)).thenReturn(1);
@@ -267,7 +270,7 @@ class MahjongTableControlsTest {
     void onlyKuikaeTilesDimWithoutReplacingAnyMaterialAndRecoverAfterDiscard() throws Exception {
         var f = new HandTableTest.Fixture("mahjong");
         var game =
-                new dev.tabletop3d.rules.MahjongGame(
+                new dev.tabletop3d.rules.mahjong.MahjongGame(
                         4, 0, Map.of("profile", "riichi", "rounds", "1"));
         List<List<dev.tabletop3d.rules.mahjong.Tiles.Tile>> hands = new ArrayList<>();
         String[] faces = {"m2", "m2 m3 m4 m5 p1 p3 p5 p7 s1 s3 s5 z1 z2", "", ""};

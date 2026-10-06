@@ -1,6 +1,6 @@
 package dev.tabletop3d;
 
-import dev.tabletop3d.rules.YachtGame;
+import dev.tabletop3d.rules.yacht.YachtGame;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;

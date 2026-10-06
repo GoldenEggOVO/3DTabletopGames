@@ -2,7 +2,7 @@ package dev.tabletop3d;
 
 import dev.tabletop3d.rules.Cell;
 import dev.tabletop3d.rules.HandGame;
-import dev.tabletop3d.rules.DoudizhuCombination;
+import dev.tabletop3d.rules.doudizhu.DoudizhuCombination;
 
 import org.bukkit.*;
 import org.bukkit.entity.Player;

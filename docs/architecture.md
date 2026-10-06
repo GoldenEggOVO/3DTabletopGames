@@ -4,7 +4,7 @@
 
 - `src/main/java/dev/tabletop3d/`: plugin lifecycle, rooms, menus and physical table rendering.
 - `src/main/java/dev/tabletop3d/ui/`: shared Component formatting and label fitting, adapted from 3DCasinoGames.
-- `src/main/java/dev/tabletop3d/rules/`: bundled rules and preserved upstream sources.
+- `src/main/java/dev/tabletop3d/rules/`: shared rule contracts and per-game packages. Embedded engines live under their owning game.
 - `src/main/resources/`: metadata, configuration, language and notices.
 - `src/test/`: Java behavior tests.
 - `tools/standalone-probe/`: isolated loopback server probe.
@@ -63,3 +63,11 @@ Table geometry remains fixed, while hover labels use the current cells cached at
 `TableMaps` creates the static board map tiles once per world and game, caches immutable item lists, and saves their IDs under the existing `v1.<world UUID>.<game>.<tile index>` paths. The index and room schemas remain unchanged.
 
 `TableSounds` classifies committed actions before playback. Doudizhu combinations and Liars Bar challenges have separate cue selection methods. Playback chooses Mahjong-specific resources first, then shared resources, with native sounds for players without the pack. Rendering and history replay do not trigger sounds.
+
+## Rule package organization
+
+Each game owns its rules, options and helpers under `rules/<game>/`. Single-game tests use the same layout. Shared contracts, game registration and option dispatch stay at `rules/`; shared playing cards live at `rules/cards/`. All Mahjong variants share `rules/mahjong/`.
+
+Embedded chess, Xiangqi and Chinese Checkers engines live at `chess/engine/`, `xiangqi/engine/` and `chinesecheckers/engine/`. Their original notices remain in source and `META-INF/`. Package names are implementation details; game IDs, action events and room schema 1 are unchanged.
+
+See the [Chinese source guide](code-structure.zh-CN.md) for the full game map.

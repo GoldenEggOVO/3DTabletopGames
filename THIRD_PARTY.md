@@ -14,7 +14,7 @@ Original notices and exact source provenance are retained under [`src/main/resou
 
 Paper/Adventure and JOML are supplied by the server API. Private fonts, runtime configuration, worlds and third-party server/plugin JARs are not distributed here.
 
-The bundled chesslib subset omits unused event observers, deprecated FEN aliases and Polyglot opening-book hashing. Standard move validation, repetition detection and internal move restoration remain in use. The original Apache-2.0 notices and source provenance are retained.
+The bundled chesslib subset omits unused event observers, deprecated FEN aliases and Polyglot opening-book hashing. Standard move validation and repetition detection remain in use. The original Apache-2.0 notices and source provenance are retained. Embedded sources live under `rules/chess/engine/`, `rules/xiangqi/engine/` and `rules/chinesecheckers/engine/`.
 
 The 1.7.0 Last Card, Mahjong, dice animation and hand models are independently implemented in this repository. Public rules and factual option names informed the behavior; Nintendo or other game artwork was not copied. The user-supplied MahjongCraft binary was inspected only for its configuration and public yaku names, not copied or used as a runtime/build dependency. No code or assets from that binary are distributed. See [game references](docs/game-modes.md) and [regional house rules](docs/mahjong.md) for sources and deliberate differences.
 

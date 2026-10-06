@@ -2,8 +2,6 @@ package dev.tabletop3d.rules.mahjong;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import dev.tabletop3d.rules.MahjongGame;
-
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;

@@ -1,6 +1,5 @@
 package dev.tabletop3d.rules.mahjong;
 
-import dev.tabletop3d.rules.MahjongGame;
 import dev.tabletop3d.rules.HandGame;
 import java.lang.reflect.Field;
 import java.util.*;

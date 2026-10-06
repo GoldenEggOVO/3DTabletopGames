@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.ludo.LudoGame;
+
 import dev.tabletop3d.rules.*;
 import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;

@@ -1,5 +1,12 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.doudizhu.DoudizhuGame;
+import dev.tabletop3d.rules.go.GoGame;
+import dev.tabletop3d.rules.liarsbar.LiarsBarGame;
+import dev.tabletop3d.rules.reversi.ReversiGame;
+import dev.tabletop3d.rules.texasholdem.TexasHoldemGame;
+import dev.tabletop3d.rules.yacht.YachtGame;
+
 import dev.tabletop3d.rules.*;
 import dev.tabletop3d.rules.mahjong.Tiles;
 

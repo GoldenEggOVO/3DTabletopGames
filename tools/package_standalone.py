@@ -61,7 +61,7 @@ with zipfile.ZipFile(jar) as artifact:
         raise SystemExit("Legacy package was bundled")
     for required in ("dev/tabletop3d/BoardWindow.class", "dev/tabletop3d/ui/MessageText.class",
                      "dev/tabletop3d/ui/LabelLayout.class", "dev/tabletop3d/RoomText.class",
-                     "dev/tabletop3d/rules/MahjongGame.class", "dev/tabletop3d/rules/ColorEightGame.class",
+                     "dev/tabletop3d/rules/mahjong/MahjongGame.class", "dev/tabletop3d/rules/coloreight/ColorEightGame.class",
                      "dev/tabletop3d/HandTable.class", "dev/tabletop3d/DiceTray.class",
                      "languages/en_US.yml", "languages/zh_CN.yml"):
         if required not in names:

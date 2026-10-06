@@ -1,5 +1,7 @@
 package dev.tabletop3d.rules;
 
+import dev.tabletop3d.rules.ludo.LudoOptions;
+
 import java.util.*;
 
 /** Validated, immutable room rules. Missing values use the current defaults. */

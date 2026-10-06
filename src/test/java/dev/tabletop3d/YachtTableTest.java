@@ -1,6 +1,6 @@
 package dev.tabletop3d;
 
-import dev.tabletop3d.rules.YachtGame;
+import dev.tabletop3d.rules.yacht.YachtGame;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;

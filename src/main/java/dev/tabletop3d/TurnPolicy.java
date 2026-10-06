@@ -1,5 +1,9 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.coloreight.ColorEightGame;
+import dev.tabletop3d.rules.go.GoGame;
+import dev.tabletop3d.rules.mahjong.MahjongGame;
+
 import dev.tabletop3d.rules.*;
 
 import java.util.Random;

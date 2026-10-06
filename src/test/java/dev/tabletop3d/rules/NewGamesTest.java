@@ -1,5 +1,10 @@
 package dev.tabletop3d.rules;
 
+import dev.tabletop3d.rules.draughts.DraughtsGame;
+import dev.tabletop3d.rules.go.GoGame;
+import dev.tabletop3d.rules.reversi.ReversiGame;
+import dev.tabletop3d.rules.yacht.YachtGame;
+
 import dev.tabletop3d.ui.GameSymbols;
 
 import org.junit.jupiter.api.Test;

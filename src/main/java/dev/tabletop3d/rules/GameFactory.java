@@ -1,5 +1,23 @@
 package dev.tabletop3d.rules;
 
+import dev.tabletop3d.rules.chess.ChessGame;
+import dev.tabletop3d.rules.chinesecheckers.ChineseCheckersGame;
+import dev.tabletop3d.rules.chinesecheckers.ChineseCheckersOptions;
+import dev.tabletop3d.rules.coloreight.ColorEightGame;
+import dev.tabletop3d.rules.connectfour.ConnectFourGame;
+import dev.tabletop3d.rules.doudizhu.DoudizhuGame;
+import dev.tabletop3d.rules.draughts.DraughtsGame;
+import dev.tabletop3d.rules.go.GoGame;
+import dev.tabletop3d.rules.gomoku.GomokuGame;
+import dev.tabletop3d.rules.gomoku.GomokuOptions;
+import dev.tabletop3d.rules.liarsbar.LiarsBarGame;
+import dev.tabletop3d.rules.ludo.LudoGame;
+import dev.tabletop3d.rules.mahjong.MahjongGame;
+import dev.tabletop3d.rules.reversi.ReversiGame;
+import dev.tabletop3d.rules.texasholdem.TexasHoldemGame;
+import dev.tabletop3d.rules.xiangqi.XiangqiGame;
+import dev.tabletop3d.rules.yacht.YachtGame;
+
 import java.util.Locale;
 import java.util.Map;
 

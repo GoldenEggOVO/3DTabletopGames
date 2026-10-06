@@ -9,3 +9,5 @@ Keep changes scoped to Tabletop. Casino is a reference project, not a runtime de
 Keep generated worlds, caches, credentials, server/plugin binaries and local acceptance packages out of Git. Runtime probes bind only to loopback and must never target production servers. Describe migration and validation limits in each change.
 
 Ordinary commits may be synchronized to GitHub. Publishing a Release requires the maintainer's explicit approval after local acceptance. The CI workflow only builds, tests and uploads development artifacts.
+
+Place game-specific rules, options and helpers under `rules/<game>/`, and mirror the layout for single-game tests. Shared contracts and registration stay at `rules/`; shared cards live at `rules/cards/`. Embedded third-party engines belong under the owning game's `engine/`; preserve source attribution and license notices.

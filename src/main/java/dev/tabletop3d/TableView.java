@@ -1,5 +1,10 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.BoardGame;
+import dev.tabletop3d.rules.HandGame;
+import dev.tabletop3d.rules.SelectedHandGame;
+import dev.tabletop3d.rules.go.GoGame;
+
 import dev.tabletop3d.rules.Cell;
 import dev.tabletop3d.ui.GameSymbols;
 import dev.tabletop3d.ui.LabelLayout;
@@ -1330,7 +1335,7 @@ final class TableView implements AutoCloseable {
                         && !room.busy
                         && room.seat(player.getUniqueId()) >= 0
                         && (room.seat(player.getUniqueId()) == room.board.currentPlayer()
-                                || room.board instanceof dev.tabletop3d.rules.GoGame go
+                                || room.board instanceof dev.tabletop3d.rules.go.GoGame go
                                         && go.scoring());
         String signature =
                 room.revision

@@ -2,7 +2,7 @@ package dev.tabletop3d;
 
 import com.google.gson.JsonPrimitive;
 
-import dev.tabletop3d.rules.TexasHoldemGame;
+import dev.tabletop3d.rules.texasholdem.TexasHoldemGame;
 
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.registry.data.dialog.*;

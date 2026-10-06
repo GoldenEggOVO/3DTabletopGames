@@ -1,6 +1,8 @@
 package dev.tabletop3d;
 
-import dev.tabletop3d.rules.ColorEightGame;
+import dev.tabletop3d.rules.ludo.LudoGame;
+
+import dev.tabletop3d.rules.coloreight.ColorEightGame;
 import dev.tabletop3d.rules.GameOptions;
 
 import net.kyori.adventure.text.Component;
@@ -60,7 +62,7 @@ final class RoomText {
     static Component ranking(Room room) {
         if (room.board == null) return Component.empty();
         java.util.List<Integer> seats =
-                room.board instanceof dev.tabletop3d.rules.LudoGame ludo
+                room.board instanceof dev.tabletop3d.rules.ludo.LudoGame ludo
                         ? ludo.placements()
                         : room.board instanceof ColorEightGame cards
                                 ? cards.placements()

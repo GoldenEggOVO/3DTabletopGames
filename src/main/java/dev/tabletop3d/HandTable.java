@@ -1,8 +1,8 @@
 package dev.tabletop3d;
 
-import dev.tabletop3d.rules.ColorEightGame;
+import dev.tabletop3d.rules.coloreight.ColorEightGame;
 import dev.tabletop3d.rules.HandGame;
-import dev.tabletop3d.rules.MahjongGame;
+import dev.tabletop3d.rules.mahjong.MahjongGame;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;

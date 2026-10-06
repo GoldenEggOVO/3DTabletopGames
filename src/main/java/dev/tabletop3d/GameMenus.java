@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.HandGame;
+
 import com.google.gson.*;
 
 import dev.tabletop3d.rules.GameOptions;

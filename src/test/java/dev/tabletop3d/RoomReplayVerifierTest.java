@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.GameOptions;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.gson.JsonParser;

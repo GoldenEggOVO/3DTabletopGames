@@ -1,11 +1,13 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.gomoku.GomokuGame;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import dev.tabletop3d.rules.HandGame;
-import dev.tabletop3d.rules.MahjongGame;
+import dev.tabletop3d.rules.mahjong.MahjongGame;
 import dev.tabletop3d.rules.mahjong.Meld;
 import dev.tabletop3d.rules.mahjong.Tiles;
 
@@ -240,7 +242,7 @@ class HandTableTest {
         f.table.sync();
         f.table.show(f.owner);
         for (Entity face : oldFaces) verify(face).remove();
-        f.room.board = new dev.tabletop3d.rules.GomokuGame();
+        f.room.board = new dev.tabletop3d.rules.gomoku.GomokuGame();
         f.table.sync();
         assertNull(f.table.hit(f.owner, f.origin.clone().add(0, 1, 0), new Vector(0, -1, 0)));
         f.table.close();
@@ -330,11 +332,11 @@ class HandTableTest {
                 HandTable.class.getDeclaredMethod(
                         "mahjongPublicRows",
                         List.class,
-                        dev.tabletop3d.rules.MahjongGame.class,
+                        dev.tabletop3d.rules.mahjong.MahjongGame.class,
                         int.class);
         publicRows.setAccessible(true);
         for (String profile : List.of("guangdong", "sichuan", "taiwan")) {
-            var game = new dev.tabletop3d.rules.MahjongGame(4, 0, Map.of("profile", profile));
+            var game = new dev.tabletop3d.rules.mahjong.MahjongGame(4, 0, Map.of("profile", profile));
             var meldField = game.getClass().getDeclaredField("melds");
             meldField.setAccessible(true);
             var melds = (List<List<dev.tabletop3d.rules.mahjong.Meld>>) meldField.get(game);

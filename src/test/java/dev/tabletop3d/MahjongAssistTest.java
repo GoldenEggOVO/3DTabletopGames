@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import dev.tabletop3d.rules.HandGame;
-import dev.tabletop3d.rules.MahjongGame;
+import dev.tabletop3d.rules.mahjong.MahjongGame;
 import org.junit.jupiter.api.Test;
 import java.util.*;
 

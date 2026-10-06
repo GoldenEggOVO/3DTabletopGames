@@ -1,5 +1,9 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.HandGame;
+import dev.tabletop3d.rules.SelectedHandGame;
+import dev.tabletop3d.rules.go.GoGame;
+
 import dev.tabletop3d.rules.BoardGame;
 import dev.tabletop3d.rules.Cell;
 import dev.tabletop3d.rules.RuleViolation;
@@ -541,7 +545,7 @@ final class GameWorld implements Listener, AutoCloseable {
         }
         int seat = room.seat(player.getUniqueId());
         if (seat != room.board.currentPlayer()
-                && !(room.board instanceof dev.tabletop3d.rules.GoGame go && go.scoring())) {
+                && !(room.board instanceof dev.tabletop3d.rules.go.GoGame go && go.scoring())) {
             player.sendActionBar(
                     Language.component("hint.not-turn").colorIfAbsent(NamedTextColor.GRAY));
             return true;

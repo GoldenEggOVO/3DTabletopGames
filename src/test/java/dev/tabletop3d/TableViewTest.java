@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.go.GoGame;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -139,7 +141,7 @@ class TableViewTest {
         f.move("dead:0,0");
         f.move("resume");
         for (Entity stone : stones) verify(stone, never()).remove();
-        assertFalse(((dev.tabletop3d.rules.GoGame) f.room.board).scoring());
+        assertFalse(((dev.tabletop3d.rules.go.GoGame) f.room.board).scoring());
         f.view.close();
         for (Entity stone : stones) verify(stone).remove();
     }

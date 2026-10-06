@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.mahjong.MahjongGame;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import dev.tabletop3d.rules.*;

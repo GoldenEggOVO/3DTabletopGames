@@ -1,5 +1,8 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.GameFactory;
+import dev.tabletop3d.rules.HandGame;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;

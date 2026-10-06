@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.yacht.YachtGame;
+
 import com.google.gson.JsonPrimitive;
 import dev.tabletop3d.rules.*;
 import org.junit.jupiter.api.Test;

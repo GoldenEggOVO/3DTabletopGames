@@ -1,6 +1,6 @@
 package dev.tabletop3d;
 
-import dev.tabletop3d.rules.ConnectFourGame;
+import dev.tabletop3d.rules.connectfour.ConnectFourGame;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

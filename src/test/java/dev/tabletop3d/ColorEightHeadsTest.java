@@ -2,7 +2,7 @@ package dev.tabletop3d;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import dev.tabletop3d.rules.ColorEightGame;
+import dev.tabletop3d.rules.coloreight.ColorEightGame;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

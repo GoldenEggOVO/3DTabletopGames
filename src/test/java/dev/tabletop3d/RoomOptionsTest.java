@@ -1,5 +1,7 @@
 package dev.tabletop3d;
 
+import dev.tabletop3d.rules.ludo.LudoGame;
+
 import com.google.gson.*;
 import dev.tabletop3d.rules.*;
 import java.util.*;
