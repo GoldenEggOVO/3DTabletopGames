@@ -2,7 +2,7 @@
 
 [English](game-modes.md) | [简体中文](game-modes.zh-CN.md)
 
-This page describes the current unpublished development build. It has not been deployed to production servers. See the [current feature checklist](features.zh-CN.md), [client acceptance checklist](acceptance.zh-CN.md), and [historical verification records](verification.md).
+This page describes the current unpublished development build. It has not been deployed to production servers. See the [current feature checklist](features.zh-CN.md), [client acceptance checklist](acceptance.zh-CN.md), and [build and verification](verification.md).
 
 Mahjong hands and public tiles share dimensions and orientation. Hover raises only the aimed hand tile; matching-tile highlights are private. Choose Chi/Pon/Kan before a complete combination; Riichi accepts only legal discards and then automatically discards until a winning action is available. Riichi uses five dora slots and displays riichi deposits and repeat-round counters. Winning hands lie flat. Hold the sprint key (default Ctrl) for the fixed table camera and release to restore the previous view. Sneak and right-click opens the table menu. Sichuan exchange/missing-suit actions and Color Eight pass/color actions are directly available at the table.
 
@@ -153,7 +153,7 @@ Five owner-only Dora indicator slots are inset into the center of each wooden fr
 
 In Riichi, Dora and red fives have a native enchanted ItemDisplay overlay over the original artwork. Own hand overlays remain owner-only; public rivers and exposed melds show them to everyone. Indicators update these hints after Kan. Indicator tiles themselves are not automatically Dora, concealed backs stay unmarked, and hidden Ura Dora is not hinted before disclosure. This presentation adds no scoring or yaku changes: Dora contributes bonus han but cannot supply the required yaku. Minecraft client glint appearance remains a visual acceptance item.
 
-See [native display counts](model-counts.zh-CN.md) for entity costs; no client FPS measurement has been performed.
+See [native display counts](native-table-counts.zh-CN.md) for entity costs; no client FPS measurement has been performed.
 
 ### Riichi assistance and settled hands
 

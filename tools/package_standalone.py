@@ -92,7 +92,7 @@ package = output / f"3dtabletop-{version}.zip"
 with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as archive:
     for path in (output / jar.name, output / source.name, output / "verification.json", output / "SHA256SUMS.txt"):
         archive.write(path, path.name)
-    for name in ("README.md", "README.zh-CN.md", "CHANGELOG.md", "THIRD_PARTY.md", "LICENSE"):
+    for name in ("README.md", "README.zh-CN.md", "LICENSE"):
         archive.write(project / name, name)
     for path in sorted((project / "docs").rglob("*.md")):
         archive.write(path, path.relative_to(project).as_posix())

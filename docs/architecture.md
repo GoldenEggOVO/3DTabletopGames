@@ -79,4 +79,4 @@ See the [Chinese source guide](code-structure.zh-CN.md) for the full game map.
 
 ## Responsibility packages
 
-Shared implementation belongs to the responsibility directories above; tests follow their primary implementation. Reusable test fixtures remain under their owning test class, and the JUnit temporary directory factory lives under `support/`. Relocation preserves method bodies and private declarations. Existing package-scoped declarations become public only where an actual caller crosses a package boundary; the [relocation audit](validation/type-packages-1.10.25.json) records those changes. No compatibility copies remain at the old paths.
+Shared implementation belongs to the responsibility directories above; tests follow their primary implementation. Reusable test fixtures remain under their owning test class, and the JUnit temporary directory factory lives under `support/`. Relocation preserves method bodies and private declarations. Existing package-scoped declarations become public only where an actual caller crosses a package boundary. No compatibility copies remain at the old paths.

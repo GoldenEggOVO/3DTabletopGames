@@ -2,7 +2,7 @@
 
 Source assets are grouped under `resource-pack/`: `textures/` contains artwork by game, including `native-playing-cards/` for vanilla head faces; `sounds/` contains audio and event mappings; `craftengine/` contains item registrations; `sources.json` records provenance and license notices. `tools/` contains build and verification scripts. Generated files remain under `target/`.
 
-Optional CraftEngine rendering for board games, Mahjong and card games: vanilla, resource-pack, or mixed per-player display. Vanilla remains the default. See [installation](docs/craftengine.zh-CN.md) and [model counts](docs/model-counts.zh-CN.md).
+Optional CraftEngine rendering for board games, Mahjong and card games: vanilla, resource-pack, or mixed per-player display. Vanilla remains the default. See [installation](docs/craftengine.zh-CN.md) and [model counts](docs/native-table-counts.zh-CN.md).
 
 [![Build](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml/badge.svg)](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml)
 
@@ -96,9 +96,9 @@ python tools/package_source.py
 Use JDK 25, Maven 3.9+ and Python 3.12+ for tools. The plugin build downloads public dependencies and requires no other local plugin modules. Install the shaded `target/3dtabletop-*.jar`.
 
 - [Installation](docs/installation.md) · [Migration](docs/migration.md) · [Languages](docs/languages.md)
-- [Architecture](docs/architecture.md) · [Features](docs/features.md) · [Verification](docs/verification.md)
-- [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Third-party materials](THIRD_PARTY.md)
+- [Documentation](docs/README.md) · [Architecture](docs/architecture.md) · [Features](docs/features.md) · [Verification](docs/verification.md)
+- [Changelog](docs/CHANGELOG.md) · [Contributing](docs/CONTRIBUTING.md) · [Third-party materials](docs/THIRD_PARTY.md)
 
 Licensed under [GPL-3.0-or-later](LICENSE). Original source notices are retained. Runtime worlds, private configuration, credentials and third-party server binaries are excluded from source packages.
 
-Native display counts and their measurement scope: [model count report](docs/model-counts.zh-CN.md).
+Native display counts and their measurement scope: [model count report](docs/native-table-counts.zh-CN.md).

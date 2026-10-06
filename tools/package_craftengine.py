@@ -39,8 +39,8 @@ for mode in ("vanilla", "resource-pack", "mixed"):
         "    url: 'https://YOUR-HOST/tabletop-resource-pack.zip'\n"
         "    # Upload the ZIP shipped with this plugin; checksum and identity are automatic.\n", encoding="utf-8")
 shutil.copy2(ROOT / "docs/craftengine.zh-CN.md", out / "INSTALL.zh-CN.md")
-shutil.copy2(ROOT / "docs/model-counts.zh-CN.md", out / "model-counts.zh-CN.md")
-shutil.copy2(ROOT / "docs/craftengine-verification.zh-CN.md", out / "verification.zh-CN.md")
+shutil.copy2(ROOT / "docs/native-table-counts.zh-CN.md", out / "native-table-counts.zh-CN.md")
+shutil.copy2(ROOT / "docs/acceptance.zh-CN.md", out / "acceptance.zh-CN.md")
 shutil.copy2(ROOT / "resource-pack/sources.json", out / "asset-sources.json")
 for folder, source in (("pack", "pack-preview"), ("native-before", "native-before"), ("native-after", "native-after")):
     target = out / "previews" / folder
@@ -70,7 +70,7 @@ with zipfile.ZipFile(package, "w", zipfile.ZIP_DEFLATED) as z:
     for p in sorted(out.rglob("*")):
         if p.is_file() and p != package:
             z.write(p, p.relative_to(out).as_posix())
-    for name in ("README.md", "README.zh-CN.md", "CHANGELOG.md", "THIRD_PARTY.md", "LICENSE"):
+    for name in ("README.md", "README.zh-CN.md", "LICENSE"):
         z.write(ROOT / name, name)
     for p in sorted((ROOT / "docs").rglob("*.md")):
         z.write(p, p.relative_to(ROOT).as_posix())

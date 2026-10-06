@@ -325,7 +325,7 @@
 - Add original cross-board artwork and compact pawn models, private movable-pawn markers and destination previews. Single pawns move on one click; stacked pawns use a labeled choice dialog.
 - Preserve the dice stream when undoing a full Ludo turn. Add rules, commands, tab completion and editable English messages.
 - Round Xiangqi/Chinese Checkers bases and make occupied capture destinations visible around pieces; retain lightweight Go meshes.
-- Keep existing translation overrides intact and label restored Aeroplane rooms as Legacy. See [rules and migration](docs/ludo.zh-CN.md).
+- Keep existing translation overrides intact and label restored Aeroplane rooms as Legacy. See [rules and migration](ludo.zh-CN.md).
 - Source and local acceptance artifacts only; no Release or production deployment.
 
 ## 1.5.1-SNAPSHOT — local acceptance build
