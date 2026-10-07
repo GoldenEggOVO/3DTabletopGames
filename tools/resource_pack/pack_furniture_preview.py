@@ -4,7 +4,7 @@ import math
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=Path(__file__).resolve().parents[2]
 ASSETS=ROOT/'target/resource-pack-build/assets/tabletop3d'
 OUT=ROOT/'target/pack-preview'
 

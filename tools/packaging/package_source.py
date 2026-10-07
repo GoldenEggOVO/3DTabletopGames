@@ -3,7 +3,7 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-project = Path(__file__).resolve().parents[1]
+project = Path(__file__).resolve().parents[2]
 
 
 def package_source():

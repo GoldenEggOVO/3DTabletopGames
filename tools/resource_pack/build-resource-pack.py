@@ -12,7 +12,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 BUILD = ROOT / "target/resource-pack-build"
 ASSETS = BUILD / "assets/tabletop3d"
 COLORS = {"r": "#ba151d", "b": "#0865b4", "y": "#e5af00", "p": "#6c28a9"}

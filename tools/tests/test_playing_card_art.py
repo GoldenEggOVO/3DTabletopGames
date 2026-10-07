@@ -1,9 +1,9 @@
 import unittest
 from pathlib import Path
 from PIL import Image, ImageChops
-from face_art import playing_face, playing_back, joker_face, mahjong_face
+from tools.resource_pack.face_art import playing_face, playing_back, joker_face, mahjong_face
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'resource-pack/textures/playing-cards'
 
 

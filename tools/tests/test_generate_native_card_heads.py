@@ -8,7 +8,7 @@ from unittest.mock import patch
 from pathlib import Path
 
 
-SPEC = importlib.util.spec_from_file_location("generator", Path(__file__).with_name("generate-native-card-heads.py"))
+SPEC = importlib.util.spec_from_file_location("generator", Path(__file__).resolve().parents[1] / "native_heads/generate-native-card-heads.py")
 
 
 class GenerateNativeCardHeadsTest(unittest.TestCase):
@@ -55,7 +55,7 @@ class GenerateNativeCardHeadsTest(unittest.TestCase):
         self.assertEqual(31, self.generator.delay(response, 100))
 
     def test_proxy_backlog_retries_without_regenerating_completed_textures(self):
-        temporary = Path(__file__).resolve().parents[1] / "target/head-tests"
+        temporary = Path(__file__).resolve().parents[2] / "target/head-tests"
         temporary.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(dir=temporary) as directory:
             root = Path(directory)

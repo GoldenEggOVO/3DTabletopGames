@@ -10,11 +10,11 @@ import time
 import xml.etree.ElementTree as ET
 import zipfile
 
-project = Path(__file__).resolve().parents[2]
+project = Path(__file__).resolve().parents[3]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--seconds", type=int, default=3600)
-parser.add_argument("--server-dir", type=Path, default=project.parent / "table-games/tabletop-runtime")
-parser.add_argument("--maven-repo", type=Path, default=project.parent / ".tools/m2")
+parser.add_argument("--server-dir", type=Path, required=True)
+parser.add_argument("--maven-repo", type=Path, default=Path.home() / ".m2/repository")
 args = parser.parse_args()
 if not 60 <= args.seconds <= 7200:
     parser.error("seconds must be between 60 and 7200")
@@ -47,7 +47,7 @@ classpath = os.pathsep.join(map(str, (jar,
 classes = runtime / "probe-classes"
 classes.mkdir()
 subprocess.run([shutil.which("javac"), "-encoding", "UTF-8", "-cp", classpath, "-d", str(classes),
-                str(project / "tools/standalone-probe/BoardsSoakProbe.java")], check=True)
+                str(project / "tools/verification/standalone-probe/BoardsSoakProbe.java")], check=True)
 with zipfile.ZipFile(plugins / "BoardsSoakProbe.jar", "w", zipfile.ZIP_DEFLATED) as z:
     z.writestr("plugin.yml", "name: BoardsSoakProbe\nversion: 1\nmain: dev.tabletop3d.probe.BoardsSoakProbe\napi-version: '26.2'\ndepend: [3dtabletop]\n")
     for path in classes.rglob("*.class"):

@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 ART = ROOT / "resource-pack/textures/native-playing-cards"
 
 class NativeCardHeadsTest(unittest.TestCase):
@@ -20,7 +20,7 @@ class NativeCardHeadsTest(unittest.TestCase):
         self.output = Path(self.workspace.name) / "heads"
 
     def command(self, cards=None):
-        command = [sys.executable, str(ROOT / "tools/build-native-card-heads.py"),
+        command = [sys.executable, str(ROOT / "tools/native_heads/build-native-card-heads.py"),
                    "--output", str(self.output)]
         if cards is not None:
             command += ["--cards", str(cards)]

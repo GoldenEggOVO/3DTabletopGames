@@ -4,7 +4,7 @@ import importlib.util
 from pathlib import Path
 from PIL import Image, ImageDraw
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def module(name, filename):
@@ -15,8 +15,8 @@ def module(name, filename):
 
 
 def build(output):
-    art = module("pack_art", "build-resource-pack.py")
-    exporter = module("head_export", "build-native-card-heads.py")
+    art = module("pack_art", "resource_pack/build-resource-pack.py")
+    exporter = module("head_export", "native_heads/build-native-card-heads.py")
     cards = output / "source-cards"
     cards.mkdir(parents=True, exist_ok=True)
     names = []

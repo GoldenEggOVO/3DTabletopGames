@@ -112,7 +112,12 @@ java -cp target/3dtabletop-1.10.30-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifie
 - `resource-pack/sounds/`：按用途分类的声音与 `events.json` 映射。
 - `resource-pack/craftengine/`：自定义物品注册。
 - `resource-pack/sources.json`：素材来源、摘要与许可说明。
-- `tools/`：构建、打包和验证脚本。
+- `tools/resource_pack/`：资源包生成、模型与图片辅助、预览及象棋 SVG 转换。
+- `tools/native_heads/`：原版卡牌皮肤切片与可选 MineSkin 纹理生成。
+- `tools/packaging/`：源码、已验证原版包及 CraftEngine 交付打包。
+- `tools/preview/`：原版麻将模型离线预览。
+- `tools/verification/`：资源包几何统计、隔离服务器与客户端解析检查。
+- `tools/tests/`：离线 Python 回归检查。
 - `target/`：生成的 JAR、资源包、预览和测试结果，不属于源码。
 - `docs/THIRD_PARTY.md`：第三方署名和来源说明。
 
@@ -129,16 +134,18 @@ Maven 自动运行 Java 测试，结果保存在 `target/surefire-reports/`。�
 重新生成资源包还需要 **Python 3.12+**、Pillow 和 SoundFile／libsndfile。先编译 Java 导出模型，再生成资源包，最后重新编译插件以写入匹配的校验值：
 
 ```sh
-python tools/build-resource-pack.py
-python -m unittest discover -s tools -p "test_*.py"
+python tools/resource_pack/build-resource-pack.py
+python -m unittest discover -s tools/tests -t . -p "test_*.py"
 mvn -B -ntp package
 python -m compileall -q tools
-python tools/package_source.py
+python tools/packaging/package_source.py
 ```
 
 输出包括 `target/tabletop-resource-pack.zip`、`target/resource-pack-manifest.json`、预览及 `target/3dtabletop-source.zip`。源码包仅包含 Git 跟踪的文件，运行世界、凭据、缓存和服务端程序不应放进仓库。
 
-`tools/standalone-probe/run_standalone.py` 检查隔离启动、玩法与重启恢复。通过 `--server-dir` 指定已准备好 Purpur 26.2 缓存及已接受 EULA 的目录，`--maven-repo` 指定依赖缓存；可选 CraftEngine 参数用于资源模型检查。`run_soak.py` 检查连续对局与实体清理。回执与日志保存在本地生成目录。
+`tools/verification/standalone-probe/run_standalone.py` 检查隔离启动、玩法与重启恢复。通过 `--server-dir` 指定已准备好 Purpur 26.2 缓存及已接受 EULA 的目录，`--maven-repo` 指定自定义依赖缓存，默认使用 `~/.m2/repository`；可选 CraftEngine 参数用于资源模型检查。`run_soak.py` 检查连续对局与实体清理。回执与日志保存在本地生成目录。
+
+原版扑克切片：`python tools/native_heads/build-native-card-heads.py --output target/native-heads`；彩八切片：`python tools/native_heads/build-color-eight-heads.py --output target/color-eight-heads`。只有手动运行 `generate-native-card-heads.py` 并指定本地 `--api-key-file` 时才会访问 MineSkin，普通构建和运行不需要密钥。旧 Casino 方块卡牌导入器已移除，现有图片与回归参考数据继续保留。
 
 自动检查和预览不能替代客户端验收。应在 Minecraft 中检查多人暗手隐私、资源包切换与下载失败、准星和点击范围、骰子移动、音量、重启恢复及帧时间表现。
 

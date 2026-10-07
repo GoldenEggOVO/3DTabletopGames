@@ -5,13 +5,13 @@ import unittest
 from pathlib import Path
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 class ColorEightHeadsTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        spec = importlib.util.spec_from_file_location("color_heads", ROOT / "tools/build-color-eight-heads.py")
+        spec = importlib.util.spec_from_file_location("color_heads", ROOT / "tools/native_heads/build-color-eight-heads.py")
         cls.builder = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cls.builder)
         directory = ROOT / "target/color-head-tests"
@@ -38,7 +38,7 @@ class ColorEightHeadsTest(unittest.TestCase):
             self.assertEqual(expected.tobytes(), actual.tobytes(), face)
 
     def test_palette_and_pixels_come_from_the_existing_b_pack_art(self):
-        art = self.builder.module("pack_reference", "build-resource-pack.py")
+        art = self.builder.module("pack_reference", "resource_pack/build-resource-pack.py")
         for face in self.manifest["faces"]:
             rank = face if face in ("wild", "swap") else face[1:]
             rank = {"Draw1": "draw", "Skip": "skip", "Reverse": "reverse"}.get(rank, rank)

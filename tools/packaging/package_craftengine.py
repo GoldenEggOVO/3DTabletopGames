@@ -8,7 +8,7 @@ import sys
 import zipfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("native_receipt", type=Path)
 parser.add_argument("craftengine_receipt", type=Path)
@@ -17,7 +17,7 @@ native = json.loads(args.native_receipt.read_text(encoding="utf-8"))
 ce = json.loads(args.craftengine_receipt.read_text(encoding="utf-8"))
 if not ce.get("pass") or not ce.get("craftengine") or ce.get("jar_sha256") != native.get("jar_sha256"):
     raise SystemExit("Passing CraftEngine receipt for the same JAR required")
-subprocess.run([sys.executable, str(ROOT / "tools/package_standalone.py"), str(args.native_receipt)], check=True)
+subprocess.run([sys.executable, str(ROOT / "tools/packaging/package_standalone.py"), str(args.native_receipt)], check=True)
 out = ROOT / "deliverables" / native["version"]
 pack = ROOT / "target/tabletop-resource-pack.zip"
 manifest = json.loads((ROOT / "target/resource-pack-manifest.json").read_text(encoding="utf-8"))

@@ -2,7 +2,7 @@
 import copy
 import math
 import unittest
-from solid_mesh import circle, shell, upright, rescale
+from tools.resource_pack.solid_mesh import circle, shell, upright, rescale
 
 
 def rotate(point, rotation):

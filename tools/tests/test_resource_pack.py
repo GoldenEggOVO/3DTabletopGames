@@ -7,7 +7,7 @@ import zipfile
 from pathlib import Path
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 class ResourcePackTest(unittest.TestCase):
@@ -18,7 +18,7 @@ class ResourcePackTest(unittest.TestCase):
         self.assertIn('Changes:', notice)
 
     def test_hole_mask_does_not_remove_pixels_from_the_solid_frame(self):
-        from solid_mesh import circle
+        from tools.resource_pack.solid_mesh import circle
         model = json.loads(self.archive.read("assets/tabletop3d/models/item/board_connectfour.json"))
         cap = next(e for e in model["elements"] if e["faces"].get("south", {}).get("texture", "").startswith("#cap_"))
         image = self.face_image(model, cap["faces"]["south"])

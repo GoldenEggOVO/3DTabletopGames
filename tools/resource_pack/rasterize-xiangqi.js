@@ -4,7 +4,7 @@ const path = require("node:path");
 const {createCanvas, loadImage} = require("@napi-rs/canvas");
 
 async function main() {
-    const source = path.join(__dirname, "../resource-pack/textures/xiangqi");
+    const source = path.join(__dirname, "../../resource-pack/textures/xiangqi");
     for (const file of fs.readdirSync(source).filter(name => name.endsWith(".svg"))) {
         const svg = fs.readFileSync(path.join(source, file), "utf8")
             .replace('width="400" height="100"', 'width="1600" height="400"');

@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from PIL import Image, ImageDraw
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 WHITE = (249, 255, 255, 255)
 BLUE = (53, 57, 157, 255)
 

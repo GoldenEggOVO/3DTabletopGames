@@ -11,12 +11,11 @@ import time
 import zipfile
 from pathlib import Path
 
-project = Path(__file__).resolve().parents[2]
-workspace = project.parent
+project = Path(__file__).resolve().parents[3]
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("--server-dir", type=Path, default=workspace / "table-games" / "tabletop-runtime",
+parser.add_argument("--server-dir", type=Path, required=True,
                     help="Prepared Purpur 26.2 cache with purpur-2622.jar, libraries and versions")
-parser.add_argument("--maven-repo", type=Path, default=workspace / ".tools/m2")
+parser.add_argument("--maven-repo", type=Path, default=Path.home() / ".m2/repository")
 parser.add_argument("--rooms-snapshot", type=Path, help="Synthetic all-bot snapshot to restore on boots 2 and 3; remaps its anchors to the fresh fixture world")
 parser.add_argument("--craftengine-jar", type=Path, help="Optional local CE binary; never bundled")
 parser.add_argument("--craftengine-cache", type=Path, help="Existing CE dependency cache (libs directory)")
@@ -63,7 +62,7 @@ classpath = os.pathsep.join(map(str, (jar, paper_api,
 classes = runtime / "probe-classes"
 classes.mkdir()
 subprocess.run([shutil.which("javac"), "-encoding", "UTF-8", "-cp", classpath,
-                "-d", str(classes), str(project / "tools/standalone-probe/BoardsStandaloneProbe.java")], check=True)
+                "-d", str(classes), str(project / "tools/verification/standalone-probe/BoardsStandaloneProbe.java")], check=True)
 with zipfile.ZipFile(plugins / "BoardsStandaloneProbe.jar", "w", zipfile.ZIP_DEFLATED) as archive:
     archive.writestr("plugin.yml", "name: BoardsStandaloneProbe\nversion: 1\nmain: dev.tabletop3d.probe.BoardsStandaloneProbe\napi-version: '26.2'\ndepend: [3dtabletop]\n")
     for path in classes.rglob("*.class"):

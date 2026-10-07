@@ -114,7 +114,12 @@ When resource rendering is enabled, update the matching ZIP and its URL as well.
 - `resource-pack/sounds/`: audio grouped by purpose and `events.json` mappings.
 - `resource-pack/craftengine/`: custom item registrations.
 - `resource-pack/sources.json`: asset provenance, hashes and license notices.
-- `tools/`: build, packaging and verification scripts.
+- `tools/resource_pack/`: resource-pack builder, mesh/art helpers, previews and Xiangqi SVG rasterizer.
+- `tools/native_heads/`: native card skin slicing and optional MineSkin texture generation.
+- `tools/packaging/`: source, verified standalone and CraftEngine delivery packaging.
+- `tools/preview/`: offline native Mahjong model preview.
+- `tools/verification/`: pack geometry statistics and isolated server/client-parser probes.
+- `tools/tests/`: offline Python regression checks.
 - `target/`: generated JARs, packs, previews and test outputs; not source.
 - `docs/THIRD_PARTY.md`: third-party attribution and source notices.
 
@@ -131,16 +136,18 @@ Maven runs Java tests and writes results to `target/surefire-reports/`. Install 
 To regenerate the optional pack, use **Python 3.12+**, Pillow and SoundFile/libsndfile. Build Java first to export model geometry, then generate the pack and rebuild the plugin to embed its checksum:
 
 ```sh
-python tools/build-resource-pack.py
-python -m unittest discover -s tools -p "test_*.py"
+python tools/resource_pack/build-resource-pack.py
+python -m unittest discover -s tools/tests -t . -p "test_*.py"
 mvn -B -ntp package
 python -m compileall -q tools
-python tools/package_source.py
+python tools/packaging/package_source.py
 ```
 
 Outputs include `target/tabletop-resource-pack.zip`, `target/resource-pack-manifest.json`, previews and `target/3dtabletop-source.zip`. The source archive contains tracked files; runtime worlds, credentials, caches and server binaries do not belong in the repository.
 
-`tools/standalone-probe/run_standalone.py` checks isolated startup, gameplay and restart recovery. Supply `--server-dir` with a prepared Purpur 26.2 cache and already accepted EULA; use `--maven-repo` for dependencies. Optional CraftEngine arguments enable resource-model checks. `run_soak.py` checks repeated gameplay and entity cleanup. Keep receipts and logs in local build outputs.
+`tools/verification/standalone-probe/run_standalone.py` checks isolated startup, gameplay and restart recovery. Supply `--server-dir` with a prepared Purpur 26.2 cache and already accepted EULA; use `--maven-repo` for a custom dependency cache (the default is `~/.m2/repository`). Optional CraftEngine arguments enable resource-model checks. `run_soak.py` checks repeated gameplay and entity cleanup. Keep receipts and logs in local build outputs.
+
+Native head export: `python tools/native_heads/build-native-card-heads.py --output target/native-heads`; Color Eight: `python tools/native_heads/build-color-eight-heads.py --output target/color-eight-heads`. Only `generate-native-card-heads.py` contacts MineSkin, and only when explicitly run with a local `--api-key-file`; it is not part of normal builds or runtime. The obsolete Casino cuboid-card importer has been removed; current artwork and regression reference data remain preserved.
 
 Automated tests and previews do not replace client acceptance. Check private hands from multiple seats and a spectator, pack switching and failed downloads, hover/click alignment, dice movement, sounds, restart recovery and frame-time performance in Minecraft.
 

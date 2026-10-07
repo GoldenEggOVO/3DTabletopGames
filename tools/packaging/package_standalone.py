@@ -9,7 +9,7 @@ import zipfile
 from pathlib import Path
 from package_source import package_source
 
-project = Path(__file__).resolve().parents[1]
+project = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("receipt", type=Path, help="Passing three-boot runtime receipt")
 parser.add_argument("--soak", type=Path, help="Optional passing continuous-game receipt for the same JAR")

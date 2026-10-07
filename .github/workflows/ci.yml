@@ -30,7 +30,7 @@ jobs:
       - name: Check tooling syntax
         run: python -m compileall -q tools
       - name: Package corresponding source
-        run: python tools/package_source.py
+        run: python tools/packaging/package_source.py
       - uses: actions/upload-artifact@v4
         with:
           name: 3dtabletop-build
