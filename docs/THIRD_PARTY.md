@@ -16,7 +16,7 @@ Paper/Adventure and JOML are supplied by the server API. Private fonts, runtime 
 
 The bundled chesslib subset omits unused event observers, deprecated FEN aliases and Polyglot opening-book hashing. Standard move validation and repetition detection remain in use. The original Apache-2.0 notices and source provenance are retained. Embedded sources live under `rules/chess/engine/`, `rules/xiangqi/engine/` and `rules/chinesecheckers/engine/`.
 
-The 1.7.0 Last Card, Mahjong, dice animation and hand models are independently implemented in this repository. Public rules and factual option names informed the behavior; Nintendo or other game artwork was not copied. The user-supplied MahjongCraft binary was inspected only for its configuration and public yaku names, not copied or used as a runtime/build dependency. No code or assets from that binary are distributed. See [game references](game-modes.md) and [regional house rules](mahjong.md) for sources and deliberate differences.
+The 1.7.0 Last Card, Mahjong, dice animation and hand models are independently implemented in this repository. Public rules and factual option names informed the behavior; Nintendo or other game artwork was not copied. The user-supplied MahjongCraft binary was inspected only for its configuration and public yaku names, not copied or used as a runtime/build dependency. No code or assets from that binary are distributed.
 
 The 1.7.1 card and Mahjong face patterns are original pixel drawings converted into native Display geometry. The user-supplied BoardGames-1.1 binary was inspected only for its archive structure and public rendering signatures (SVG and Display usage). None of its code, SVG files or other assets were copied or included; it is not a dependency.
 
@@ -29,3 +29,17 @@ The resource-pack Xiangqi faces use the user-selected traditional-character SVGs
 The former Doudizhu and Liar's Bar recordings have been removed from the source and generated pack. Shared card play uses the user-provided `oxidvideos-taking-playing-card-522520.mp3` recording; its original download page and license receipt were not supplied. Additional gameplay and menu effects use Kenney CC0 samples. Audio files are grouped by purpose under `resource-pack/sounds/`; `resource-pack/sounds/events.json` maps shared events to samples. Source links, original file hashes and license notices are centralized in `resource-pack/sources.json`, including the supplied card recording's provenance. The builder retains the Kenney notices in the generated pack.
 
 The 1.10.6 local acceptance build uses cropped zombie, skeleton and creeper head textures from the user's Minecraft 26.2 client JAR (`assets/minecraft/textures/entity/`). The card layout, suits and Wither sprite are project artwork. Minecraft textures remain Mojang/Microsoft assets, separate from GPL plugin code. Only head-front pixels were imported into offline PNG sources; signed skin properties are embedded for native rendering. The API key and generation cache are excluded. No public Release has been published for this build.
+
+## Public rule references
+
+These references informed independently implemented rules; regional profiles use the options and house rules described in the in-game rule descriptions.
+
+- [RIF rules 9.2–9.3](https://gomoku.renju.net/rifrules/)
+- [Switch Ludo guide](https://gamefaqs.gamespot.com/switch/286602-clubhouse-games-51-worldwide-classics/faqs/78437/ludo)
+- [Nintendo's update notes](https://en-americas-support.nintendo.com/app/answers/detail/a_id/49554/p/989)
+- [Chinese Checkers guide](https://gamefaqs.gamespot.com/switch/286602-clubhouse-games-51-worldwide-classics/faqs/78437/chinese-checkers)
+- [Blazing 8s FAQ](https://support-apps.discord.com/hc/en-us/articles/26501925147415-Blazing-8s-FAQ)
+- [Nintendo game catalog](https://www.nintendo.com/jp/switch/as7ta/games/index.html)
+- [EMA 2025 Riichi rules](https://mahjong-europe.org/portal/images/docs/Riichi-rules-2025-EN.pdf)
+- [Sichuan Sports Venue Association rules](https://www.ssva.org.cn/upload/file/2025-08-22/6389146967009551555075859.pdf)
+- [New Mahjong Online terminology](https://new.mjonline.com.tw/aboutgame_d.html)

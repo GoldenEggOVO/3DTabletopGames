@@ -1,34 +1,23 @@
 # 3DTabletopGames
 
-Source assets are grouped under `resource-pack/`: `textures/` contains artwork by game, including `native-playing-cards/` for vanilla head faces; `sounds/` contains audio and event mappings; `craftengine/` contains item registrations; `sources.json` records provenance and license notices. `tools/` contains build and verification scripts. Generated files remain under `target/`.
-
-Optional CraftEngine rendering for board games, Mahjong and card games: vanilla, resource-pack, or mixed per-player display. Vanilla remains the default. See [installation](docs/craftengine.zh-CN.md) and [model counts](docs/native-table-counts.zh-CN.md).
-
 [![Build](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml/badge.svg)](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml)
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-**Playable 3D board games for Minecraft, with physical pieces, multiplayer rooms and native Dialog menus.**
+Playable 3D tabletop games for Minecraft, with physical pieces, multiplayer rooms, private hands and native Dialog menus.
 
-Run independently on **Paper / Purpur 26.2 with Java 25**. Resource packs, client mods and other custom plugins are optional.
+Requires **Paper / Purpur 26.2 and Java 25**. Runs independently without client mods or other custom plugins. CraftEngine and the tabletop resource pack are optional. Current source: **1.10.30-SNAPSHOT**, an unpublished development build.
 
 ## Install
 
-1. Download a published JAR from [Releases](https://github.com/GoldenEggOVO/3DTabletopGames/releases).
-2. Stop your server and back up plugin data and worlds. Keep one plugin JAR in `plugins/`; never install `original-*.jar`.
-3. Start the server and run `/3dtabletop`. Create a room, invite players or fill seats with bots, then play on the physical table.
+1. Download a published shaded JAR from [Releases](https://github.com/GoldenEggOVO/3DTabletopGames/releases), or [build from source](#build).
+2. Stop the server and back up worlds and `plugins/3dtabletop/`.
+3. Put one `3dtabletop-*.jar` in `plugins/`. Do not install `original-*.jar`.
+4. Start the server and run `/3dtabletop`. Choose a game, customize its rules, then create a room for friends or bots.
 
-The current source is **1.10.30-SNAPSHOT**, an unpublished development build. It adds optional original resource-pack boards and pieces, a shared 54-card artwork catalogue, Doudizhu (3 players), Liar's Bar card mode (2–4 players), and Texas Hold'em (2–6 players). New games use private hands and direct table controls; poker chips are local match points with no economy integration. Vanilla remains usable without CraftEngine or a pack. Existing Mahjong and Color Eight interactions remain available. Local geometry previews and server probes do not replace Minecraft client acceptance. See [new card games](docs/new-card-games.md) and [verification](docs/verification.md).
+Sneak and right-click anywhere on a table to open its room menu. Choose pieces, cards, dice and scoring cells directly on the table. Mahjong also supports holding the sprint key (Ctrl by default) for a fixed table view; release it to return.
 
-Vanilla Color Eight uses 24 thin heads per 32×48 face and two blocks per public back; its B-style art, selection and private hands remain intact. Upright card games share a compact 0.003025-block depth step; flat cards retain their existing layers. See [all native table counts](docs/native-table-counts.zh-CN.md). Connect Four support and preview bounds, the chess king cross and knight joints avoid overlapping parts.
-
-Vanilla poker faces use 24 thin player heads in a 4×6 grid for 32×48 artwork. J/Q/K show mirrored zombie, skeleton and creeper heads in Minecraft's original colors; both Jokers show a Wither and the full JOKER label. Public backs use two blocks: a white border and blue inset. Signed Mojang textures are bundled, with no runtime MineSkin API key. Packed cards remain one display each, and the matching delivered resource ZIP remains compatible. Client seams, lighting and FPS still require acceptance. See [native card heads](docs/native-card-heads.zh-CN.md).
-
-This build uses the current `3dtabletop` format. Read [updating](docs/migration.md) before installation. Current configurations and schema 1 room files remain usable. Menu layouts are defined in code.
-
-Public Mahjong tiles now use the same width as hand tiles, and the central wall digits are larger again. Hover privately highlights matching own/public tiles; only the aimed hand tile rises. A draw leaves existing tiles in place and adds the new tile at the far right with a gap. Continuous clicks remain guarded across other seats’ turns, preventing a replacement tile at the same aim from being discarded. Only Mahjong tiles forbidden by kuikae after Chi/Pon dim through display brightness, preserving their materials and patterns; waiting and Riichi selection retain normal brightness. A complete Riichi shape without yaku shows a red No Yaku hint on its actual draw or pending public discard. Choose Chi/Pon/Kan first, then a complete combination. Riichi arms eligible discards; Ron and Tsumo have their own buttons. Dora indicator tiles are inset into the center of each wooden front apron, facing its seat. Rivers fill six tiles left-to-right from the inner row toward the owner. Riichi Dora and red fives receive native enchanted item overlays in owner-only hands and public rivers/melds; hidden Ura Dora stays unmarked. Melds remain lower-right, and corner wind inscriptions stay clear of melds. Holding the sprint key (Ctrl by default) temporarily enters Spectator mode with a private fixed camera. Position and orientation stay fixed, and the player and equipment do not enter the view. This view is read-only; release restores the entry game mode, pose, flight, gravity and invisibility before playing. The eye position keeps the previous 1-block inward and 0.2-block downward adjustment; standing hands and inset indicators may lie behind the camera. Floating round, turn, countdown and last-discard information is raised by 0.4 blocks. Sichuan exchange selection/removal, exchange confirmation and missing-suit choice are available directly at the table. Color Eight uses a 54-card deck, bounded-width parallel hands overlapping along one diagonal, a rotating direction ring and underlined 6/9. Color Eight faces use 24 thin heads in a 4×6 grid for the existing 32×48 B-style artwork; public backs use two blocks; Wild Eight choices are four pure-color round buttons. The native round table uses level adjoining rows inside a circular boundary. Mahjong circles, bamboo joints, the one-bamboo bird, flowers, character tiles and honor inscriptions use native outlines and angled strokes. Unplayable Color Eight cards retain their colors at lower brightness, and hovering lifts the selected card only 0.085 blocks. When neither the deck nor recycling can supply a draw, a playable hand must play rather than pass; an entirely unplayable hand may pass, and timeout selects a legal play.
-
-## Games and features
+## Games
 
 | Game | Players | Physical presentation |
 | --- | --- | --- |
@@ -47,17 +36,9 @@ Public Mahjong tiles now use the same width as hand tiles, and the central wall 
 | Texas Hold'em | 2–6 | Community cards, betting controls, dealer button and compact chip stacks |
 | Mahjong | 4 | Original tile patterns, standing private hands, public rivers and exposed melds |
 
-- Rooms, seats, ready checks, bots, spectating and rematches.
-- Saved world anchors, seeds and move history; room recovery after restarting.
-- Direct board interaction, legal-move pointers and private hover/Connect Four landing previews.
-- Game → basic setup → optional detailed rules → create/start; lobby and playing pages.
-- Aim at a Color Eight card to raise only that card above its overlapping neighbors. Right-click the central deck when drawing is legal; newly drawn cards travel into your hand. Initial and recovered hands appear in place.
-- Chinese Xiangqi piece inscriptions, including 砲; Ludo pawns without floating numbers and dice without an artificial shadow mesh.
-- Four Mahjong profiles: Riichi, Guangdong, Sichuan and Taiwan. Scores are match points only.
-- Native Paper Dialog with fixed layouts, editable translations and English by default.
-- MiniMessage styling, legacy color compatibility and editable language files.
+Rooms support readiness, bots, spectating, rematches and restart recovery. Rules lock when a room is created; create another room to change them. Mahjong offers Riichi, Guangdong, Sichuan and Taiwan profiles with explicit house rules. Poker chips and Mahjong scores are match points, with no economy integration. In-game rule descriptions are available through the menu and `/3dtabletop rules`.
 
-Rules and variant details: [feature inventory](docs/features.md). Yacht Dice is available for 2–4 players with five dice, three rolls, reversible keep slots and direct scoring. Color Eight follows the documented 54-card shedding rules with original art; the command identifier remains `color-eight`. Regional Mahjong follows documented house rules and is not a drop-in replacement for MahjongCraft.
+Vanilla poker and Color Eight faces use 24 thin player heads for 32×48 artwork, while concealed public backs use two blocks. Signed textures are bundled; no runtime MineSkin API key is needed. Resource-pack cards use one display per card. Only the owner sees a concealed hand's faces.
 
 ## Commands and permissions
 
@@ -73,32 +54,96 @@ Rules and variant details: [feature inventory](docs/features.md). Yacht Dice is 
 | `/3dtabletop rules [kind]` | Show rules |
 | `3dtabletop status` | Inspect room count from the console |
 
-Tab completion provides subcommands, games, player counts, room prefixes and legal actions. `3dtabletop.use` defaults to everyone. `3dtabletop.admin` defaults to operators and controls protected-world administration; it is not a bypass for game rules.
+Game IDs: `xiangqi`, `gomoku`, `chess`, `ludo`, `checkers`, `draughts`, `reversi`, `go`, `go9`, `go13`, `connectfour`, `color-eight`, `mahjong`, `yacht`, `doudizhu`, `liars-bar`, `texas-holdem`. `checkers` selects Chinese Checkers; `go` selects 19×19 Go.
 
-Game IDs, configuration and integration details: [installation](docs/installation.md).
+Example: `/3dtabletop create connectfour`, then `/3dtabletop bots`. Command creation uses default rules; use the menu to customize rules. Tab completion suggests games, player counts, rooms and legal actions. `3dtabletop.use` defaults to everyone. `3dtabletop.admin` defaults to operators and controls administration and language reloads.
 
-## Languages and menus
+## Configuration and languages
 
-Edit `plugins/3dtabletop/languages/en_US.yml` or another complete named catalogue. Select it with `language: <code>` and run `/3dtabletop reload-language`. See [languages](docs/languages.md).
+Settings live in `plugins/3dtabletop/config.yml`:
 
-Menus, chat, action hints and room presentation use named keys and literal parameters. Menu layouts are fixed in code; each message is translated separately in `languages/*.yml`. Obsolete `menus` templates are no longer loaded or created. See [languages and text styling](docs/languages.md).
+| Key | Default | Purpose |
+| --- | --- | --- |
+| `language` | `en_US` | Language catalogue under `languages/` |
+| `max-rooms` | `12` | Maximum rooms |
+| `reconnect-seconds` | `120` | Offline return grace period |
+| `idle-room-minutes` | `30` | Idle room timeout |
+| `turn-seconds` | `60` | Default turn timeout; games may apply their own limits |
+| `sounds.enabled` | `true` | Enable game and interface sounds |
+| `sounds.volume` | `1.0` | Volume multiplier from 0 to 1 |
+| `rendering.mode` | `vanilla` | `vanilla`, `resource-pack` or `mixed` |
+| `rendering.resource-pack.url` | Empty | Direct download URL for the matching resource ZIP |
 
-Edit semantic language keys to change captions and styling. Menu ordering and callbacks are maintained in code; retired-format conversion tools are no longer bundled.
+Set `language: zh_CN` for Simplified Chinese. Edit the generated `languages/en_US.yml` or `languages/zh_CN.yml`, or copy a catalogue to another language name. Preserve message keys and placeholders such as `{player}`. MiniMessage colors and legacy color codes are supported; language files cannot define callbacks or commands.
 
-## Build and documentation
+Run `/3dtabletop reload-language` after editing translations or the selected language. Other settings require a restart. Missing translations fall back to English; invalid reloads keep the previous language. Menu layouts are defined in code, while captions and descriptions come from language files. An obsolete `menus/` directory can be removed after backup.
+
+`rooms.json` stores rooms, table locations and action history. `table-map-ids.yml` stores the plugin's map allocations. Preserve both when upgrading; do not edit generated records while the server is running.
+
+## Optional resource pack
+
+1. Install CraftEngine when using resource models. Extract the matching `craftengine-registration.zip` into the server root. Registration files belong under `plugins/CraftEngine/resources/tabletop3d/`.
+2. Host the matching `tabletop-resource-pack.zip` at a direct HTTP/HTTPS download URL. Keep the delivered ZIP unchanged.
+3. Set the following section in `plugins/3dtabletop/config.yml`, then restart:
+
+```yaml
+rendering:
+  mode: mixed
+  resource-pack:
+    url: 'https://YOUR-HOST/tabletop-resource-pack.zip'
+```
+
+`vanilla` needs neither CraftEngine nor the pack. `mixed` offers a per-player pack switch and uses vanilla rendering while the pack is unavailable. `resource-pack` requires successful pack loading and ready model registrations before play. The plugin manages its pack checksum and request identity; only configure the URL. Use the ZIP delivered with the exact JAR. Other plugins' resource packs are not removed or replaced.
+
+## Updating
+
+Stop the server and back up the complete plugin data directory before replacing the JAR. Preserve current configuration, custom translations, rooms and other plugins. Current schema 1 room files remain supported; retired game formats are not automatically converted. Validate a backup against the candidate JAR before updating:
+
+```sh
+java -cp target/3dtabletop-1.10.30-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifier /backup/3dtabletop/rooms.json
+```
+
+When resource rendering is enabled, update the matching ZIP and its URL as well. After startup, check restored rooms, menus and table actions before removing the backup.
+
+## Source layout
+
+- `src/main/java/dev/tabletop3d/`: rules grouped by game; shared room, menu, rendering and persistence code grouped by responsibility.
+- `src/main/resources/`: plugin metadata, configuration defaults, translations and bundled notices/textures.
+- `src/test/`: automated Java checks.
+- `resource-pack/textures/`: artwork grouped by game; `native-playing-cards/` contains vanilla head source art.
+- `resource-pack/sounds/`: audio grouped by purpose and `events.json` mappings.
+- `resource-pack/craftengine/`: custom item registrations.
+- `resource-pack/sources.json`: asset provenance, hashes and license notices.
+- `tools/`: build, packaging and verification scripts.
+- `target/`: generated JARs, packs, previews and test outputs; not source.
+- `docs/THIRD_PARTY.md`: third-party attribution and source notices.
+
+## Build
+
+Use **JDK 25 and Maven 3.9+**:
 
 ```sh
 mvn -B -ntp package
+```
+
+Maven runs Java tests and writes results to `target/surefire-reports/`. Install the shaded `target/3dtabletop-*.jar`.
+
+To regenerate the optional pack, use **Python 3.12+**, Pillow and SoundFile/libsndfile. Build Java first to export model geometry, then generate the pack and rebuild the plugin to embed its checksum:
+
+```sh
+python tools/build-resource-pack.py
 python -m unittest discover -s tools -p "test_*.py"
+mvn -B -ntp package
+python -m compileall -q tools
 python tools/package_source.py
 ```
 
-Use JDK 25, Maven 3.9+ and Python 3.12+ for tools. The plugin build downloads public dependencies and requires no other local plugin modules. Install the shaded `target/3dtabletop-*.jar`.
+Outputs include `target/tabletop-resource-pack.zip`, `target/resource-pack-manifest.json`, previews and `target/3dtabletop-source.zip`. The source archive contains tracked files; runtime worlds, credentials, caches and server binaries do not belong in the repository.
 
-- [Installation](docs/installation.md) · [Migration](docs/migration.md) · [Languages](docs/languages.md)
-- [Documentation](docs/README.md) · [Architecture](docs/architecture.md) · [Features](docs/features.md) · [Verification](docs/verification.md)
-- [Changelog](docs/CHANGELOG.md) · [Contributing](docs/CONTRIBUTING.md) · [Third-party materials](docs/THIRD_PARTY.md)
+`tools/standalone-probe/run_standalone.py` checks isolated startup, gameplay and restart recovery. Supply `--server-dir` with a prepared Purpur 26.2 cache and already accepted EULA; use `--maven-repo` for dependencies. Optional CraftEngine arguments enable resource-model checks. `run_soak.py` checks repeated gameplay and entity cleanup. Keep receipts and logs in local build outputs.
 
-Licensed under [GPL-3.0-or-later](LICENSE). Original source notices are retained. Runtime worlds, private configuration, credentials and third-party server binaries are excluded from source packages.
+Automated tests and previews do not replace client acceptance. Check private hands from multiple seats and a spectator, pack switching and failed downloads, hover/click alignment, dice movement, sounds, restart recovery and frame-time performance in Minecraft.
 
-Native display counts and their measurement scope: [model count report](docs/native-table-counts.zh-CN.md).
+## License
+
+Licensed under [GPL-3.0-or-later](LICENSE). See [third-party materials](docs/THIRD_PARTY.md) and [asset sources](resource-pack/sources.json) for separate notices and asset terms.

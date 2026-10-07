@@ -1,65 +1,147 @@
 # 3DTabletopGames
 
-素材统一放在 `resource-pack/`：`textures/` 按游戏分类，`native-playing-cards/` 保存原版头颅卡牌素材；`sounds/` 保存音效和事件映射；`craftengine/` 保存模型注册配置；`sources.json` 保存素材来源与授权说明。`tools/` 保留构建与验证脚本，生成文件位于 `target/`。
-
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-**带实体棋子、多人房间和原生 Dialog 菜单的 Minecraft 3D 桌游插件。**
+带实体棋子、多人房间、私有手牌和原生 Dialog 菜单的 Minecraft 3D 桌游插件。
 
-支持 **Paper／Purpur 26.2、Java 25**。无需资源包或客户端模组，可独立安装。
-
-支持可选 CraftEngine 图片模型与独立音效包，支持纯原版、纯资源包及玩家自选的混合模式。默认仍为纯原版。见 [安装与配置](docs/craftengine.zh-CN.md) 和 [实体数量对照](docs/native-table-counts.zh-CN.md)。
+支持 **Paper／Purpur 26.2、Java 25**。可独立运行，无需客户端模组或其他自定义插件；CraftEngine 与桌游资源包为可选项。当前源码为 **1.10.30-SNAPSHOT 开发版**，未发布 Release。
 
 ## 安装
 
-1. 从 [Releases](https://github.com/GoldenEggOVO/3DTabletopGames/releases) 下载已发布版本。
-2. 完全停服并备份插件数据与世界。将 JAR 放入 `plugins/`，只留一个版本，不安装 `original-*.jar`。
-3. 启动后使用 `/3dtabletop` 创建房间、邀请玩家或添加陪练，在实体桌面操作。
+1. 从 [Releases](https://github.com/GoldenEggOVO/3DTabletopGames/releases) 下载已发布 JAR，或[自行编译](#构建)。
+2. 完全停服，备份世界与 `plugins/3dtabletop/`。
+3. 将一个 `3dtabletop-*.jar` 放进 `plugins/`，不安装 `original-*.jar`。
+4. 启动后使用 `/3dtabletop`，选择游戏、调整规则，再创建好友或陪练房间。
 
-当前源码为 **1.10.26-SNAPSHOT 开发版**，未发布 Release。新增其他棋盘及棋子的资源包模型、共用扑克牌、斗地主（3 人）、骗子酒馆扑克牌模式（2～4 人）和德州扑克（2～6 人）。新游戏通过桌面直接选牌和操作，德州筹码仅为局内点数，不接经济系统；原版模式仍无需 CraftEngine。保留现有麻将和彩八的交互。服务端验证与 Minecraft 客户端视觉验收分别记录，见 [新卡牌游戏](docs/new-card-games.zh-CN.md)。
+所有桌子均使用潜行＋右键桌面打开房间菜单。棋子、卡牌、骰子和计分格直接在桌面操作。麻将可按住疾跑键（默认 Ctrl）进入固定看桌视角，松开恢复。
 
-原版彩八采用 32×48 的 B 版图案，每张正面 24 个薄头颅、公开牌背 2 个方块。相邻立牌深度间距统一为 0.003025 方块，彩八只增加约 0.1 像素以避免蓝背和白边共面；平放牌保持原有分层。全部原版桌体和整桌模型数量见 [统计表](docs/native-table-counts.zh-CN.md)。圆桌仍用内接圆形的相邻行块，保持顶面平整；四子棋支架与预选框、国际象棋王和马的部件避免重叠。
+## 游戏
 
-原版扑克牌正面改为 4 列 × 6 行的 24 个薄头颅，图案为 32×48 像素。J／Q／K 使用原版配色的僵尸、骷髅、苦力怕双头图案；大小王使用凋零和完整 JOKER 字样。公开牌背仅用两个方块组成白边＋蓝背。带签名的 Mojang 纹理内置于插件，运行时不需要 MineSkin API Key。资源包扑克仍每张一个实体，使用同一交付中的资源包 ZIP。实际接缝、光照与 FPS 仍需客户端验收，见 [原版卡牌头颅说明](docs/native-card-heads.zh-CN.md)。
+| 游戏 | 人数 | 桌面内容 |
+| --- | --- | --- |
+| 象棋、国际象棋 | 2 | 棋盘与立体棋子 |
+| 五子棋 | 2 | 黑白棋子 |
+| 黑白棋 | 2 | 翻面棋子与动画 |
+| 四子棋 | 2 | 竖直棋盘与落子 |
+| 围棋 | 2 | 9／13／19 路棋盘 |
+| 中国跳棋 | 2、3、4、6 | 星形棋盘与彩色棋子 |
+| 西洋跳棋 | 2 | 8×8 棋盘与升王 |
+| Ludo | 2～4 | 十字棋盘、棋子与骰子 |
+| 彩八 | 2～5 | 私有手牌、摸牌堆与颜色按钮 |
+| 斗地主 | 3 | 叫地主、选牌与公开地主牌 |
+| 骗子酒馆 | 2～4 | 暗出牌、质疑与局内轮盘 |
+| 快艇骰子 | 2～4 | 五颗骰子、最多三掷、保留槽与十二项计分 |
+| 德州扑克 | 2～6 | 公共牌、下注、庄家标记与筹码 |
+| 麻将 | 4 | 私有手牌、牌河与副露 |
 
-麻将桌面公开牌恢复为与手牌同宽的原生模型，桌心余牌数字再次放大。瞄准本人或公开牌时，同类型牌仅对本人高亮；只有直接瞄准的手牌抬起。新摸牌与旧手牌之间留空，摸牌不会挪动旧手牌；持续点击跨过其他玩家回合时，也会拦住原位置换来的另一张牌。只有食替禁打牌降低亮度，完整日麻牌型没有役时，瞄准实际摸牌或正在响应的舍牌会显示红色 No Yaku。先点吃／碰／杠，再点完整组合；立直按钮进入选牌状态，只有合法立直弃牌可选；荣和与自摸各有按钮。日麻宝牌指示牌仅本人可见，位于本人边框中间，副露留在本人右下角，風位挪到边角避免遮挡。按住疾跑键（默认 Ctrl）时临时进入观察者模式，连接仅本人可见的固定镜头，锁定位置及朝向；自己与盔甲不进入镜头，期间只看桌，松开后恢复原游戏模式、位置、朝向、飞行、重力与隐身状态再打牌。保留上一版前移 1 格、下移 0.2 格后的眼睛位置，手牌和边框指示牌可能落在身后。局数、当前玩家、倒计时及上一张弃牌信息统一上移 0.4 格。四川麻将换三张直接点选／取消手牌，再点确认；定缺使用桌面按钮。 彩八保留旋转方向环与 6／9 下划线，使用 54 张新牌组。
+支持准备、陪练、观战、再来一局和重启恢复。房间创建后规则锁定，需要更换规则时创建新房间。麻将提供广东、四川、台湾和日本立直四套房规。麻将分数和德州筹码仅为局内点数，不接经济系统。具体规则可在菜单或 `/3dtabletop rules` 中查看。
 
-主菜单在任一游戏有房间时显示统一的“浏览房间”，房间名称含游戏名与六位代号；各游戏设置页不再重复显示浏览入口。所有游戏用 Shift＋右键开桌面菜单，快艇骰子的左右桌面也沿用同一入口。麻将按住 Ctrl 看桌，开菜单先退出近桌视角，关闭后松开再按 Ctrl 才恢复；固定镜头期间不出牌，松开后再操作；Shift＋右键保留开菜单；Ctrl 固定镜头期间只看桌。
-
-## 游戏与功能
-
-支持象棋、国际象棋、五子棋、黑白棋、四子棋、9／13／19 路围棋、中国跳棋、西洋跳棋、英国十字戏、彩八、麻将、斗地主、骗子酒馆和德州扑克。麻将包括广东、四川、台湾及日本立直四套明确房规，局内点数不接经济系统。保留房间、座位、准备、陪练、观战、恢复、退出、再来一局和实体棋盘交互。快艇骰子支持2–4人，五颗小骰子、最多三掷、可撤销的保留槽和桌面直接计分。
-
-- 彩八（Color Eight）支持 2～5 人，54 张原创卡牌。大量手牌压在固定宽度内；瞄准只抬高这一张。彩 8 上方直接选四色，打出后变为所选颜色底的 8。轮到自己且允许摸牌时，右键中央牌堆，新摸到的牌从牌堆移动到手中；初次显示与恢复不重播动画。
-- 卡牌和麻将牌采用原创像素图案，无需资源包。暗手正面只向本人显示，其他人只见牌背和公开牌。
-- 象棋棋面保留中文，包括“砲”；Ludo 小人移除浮动编号，骰子移除额外的假影模型。
-- 创建页先选模式、人数和麻将地区，详细规则单独打开；等候页与对局页各保留当前需要的主要操作。
+原版扑克和彩八正面为 32×48 像素，每张使用 24 个薄头颅；公开暗牌背使用两个方块。签名纹理已内置，运行时无需 MineSkin API Key。资源包卡牌每张使用一个显示实体。暗手正面仅本人可见。
 
 ## 指令与权限
 
-主入口 `/3dtabletop`；常用子指令为 `create`、`join`、`ready`、`bots`、`resume`、`leave`、`rematch`、`move`、`rules`。控制台使用 `3dtabletop status`。Tab 根据上下文补全游戏、人数、房间和合法动作，并隐藏重复根指令候选。
+| 指令 | 用途 |
+| --- | --- |
+| `/3dtabletop [menu]` | 打开主菜单 |
+| `/3dtabletop create <kind> [players]` | 创建房间 |
+| `/3dtabletop join <room-prefix>` | 加入开放房间 |
+| `/3dtabletop ready`／`bots` | 准备／房主补充陪练 |
+| `/3dtabletop resume`／`leave` | 返回桌面／离开房间 |
+| `/3dtabletop rematch` | 准备再来一局 |
+| `/3dtabletop move <action>` | 执行合法动作，例如 `drop:3` |
+| `/3dtabletop rules [kind]` | 查看规则 |
+| `3dtabletop status` | 控制台查看房间数量 |
 
-`3dtabletop.use` 默认开放，`3dtabletop.admin` 默认 OP。
+游戏标识：`xiangqi`、`gomoku`、`chess`、`ludo`、`checkers`、`draughts`、`reversi`、`go`、`go9`、`go13`、`connectfour`、`color-eight`、`mahjong`、`yacht`、`doudizhu`、`liars-bar`、`texas-holdem`。其中 `checkers` 是中国跳棋，`go` 是 19 路围棋。
 
-## 配置、语言与升级
+例如先执行 `/3dtabletop create connectfour`，再执行 `/3dtabletop bots`。指令创建使用默认规则，自定义规则请使用菜单。Tab 会提示游戏、人数、房间和合法动作。`3dtabletop.use` 默认所有玩家可用，`3dtabletop.admin` 默认 OP，用于管理与语言重载。
 
-`config.yml` 保留语言、房间和超时设置。语言默认 `en_US`，使用 `plugins/3dtabletop/languages/` 下具名完整模板，修改后执行 `/3dtabletop reload-language`；其他配置修改需要重启。可独立翻译每一条消息，参数与玩家名字按字面插入。旧颜色码仍可使用，见 [语言说明](docs/languages.md)。
+## 配置与语言
 
-房间 JSON schema 1、世界 UUID 和桌子坐标保持。升级前用新 JAR 验证现有存档回放。更早版本的转换工具不再随当前源码提供。动画不写存档，重启直接恢复最终状态，见 [升级说明](docs/migration.zh-CN.md)。菜单布局由代码统一定义，文字仍在 languages 中独立翻译。旧 menus 目录不再读取或生成，备份后可删除。
+配置文件位于 `plugins/3dtabletop/config.yml`：
 
-## 构建与验收
+| 配置项 | 默认值 | 用途 |
+| --- | --- | --- |
+| `language` | `en_US` | `languages/` 中的语言文件名 |
+| `max-rooms` | `12` | 房间数量上限 |
+| `reconnect-seconds` | `120` | 离线重连宽限秒数 |
+| `idle-room-minutes` | `30` | 空闲房间超时分钟数 |
+| `turn-seconds` | `60` | 默认回合时限，部分游戏有独立时限 |
+| `sounds.enabled` | `true` | 游戏与界面音效开关 |
+| `sounds.volume` | `1.0` | 0～1 的音量倍率 |
+| `rendering.mode` | `vanilla` | 原版、资源包或混合显示 |
+| `rendering.resource-pack.url` | 空 | 与 JAR 匹配的资源包直链 |
+
+中文设置为 `language: zh_CN`。可编辑首次启动生成的 `languages/en_US.yml`、`languages/zh_CN.yml`，或复制一份作为其他语言。保留消息键名与 `{player}` 等参数名；支持 MiniMessage 样式及旧颜色码，语言文件不能定义回调或指令。
+
+修改翻译或语言选项后执行 `/3dtabletop reload-language`，其他配置修改后重启。缺失翻译回退到英文，重载校验失败时保留原语言。菜单布局由代码维护，标题和说明来自翻译文件；旧 `menus/` 目录备份后可删除。
+
+`rooms.json` 保存房间、桌子位置和动作历史；`table-map-ids.yml` 保存插件使用的地图编号。升级时保留这些文件，不在开服期间手工修改生成的数据。
+
+## 可选资源包
+
+1. 使用资源模型时安装 CraftEngine，将匹配的 `craftengine-registration.zip` 解压到服务器根目录。注册文件最终位于 `plugins/CraftEngine/resources/tabletop3d/`。
+2. 将同一交付中的 `tabletop-resource-pack.zip` 上传到可直接下载的 HTTP／HTTPS 地址，保持 ZIP 内容不变。
+3. 修改 `plugins/3dtabletop/config.yml`，然后重启：
+
+```yaml
+rendering:
+  mode: mixed
+  resource-pack:
+    url: 'https://YOUR-HOST/tabletop-resource-pack.zip'
+```
+
+`vanilla` 无需 CraftEngine 或资源包。`mixed` 允许玩家单独开关，资源包不可用时显示原版。`resource-pack` 要求资源包加载成功、模型注册就绪后才能进行游戏。校验值和请求标识由插件管理，只需配置 URL，并使用与 JAR 匹配的 ZIP。不会移除或替换其他插件的资源包。
+
+## 升级
+
+停服并完整备份插件数据后替换 JAR，保留现有配置、自定义翻译、房间和其他插件。当前 schema 1 房间文件继续支持，已退役玩法的旧格式不自动转换。升级前可用候选 JAR 验证备份：
+
+```sh
+java -cp target/3dtabletop-1.10.30-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifier /backup/3dtabletop/rooms.json
+```
+
+启用资源包时同时更新匹配的 ZIP 和 URL。启动后检查房间恢复、菜单与桌面操作，再决定是否清理备份。
+
+## 源码目录
+
+- `src/main/java/dev/tabletop3d/`：规则按游戏分类，共用房间、菜单、渲染和存档代码按职责分类。
+- `src/main/resources/`：插件信息、默认配置、翻译、内置声明与纹理。
+- `src/test/`：Java 自动检查。
+- `resource-pack/textures/`：按游戏分类的图片，`native-playing-cards/` 为原版头颅卡牌素材。
+- `resource-pack/sounds/`：按用途分类的声音与 `events.json` 映射。
+- `resource-pack/craftengine/`：自定义物品注册。
+- `resource-pack/sources.json`：素材来源、摘要与许可说明。
+- `tools/`：构建、打包和验证脚本。
+- `target/`：生成的 JAR、资源包、预览和测试结果，不属于源码。
+- `docs/THIRD_PARTY.md`：第三方署名和来源说明。
+
+## 构建
+
+使用 **JDK 25、Maven 3.9+**：
 
 ```sh
 mvn -B -ntp package
-python -m unittest discover -s tools -p "test_*.py"
 ```
 
-使用 JDK 25、Maven 3.9+。服务端探针需要准备本地 Purpur 26.2 缓存，详见 [验证说明](docs/verification.md)。自动检查不代替客户端画面与操作体验验收，可按 [中文客户端验收单](docs/acceptance.zh-CN.md) 检查。本次先交付本地 JAR，源码可同步 GitHub，用户明确同意后才发布 Release。
+Maven 自动运行 Java 测试，结果保存在 `target/surefire-reports/`。安装生成的 `target/3dtabletop-*.jar`。
 
-[文档目录](docs/README.md) · [架构](docs/architecture.md) · [功能清单](docs/features.zh-CN.md) · [更新日志](docs/CHANGELOG.md) · [第三方来源](docs/THIRD_PARTY.md)
+重新生成资源包还需要 **Python 3.12+**、Pillow 和 SoundFile／libsndfile。先编译 Java 导出模型，再生成资源包，最后重新编译插件以写入匹配的校验值：
 
-原生模型实体数量与测量范围见[模型数量报告](docs/native-table-counts.zh-CN.md)，本次没有进行客户端 FPS 测量。
+```sh
+python tools/build-resource-pack.py
+python -m unittest discover -s tools -p "test_*.py"
+mvn -B -ntp package
+python -m compileall -q tools
+python tools/package_source.py
+```
 
-## 源码分类
+输出包括 `target/tabletop-resource-pack.zip`、`target/resource-pack-manifest.json`、预览及 `target/3dtabletop-source.zip`。源码包仅包含 Git 跟踪的文件，运行世界、凭据、缓存和服务端程序不应放进仓库。
 
-规则源码按游戏归入独立目录，参见[按游戏阅读源码](docs/code-structure.zh-CN.md)。共用接口、房间和渲染继续共享，存档格式不变。
+`tools/standalone-probe/run_standalone.py` 检查隔离启动、玩法与重启恢复。通过 `--server-dir` 指定已准备好 Purpur 26.2 缓存及已接受 EULA 的目录，`--maven-repo` 指定依赖缓存；可选 CraftEngine 参数用于资源模型检查。`run_soak.py` 检查连续对局与实体清理。回执与日志保存在本地生成目录。
+
+自动检查和预览不能替代客户端验收。应在 Minecraft 中检查多人暗手隐私、资源包切换与下载失败、准星和点击范围、骰子移动、音量、重启恢复及帧时间表现。
+
+## 许可
+
+源码采用 [GPL-3.0-or-later](LICENSE)。第三方素材的独立声明见[第三方说明](docs/THIRD_PARTY.md)和[素材来源](resource-pack/sources.json)。
