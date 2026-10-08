@@ -12,7 +12,7 @@
 2. 完全停服并备份插件数据与世界。将 JAR 放入 `plugins/`，只留一个版本，不安装 `original-*.jar`。
 3. 启动后使用 `/3dtabletop` 创建房间、邀请玩家或添加陪练，在实体桌面操作。
 
-当前源码为 **1.7.5-SNAPSHOT 开发版**，尚未发布 Release，本次未部署正式服。新增原生方块拼出的原创卡牌与麻将图案，放大并竖立 Last Card 手牌，加入悬停让位、摸牌动画，并整理创建与房间菜单。旧房间保留原有规则和位置。详见 [菜单与模式](docs/game-modes.zh-CN.md)、[麻将房规](docs/mahjong.zh-CN.md) 和 [验证记录](docs/verification.md)。Actions 产物也是开发构建；本地模型预览不能代替 Minecraft 客户端画面与操作验收。
+当前源码为 **1.7.5-SNAPSHOT 开发版**，尚未发布 Release，本次未部署正式服。新增原生方块拼出的原创卡牌与麻将图案，放大并竖立 Last Card 手牌，加入悬停让位、摸牌动画，并整理创建与房间菜单。旧房间保留原有规则和位置。详见 [菜单与模式](docs/game-modes.zh-CN.md)、[麻将房规](docs/mahjong.zh-CN.md) 和 [验证记录](docs/verification.md)。本地模型预览不能代替 Minecraft 客户端画面与操作验收。
 
 麻将桌面公开牌恢复为与手牌同宽的原生模型，桌心余牌数字再次放大。瞄准本人或公开牌时，同类型牌仅对本人高亮；只有直接瞄准的手牌抬起。新摸牌与旧手牌之间留空，摸牌不会挪动旧手牌；持续点击跨过其他玩家回合时，也会拦住原位置换来的另一张牌。不能弃出的牌呈灰色，完整日麻牌型没有役时，瞄准实际摸牌或正在响应的舍牌会显示红色 No Yaku。先点吃／碰／杠，再点完整组合；立直按钮进入选牌状态，只有合法立直弃牌可选；荣和与自摸各有按钮。日麻宝牌指示牌位于边框中间，副露留在本人右下角，風位挪到边角避免遮挡。Shift 视角降低并临时隐身，仍能看见自己的立牌正面，松开恢复。四川麻将换三张直接点选／取消手牌，再点确认；定缺使用桌面按钮。 Last Card 的旋转方向环和 6／9 下划线保持可用，现有 1–8 牌库不变。
 
@@ -43,6 +43,8 @@
 
 ## 构建与验收
 
+更新时先在本地编译、测试和打包，再推送源码。GitHub Actions 已停用。
+
 ```sh
 mvn -B -ntp package
 python -m unittest discover -s tests -p "test_*.py"
@@ -50,4 +52,4 @@ python -m unittest discover -s tests -p "test_*.py"
 
 使用 JDK 25、Maven 3.9+。服务端探针需要准备本地 Purpur 26.2 缓存，详见 [验证说明](docs/verification.md)。自动检查不代替客户端画面与操作体验验收，可按 [中文客户端验收单](docs/acceptance.zh-CN.md) 检查。本次先交付本地 JAR，源码可同步 GitHub，用户明确同意后才发布 Release。
 
-[架构](docs/architecture.md) · [功能清单](docs/features.zh-CN.md) · [更新日志](CHANGELOG.md) · [第三方来源](THIRD_PARTY.md)
+[架构](docs/architecture.md) · [功能清单](docs/features.zh-CN.md) · [第三方来源](THIRD_PARTY.md)

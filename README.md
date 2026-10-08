@@ -1,7 +1,5 @@
 # 3DTabletopGames
 
-[![Build](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml/badge.svg)](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml)
-
 [English](README.md) | [简体中文](README.zh-CN.md)
 
 **Playable 3D board games for Minecraft, with physical pieces, multiplayer rooms and native Dialog menus.**
@@ -75,6 +73,8 @@ Unmodified 1.7.0 stock `setup.yml`, `room.yml` and `hand.yml` use the new layout
 
 ## Build and documentation
 
+Build, test and package locally before pushing source. GitHub Actions is disabled.
+
 ```sh
 mvn -B -ntp package
 python -m unittest discover -s tests -p "test_*.py"
@@ -85,6 +85,6 @@ Use JDK 25, Maven 3.9+ and Python 3.12+ for tools. The plugin build downloads pu
 
 - [Installation](docs/installation.md) · [Migration](docs/migration.md) · [Languages](docs/languages.md)
 - [Architecture](docs/architecture.md) · [Features](docs/features.md) · [Verification](docs/verification.md)
-- [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Third-party materials](THIRD_PARTY.md)
+- [Contributing](CONTRIBUTING.md) · [Third-party materials](THIRD_PARTY.md)
 
 Licensed under [GPL-3.0-or-later](LICENSE). Original source notices are retained. Runtime worlds, private configuration, credentials and third-party server binaries are excluded from source packages.
