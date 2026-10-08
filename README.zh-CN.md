@@ -123,6 +123,8 @@ java -cp target/3dtabletop-1.10.30-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifie
 
 ## 构建
 
+更新时先在本地编译、测试和打包，再推送源码。GitHub Actions 已停用，推送不会触发远端构建，也不会发布 Release。
+
 使用 **JDK 25、Maven 3.9+**：
 
 ```sh

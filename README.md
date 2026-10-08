@@ -1,7 +1,5 @@
 # 3DTabletopGames
 
-[![Build](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml/badge.svg)](https://github.com/GoldenEggOVO/3DTabletopGames/actions/workflows/ci.yml)
-
 [English](README.md) | [简体中文](README.zh-CN.md)
 
 Playable 3D tabletop games for Minecraft, with physical pieces, multiplayer rooms, private hands and native Dialog menus.
@@ -124,6 +122,8 @@ When resource rendering is enabled, update the matching ZIP and its URL as well.
 - `docs/THIRD_PARTY.md`: third-party attribution and source notices.
 
 ## Build
+
+Updates are built, tested and packaged locally before source is pushed. GitHub Actions is disabled; pushing does not run remote builds or publish a Release.
 
 Use **JDK 25 and Maven 3.9+**:
 
