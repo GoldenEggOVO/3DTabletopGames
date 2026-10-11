@@ -1,703 +1,703 @@
 items:
   tabletop3d:board_checkers:
     material: paper
-    item_model: tabletop3d:board_checkers
+    item_model: tabletop3d:checkers/board_checkers
   tabletop3d:board_chess:
     material: paper
-    item_model: tabletop3d:board_chess
+    item_model: tabletop3d:chess/board_chess
   tabletop3d:board_connectfour:
     material: paper
-    item_model: tabletop3d:board_connectfour
+    item_model: tabletop3d:connect_four/board_connectfour
   tabletop3d:board_draughts:
     material: paper
-    item_model: tabletop3d:board_draughts
+    item_model: tabletop3d:draughts/board_draughts
   tabletop3d:board_go:
     material: paper
-    item_model: tabletop3d:board_go
+    item_model: tabletop3d:go/board_go
   tabletop3d:board_go13:
     material: paper
-    item_model: tabletop3d:board_go13
+    item_model: tabletop3d:go/board_go13
   tabletop3d:board_go9:
     material: paper
-    item_model: tabletop3d:board_go9
+    item_model: tabletop3d:go/board_go9
   tabletop3d:board_gomoku:
     material: paper
-    item_model: tabletop3d:board_gomoku
+    item_model: tabletop3d:gomoku/board_gomoku
   tabletop3d:board_ludo:
     material: paper
-    item_model: tabletop3d:board_ludo
+    item_model: tabletop3d:ludo/board_ludo
   tabletop3d:board_reversi:
     material: paper
-    item_model: tabletop3d:board_reversi
+    item_model: tabletop3d:reversi/board_reversi
   tabletop3d:board_xiangqi:
     material: paper
-    item_model: tabletop3d:board_xiangqi
+    item_model: tabletop3d:xiangqi/board_xiangqi
   tabletop3d:button_b:
     material: paper
-    item_model: tabletop3d:button_b
+    item_model: tabletop3d:color_eight/button_b
   tabletop3d:button_p:
     material: paper
-    item_model: tabletop3d:button_p
+    item_model: tabletop3d:color_eight/button_p
   tabletop3d:button_pass:
     material: paper
-    item_model: tabletop3d:button_pass
+    item_model: tabletop3d:color_eight/button_pass
   tabletop3d:button_r:
     material: paper
-    item_model: tabletop3d:button_r
+    item_model: tabletop3d:color_eight/button_r
   tabletop3d:button_y:
     material: paper
-    item_model: tabletop3d:button_y
+    item_model: tabletop3d:color_eight/button_y
   tabletop3d:card_b1:
     material: paper
-    item_model: tabletop3d:card_b1
+    item_model: tabletop3d:color_eight/card_b1
   tabletop3d:card_b10:
     material: paper
-    item_model: tabletop3d:card_b10
+    item_model: tabletop3d:color_eight/card_b10
   tabletop3d:card_b2:
     material: paper
-    item_model: tabletop3d:card_b2
+    item_model: tabletop3d:color_eight/card_b2
   tabletop3d:card_b3:
     material: paper
-    item_model: tabletop3d:card_b3
+    item_model: tabletop3d:color_eight/card_b3
   tabletop3d:card_b4:
     material: paper
-    item_model: tabletop3d:card_b4
+    item_model: tabletop3d:color_eight/card_b4
   tabletop3d:card_b5:
     material: paper
-    item_model: tabletop3d:card_b5
+    item_model: tabletop3d:color_eight/card_b5
   tabletop3d:card_b6:
     material: paper
-    item_model: tabletop3d:card_b6
+    item_model: tabletop3d:color_eight/card_b6
   tabletop3d:card_b7:
     material: paper
-    item_model: tabletop3d:card_b7
+    item_model: tabletop3d:color_eight/card_b7
   tabletop3d:card_b8:
     material: paper
-    item_model: tabletop3d:card_b8
+    item_model: tabletop3d:color_eight/card_b8
   tabletop3d:card_b9:
     material: paper
-    item_model: tabletop3d:card_b9
+    item_model: tabletop3d:color_eight/card_b9
   tabletop3d:card_back:
     material: paper
-    item_model: tabletop3d:card_back
+    item_model: tabletop3d:color_eight/card_back
   tabletop3d:card_bdraw:
     material: paper
-    item_model: tabletop3d:card_bdraw
+    item_model: tabletop3d:color_eight/card_bdraw
   tabletop3d:card_breverse:
     material: paper
-    item_model: tabletop3d:card_breverse
+    item_model: tabletop3d:color_eight/card_breverse
   tabletop3d:card_bskip:
     material: paper
-    item_model: tabletop3d:card_bskip
+    item_model: tabletop3d:color_eight/card_bskip
   tabletop3d:card_p1:
     material: paper
-    item_model: tabletop3d:card_p1
+    item_model: tabletop3d:color_eight/card_p1
   tabletop3d:card_p10:
     material: paper
-    item_model: tabletop3d:card_p10
+    item_model: tabletop3d:color_eight/card_p10
   tabletop3d:card_p2:
     material: paper
-    item_model: tabletop3d:card_p2
+    item_model: tabletop3d:color_eight/card_p2
   tabletop3d:card_p3:
     material: paper
-    item_model: tabletop3d:card_p3
+    item_model: tabletop3d:color_eight/card_p3
   tabletop3d:card_p4:
     material: paper
-    item_model: tabletop3d:card_p4
+    item_model: tabletop3d:color_eight/card_p4
   tabletop3d:card_p5:
     material: paper
-    item_model: tabletop3d:card_p5
+    item_model: tabletop3d:color_eight/card_p5
   tabletop3d:card_p6:
     material: paper
-    item_model: tabletop3d:card_p6
+    item_model: tabletop3d:color_eight/card_p6
   tabletop3d:card_p7:
     material: paper
-    item_model: tabletop3d:card_p7
+    item_model: tabletop3d:color_eight/card_p7
   tabletop3d:card_p8:
     material: paper
-    item_model: tabletop3d:card_p8
+    item_model: tabletop3d:color_eight/card_p8
   tabletop3d:card_p9:
     material: paper
-    item_model: tabletop3d:card_p9
+    item_model: tabletop3d:color_eight/card_p9
   tabletop3d:card_pdraw:
     material: paper
-    item_model: tabletop3d:card_pdraw
+    item_model: tabletop3d:color_eight/card_pdraw
   tabletop3d:card_preverse:
     material: paper
-    item_model: tabletop3d:card_preverse
+    item_model: tabletop3d:color_eight/card_preverse
   tabletop3d:card_pskip:
     material: paper
-    item_model: tabletop3d:card_pskip
+    item_model: tabletop3d:color_eight/card_pskip
   tabletop3d:card_r1:
     material: paper
-    item_model: tabletop3d:card_r1
+    item_model: tabletop3d:color_eight/card_r1
   tabletop3d:card_r10:
     material: paper
-    item_model: tabletop3d:card_r10
+    item_model: tabletop3d:color_eight/card_r10
   tabletop3d:card_r2:
     material: paper
-    item_model: tabletop3d:card_r2
+    item_model: tabletop3d:color_eight/card_r2
   tabletop3d:card_r3:
     material: paper
-    item_model: tabletop3d:card_r3
+    item_model: tabletop3d:color_eight/card_r3
   tabletop3d:card_r4:
     material: paper
-    item_model: tabletop3d:card_r4
+    item_model: tabletop3d:color_eight/card_r4
   tabletop3d:card_r5:
     material: paper
-    item_model: tabletop3d:card_r5
+    item_model: tabletop3d:color_eight/card_r5
   tabletop3d:card_r6:
     material: paper
-    item_model: tabletop3d:card_r6
+    item_model: tabletop3d:color_eight/card_r6
   tabletop3d:card_r7:
     material: paper
-    item_model: tabletop3d:card_r7
+    item_model: tabletop3d:color_eight/card_r7
   tabletop3d:card_r8:
     material: paper
-    item_model: tabletop3d:card_r8
+    item_model: tabletop3d:color_eight/card_r8
   tabletop3d:card_r9:
     material: paper
-    item_model: tabletop3d:card_r9
+    item_model: tabletop3d:color_eight/card_r9
   tabletop3d:card_rdraw:
     material: paper
-    item_model: tabletop3d:card_rdraw
+    item_model: tabletop3d:color_eight/card_rdraw
   tabletop3d:card_rreverse:
     material: paper
-    item_model: tabletop3d:card_rreverse
+    item_model: tabletop3d:color_eight/card_rreverse
   tabletop3d:card_rskip:
     material: paper
-    item_model: tabletop3d:card_rskip
+    item_model: tabletop3d:color_eight/card_rskip
   tabletop3d:card_swap:
     material: paper
-    item_model: tabletop3d:card_swap
+    item_model: tabletop3d:color_eight/card_swap
   tabletop3d:card_table:
     material: paper
-    item_model: tabletop3d:card_table
+    item_model: tabletop3d:color_eight/card_table
   tabletop3d:card_wild:
     material: paper
-    item_model: tabletop3d:card_wild
+    item_model: tabletop3d:color_eight/card_wild
   tabletop3d:card_y1:
     material: paper
-    item_model: tabletop3d:card_y1
+    item_model: tabletop3d:color_eight/card_y1
   tabletop3d:card_y10:
     material: paper
-    item_model: tabletop3d:card_y10
+    item_model: tabletop3d:color_eight/card_y10
   tabletop3d:card_y2:
     material: paper
-    item_model: tabletop3d:card_y2
+    item_model: tabletop3d:color_eight/card_y2
   tabletop3d:card_y3:
     material: paper
-    item_model: tabletop3d:card_y3
+    item_model: tabletop3d:color_eight/card_y3
   tabletop3d:card_y4:
     material: paper
-    item_model: tabletop3d:card_y4
+    item_model: tabletop3d:color_eight/card_y4
   tabletop3d:card_y5:
     material: paper
-    item_model: tabletop3d:card_y5
+    item_model: tabletop3d:color_eight/card_y5
   tabletop3d:card_y6:
     material: paper
-    item_model: tabletop3d:card_y6
+    item_model: tabletop3d:color_eight/card_y6
   tabletop3d:card_y7:
     material: paper
-    item_model: tabletop3d:card_y7
+    item_model: tabletop3d:color_eight/card_y7
   tabletop3d:card_y8:
     material: paper
-    item_model: tabletop3d:card_y8
+    item_model: tabletop3d:color_eight/card_y8
   tabletop3d:card_y9:
     material: paper
-    item_model: tabletop3d:card_y9
+    item_model: tabletop3d:color_eight/card_y9
   tabletop3d:card_ydraw:
     material: paper
-    item_model: tabletop3d:card_ydraw
+    item_model: tabletop3d:color_eight/card_ydraw
   tabletop3d:card_yreverse:
     material: paper
-    item_model: tabletop3d:card_yreverse
+    item_model: tabletop3d:color_eight/card_yreverse
   tabletop3d:card_yskip:
     material: paper
-    item_model: tabletop3d:card_yskip
+    item_model: tabletop3d:color_eight/card_yskip
   tabletop3d:chess_black_bishop:
     material: paper
-    item_model: tabletop3d:chess_black_bishop
+    item_model: tabletop3d:chess/chess_black_bishop
   tabletop3d:chess_black_king:
     material: paper
-    item_model: tabletop3d:chess_black_king
+    item_model: tabletop3d:chess/chess_black_king
   tabletop3d:chess_black_knight:
     material: paper
-    item_model: tabletop3d:chess_black_knight
+    item_model: tabletop3d:chess/chess_black_knight
   tabletop3d:chess_black_pawn:
     material: paper
-    item_model: tabletop3d:chess_black_pawn
+    item_model: tabletop3d:chess/chess_black_pawn
   tabletop3d:chess_black_queen:
     material: paper
-    item_model: tabletop3d:chess_black_queen
+    item_model: tabletop3d:chess/chess_black_queen
   tabletop3d:chess_black_rook:
     material: paper
-    item_model: tabletop3d:chess_black_rook
+    item_model: tabletop3d:chess/chess_black_rook
   tabletop3d:chess_white_bishop:
     material: paper
-    item_model: tabletop3d:chess_white_bishop
+    item_model: tabletop3d:chess/chess_white_bishop
   tabletop3d:chess_white_king:
     material: paper
-    item_model: tabletop3d:chess_white_king
+    item_model: tabletop3d:chess/chess_white_king
   tabletop3d:chess_white_knight:
     material: paper
-    item_model: tabletop3d:chess_white_knight
+    item_model: tabletop3d:chess/chess_white_knight
   tabletop3d:chess_white_pawn:
     material: paper
-    item_model: tabletop3d:chess_white_pawn
+    item_model: tabletop3d:chess/chess_white_pawn
   tabletop3d:chess_white_queen:
     material: paper
-    item_model: tabletop3d:chess_white_queen
+    item_model: tabletop3d:chess/chess_white_queen
   tabletop3d:chess_white_rook:
     material: paper
-    item_model: tabletop3d:chess_white_rook
+    item_model: tabletop3d:chess/chess_white_rook
   tabletop3d:connectfour_red:
     material: paper
-    item_model: tabletop3d:connectfour_red
+    item_model: tabletop3d:connect_four/connectfour_red
   tabletop3d:connectfour_yellow:
     material: paper
-    item_model: tabletop3d:connectfour_yellow
+    item_model: tabletop3d:connect_four/connectfour_yellow
   tabletop3d:doudizhu_table:
     material: paper
-    item_model: tabletop3d:doudizhu_table
+    item_model: tabletop3d:doudizhu/doudizhu_table
   tabletop3d:draught_black:
     material: paper
-    item_model: tabletop3d:draught_black
+    item_model: tabletop3d:draughts/draught_black
   tabletop3d:draught_black_king:
     material: paper
-    item_model: tabletop3d:draught_black_king
+    item_model: tabletop3d:draughts/draught_black_king
   tabletop3d:draught_white:
     material: paper
-    item_model: tabletop3d:draught_white
+    item_model: tabletop3d:draughts/draught_white
   tabletop3d:draught_white_king:
     material: paper
-    item_model: tabletop3d:draught_white_king
+    item_model: tabletop3d:draughts/draught_white_king
   tabletop3d:liars_bar_table:
     material: paper
-    item_model: tabletop3d:liars_bar_table
+    item_model: tabletop3d:liars_bar/liars_bar_table
   tabletop3d:ludo_blue:
     material: paper
-    item_model: tabletop3d:ludo_blue
+    item_model: tabletop3d:ludo/ludo_blue
   tabletop3d:ludo_dice_tray:
     material: paper
-    item_model: tabletop3d:ludo_dice_tray
+    item_model: tabletop3d:ludo/ludo_dice_tray
   tabletop3d:ludo_green:
     material: paper
-    item_model: tabletop3d:ludo_green
+    item_model: tabletop3d:ludo/ludo_green
   tabletop3d:ludo_pink:
     material: paper
-    item_model: tabletop3d:ludo_pink
+    item_model: tabletop3d:ludo/ludo_pink
   tabletop3d:ludo_purple:
     material: paper
-    item_model: tabletop3d:ludo_purple
+    item_model: tabletop3d:ludo/ludo_purple
   tabletop3d:ludo_red:
     material: paper
-    item_model: tabletop3d:ludo_red
+    item_model: tabletop3d:ludo/ludo_red
   tabletop3d:ludo_yellow:
     material: paper
-    item_model: tabletop3d:ludo_yellow
+    item_model: tabletop3d:ludo/ludo_yellow
   tabletop3d:mahjong_back:
     material: paper
-    item_model: tabletop3d:mahjong_back
+    item_model: tabletop3d:mahjong/mahjong_back
   tabletop3d:mahjong_f1:
     material: paper
-    item_model: tabletop3d:mahjong_f1
+    item_model: tabletop3d:mahjong/mahjong_f1
   tabletop3d:mahjong_f2:
     material: paper
-    item_model: tabletop3d:mahjong_f2
+    item_model: tabletop3d:mahjong/mahjong_f2
   tabletop3d:mahjong_f3:
     material: paper
-    item_model: tabletop3d:mahjong_f3
+    item_model: tabletop3d:mahjong/mahjong_f3
   tabletop3d:mahjong_f4:
     material: paper
-    item_model: tabletop3d:mahjong_f4
+    item_model: tabletop3d:mahjong/mahjong_f4
   tabletop3d:mahjong_f5:
     material: paper
-    item_model: tabletop3d:mahjong_f5
+    item_model: tabletop3d:mahjong/mahjong_f5
   tabletop3d:mahjong_f6:
     material: paper
-    item_model: tabletop3d:mahjong_f6
+    item_model: tabletop3d:mahjong/mahjong_f6
   tabletop3d:mahjong_f7:
     material: paper
-    item_model: tabletop3d:mahjong_f7
+    item_model: tabletop3d:mahjong/mahjong_f7
   tabletop3d:mahjong_f8:
     material: paper
-    item_model: tabletop3d:mahjong_f8
+    item_model: tabletop3d:mahjong/mahjong_f8
   tabletop3d:mahjong_m0:
     material: paper
-    item_model: tabletop3d:mahjong_m0
+    item_model: tabletop3d:mahjong/mahjong_m0
   tabletop3d:mahjong_m1:
     material: paper
-    item_model: tabletop3d:mahjong_m1
+    item_model: tabletop3d:mahjong/mahjong_m1
   tabletop3d:mahjong_m2:
     material: paper
-    item_model: tabletop3d:mahjong_m2
+    item_model: tabletop3d:mahjong/mahjong_m2
   tabletop3d:mahjong_m3:
     material: paper
-    item_model: tabletop3d:mahjong_m3
+    item_model: tabletop3d:mahjong/mahjong_m3
   tabletop3d:mahjong_m4:
     material: paper
-    item_model: tabletop3d:mahjong_m4
+    item_model: tabletop3d:mahjong/mahjong_m4
   tabletop3d:mahjong_m5:
     material: paper
-    item_model: tabletop3d:mahjong_m5
+    item_model: tabletop3d:mahjong/mahjong_m5
   tabletop3d:mahjong_m6:
     material: paper
-    item_model: tabletop3d:mahjong_m6
+    item_model: tabletop3d:mahjong/mahjong_m6
   tabletop3d:mahjong_m7:
     material: paper
-    item_model: tabletop3d:mahjong_m7
+    item_model: tabletop3d:mahjong/mahjong_m7
   tabletop3d:mahjong_m8:
     material: paper
-    item_model: tabletop3d:mahjong_m8
+    item_model: tabletop3d:mahjong/mahjong_m8
   tabletop3d:mahjong_m9:
     material: paper
-    item_model: tabletop3d:mahjong_m9
+    item_model: tabletop3d:mahjong/mahjong_m9
   tabletop3d:mahjong_p0:
     material: paper
-    item_model: tabletop3d:mahjong_p0
+    item_model: tabletop3d:mahjong/mahjong_p0
   tabletop3d:mahjong_p1:
     material: paper
-    item_model: tabletop3d:mahjong_p1
+    item_model: tabletop3d:mahjong/mahjong_p1
   tabletop3d:mahjong_p2:
     material: paper
-    item_model: tabletop3d:mahjong_p2
+    item_model: tabletop3d:mahjong/mahjong_p2
   tabletop3d:mahjong_p3:
     material: paper
-    item_model: tabletop3d:mahjong_p3
+    item_model: tabletop3d:mahjong/mahjong_p3
   tabletop3d:mahjong_p4:
     material: paper
-    item_model: tabletop3d:mahjong_p4
+    item_model: tabletop3d:mahjong/mahjong_p4
   tabletop3d:mahjong_p5:
     material: paper
-    item_model: tabletop3d:mahjong_p5
+    item_model: tabletop3d:mahjong/mahjong_p5
   tabletop3d:mahjong_p6:
     material: paper
-    item_model: tabletop3d:mahjong_p6
+    item_model: tabletop3d:mahjong/mahjong_p6
   tabletop3d:mahjong_p7:
     material: paper
-    item_model: tabletop3d:mahjong_p7
+    item_model: tabletop3d:mahjong/mahjong_p7
   tabletop3d:mahjong_p8:
     material: paper
-    item_model: tabletop3d:mahjong_p8
+    item_model: tabletop3d:mahjong/mahjong_p8
   tabletop3d:mahjong_p9:
     material: paper
-    item_model: tabletop3d:mahjong_p9
+    item_model: tabletop3d:mahjong/mahjong_p9
   tabletop3d:mahjong_panel:
     material: paper
-    item_model: tabletop3d:mahjong_panel
+    item_model: tabletop3d:mahjong/mahjong_panel
   tabletop3d:mahjong_s0:
     material: paper
-    item_model: tabletop3d:mahjong_s0
+    item_model: tabletop3d:mahjong/mahjong_s0
   tabletop3d:mahjong_s1:
     material: paper
-    item_model: tabletop3d:mahjong_s1
+    item_model: tabletop3d:mahjong/mahjong_s1
   tabletop3d:mahjong_s2:
     material: paper
-    item_model: tabletop3d:mahjong_s2
+    item_model: tabletop3d:mahjong/mahjong_s2
   tabletop3d:mahjong_s3:
     material: paper
-    item_model: tabletop3d:mahjong_s3
+    item_model: tabletop3d:mahjong/mahjong_s3
   tabletop3d:mahjong_s4:
     material: paper
-    item_model: tabletop3d:mahjong_s4
+    item_model: tabletop3d:mahjong/mahjong_s4
   tabletop3d:mahjong_s5:
     material: paper
-    item_model: tabletop3d:mahjong_s5
+    item_model: tabletop3d:mahjong/mahjong_s5
   tabletop3d:mahjong_s6:
     material: paper
-    item_model: tabletop3d:mahjong_s6
+    item_model: tabletop3d:mahjong/mahjong_s6
   tabletop3d:mahjong_s7:
     material: paper
-    item_model: tabletop3d:mahjong_s7
+    item_model: tabletop3d:mahjong/mahjong_s7
   tabletop3d:mahjong_s8:
     material: paper
-    item_model: tabletop3d:mahjong_s8
+    item_model: tabletop3d:mahjong/mahjong_s8
   tabletop3d:mahjong_s9:
     material: paper
-    item_model: tabletop3d:mahjong_s9
+    item_model: tabletop3d:mahjong/mahjong_s9
   tabletop3d:mahjong_table:
     material: paper
-    item_model: tabletop3d:mahjong_table
+    item_model: tabletop3d:mahjong/mahjong_table
   tabletop3d:mahjong_z1:
     material: paper
-    item_model: tabletop3d:mahjong_z1
+    item_model: tabletop3d:mahjong/mahjong_z1
   tabletop3d:mahjong_z2:
     material: paper
-    item_model: tabletop3d:mahjong_z2
+    item_model: tabletop3d:mahjong/mahjong_z2
   tabletop3d:mahjong_z3:
     material: paper
-    item_model: tabletop3d:mahjong_z3
+    item_model: tabletop3d:mahjong/mahjong_z3
   tabletop3d:mahjong_z4:
     material: paper
-    item_model: tabletop3d:mahjong_z4
+    item_model: tabletop3d:mahjong/mahjong_z4
   tabletop3d:mahjong_z5:
     material: paper
-    item_model: tabletop3d:mahjong_z5
+    item_model: tabletop3d:mahjong/mahjong_z5
   tabletop3d:mahjong_z6:
     material: paper
-    item_model: tabletop3d:mahjong_z6
+    item_model: tabletop3d:mahjong/mahjong_z6
   tabletop3d:mahjong_z7:
     material: paper
-    item_model: tabletop3d:mahjong_z7
+    item_model: tabletop3d:mahjong/mahjong_z7
   tabletop3d:peg_blue:
     material: paper
-    item_model: tabletop3d:peg_blue
+    item_model: tabletop3d:checkers/peg_blue
   tabletop3d:peg_green:
     material: paper
-    item_model: tabletop3d:peg_green
+    item_model: tabletop3d:checkers/peg_green
   tabletop3d:peg_pink:
     material: paper
-    item_model: tabletop3d:peg_pink
+    item_model: tabletop3d:checkers/peg_pink
   tabletop3d:peg_purple:
     material: paper
-    item_model: tabletop3d:peg_purple
+    item_model: tabletop3d:checkers/peg_purple
   tabletop3d:peg_red:
     material: paper
-    item_model: tabletop3d:peg_red
+    item_model: tabletop3d:checkers/peg_red
   tabletop3d:peg_yellow:
     material: paper
-    item_model: tabletop3d:peg_yellow
+    item_model: tabletop3d:checkers/peg_yellow
   tabletop3d:playing_back:
     material: paper
-    item_model: tabletop3d:playing_back
+    item_model: tabletop3d:shared/playing_cards/playing_back
   tabletop3d:playing_clubs_10:
     material: paper
-    item_model: tabletop3d:playing_clubs_10
+    item_model: tabletop3d:shared/playing_cards/playing_clubs_10
   tabletop3d:playing_clubs_2:
     material: paper
-    item_model: tabletop3d:playing_clubs_2
+    item_model: tabletop3d:shared/playing_cards/playing_clubs_2
   tabletop3d:playing_clubs_3:
     material: paper
-    item_model: tabletop3d:playing_clubs_3
+    item_model: tabletop3d:shared/playing_cards/playing_clubs_3
   tabletop3d:playing_clubs_4:
     material: paper
-    item_model: tabletop3d:playing_clubs_4
+    item_model: tabletop3d:shared/playing_cards/playing_clubs_4
   tabletop3d:playing_clubs_5:
     material: paper
-    item_model: tabletop3d:playing_clubs_5
+    item_model: tabletop3d:shared/playing_cards/playing_clubs_5
   tabletop3d:playing_clubs_6:
     material: paper
-    item_model: tabletop3d:playing_clubs_6
+    item_model: tabletop3d:shared/playing_cards/playing_clubs_6
   tabletop3d:playing_clubs_7:
     material: paper
-    item_model: tabletop3d:playing_clubs_7
+    item_model: tabletop3d:shared/playing_cards/playing_clubs_7
   tabletop3d:playing_clubs_8:
     material: paper
-    item_model: tabletop3d:playing_clubs_8
+    item_model: tabletop3d:shared/playing_cards/playing_clubs_8
   tabletop3d:playing_clubs_9:
     material: paper
-    item_model: tabletop3d:playing_clubs_9
+    item_model: tabletop3d:shared/playing_cards/playing_clubs_9
   tabletop3d:playing_clubs_ace:
     material: paper
-    item_model: tabletop3d:playing_clubs_ace
+    item_model: tabletop3d:shared/playing_cards/playing_clubs_ace
   tabletop3d:playing_clubs_jack:
     material: paper
-    item_model: tabletop3d:playing_clubs_jack
+    item_model: tabletop3d:shared/playing_cards/playing_clubs_jack
   tabletop3d:playing_clubs_king:
     material: paper
-    item_model: tabletop3d:playing_clubs_king
+    item_model: tabletop3d:shared/playing_cards/playing_clubs_king
   tabletop3d:playing_clubs_queen:
     material: paper
-    item_model: tabletop3d:playing_clubs_queen
+    item_model: tabletop3d:shared/playing_cards/playing_clubs_queen
   tabletop3d:playing_diamonds_10:
     material: paper
-    item_model: tabletop3d:playing_diamonds_10
+    item_model: tabletop3d:shared/playing_cards/playing_diamonds_10
   tabletop3d:playing_diamonds_2:
     material: paper
-    item_model: tabletop3d:playing_diamonds_2
+    item_model: tabletop3d:shared/playing_cards/playing_diamonds_2
   tabletop3d:playing_diamonds_3:
     material: paper
-    item_model: tabletop3d:playing_diamonds_3
+    item_model: tabletop3d:shared/playing_cards/playing_diamonds_3
   tabletop3d:playing_diamonds_4:
     material: paper
-    item_model: tabletop3d:playing_diamonds_4
+    item_model: tabletop3d:shared/playing_cards/playing_diamonds_4
   tabletop3d:playing_diamonds_5:
     material: paper
-    item_model: tabletop3d:playing_diamonds_5
+    item_model: tabletop3d:shared/playing_cards/playing_diamonds_5
   tabletop3d:playing_diamonds_6:
     material: paper
-    item_model: tabletop3d:playing_diamonds_6
+    item_model: tabletop3d:shared/playing_cards/playing_diamonds_6
   tabletop3d:playing_diamonds_7:
     material: paper
-    item_model: tabletop3d:playing_diamonds_7
+    item_model: tabletop3d:shared/playing_cards/playing_diamonds_7
   tabletop3d:playing_diamonds_8:
     material: paper
-    item_model: tabletop3d:playing_diamonds_8
+    item_model: tabletop3d:shared/playing_cards/playing_diamonds_8
   tabletop3d:playing_diamonds_9:
     material: paper
-    item_model: tabletop3d:playing_diamonds_9
+    item_model: tabletop3d:shared/playing_cards/playing_diamonds_9
   tabletop3d:playing_diamonds_ace:
     material: paper
-    item_model: tabletop3d:playing_diamonds_ace
+    item_model: tabletop3d:shared/playing_cards/playing_diamonds_ace
   tabletop3d:playing_diamonds_jack:
     material: paper
-    item_model: tabletop3d:playing_diamonds_jack
+    item_model: tabletop3d:shared/playing_cards/playing_diamonds_jack
   tabletop3d:playing_diamonds_king:
     material: paper
-    item_model: tabletop3d:playing_diamonds_king
+    item_model: tabletop3d:shared/playing_cards/playing_diamonds_king
   tabletop3d:playing_diamonds_queen:
     material: paper
-    item_model: tabletop3d:playing_diamonds_queen
+    item_model: tabletop3d:shared/playing_cards/playing_diamonds_queen
   tabletop3d:playing_hearts_10:
     material: paper
-    item_model: tabletop3d:playing_hearts_10
+    item_model: tabletop3d:shared/playing_cards/playing_hearts_10
   tabletop3d:playing_hearts_2:
     material: paper
-    item_model: tabletop3d:playing_hearts_2
+    item_model: tabletop3d:shared/playing_cards/playing_hearts_2
   tabletop3d:playing_hearts_3:
     material: paper
-    item_model: tabletop3d:playing_hearts_3
+    item_model: tabletop3d:shared/playing_cards/playing_hearts_3
   tabletop3d:playing_hearts_4:
     material: paper
-    item_model: tabletop3d:playing_hearts_4
+    item_model: tabletop3d:shared/playing_cards/playing_hearts_4
   tabletop3d:playing_hearts_5:
     material: paper
-    item_model: tabletop3d:playing_hearts_5
+    item_model: tabletop3d:shared/playing_cards/playing_hearts_5
   tabletop3d:playing_hearts_6:
     material: paper
-    item_model: tabletop3d:playing_hearts_6
+    item_model: tabletop3d:shared/playing_cards/playing_hearts_6
   tabletop3d:playing_hearts_7:
     material: paper
-    item_model: tabletop3d:playing_hearts_7
+    item_model: tabletop3d:shared/playing_cards/playing_hearts_7
   tabletop3d:playing_hearts_8:
     material: paper
-    item_model: tabletop3d:playing_hearts_8
+    item_model: tabletop3d:shared/playing_cards/playing_hearts_8
   tabletop3d:playing_hearts_9:
     material: paper
-    item_model: tabletop3d:playing_hearts_9
+    item_model: tabletop3d:shared/playing_cards/playing_hearts_9
   tabletop3d:playing_hearts_ace:
     material: paper
-    item_model: tabletop3d:playing_hearts_ace
+    item_model: tabletop3d:shared/playing_cards/playing_hearts_ace
   tabletop3d:playing_hearts_jack:
     material: paper
-    item_model: tabletop3d:playing_hearts_jack
+    item_model: tabletop3d:shared/playing_cards/playing_hearts_jack
   tabletop3d:playing_hearts_king:
     material: paper
-    item_model: tabletop3d:playing_hearts_king
+    item_model: tabletop3d:shared/playing_cards/playing_hearts_king
   tabletop3d:playing_hearts_queen:
     material: paper
-    item_model: tabletop3d:playing_hearts_queen
+    item_model: tabletop3d:shared/playing_cards/playing_hearts_queen
   tabletop3d:playing_joker_big:
     material: paper
-    item_model: tabletop3d:playing_joker_big
+    item_model: tabletop3d:shared/playing_cards/playing_joker_big
   tabletop3d:playing_joker_small:
     material: paper
-    item_model: tabletop3d:playing_joker_small
+    item_model: tabletop3d:shared/playing_cards/playing_joker_small
   tabletop3d:playing_spades_10:
     material: paper
-    item_model: tabletop3d:playing_spades_10
+    item_model: tabletop3d:shared/playing_cards/playing_spades_10
   tabletop3d:playing_spades_2:
     material: paper
-    item_model: tabletop3d:playing_spades_2
+    item_model: tabletop3d:shared/playing_cards/playing_spades_2
   tabletop3d:playing_spades_3:
     material: paper
-    item_model: tabletop3d:playing_spades_3
+    item_model: tabletop3d:shared/playing_cards/playing_spades_3
   tabletop3d:playing_spades_4:
     material: paper
-    item_model: tabletop3d:playing_spades_4
+    item_model: tabletop3d:shared/playing_cards/playing_spades_4
   tabletop3d:playing_spades_5:
     material: paper
-    item_model: tabletop3d:playing_spades_5
+    item_model: tabletop3d:shared/playing_cards/playing_spades_5
   tabletop3d:playing_spades_6:
     material: paper
-    item_model: tabletop3d:playing_spades_6
+    item_model: tabletop3d:shared/playing_cards/playing_spades_6
   tabletop3d:playing_spades_7:
     material: paper
-    item_model: tabletop3d:playing_spades_7
+    item_model: tabletop3d:shared/playing_cards/playing_spades_7
   tabletop3d:playing_spades_8:
     material: paper
-    item_model: tabletop3d:playing_spades_8
+    item_model: tabletop3d:shared/playing_cards/playing_spades_8
   tabletop3d:playing_spades_9:
     material: paper
-    item_model: tabletop3d:playing_spades_9
+    item_model: tabletop3d:shared/playing_cards/playing_spades_9
   tabletop3d:playing_spades_ace:
     material: paper
-    item_model: tabletop3d:playing_spades_ace
+    item_model: tabletop3d:shared/playing_cards/playing_spades_ace
   tabletop3d:playing_spades_jack:
     material: paper
-    item_model: tabletop3d:playing_spades_jack
+    item_model: tabletop3d:shared/playing_cards/playing_spades_jack
   tabletop3d:playing_spades_king:
     material: paper
-    item_model: tabletop3d:playing_spades_king
+    item_model: tabletop3d:shared/playing_cards/playing_spades_king
   tabletop3d:playing_spades_queen:
     material: paper
-    item_model: tabletop3d:playing_spades_queen
+    item_model: tabletop3d:shared/playing_cards/playing_spades_queen
   tabletop3d:poker_chips:
     material: paper
-    item_model: tabletop3d:poker_chips
+    item_model: tabletop3d:texas_holdem/poker_chips
   tabletop3d:poker_dealer:
     material: paper
-    item_model: tabletop3d:poker_dealer
+    item_model: tabletop3d:texas_holdem/poker_dealer
   tabletop3d:reversi_disc:
     material: paper
-    item_model: tabletop3d:reversi_disc
+    item_model: tabletop3d:reversi/reversi_disc
   tabletop3d:ring_forward:
     material: paper
-    item_model: tabletop3d:ring_forward
+    item_model: tabletop3d:color_eight/ring_forward
   tabletop3d:ring_reverse:
     material: paper
-    item_model: tabletop3d:ring_reverse
+    item_model: tabletop3d:color_eight/ring_reverse
   tabletop3d:stone_black:
     material: paper
-    item_model: tabletop3d:stone_black
+    item_model: tabletop3d:shared/pieces/stone_black
   tabletop3d:stone_black_dead:
     material: paper
-    item_model: tabletop3d:stone_black_dead
+    item_model: tabletop3d:go/stone_black_dead
   tabletop3d:stone_white:
     material: paper
-    item_model: tabletop3d:stone_white
+    item_model: tabletop3d:shared/pieces/stone_white
   tabletop3d:stone_white_dead:
     material: paper
-    item_model: tabletop3d:stone_white_dead
+    item_model: tabletop3d:go/stone_white_dead
   tabletop3d:texas_holdem_table:
     material: paper
-    item_model: tabletop3d:texas_holdem_table
+    item_model: tabletop3d:texas_holdem/texas_holdem_table
   tabletop3d:xiangqi_black_advisor:
     material: paper
-    item_model: tabletop3d:xiangqi_black_advisor
+    item_model: tabletop3d:xiangqi/xiangqi_black_advisor
   tabletop3d:xiangqi_black_cannon:
     material: paper
-    item_model: tabletop3d:xiangqi_black_cannon
+    item_model: tabletop3d:xiangqi/xiangqi_black_cannon
   tabletop3d:xiangqi_black_elephant:
     material: paper
-    item_model: tabletop3d:xiangqi_black_elephant
+    item_model: tabletop3d:xiangqi/xiangqi_black_elephant
   tabletop3d:xiangqi_black_general:
     material: paper
-    item_model: tabletop3d:xiangqi_black_general
+    item_model: tabletop3d:xiangqi/xiangqi_black_general
   tabletop3d:xiangqi_black_horse:
     material: paper
-    item_model: tabletop3d:xiangqi_black_horse
+    item_model: tabletop3d:xiangqi/xiangqi_black_horse
   tabletop3d:xiangqi_black_pawn:
     material: paper
-    item_model: tabletop3d:xiangqi_black_pawn
+    item_model: tabletop3d:xiangqi/xiangqi_black_pawn
   tabletop3d:xiangqi_black_rook:
     material: paper
-    item_model: tabletop3d:xiangqi_black_rook
+    item_model: tabletop3d:xiangqi/xiangqi_black_rook
   tabletop3d:xiangqi_red_advisor:
     material: paper
-    item_model: tabletop3d:xiangqi_red_advisor
+    item_model: tabletop3d:xiangqi/xiangqi_red_advisor
   tabletop3d:xiangqi_red_cannon:
     material: paper
-    item_model: tabletop3d:xiangqi_red_cannon
+    item_model: tabletop3d:xiangqi/xiangqi_red_cannon
   tabletop3d:xiangqi_red_elephant:
     material: paper
-    item_model: tabletop3d:xiangqi_red_elephant
+    item_model: tabletop3d:xiangqi/xiangqi_red_elephant
   tabletop3d:xiangqi_red_general:
     material: paper
-    item_model: tabletop3d:xiangqi_red_general
+    item_model: tabletop3d:xiangqi/xiangqi_red_general
   tabletop3d:xiangqi_red_horse:
     material: paper
-    item_model: tabletop3d:xiangqi_red_horse
+    item_model: tabletop3d:xiangqi/xiangqi_red_horse
   tabletop3d:xiangqi_red_pawn:
     material: paper
-    item_model: tabletop3d:xiangqi_red_pawn
+    item_model: tabletop3d:xiangqi/xiangqi_red_pawn
   tabletop3d:xiangqi_red_rook:
     material: paper
-    item_model: tabletop3d:xiangqi_red_rook
+    item_model: tabletop3d:xiangqi/xiangqi_red_rook
   tabletop3d:yacht_die:
     material: paper
-    item_model: tabletop3d:yacht_die
+    item_model: tabletop3d:shared/dice/yacht_die
   tabletop3d:yacht_table:
     material: paper
-    item_model: tabletop3d:yacht_table
+    item_model: tabletop3d:yacht/yacht_table

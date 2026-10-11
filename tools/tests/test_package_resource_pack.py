@@ -22,14 +22,14 @@ class PackageResourcePackTest(unittest.TestCase):
         self.root = Path(self.workspace.name)
         self.source = self.root / "resource-pack"
         self.write("pack.mcmeta", {"pack": {"pack_format": 88, "description": "Test"}})
-        self.write("assets/tabletop3d/items/tile.json", {
+        self.write("assets/tabletop3d/items/mahjong/tile.json", {
             "model": {"type": "minecraft:model", "model": "tabletop3d:item/mahjong/tile"}})
         self.write("assets/tabletop3d/models/item/mahjong/tile.json", {"textures": {}, "elements": []})
         self.write("assets/tabletop3d/sounds.json", {})
         self.write("licenses/notice.txt", "Test attribution")
         registration = self.source / "craftengine/resources/tabletop3d/configuration/items.yml"
         registration.parent.mkdir(parents=True)
-        registration.write_text("items:\n  tabletop3d:tile:\n    material: paper\n    item_model: tabletop3d:tile\n")
+        registration.write_text("items:\n  tabletop3d:tile:\n    material: paper\n    item_model: tabletop3d:mahjong/tile\n")
         (self.root / "src/main/resources").mkdir(parents=True)
 
     def write(self, name, data):
@@ -69,10 +69,18 @@ class PackageResourcePackTest(unittest.TestCase):
         self.assertFalse((self.root / "target/tabletop-resource-pack.zip").exists())
 
     def test_unregistered_item_prevents_publishing_a_broken_pack(self):
-        self.write("assets/tabletop3d/items/unknown.json", {
+        self.write("assets/tabletop3d/items/mahjong/unknown.json", {
             "model": {"type": "minecraft:model", "model": "tabletop3d:item/mahjong/tile"}})
         with self.assertRaisesRegex(ValueError, "registration"):
             self.builder.package_resource_pack(self.root)
+
+    def test_stale_craftengine_item_path_prevents_publishing_a_broken_pack(self):
+        registration = self.source / "craftengine/resources/tabletop3d/configuration/items.yml"
+        registration.write_text(registration.read_text().replace(
+            "item_model: tabletop3d:mahjong/tile", "item_model: tabletop3d:tile"))
+        with self.assertRaisesRegex(ValueError, "item-model registration"):
+            self.builder.package_resource_pack(self.root)
+        self.assertFalse((self.root / "target/tabletop-resource-pack.zip").exists())
 
 
 if __name__ == "__main__":

@@ -5,10 +5,11 @@ from PIL import Image, ImageChops
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'resource-pack/originals/textures/playing-cards'
+ITEMS = {path.stem: path for path in (ROOT / 'resource-pack/assets/tabletop3d/items').rglob('*.json')}
 
 
 def face(name):
-    item = json.loads((ROOT / f'resource-pack/assets/tabletop3d/items/{name}.json').read_text())
+    item = json.loads(ITEMS[name].read_text())
     path = item['model']['model'].replace(':', '/models/') + '.json'
     model = json.loads((ROOT / 'resource-pack/assets' / path).read_text())
     texture = model['elements'][0]['faces']['south']['texture'][1:]

@@ -6,6 +6,7 @@ from PIL import Image, ImageDraw
 
 ROOT=Path(__file__).resolve().parents[2]
 ASSETS=ROOT/'resource-pack/assets/tabletop3d'
+ITEMS={path.stem:path for path in (ASSETS/'items').rglob('*.json')}
 OUT=ROOT/'target/pack-preview'
 
 def rotate(v,rotation):
@@ -20,7 +21,7 @@ def rotate(v,rotation):
 
 def render(name):
     OUT.mkdir(parents=True,exist_ok=True)
-    item=json.loads((ASSETS/f'items/{name}.json').read_text())
+    item=json.loads(ITEMS[name].read_text())
     model_path=item['model']['model'].split(':',1)[1]
     model=json.loads((ASSETS/f'models/{model_path}.json').read_text())
     faces=[];scale=24 if name=='yacht_table' else 12 if name!='mahjong_panel' else 20

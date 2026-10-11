@@ -152,7 +152,7 @@ Asset and head-export tests need Pillow. Optional native head upload needs its o
 
 ### Editing the resource pack
 
-Edit model JSONs under `resource-pack/assets/tabletop3d/models/item/`, item definitions under `items/`, images under `textures/item/` and OGG samples under `sounds/`. Sound events are in `assets/tabletop3d/sounds.json`. To add an item, keep its ID in the item definition, model, CraftEngine registration and `CraftEngineModels.IDS` consistent. Run the packager and tests after editing, then compile and ship the matching JAR and ZIP together. Packing does not redraw, resize or transcode any source file.
+Edit model JSONs under `resource-pack/assets/tabletop3d/models/item/`, item definitions under `items/`, images under `textures/item/` and OGG samples under `sounds/`. Sound events are in `assets/tabletop3d/sounds.json`. To add an item, match its definition path to CraftEngine's `item_model` and its `model.model` to the model path. Keep the logical item ID in the CraftEngine registration and `CraftEngineModels.IDS` consistent. Run the packager and tests after editing, then compile and ship the matching JAR and ZIP together. Packing does not redraw, resize or transcode any source file.
 
 Image names identify the game and part, for example `poker_spades_9_face.png`, `color_eight_yellow_6_face.png`, `xiangqi_red_pawn_face.png` and `mahjong_table_cloth.png`. `top`/`bottom` identify upper and lower surfaces, `front`/`rear` distinguish face orientations, and `shared_` marks textures reused by multiple models.
 
@@ -166,7 +166,7 @@ Under `textures/item/`, game-specific images live in `mahjong/`, `xiangqi/`, `ch
 | `shared/pieces/` | Go/Gomoku stones and gold decorations used by multiple board games |
 | `shared/dice/` | Six face textures for the die shared by Ludo and Yacht Dice |
 
-Models follow the same game directories under `models/item/<game>/`. Shared playing-card models live in `models/item/shared/playing_cards/`, Go/Gomoku stones in `shared/pieces/`, and the Ludo/Yacht die in `shared/dice/`. Definitions under `items/` keep their existing IDs and reference the actual model path through `model.model`; Java code and CraftEngine registrations continue to use the existing item IDs.
+Models and item definitions follow the same game directories under `models/item/<game>/` and `items/<game>/`. Shared playing cards live in `shared/playing_cards/`, Go/Gomoku stones in `shared/pieces/`, and the Ludo/Yacht die in `shared/dice/`. For example, `items/mahjong/mahjong_m1.json` has the client ID `tabletop3d:mahjong/mahjong_m1`, referenced by CraftEngine's `item_model`. Its `model.model` points to `tabletop3d:item/mahjong/mahjong_m1`. Java code and CraftEngine's custom item keys retain the logical ID `tabletop3d:mahjong_m1`.
 
 ### Finding the code
 

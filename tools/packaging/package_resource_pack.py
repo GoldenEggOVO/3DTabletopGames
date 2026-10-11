@@ -18,16 +18,25 @@ def asset_path(source, identifier, folder, suffix):
 def validate_assets(source):
     json.loads((source / "pack.mcmeta").read_text(encoding="utf-8"))
     items = source / "assets/tabletop3d/items"
-    models = sorted(path.stem for path in items.glob("*.json"))
+    paths = sorted(items.rglob("*.json"))
+    definitions = {path.stem: path for path in paths}
+    models = sorted(definitions)
     if not models:
         raise ValueError("Resource pack has no item models")
+    if len(definitions) != len(paths):
+        raise ValueError("Resource-pack item IDs must be unique across directories")
     registration = source / "craftengine/resources/tabletop3d/configuration/items.yml"
-    registered = set(re.findall(r"^  tabletop3d:([a-z0-9_-]+):\s*$",
-                               registration.read_text(encoding="utf-8"), re.MULTILINE))
-    if registered != set(models):
+    registered = dict(re.findall(
+        r"^  tabletop3d:([a-z0-9_-]+):\n    material: paper\n    item_model: (tabletop3d:[a-z0-9_/-]+)$",
+        registration.read_text(encoding="utf-8"), re.MULTILINE))
+    if set(registered) != set(models):
         raise ValueError("CraftEngine registration differs from the resource-pack items")
     for name in models:
-        item = json.loads((items / (name + ".json")).read_text(encoding="utf-8"))
+        path = definitions[name]
+        identifier = "tabletop3d:" + path.relative_to(items).with_suffix("").as_posix()
+        if registered[name] != identifier:
+            raise ValueError(f"CraftEngine item-model registration differs from the item path: {name}")
+        item = json.loads(path.read_text(encoding="utf-8"))
         model = asset_path(source, item["model"]["model"], "models", ".json")
         if not model.is_file():
             raise ValueError(f"Missing item model: {name}")

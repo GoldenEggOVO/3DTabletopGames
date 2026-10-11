@@ -42,7 +42,7 @@ class ResourcePackTest(unittest.TestCase):
                                  name + " must not draw the internal faces of solid slices")
 
     def model(self, name):
-        item = json.loads(self.archive.read(f"assets/tabletop3d/items/{name}.json"))
+        item = json.loads(self.archive.read(self.items[name]))
         path = "assets/" + item["model"]["model"].replace(":", "/models/") + ".json"
         return json.loads(self.archive.read(path))
 
@@ -117,6 +117,8 @@ class ResourcePackTest(unittest.TestCase):
         self.archive = zipfile.ZipFile(ROOT / "target/tabletop-resource-pack.zip")
         self.addCleanup(self.archive.close)
         self.names = set(self.archive.namelist())
+        self.items = {Path(name).stem: name for name in self.names
+                      if name.startswith("assets/tabletop3d/items/") and name.endswith(".json")}
 
     def test_catalog_and_namespace(self):
         manifest = json.loads((ROOT / "target/resource-pack-manifest.json").read_text(encoding="utf-8"))
@@ -124,7 +126,7 @@ class ResourcePackTest(unittest.TestCase):
         for kind in ("chess", "connectfour", "xiangqi", "gomoku", "go", "go9", "go13", "reversi", "draughts", "checkers", "ludo"):
             self.assertIn("board_" + kind, manifest["models"])
         for model in manifest["models"]:
-            item = json.loads(self.archive.read(f"assets/tabletop3d/items/{model}.json"))
+            item = json.loads(self.archive.read(self.items[model]))
             self.assertEqual("minecraft:model", item["model"]["type"])
             self.assertTrue(item["model"]["model"].startswith("tabletop3d:item/"))
             self.assertEqual(model, Path(item["model"]["model"]).name)

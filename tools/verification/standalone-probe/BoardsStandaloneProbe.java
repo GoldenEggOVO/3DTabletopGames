@@ -392,6 +392,8 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         world.getChunkAt(0,0).addPluginChunkTicket(this);
         Plugin ce=Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("CraftEngine"));
         require(ce.isEnabled(),"CraftEngine enabled");
+        var registration=org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(
+            ce.getDataFolder().toPath().resolve("resources/tabletop3d/configuration/items.yml").toFile());
         Class<?> type=Class.forName("dev.tabletop3d.resource.CraftEngineModels",true,plugin.getClass().getClassLoader());
         var ctor=type.getDeclaredConstructor();ctor.setAccessible(true);Object models=ctor.newInstance();
         require((boolean)call(models,"ready",new Class<?>[0]),"all CE models registered and buildable");
@@ -399,7 +401,8 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         for(Object id:(List<?>)ids.get(null)){
             org.bukkit.inventory.ItemStack item=(org.bukkit.inventory.ItemStack)call(models,"item",new Class<?>[]{String.class},id);
             require(item.getType()==org.bukkit.Material.PAPER,"CE carrier");
-            require(new org.bukkit.NamespacedKey("tabletop3d",id.toString()).equals(item.getItemMeta().getItemModel()),"item model component: "+id+" actual="+item.getItemMeta().getItemModel());
+            var itemModel=org.bukkit.NamespacedKey.fromString(registration.getString("items.tabletop3d:"+id+".item_model"));
+            require(itemModel!=null && itemModel.equals(item.getItemMeta().getItemModel()),"item model component: "+id+" actual="+item.getItemMeta().getItemModel());
             org.bukkit.entity.ItemDisplay display=world.spawn(new Location(world,8,84,0),org.bukkit.entity.ItemDisplay.class,d->{
                 d.setVisibleByDefault(false);d.setPersistent(false);d.setItemDisplayTransform(org.bukkit.entity.ItemDisplay.ItemDisplayTransform.FIXED);d.setItemStack(item);
             });

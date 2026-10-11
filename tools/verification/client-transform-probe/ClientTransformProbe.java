@@ -1,5 +1,7 @@
 import com.google.gson.*;
 import java.nio.file.*;
+import java.util.Map;
+import java.util.stream.Collectors;
 import net.minecraft.client.resources.model.cuboid.ItemTransforms;
 import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.client.resources.model.cuboid.CuboidModel;
@@ -15,8 +17,13 @@ class ClientTransformProbe {
         ItemTransforms ignored=gson.fromJson("{\"none\":{\"rotation\":[0,180,0]}}",ItemTransforms.class);
         if(ignored.getTransform(ItemDisplayContext.NONE).rotation().lengthSquared()!=0)throw new AssertionError("NONE must be ignored");
         Path assets=Path.of(args[0]);
+        Map<String,Path> items;
+        try(var paths=Files.walk(assets.resolve("items"))){
+            items=paths.filter(p->p.toString().endsWith(".json")).collect(Collectors.toMap(
+                p->p.getFileName().toString().replace(".json",""),p->p));
+        }
         for(String name:new String[]{"mahjong_m1","mahjong_z1","card_r3","card_wild","button_b"}){
-            var item=JsonParser.parseString(Files.readString(assets.resolve("items/"+name+".json"))).getAsJsonObject();
+            var item=JsonParser.parseString(Files.readString(items.get(name))).getAsJsonObject();
             String modelId=item.getAsJsonObject("model").get("model").getAsString().split(":",2)[1];
             var model=JsonParser.parseString(Files.readString(assets.resolve("models/"+modelId+".json"))).getAsJsonObject();
             ItemTransform transform=gson.fromJson(model.get("display"),ItemTransforms.class).getTransform(ItemDisplayContext.FIXED);

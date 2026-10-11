@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
+ITEMS = {path.stem: path for path in (ROOT / "resource-pack/assets/tabletop3d/items").rglob("*.json")}
 
 
 def rotate(point, rotation):
@@ -20,7 +21,7 @@ def rotate(point, rotation):
 
 class ModelSeamsTest(unittest.TestCase):
     def check_perimeters(self, name, axis):
-        item = json.loads((ROOT / f"resource-pack/assets/tabletop3d/items/{name}.json").read_text())
+        item = json.loads(ITEMS[name].read_text())
         path = ROOT / "resource-pack/assets" / (item["model"]["model"].replace(":", "/models/") + ".json")
         model = json.loads(path.read_text())
         endpoints = Counter()
