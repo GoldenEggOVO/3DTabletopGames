@@ -25,6 +25,29 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class YachtTableTest {
+    @Test
+    void botScoreHeadersFollowLanguageReloadWithoutASeatChange() throws Exception {
+        var folder = temp.resolve("languages");
+        Language.load(folder, "en_US", warning -> fail(warning));
+        var f = new TableViewTest.Fixture("yacht");
+        f.room.seats.set(1, new Room.Seat(java.util.UUID.randomUUID(), "Bot 2", true));
+        f.view.tick();
+        var table = TableViewTest.field(f.view, "yachtTable");
+        var headers = (org.bukkit.entity.TextDisplay[]) TableViewTest.field(table, "headers");
+        clearInvocations(headers);
+        java.nio.file.Files.writeString(folder.resolve("custom.yml"), "room.bot: 'CPU {number}'\n");
+        try {
+            assertTrue(Language.reload(folder, "custom", warning -> fail(warning)));
+            f.view.tick();
+            var text = org.mockito.ArgumentCaptor.forClass(net.kyori.adventure.text.Component.class);
+            verify(headers[1]).text(text.capture());
+            assertEquals("2\nCPU 2", dev.tabletop3d.ui.MessageText.plain(text.getValue()));
+        } finally {
+            f.view.close();
+            assertTrue(Language.reload(folder, "en_US", warning -> fail(warning)));
+        }
+    }
+
     @Test void scoreSheetHasNoRaisedRailsAndDiceTrayKeepsItsRails() {
         var f = new TableViewTest.Fixture("yacht");
         var rails = f.entities.stream().filter(org.bukkit.entity.BlockDisplay.class::isInstance)

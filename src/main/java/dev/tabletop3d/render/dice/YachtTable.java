@@ -8,6 +8,8 @@ import dev.tabletop3d.render.TableView;
 import dev.tabletop3d.room.Room;
 import dev.tabletop3d.rules.yacht.YachtGame;
 import dev.tabletop3d.text.Language;
+import dev.tabletop3d.text.RoomText;
+import dev.tabletop3d.ui.MessageText;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -142,10 +144,11 @@ public final class YachtTable implements AutoCloseable {
             return;
         }
         layers();
-        if (!roster.equals(room.seats)) {
+        if (!roster.equals(room.seats) || language != Language.generation()) {
             roster = List.copyOf(room.seats);
             for (int seat = 0; seat < headers.length; seat++) {
-                String name = seat < roster.size() ? roster.get(seat).name() : "";
+                String name = seat < roster.size()
+                        ? MessageText.plain(RoomText.player(roster.get(seat), seat + 1)) : "";
                 String shortName =
                         name.substring(
                                 0,
