@@ -164,6 +164,9 @@ python tools/packaging/package_source.py
 | `shared/playing_cards/` | 各扑克牌游戏共用的牌面和牌背 |
 | `shared/table_parts/` | 多种桌子共用的桌底与桌柱材质 |
 | `shared/pieces/` | 围棋／五子棋共用棋子，以及多个棋类共用的金色装饰 |
+| `shared/dice/` | Ludo／快艇骰子共用的六面骰子贴图 |
+
+模型同样按游戏存放在 `models/item/<游戏>/`。共用扑克牌模型在 `models/item/shared/playing_cards/`，围棋／五子棋共用棋子在 `shared/pieces/`，Ludo／快艇骰子共用骰子在 `shared/dice/`。`items/` 中的物品定义保留原有标识，通过其中的 `model.model` 引用实际模型路径；Java 代码和 CraftEngine 注册仍使用原有物品标识。
 
 ### 从哪里看代码
 

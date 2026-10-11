@@ -14,8 +14,11 @@ class ClientTransformProbe {
             .registerTypeAdapter(ItemTransform.class,decoder(Class.forName("net.minecraft.client.resources.model.cuboid.ItemTransform$Deserializer"))).create();
         ItemTransforms ignored=gson.fromJson("{\"none\":{\"rotation\":[0,180,0]}}",ItemTransforms.class);
         if(ignored.getTransform(ItemDisplayContext.NONE).rotation().lengthSquared()!=0)throw new AssertionError("NONE must be ignored");
+        Path assets=Path.of(args[0]);
         for(String name:new String[]{"mahjong_m1","mahjong_z1","card_r3","card_wild","button_b"}){
-            var model=JsonParser.parseString(Files.readString(Path.of(args[0],name+".json"))).getAsJsonObject();
+            var item=JsonParser.parseString(Files.readString(assets.resolve("items/"+name+".json"))).getAsJsonObject();
+            String modelId=item.getAsJsonObject("model").get("model").getAsString().split(":",2)[1];
+            var model=JsonParser.parseString(Files.readString(assets.resolve("models/"+modelId+".json"))).getAsJsonObject();
             ItemTransform transform=gson.fromJson(model.get("display"),ItemTransforms.class).getTransform(ItemDisplayContext.FIXED);
             Vector3f front=new Quaternionf().rotateY((float)Math.PI).transform(new Quaternionf()
                 .rotationXYZ((float)Math.toRadians(transform.rotation().x()),(float)Math.toRadians(transform.rotation().y()),(float)Math.toRadians(transform.rotation().z()))
@@ -24,7 +27,7 @@ class ClientTransformProbe {
             if(new Quaternionf().rotateX((float)-Math.PI/2).transform(new Vector3f(front)).y()<.999)throw new AssertionError(name+" faces down");
         }
         int models = 0;
-        try (var paths = Files.list(Path.of(args[0]))) {
+        try (var paths = Files.walk(assets.resolve("models/item"))) {
             for (Path path : paths.filter(p -> p.toString().endsWith(".json")).toList()) {
                 try (var reader = Files.newBufferedReader(path)) {
                     if (CuboidModel.fromStream(reader).geometry() == null)

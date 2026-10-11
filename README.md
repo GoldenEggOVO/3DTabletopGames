@@ -164,6 +164,9 @@ Under `textures/item/`, game-specific images live in `mahjong/`, `xiangqi/`, `ch
 | `shared/playing_cards/` | Card faces and backs used by the playing-card games |
 | `shared/table_parts/` | Table bottoms and pedestal textures used by multiple tables |
 | `shared/pieces/` | Go/Gomoku stones and gold decorations used by multiple board games |
+| `shared/dice/` | Six face textures for the die shared by Ludo and Yacht Dice |
+
+Models follow the same game directories under `models/item/<game>/`. Shared playing-card models live in `models/item/shared/playing_cards/`, Go/Gomoku stones in `shared/pieces/`, and the Ludo/Yacht die in `shared/dice/`. Definitions under `items/` keep their existing IDs and reference the actual model path through `model.model`; Java code and CraftEngine registrations continue to use the existing item IDs.
 
 ### Finding the code
 

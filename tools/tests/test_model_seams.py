@@ -20,7 +20,8 @@ def rotate(point, rotation):
 
 class ModelSeamsTest(unittest.TestCase):
     def check_perimeters(self, name, axis):
-        path = ROOT / f"resource-pack/assets/tabletop3d/models/item/{name}.json"
+        item = json.loads((ROOT / f"resource-pack/assets/tabletop3d/items/{name}.json").read_text())
+        path = ROOT / "resource-pack/assets" / (item["model"]["model"].replace(":", "/models/") + ".json")
         model = json.loads(path.read_text())
         endpoints = Counter()
         for part in model["elements"]:

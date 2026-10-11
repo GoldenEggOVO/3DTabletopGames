@@ -8,7 +8,9 @@ SOURCE = ROOT / 'resource-pack/originals/textures/playing-cards'
 
 
 def face(name):
-    model = json.loads((ROOT / f'resource-pack/assets/tabletop3d/models/item/{name}.json').read_text())
+    item = json.loads((ROOT / f'resource-pack/assets/tabletop3d/items/{name}.json').read_text())
+    path = item['model']['model'].replace(':', '/models/') + '.json'
+    model = json.loads((ROOT / 'resource-pack/assets' / path).read_text())
     texture = model['elements'][0]['faces']['south']['texture'][1:]
     path = model['textures'][texture].replace(':', '/textures/') + '.png'
     return Image.open(ROOT / 'resource-pack/assets' / path).convert('RGB')

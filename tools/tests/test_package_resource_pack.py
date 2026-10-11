@@ -23,8 +23,8 @@ class PackageResourcePackTest(unittest.TestCase):
         self.source = self.root / "resource-pack"
         self.write("pack.mcmeta", {"pack": {"pack_format": 88, "description": "Test"}})
         self.write("assets/tabletop3d/items/tile.json", {
-            "model": {"type": "minecraft:model", "model": "tabletop3d:item/tile"}})
-        self.write("assets/tabletop3d/models/item/tile.json", {"textures": {}, "elements": []})
+            "model": {"type": "minecraft:model", "model": "tabletop3d:item/mahjong/tile"}})
+        self.write("assets/tabletop3d/models/item/mahjong/tile.json", {"textures": {}, "elements": []})
         self.write("assets/tabletop3d/sounds.json", {})
         self.write("licenses/notice.txt", "Test attribution")
         registration = self.source / "craftengine/resources/tabletop3d/configuration/items.yml"
@@ -63,14 +63,14 @@ class PackageResourcePackTest(unittest.TestCase):
         self.assertNotEqual(first["sha256"], self.builder.package_resource_pack(self.root)["sha256"])
 
     def test_missing_item_model_prevents_publishing_a_broken_pack(self):
-        (self.source / "assets/tabletop3d/models/item/tile.json").unlink()
+        (self.source / "assets/tabletop3d/models/item/mahjong/tile.json").unlink()
         with self.assertRaisesRegex(ValueError, "model"):
             self.builder.package_resource_pack(self.root)
         self.assertFalse((self.root / "target/tabletop-resource-pack.zip").exists())
 
     def test_unregistered_item_prevents_publishing_a_broken_pack(self):
         self.write("assets/tabletop3d/items/unknown.json", {
-            "model": {"type": "minecraft:model", "model": "tabletop3d:item/tile"}})
+            "model": {"type": "minecraft:model", "model": "tabletop3d:item/mahjong/tile"}})
         with self.assertRaisesRegex(ValueError, "registration"):
             self.builder.package_resource_pack(self.root)
 

@@ -20,7 +20,9 @@ def rotate(v,rotation):
 
 def render(name):
     OUT.mkdir(parents=True,exist_ok=True)
-    model=json.loads((ASSETS/f'models/item/{name}.json').read_text())
+    item=json.loads((ASSETS/f'items/{name}.json').read_text())
+    model_path=item['model']['model'].split(':',1)[1]
+    model=json.loads((ASSETS/f'models/{model_path}.json').read_text())
     faces=[];scale=24 if name=='yacht_table' else 12 if name!='mahjong_panel' else 20
     for part in model['elements']:
         x,y,z=part['from'];X,Y,Z=part['to']

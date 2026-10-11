@@ -28,8 +28,10 @@ class ResourcePackCatalogTest {
             var item = JsonParser.parseString(Files.readString(items.resolve(name + ".json")))
                     .getAsJsonObject().getAsJsonObject("model");
             assertEquals("minecraft:model", item.get("type").getAsString(), name);
-            assertEquals("tabletop3d:item/" + name, item.get("model").getAsString(), name);
-            assertTrue(Files.isRegularFile(pack.resolve("assets/tabletop3d/models/item/" + name + ".json")), name);
+            String model = item.get("model").getAsString();
+            assertTrue(model.startsWith("tabletop3d:item/"), name);
+            assertEquals(name, Path.of(model.split(":", 2)[1]).getFileName().toString(), name);
+            assertTrue(Files.isRegularFile(pack.resolve("assets/" + model.replace(":", "/models/") + ".json")), name);
             assertEquals("paper", registration.getString("items.tabletop3d:" + name + ".material"), name);
             assertEquals("tabletop3d:" + name, registration.getString("items.tabletop3d:" + name + ".item_model"), name);
         }

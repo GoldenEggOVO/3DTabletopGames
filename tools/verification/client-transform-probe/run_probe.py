@@ -27,4 +27,4 @@ classes.mkdir(parents=True, exist_ok=True)
 subprocess.run([shutil.which('javac'), '-cp', classpath, '-d', str(classes),
                 str(root / 'tools/verification/client-transform-probe/ClientTransformProbe.java')], check=True)
 subprocess.run([shutil.which('java'), '-cp', str(classes) + os.pathsep + classpath,
-                'ClientTransformProbe', str(root / 'resource-pack/assets/tabletop3d/models/item')], check=True)
+                'ClientTransformProbe', str(root / 'resource-pack/assets/tabletop3d')], check=True)
