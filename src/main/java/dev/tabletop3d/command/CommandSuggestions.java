@@ -1,6 +1,7 @@
 package dev.tabletop3d.command;
 
-import dev.tabletop3d.Tabletop3D;
+import dev.tabletop3d.rules.GameCatalog;
+
 import dev.tabletop3d.room.Room;
 
 import java.util.Collection;
@@ -31,7 +32,7 @@ public final class CommandSuggestions {
         }
         if (args.length == 2)
             return switch (args[0].toLowerCase(Locale.ROOT)) {
-                case "create", "rules" -> filter(Tabletop3D.GAMES.stream(), args[1]);
+                case "create", "rules" -> filter(GameCatalog.IDS.stream(), args[1]);
                 case "join" ->
                         filter(
                                 rooms.stream()
@@ -51,9 +52,7 @@ public final class CommandSuggestions {
             };
         if (args.length == 3 && args[0].equalsIgnoreCase("create")) {
             String game = args[1].toLowerCase(Locale.ROOT);
-            Stream<String> sizes = java.util.stream.IntStream.rangeClosed(2, 6)
-                    .filter(players -> Tabletop3D.capacityValid(game, players))
-                    .mapToObj(Integer::toString);
+            Stream<String> sizes = GameCatalog.playerCounts(game).stream().map(String::valueOf);
             return filter(sizes, args[2]);
         }
         return List.of();

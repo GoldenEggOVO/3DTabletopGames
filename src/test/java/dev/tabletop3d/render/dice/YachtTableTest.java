@@ -1,6 +1,7 @@
 package dev.tabletop3d.render.dice;
 
-import dev.tabletop3d.Tabletop3D;
+import dev.tabletop3d.rules.GameCatalog;
+
 import dev.tabletop3d.TabletopTest;
 import dev.tabletop3d.interaction.GameWorld;
 import dev.tabletop3d.interaction.TableLobby;
@@ -181,7 +182,7 @@ class YachtTableTest {
     @AfterEach void close() { MockBukkit.unmock(); }
 
     @Test void yachtIsAvailableAndFinalRollStillAllowsMovingDiceBetweenSlots() {
-        assertTrue(Tabletop3D.GAMES.contains("yacht"));
+        assertTrue(GameCatalog.IDS.contains("yacht"));
         var game = new YachtGame(2, 41);
         for (int i = 0; i < 3; i++) game.apply(0, "roll");
         int[] dice = game.dice();

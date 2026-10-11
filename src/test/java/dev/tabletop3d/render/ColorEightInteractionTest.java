@@ -1,5 +1,7 @@
 package dev.tabletop3d.render;
 
+import dev.tabletop3d.rules.GameCatalog;
+
 import dev.tabletop3d.Tabletop3D;
 import dev.tabletop3d.TabletopTest;
 import dev.tabletop3d.render.cards.PlayingCardHeads;
@@ -346,7 +348,7 @@ class ColorEightInteractionTest {
                             part.z() + x * Math.sin(a) + z * Math.cos(a)) <= RoundCardTable.RADIUS + 1e-7);
             assertFalse(RoundCardTableTest.contains(part, 1.4, 1.4));
         }
-        assertTrue(Tabletop3D.capacityValid("color-eight", 5));
-        assertFalse(Tabletop3D.capacityValid("color-eight", 6));
+        assertTrue(GameCatalog.capacityValid("color-eight", 5));
+        assertFalse(GameCatalog.capacityValid("color-eight", 6));
     }
 }

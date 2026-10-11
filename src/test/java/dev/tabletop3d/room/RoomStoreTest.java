@@ -1,6 +1,7 @@
 package dev.tabletop3d.room;
 
-import dev.tabletop3d.Tabletop3D;
+import dev.tabletop3d.rules.GameCatalog;
+
 import dev.tabletop3d.bot.BoardBots;
 import dev.tabletop3d.rules.HandGame;
 
@@ -18,8 +19,8 @@ class RoomStoreTest {
     @Test
     void currentRoomsRoundTripIdentityOptionsSeatsAndReplay() throws Exception {
         List<Room> originals = new ArrayList<>();
-        for (String kind : Tabletop3D.GAMES) {
-            int capacity = Tabletop3D.defaultCapacity(kind);
+        for (String kind : GameCatalog.IDS) {
+            int capacity = GameCatalog.defaultCapacity(kind);
             Room room = new Room(UUID.randomUUID(), kind, capacity, 42, originals.size());
             room.join(UUID.randomUUID(), "<red>literal name");
             room.fillBots();

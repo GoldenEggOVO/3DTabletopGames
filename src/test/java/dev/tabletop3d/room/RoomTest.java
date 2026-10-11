@@ -1,8 +1,9 @@
 package dev.tabletop3d.room;
 
+import dev.tabletop3d.rules.GameCatalog;
+
 import com.google.gson.*;
 
-import dev.tabletop3d.Tabletop3D;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,5 +32,5 @@ class RoomTest {
         assertTrue(room.seats.contains(existingBot));
     }
     @Test void actionHistoryIsDetached(){Room r=room();JsonObject action=new JsonObject();action.addProperty("type","bid");action.addProperty("value",3);r.event(0,action);action.addProperty("value",0);assertEquals(3,r.history.get(0).getAsJsonObject().getAsJsonObject("action").get("value").getAsInt());}
-    @Test void supportedSeatCountsAreExplicit(){assertTrue(Tabletop3D.capacityValid("connectfour",2));assertFalse(Tabletop3D.capacityValid("connectfour",3));assertFalse(Tabletop3D.capacityValid("checkers",5));assertTrue(Tabletop3D.capacityValid("checkers",6));assertFalse(Tabletop3D.capacityValid("chess",3));assertFalse(Tabletop3D.capacityValid("unknown",2));}
+    @Test void supportedSeatCountsAreExplicit(){assertTrue(GameCatalog.capacityValid("connectfour",2));assertFalse(GameCatalog.capacityValid("connectfour",3));assertFalse(GameCatalog.capacityValid("checkers",5));assertTrue(GameCatalog.capacityValid("checkers",6));assertFalse(GameCatalog.capacityValid("chess",3));assertFalse(GameCatalog.capacityValid("unknown",2));}
 }

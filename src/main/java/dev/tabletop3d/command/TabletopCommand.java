@@ -1,5 +1,7 @@
 package dev.tabletop3d.command;
 
+import dev.tabletop3d.rules.GameCatalog;
+
 import com.google.gson.JsonPrimitive;
 
 import dev.tabletop3d.Tabletop3D;
@@ -96,7 +98,7 @@ public final class TabletopCommand implements Listener, CommandExecutor, TabComp
                                 game,
                                 args.length > 2
                                         ? Integer.parseInt(args[2])
-                                        : Tabletop3D.defaultCapacity(game));
+                                        : GameCatalog.defaultCapacity(game));
                     }
                 }
                 case "join" -> {
@@ -119,7 +121,7 @@ public final class TabletopCommand implements Listener, CommandExecutor, TabComp
                     Room r = plugin.room(p);
                     plugin.menus.rules(
                             p,
-                            args.length > 1 && Tabletop3D.GAMES.contains(args[1])
+                            args.length > 1 && GameCatalog.IDS.contains(args[1])
                                     ? args[1]
                                     : r == null ? "gomoku" : r.kind);
                 }

@@ -1,5 +1,7 @@
 package dev.tabletop3d.menu;
 
+import dev.tabletop3d.rules.GameCatalog;
+
 import dev.tabletop3d.Tabletop3D;
 import dev.tabletop3d.TabletopTest;
 import dev.tabletop3d.interaction.TableComfort;
@@ -93,7 +95,7 @@ class MenuFlowTest {
     void everyGameSetupOmitsItsOwnRoomBrowser() throws Exception {
         Fixture f = new Fixture();
         f.addRoom(0);
-        for (String kind : Tabletop3D.GAMES) {
+        for (String kind : GameCatalog.IDS) {
             f.menus.setup(f.player, kind);
             assertFalse(f.buttons.stream().anyMatch(b -> b.id().equals("rooms")), kind);
         }

@@ -1,6 +1,7 @@
 package dev.tabletop3d.bot;
 
-import dev.tabletop3d.Tabletop3D;
+import dev.tabletop3d.rules.GameCatalog;
+
 import dev.tabletop3d.rules.*;
 
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,7 @@ class NewCardBotsTest {
     @Test
     void botsUseAcceptedActionsWithoutReadingOtherPrivateHands() {
         for (String kind : List.of("doudizhu", "liars-bar", "texas-holdem")) {
-            BoardGame game = GameFactory.create(kind, Tabletop3D.defaultCapacity(kind), 42);
+            BoardGame game = GameFactory.create(kind, GameCatalog.defaultCapacity(kind), 42);
             Random random = new Random(7);
             for (int step = 0; step < 800 && !game.finished(); step++) {
                 int seat = game.currentPlayer();

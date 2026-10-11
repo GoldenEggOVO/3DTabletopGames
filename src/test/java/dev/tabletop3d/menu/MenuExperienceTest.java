@@ -1,6 +1,7 @@
 package dev.tabletop3d.menu;
 
-import dev.tabletop3d.Tabletop3D;
+import dev.tabletop3d.rules.GameCatalog;
+
 import dev.tabletop3d.room.Room;
 import dev.tabletop3d.rules.GameFactory;
 import dev.tabletop3d.rules.coloreight.ColorEightGame;
@@ -100,12 +101,12 @@ class MenuExperienceTest {
     @Test
     void everyGameOmitsHelpAndDetailEntriesThroughoutItsMenus() throws Exception {
         var f = new MenuFlowTest.Fixture();
-        for (String kind : Tabletop3D.GAMES) {
+        for (String kind : GameCatalog.IDS) {
             f.menus.setup(f.player, kind);
             assertFalse(ids(f).contains("rules"), kind + " setup");
             f.menus.games(f.player, kind);
             assertFalse(ids(f).contains("rules"), kind + " browser");
-            Room r = new Room(UUID.randomUUID(), kind, Tabletop3D.defaultCapacity(kind), 0, 0);
+            Room r = new Room(UUID.randomUUID(), kind, GameCatalog.defaultCapacity(kind), 0, 0);
             r.join(f.player.getUniqueId(), "Owner");
             f.plugin.rooms.put(r.id, r);
             for (Room.Phase phase : Room.Phase.values()) {
@@ -130,7 +131,7 @@ class MenuExperienceTest {
     @Test
     void everyPlayingGameReturnsToTheTableWithoutAFullMoveSelector() throws Exception {
         var f = new MenuFlowTest.Fixture();
-        for (String kind : Tabletop3D.GAMES) {
+        for (String kind : GameCatalog.IDS) {
             Room r = playingRoom(f, kind);
             f.menus.room(f.player, r);
             assertEquals(
@@ -207,7 +208,7 @@ class MenuExperienceTest {
     }
 
     private static Room playingRoom(MenuFlowTest.Fixture f, String kind) {
-        Room r = new Room(UUID.randomUUID(), kind, Tabletop3D.defaultCapacity(kind), 0, 0);
+        Room r = new Room(UUID.randomUUID(), kind, GameCatalog.defaultCapacity(kind), 0, 0);
         r.join(f.player.getUniqueId(), "Owner");
         r.fillBots();
         r.board = GameFactory.create(kind, r.capacity, 0);

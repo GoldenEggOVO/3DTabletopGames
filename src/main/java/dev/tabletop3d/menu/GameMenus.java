@@ -1,5 +1,7 @@
 package dev.tabletop3d.menu;
 
+import dev.tabletop3d.rules.GameCatalog;
+
 import com.google.gson.*;
 
 import dev.tabletop3d.Tabletop3D;
@@ -196,14 +198,14 @@ public final class GameMenus implements AutoCloseable {
                             () -> plugin.resume(p, current)));
         else if (!plugin.rooms.isEmpty())
             b.add(new Button("rooms", Language.component("setup.rooms"), () -> rooms(p)));
-        for (String kind : Tabletop3D.GAMES)
+        for (String kind : GameCatalog.IDS)
             if (!Set.of("go9", "go13").contains(kind))
                 b.add(new Button(kind, RoomText.game(kind), () -> setup(p, kind)));
         show(p, Language.component("menu.title"), Component.empty(), b, null, "catalog");
     }
 
     void setup(Player p, String kind) {
-        setup(p, new Setup(kind, Tabletop3D.defaultCapacity(kind), false, Map.of()));
+        setup(p, new Setup(kind, GameCatalog.defaultCapacity(kind), false, Map.of()));
     }
 
     void setup(Player p, Setup draft) {
@@ -234,15 +236,7 @@ public final class GameMenus implements AutoCloseable {
                                                 draft.capacity(),
                                                 !draft.bots(),
                                                 draft.options()))));
-        int[] sizes =
-                switch (kind) {
-                    case "checkers" -> new int[] {2, 3, 4, 6};
-                    case "color-eight" -> new int[] {2, 3, 4, 5};
-                    case "liars-bar" -> new int[] {2, 3, 4};
-                    case "texas-holdem" -> new int[] {2, 3, 4, 5, 6};
-                    case "ludo", "yacht" -> new int[] {2, 3, 4};
-                    default -> new int[] {Tabletop3D.defaultCapacity(kind)};
-                };
+        int[] sizes = GameCatalog.playerCounts(kind).stream().mapToInt(Integer::intValue).toArray();
         if (sizes.length > 1)
             buttons.add(
                     new Button(
@@ -791,7 +785,7 @@ public final class GameMenus implements AutoCloseable {
         String key =
                 Set.of("go9", "go13").contains(kind)
                         ? "go"
-                        : Tabletop3D.GAMES.contains(kind)
+                        : GameCatalog.IDS.contains(kind)
                                 ? kind
                                 : "default";
         Component text =

@@ -1,8 +1,9 @@
 package dev.tabletop3d.render.dice;
 
+import dev.tabletop3d.rules.GameCatalog;
+
 import com.google.gson.JsonPrimitive;
 
-import dev.tabletop3d.Tabletop3D;
 import dev.tabletop3d.TabletopTest;
 import dev.tabletop3d.interaction.GameWorld;
 import dev.tabletop3d.menu.GameMenus;
@@ -35,9 +36,9 @@ class LudoPresentationTest {
 
     @Test
     void catalogOffersLudoWithItsCurrentCapacity() {
-        assertTrue(Tabletop3D.GAMES.contains("ludo"));
-        assertFalse(Tabletop3D.GAMES.contains("aeroplane"));
-        assertEquals(4, Tabletop3D.defaultCapacity("ludo"));
+        assertTrue(GameCatalog.IDS.contains("ludo"));
+        assertFalse(GameCatalog.IDS.contains("aeroplane"));
+        assertEquals(4, GameCatalog.defaultCapacity("ludo"));
     }
 
     @Test

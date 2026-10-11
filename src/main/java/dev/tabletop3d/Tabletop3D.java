@@ -33,30 +33,6 @@ import java.security.SecureRandom;
 import java.util.*;
 
 public final class Tabletop3D extends JavaPlugin implements Listener {
-    public static final List<String> GAMES =
-            List.of(
-                    "xiangqi",
-                    "gomoku",
-                    "chess",
-                    "ludo",
-                    "checkers",
-                    "draughts",
-                    "reversi",
-                    "go",
-                    "go9",
-                    "go13",
-                    "connectfour",
-                    "color-eight",
-                    "mahjong",
-                    "doudizhu",
-                    "liars-bar",
-                    "texas-holdem",
-                    "yacht");
-
-    public static String gameName(String kind) {
-        return dev.tabletop3d.ui.MessageText.plain(RoomText.game(kind));
-    }
-
     public final Map<UUID, Room> rooms = new LinkedHashMap<>();
     public final Map<UUID, Location> returns = new HashMap<>();
     final SecureRandom random = new SecureRandom();
@@ -166,39 +142,6 @@ public final class Tabletop3D extends JavaPlugin implements Listener {
         if (rooms.get(room.id) != room) throw new RuleViolation("error.room-closed", "Room closed");
     }
 
-    public static int defaultCapacity(String kind) {
-        return switch (kind) {
-            case "checkers", "texas-holdem" -> 6;
-            case "doudizhu" -> 3;
-            case "liars-bar" -> 4;
-            case "ludo", "color-eight", "mahjong" -> 4;
-            default -> 2;
-        };
-    }
-
-    public static boolean capacityValid(String kind, int n) {
-        return switch (kind) {
-            case "mahjong" -> n == 4;
-            case "doudizhu" -> n == 3;
-            case "liars-bar" -> n >= 2 && n <= 4;
-            case "texas-holdem" -> n >= 2 && n <= 6;
-            case "checkers" -> Set.of(2, 3, 4, 6).contains(n);
-            case "color-eight" -> n >= 2 && n <= 5;
-            case "ludo", "yacht" -> n >= 2 && n <= 4;
-            case "gomoku",
-                    "xiangqi",
-                    "chess",
-                    "draughts",
-                    "reversi",
-                    "go",
-                    "go9",
-                    "go13",
-                    "connectfour" ->
-                    n == 2;
-            default -> false;
-        };
-    }
-
     public void create(Player p, String kind, int capacity) {
         create(p, kind, capacity, Map.of());
     }
@@ -228,7 +171,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener {
 
     public void createReserved(Player p, String kind, int capacity, Map<String, String> options) {
         if (pack != null) pack.require(p, kind);
-        if (!capacityValid(kind, capacity))
+        if (!GameCatalog.capacityValid(kind, capacity))
             throw new RuleViolation("error.unsupported-game-or-player-count", "Unsupported game or player count");
         if (room(p) != null)
             throw new RuleViolation("error.leave-your-current-game-first", "Leave your current game first");

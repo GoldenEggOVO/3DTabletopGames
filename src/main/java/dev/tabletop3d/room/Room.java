@@ -2,7 +2,6 @@ package dev.tabletop3d.room;
 
 import com.google.gson.*;
 
-import dev.tabletop3d.Tabletop3D;
 import dev.tabletop3d.rules.BoardGame;
 import dev.tabletop3d.rules.GameFactory;
 import dev.tabletop3d.rules.GameOptions;
@@ -136,10 +135,6 @@ public final class Room {
 
     public int turn() {
         return board != null ? board.currentPlayer() : -1;
-    }
-
-    String name() {
-        return Tabletop3D.gameName(kind) + " · " + id.toString().substring(0, 6);
     }
 
     public void event(int seat, JsonElement action) {

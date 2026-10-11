@@ -1,5 +1,7 @@
 package dev.tabletop3d.audio;
 
+import dev.tabletop3d.rules.GameCatalog;
+
 import com.google.gson.JsonPrimitive;
 
 import dev.tabletop3d.Tabletop3D;
@@ -272,9 +274,9 @@ class TableSoundsTest {
     @Test
     void everyCatalogGameHasABoundedNativeMoveSound() {
         Set<Sound> palette = new HashSet<>();
-        var kinds = new ArrayList<>(Tabletop3D.GAMES);
+        var kinds = new ArrayList<>(GameCatalog.IDS);
         for (String kind : kinds) {
-            BoardGame game = GameFactory.create(kind, Tabletop3D.defaultCapacity(kind), 0);
+            BoardGame game = GameFactory.create(kind, GameCatalog.defaultCapacity(kind), 0);
             int seat = game.currentPlayer();
             List<Cell> before = game.cells();
             String action = game.legalActions(seat).getFirst();
