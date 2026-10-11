@@ -17,6 +17,17 @@ import static org.mockito.Mockito.*;
 
 class TabletopCommandTest {
     @Test
+    void mixedCaseRulesOpenTheRequestedGame() {
+        var plugin = mock(Tabletop3D.class);
+        var player = mock(Player.class);
+        when(plugin.allowed(player)).thenReturn(true);
+        plugin.menus = mock(GameMenus.class);
+        new TabletopCommand(plugin).onCommand(player, null, "3dtabletop",
+                new String[] {"RULES", "CHESS"});
+        verify(plugin.menus).rules(player, "chess");
+    }
+
+    @Test
     void anUppercaseUniqueRoomPrefixFindsTheSameRoom() throws Exception {
         Tabletop3D plugin = mock(Tabletop3D.class);
         Player player = mock(Player.class);

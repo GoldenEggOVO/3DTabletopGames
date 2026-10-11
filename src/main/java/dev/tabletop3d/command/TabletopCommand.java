@@ -118,10 +118,11 @@ public final class TabletopCommand implements Listener, CommandExecutor, TabComp
                 case "rematch" -> plugin.rematch(p, requireRoom(p));
                 case "rules" -> {
                     Room r = plugin.room(p);
+                    String game = args.length > 1 ? args[1].toLowerCase(Locale.ROOT) : "";
                     plugin.menus.rules(
                             p,
-                            args.length > 1 && GameCatalog.IDS.contains(args[1])
-                                    ? args[1]
+                            GameCatalog.IDS.contains(game)
+                                    ? game
                                     : r == null ? "gomoku" : r.kind);
                 }
                 default -> plugin.menus.main(p);
