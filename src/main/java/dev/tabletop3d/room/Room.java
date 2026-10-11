@@ -116,15 +116,12 @@ public final class Room {
     }
 
     public void fillBots() {
+        int index = seats.size();
         while (seats.size() < capacity) {
-            int i = seats.size();
-            seats.add(
-                    new Seat(
-                            UUID.nameUUIDFromBytes(
-                                    (id + ":" + i)
-                                            .getBytes(java.nio.charset.StandardCharsets.UTF_8)),
-                            "Bot " + (i + 1),
-                            true));
+            UUID botId = UUID.nameUUIDFromBytes(
+                    (id + ":" + index).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            if (seat(botId) < 0) seats.add(new Seat(botId, "Bot " + (index + 1), true));
+            index++;
         }
     }
 
