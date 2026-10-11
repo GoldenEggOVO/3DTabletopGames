@@ -53,15 +53,15 @@ public final class BoardsSoakProbe extends JavaPlugin {
         try{
             samples++;long elapsed=(System.currentTimeMillis()-started)/1000;
             for(Object room:rooms){
-                String kind=label(room);UUID id=(UUID)field(room,"id");JsonArray history=(JsonArray)call(field(room,"history"),"snapshot",new Class<?>[0]);
-                int last=lengths.get(id);if(history.size()>last)moves.merge(kind,history.size()-last,Integer::sum);
+                String kind=label(room);UUID id=(UUID)field(room,"id");int count=historyLength(room);
+                int last=lengths.get(id);if(count>last)moves.merge(kind,count-last,Integer::sum);
                 String phase=field(room,"phase").toString();require(!phase.equals("PAUSED")&&!phase.equals("ABORTED"),kind+" unexpected "+phase);
                 if(phase.equals("FINISHED")){
                     replay(room);rounds.merge(kind,1,Integer::sum);call(arena,"remove",new Class<?>[]{roomType},room);
                     invoke(roundType,null,"fresh",new Class<?>[]{roomType,long.class},room,2000L+rounds.get(kind));
                     call(arena,"platform",new Class<?>[]{int.class},(int)field(room,"table"));call(boards,"start",new Class<?>[]{roomType},room);
                 }
-                lengths.put(id,((JsonArray)call(field(room,"history"),"snapshot",new Class<?>[0])).size());
+                lengths.put(id,historyLength(room));
             }
             if(samples%60==0){
                 validateEntities();replay(rooms.get((samples/60-1)%rooms.size()));call(boards,"save",new Class<?>[0]);
@@ -154,6 +154,9 @@ public final class BoardsSoakProbe extends JavaPlugin {
     }
     private static String label(Object room)throws Exception{
         String kind=(String)field(room,"kind");Object profile=((Map<?,?>)field(room,"options")).get("profile");return kind.equals("mahjong")?kind+":"+(profile==null?"riichi":profile):kind;
+    }
+    private static int historyLength(Object room)throws Exception{
+        return (int)call(field(room,"history"),"size",new Class<?>[0]);
     }
     private Set<UUID> ownedEntities(){Set<UUID> ids=new HashSet<>();NamespacedKey key=new NamespacedKey("3dtabletop","board-cell");for(World world:Bukkit.getWorlds())for(Entity entity:world.getEntities())if(entity.isValid()&&entity.getPersistentDataContainer().has(key))ids.add(entity.getUniqueId());return ids;}
     private void write(boolean pass,long elapsed,int remaining)throws Exception{

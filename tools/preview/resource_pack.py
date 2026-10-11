@@ -2,7 +2,7 @@
 import json
 import math
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 ROOT=Path(__file__).resolve().parents[2]
 ASSETS=ROOT/'resource-pack/assets/tabletop3d'

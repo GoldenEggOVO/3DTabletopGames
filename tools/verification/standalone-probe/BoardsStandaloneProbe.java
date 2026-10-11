@@ -430,7 +430,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         }
         for(Field field:sounds.getDeclaredFields())if(field.getType()==cueType){
             field.setAccessible(true);Object cue=field.get(null);org.bukkit.Sound sound=(org.bukkit.Sound)nativeSound.invoke(cue);
-            require(org.bukkit.Registry.SOUNDS.get(sound.getKey())!=null,"native sound registered: "+field.getName());
+            require(org.bukkit.Registry.SOUNDS.getKey(sound)!=null,"native sound registered: "+field.getName());
             play.invoke(null,plugin,at,cue);cues++;
         }
         getLogger().info("BOARDS_SOUNDS_PASS games="+games+" cues="+cues+" client_audio_test=false");
@@ -444,6 +444,7 @@ public final class BoardsStandaloneProbe extends JavaPlugin {
         for(JsonElement element:source.getAsJsonArray("rooms")){
             JsonObject saved=element.getAsJsonObject();Object room=restored.get(UUID.fromString(saved.get("id").getAsString()));
             require(room!=null,"original room ID restored");String kind=saved.get("kind").getAsString();kinds.add(kind);
+            require(!(boolean)field(room,"restoring"),"restored room leaves replay mode");
             require(kind.equals(field(room,"kind"))&&saved.get("capacity").getAsInt()==(int)field(room,"capacity"),"kind and capacity preserved");
             require(saved.get("seed").getAsLong()==(long)field(room,"seed"),"seed preserved");
             require(saved.get("anchorWorld").getAsString().equals(field(room,"anchorWorld").toString()),"world preserved");
