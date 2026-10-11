@@ -149,6 +149,8 @@ public final class LiarsBarGame implements SelectedHandGame {
     }
 
     public void apply(int seat, String action) {
+        if (action == null)
+            throw new RuleViolation("error.cards.action", "Invalid card action");
         if (finished() || seat != current || !alive[seat])
             throw new RuleViolation("error.not-your-turn", "Not your turn");
         if (action.equals("challenge")) {

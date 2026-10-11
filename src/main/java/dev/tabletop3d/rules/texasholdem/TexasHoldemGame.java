@@ -196,6 +196,8 @@ public final class TexasHoldemGame implements SelectedHandGame {
     }
 
     public void apply(int seat, String action) {
+        if (action == null)
+            throw new RuleViolation("error.cards.action", "Invalid poker action");
         if (finished() || seat != current)
             throw new RuleViolation("error.not-your-turn", "Not your turn");
         var controls = controls(seat);

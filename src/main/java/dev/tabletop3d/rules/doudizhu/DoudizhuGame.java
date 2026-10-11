@@ -196,6 +196,8 @@ public final class DoudizhuGame implements SelectedHandGame {
     }
 
     public void apply(int seat, String action) {
+        if (action == null)
+            throw new RuleViolation("error.cards.action", "Invalid card action");
         if (finished() || seat != current)
             throw new RuleViolation("error.not-your-turn", "Not your turn");
         if (controls(seat).getFirst().startsWith("bid:")) {
