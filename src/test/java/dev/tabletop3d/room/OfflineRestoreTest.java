@@ -21,7 +21,7 @@ class OfflineRestoreTest {
         plugin.coordinator = mock(BoardOccupancy.class);
         plugin.arena = mock(GameWorld.class);
         set(plugin, "rooms", new LinkedHashMap<UUID, Room>());
-        set(plugin, "returns", new HashMap<>());
+        set(plugin, "savedReturnPoints", new HashMap<>());
         when(plugin.getDataFolder()).thenReturn(directory.toFile());
         when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getAnonymousLogger());
         doCallRealMethod().when(plugin).restore();
@@ -48,7 +48,7 @@ class OfflineRestoreTest {
             Path data = Files.createDirectory(directory.resolve(profile));
             Tabletop3D plugin = mock(Tabletop3D.class);
             set(plugin, "rooms", new LinkedHashMap<UUID, Room>());
-            set(plugin, "returns", new HashMap<>());
+            set(plugin, "savedReturnPoints", new HashMap<>());
             when(plugin.getDataFolder()).thenReturn(data.toFile());
             doCallRealMethod().when(plugin).restore();
             doCallRealMethod().when(plugin).save();

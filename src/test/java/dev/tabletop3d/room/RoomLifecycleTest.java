@@ -17,12 +17,36 @@ import static org.mockito.Mockito.*;
 
 class RoomLifecycleTest {
     @Test
+    void legacyReturnCoordinatesSurviveAnUnloadedWorld(
+            @org.junit.jupiter.api.io.TempDir java.nio.file.Path directory) throws Exception {
+        Tabletop3D plugin = mock(Tabletop3D.class);
+        TabletopTest.set(plugin, "rooms", new LinkedHashMap<UUID, Room>());
+        TabletopTest.set(plugin, "savedReturnPoints", new HashMap<>());
+        TabletopTest.set(plugin, "loaded", true);
+        when(plugin.getDataFolder()).thenReturn(directory.toFile());
+        when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getAnonymousLogger());
+        doCallRealMethod().when(plugin).restore();
+        doCallRealMethod().when(plugin).save();
+        UUID player = UUID.randomUUID();
+        var point = new RoomStore.ReturnPoint("unloaded-world", 12, 34, 56, 78, -9);
+        var file = directory.resolve("rooms.json");
+        RoomStore.write(file, List.of(), Map.of(player, point));
+
+        try (var bukkit = mockStatic(org.bukkit.Bukkit.class)) {
+            plugin.restore();
+            plugin.save();
+        }
+
+        assertEquals(Map.of(player, point), RoomStore.read(file).returns());
+    }
+
+    @Test
     void invalidPlayingHistoryStillRejectsRestoreAndPreservesItsFile(
             @org.junit.jupiter.api.io.TempDir java.nio.file.Path directory) throws Exception {
         Tabletop3D plugin = mock(Tabletop3D.class);
         plugin.arena = mock(GameWorld.class);
         TabletopTest.set(plugin, "rooms", new LinkedHashMap<UUID, Room>());
-        TabletopTest.set(plugin, "returns", new HashMap<>());
+        TabletopTest.set(plugin, "savedReturnPoints", new HashMap<>());
         when(plugin.getDataFolder()).thenReturn(directory.toFile());
         doCallRealMethod().when(plugin).restore();
         doCallRealMethod().when(plugin).start(any());
@@ -48,7 +72,7 @@ class RoomLifecycleTest {
         Tabletop3D plugin = mock(Tabletop3D.class, CALLS_REAL_METHODS);
         plugin.arena = mock(GameWorld.class);
         TabletopTest.set(plugin, "rooms", new LinkedHashMap<UUID, Room>());
-        TabletopTest.set(plugin, "returns", new HashMap<>());
+        TabletopTest.set(plugin, "savedReturnPoints", new HashMap<>());
         doReturn(directory.toFile()).when(plugin).getDataFolder();
         doReturn(java.util.logging.Logger.getAnonymousLogger()).when(plugin).getLogger();
         UUID old = UUID.randomUUID(), other = UUID.randomUUID();

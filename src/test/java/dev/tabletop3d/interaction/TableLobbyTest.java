@@ -92,9 +92,6 @@ class TableLobbyTest {
     void leavingLobbyOnlyClearsTheDepartingPlayersReadyState() throws Exception {
         var plugin = mock(Tabletop3D.class);
         plugin.menus = mock(GameMenus.class);
-        var field = Tabletop3D.class.getDeclaredField("returns");
-        field.setAccessible(true);
-        field.set(plugin, new HashMap<UUID, Location>());
         var r = new Room(UUID.randomUUID(), "checkers", 3, 1, 0);
         Player a = mock(Player.class);
         UUID first = UUID.randomUUID(), second = UUID.randomUUID();

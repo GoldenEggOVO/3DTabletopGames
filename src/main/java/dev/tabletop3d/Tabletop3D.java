@@ -34,7 +34,7 @@ import java.util.*;
 
 public final class Tabletop3D extends JavaPlugin implements Listener {
     public final Map<UUID, Room> rooms = new LinkedHashMap<>();
-    public final Map<UUID, Location> returns = new HashMap<>();
+    private final Map<UUID, RoomStore.ReturnPoint> savedReturnPoints = new HashMap<>();
     final SecureRandom random = new SecureRandom();
     public GameMenus menus;
     public GameWorld arena;
@@ -199,7 +199,6 @@ public final class Tabletop3D extends JavaPlugin implements Listener {
         }
         if (!enterArena(p, r)) {
             remove(r);
-            returns.remove(p.getUniqueId());
             throw new RuleViolation(
                     "error.teleport-cancelled-room-was-not-created-remove",
                     "Teleport cancelled; room was not created. Remove the teleport restriction and try again.");
@@ -249,7 +248,6 @@ public final class Tabletop3D extends JavaPlugin implements Listener {
                 r.seats.removeIf(s -> s.id().equals(p.getUniqueId()));
                 r.offline.remove(p.getUniqueId());
                 r.revision++;
-                returns.remove(p.getUniqueId());
                 save();
             }
             throw new RuleViolation(
@@ -267,8 +265,6 @@ public final class Tabletop3D extends JavaPlugin implements Listener {
         if (pack != null) pack.require(p, r.kind);
         if (r.seat(p.getUniqueId()) < 0)
             throw new RuleViolation("error.you-have-not-joined-a-room", "You have not joined a room");
-        if (!arena.atTableWorld(p, r))
-            returns.putIfAbsent(p.getUniqueId(), p.getLocation().clone());
         if (!p.teleport(arena.seatLocation(r, r.seat(p.getUniqueId())))) {
             r.offline.putIfAbsent(p.getUniqueId(), System.currentTimeMillis());
             return false;
@@ -526,7 +522,6 @@ public final class Tabletop3D extends JavaPlugin implements Listener {
             }
         }
         if (r != null) coordinator.release(p.getUniqueId(), r.kind);
-        returns.remove(p.getUniqueId());
         save();
         if (comfort != null) comfort.sync();
         menus.main(p);
@@ -685,20 +680,8 @@ public final class Tabletop3D extends JavaPlugin implements Listener {
 
     public void save() {
         if (!loaded || !getDataFolder().isDirectory()) return;
-        Map<UUID, RoomStore.ReturnPoint> points = new LinkedHashMap<>();
-        returns.forEach(
-                (id, location) ->
-                        points.put(
-                                id,
-                                new RoomStore.ReturnPoint(
-                                        location.getWorld().getName(),
-                                        location.getX(),
-                                        location.getY(),
-                                        location.getZ(),
-                                        location.getYaw(),
-                                        location.getPitch())));
         try {
-            RoomStore.write(getDataFolder().toPath().resolve("rooms.json"), rooms.values(), points);
+            RoomStore.write(getDataFolder().toPath().resolve("rooms.json"), rooms.values(), savedReturnPoints);
         } catch (IOException exception) {
             getLogger()
                     .warning(
@@ -711,21 +694,7 @@ public final class Tabletop3D extends JavaPlugin implements Listener {
         if (!Files.exists(file)) return;
         try {
             RoomStore.Snapshot snapshot = RoomStore.read(file);
-            snapshot.returns()
-                    .forEach(
-                            (id, point) -> {
-                                World world = Bukkit.getWorld(point.world());
-                                if (world != null)
-                                    returns.put(
-                                            id,
-                                            new Location(
-                                                    world,
-                                                    point.x(),
-                                                    point.y(),
-                                                    point.z(),
-                                                    point.yaw(),
-                                                    point.pitch()));
-                            });
+            savedReturnPoints.putAll(snapshot.returns());
             for (Room room : snapshot.rooms()) {
                 for (Room.Seat seat : room.seats)
                     if (!seat.bot()) {

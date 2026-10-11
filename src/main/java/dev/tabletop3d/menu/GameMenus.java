@@ -659,7 +659,6 @@ public final class GameMenus implements AutoCloseable {
                                     games(p, r.kind);
                                     return;
                                 }
-                                plugin.returns.putIfAbsent(p.getUniqueId(), p.getLocation());
                                 p.teleport(plugin.arena.seatLocation(r, 0));
                             }));
         show(

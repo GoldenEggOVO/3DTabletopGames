@@ -76,7 +76,7 @@ Set `language: zh_CN` for Simplified Chinese. Edit the generated `languages/en_U
 
 Run `/3dtabletop reload-language` after editing translations or the selected language. Other settings require a restart. Missing entries in the standard English and Chinese catalogues use their bundled translations without rewriting your files. Other languages fall back to English. Invalid reloads keep the previous language. Menu layouts are defined in code, while captions and descriptions come from language files. An obsolete `menus/` directory can be removed after backup.
 
-`rooms.json` stores rooms, table locations and action history. `table-map-ids.yml` stores the plugin's map allocations. Preserve both when upgrading; do not edit generated records while the server is running.
+`rooms.json` stores rooms, table locations and action history. `table-map-ids.yml` stores the plugin's map allocations. Preserve both when upgrading; do not edit generated records while the server is running. Legacy `returns` coordinates are retained for compatibility; the current spectator flow no longer records unused return locations.
 
 ## Optional resource pack
 
