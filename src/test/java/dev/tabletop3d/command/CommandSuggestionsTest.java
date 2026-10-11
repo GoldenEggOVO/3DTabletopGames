@@ -1,4 +1,4 @@
-package dev.tabletop3d.menu;
+package dev.tabletop3d.command;
 
 import dev.tabletop3d.room.Room;
 import dev.tabletop3d.rules.connectfour.ConnectFourGame;

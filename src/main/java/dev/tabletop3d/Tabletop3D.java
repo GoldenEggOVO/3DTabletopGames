@@ -7,7 +7,7 @@ import dev.tabletop3d.interaction.GameWorld;
 import dev.tabletop3d.interaction.TableComfort;
 import dev.tabletop3d.interaction.TableLobby;
 import dev.tabletop3d.menu.BoardWindow;
-import dev.tabletop3d.menu.CommandSuggestions;
+import dev.tabletop3d.command.TabletopCommand;
 import dev.tabletop3d.menu.GameMenus;
 import dev.tabletop3d.resource.TabletopPack;
 import dev.tabletop3d.room.BoardOccupancy;
@@ -22,7 +22,6 @@ import dev.tabletop3d.text.RoomText;
 import net.kyori.adventure.text.Component;
 
 import org.bukkit.*;
-import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.player.*;
@@ -33,8 +32,7 @@ import java.nio.file.*;
 import java.security.SecureRandom;
 import java.util.*;
 
-public final class Tabletop3D extends JavaPlugin
-        implements Listener, CommandExecutor, TabCompleter {
+public final class Tabletop3D extends JavaPlugin implements Listener {
     public static final List<String> GAMES =
             List.of(
                     "xiangqi",
@@ -85,8 +83,10 @@ public final class Tabletop3D extends JavaPlugin
             comfort = new TableComfort(this);
             tableLobby = new TableLobby(this);
             tableLobby.start();
-            Objects.requireNonNull(getCommand("3dtabletop")).setExecutor(this);
-            getCommand("3dtabletop").setTabCompleter(this);
+            var command = new TabletopCommand(this);
+            Objects.requireNonNull(getCommand("3dtabletop")).setExecutor(command);
+            getCommand("3dtabletop").setTabCompleter(command);
+            Bukkit.getPluginManager().registerEvents(command, this);
             Bukkit.getPluginManager().registerEvents(this, this);
             Bukkit.getScheduler()
                     .runTask(
@@ -162,155 +162,8 @@ public final class Tabletop3D extends JavaPlugin
         }
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length > 0 && args[0].equalsIgnoreCase("reload-language")) {
-            if (sender instanceof Player player
-                    && (!allowed(player) || !player.hasPermission("3dtabletop.admin"))) {
-                tell(player, Language.component("chat.permission"));
-                return true;
-            }
-            try {
-                var config = new org.bukkit.configuration.file.YamlConfiguration();
-                config.load(new File(getDataFolder(), "config.yml"));
-                boolean changed =
-                        Language.reload(
-                                getDataFolder().toPath().resolve("languages"),
-                                config.getString("language", "en_US"),
-                                getLogger()::warning);
-                if (changed && menus != null) menus.languageChanged();
-                sender.sendMessage(
-                        Language.component(changed ? "language.reloaded" : "language.failed"));
-            } catch (Exception ex) {
-                getLogger().warning("Cannot reload languages: " + ex.getMessage());
-                sender.sendMessage(Language.component("language.failed"));
-            }
-            return true;
-        }
-        if (!(sender instanceof Player p)) {
-            sender.sendMessage(Language.component("chat.console"));
-            if (args.length > 0 && args[0].equals("status"))
-                sender.sendMessage(
-                        Language.component(
-                                "chat.status",
-                                "rooms",
-                                rooms.size()));
-            return true;
-        }
-        if (!allowed(p)) {
-            tell(p, Language.component("chat.permission"));
-            return true;
-        }
-        try {
-            String sub = args.length == 0 ? "menu" : args[0].toLowerCase(Locale.ROOT);
-            switch (sub) {
-                case "menu" -> menus.main(p);
-                case "click" -> {
-                    if (args.length == 3) menus.handle(p, args[1] + " " + args[2]);
-                }
-                case "move" -> {
-                    if (args.length == 2) {
-                        Room r = requireRoom(p);
-                        action(p, r, r.revision, new JsonPrimitive(args[1]));
-                    }
-                }
-                case "resume" -> {
-                    Room r = room(p);
-                    if (r == null) {
-                        menus.main(p);
-                    } else resume(p, r);
-                }
-                case "create" -> {
-                    if (args.length < 2) menus.main(p);
-                    else
-                        create(
-                                p,
-                                args[1],
-                                args.length > 2
-                                        ? Integer.parseInt(args[2])
-                                        : defaultCapacity(args[1]));
-                }
-                case "join" -> {
-                    if (args.length < 2) menus.main(p);
-                    else join(p, find(args[1]));
-                }
-                case "ready" -> {
-                    Room r = requireRoom(p);
-                    ready(p, r);
-                }
-                case "bots" -> {
-                    Room r = requireRoom(p);
-                    startWithBots(p, r);
-                }
-                case "leave" -> {
-                    menus.confirmLeave(p);
-                }
-                case "rematch" -> rematch(p, requireRoom(p));
-                case "rules" -> {
-                    Room r = room(p);
-                    menus.rules(
-                            p,
-                            args.length > 1 && GAMES.contains(args[1])
-                                    ? args[1]
-                                    : r == null ? "gomoku" : r.kind);
-                }
-                default -> menus.main(p);
-            }
-        } catch (IllegalArgumentException ex) {
-            tell(p, Language.error(ex));
-        }
-        return true;
-    }
-
-    @Override
-    public List<String> onTabComplete(
-            CommandSender sender, Command cmd, String alias, String[] args) {
-        if (args.length == 1
-                && "reload-language".startsWith(args[0].toLowerCase(Locale.ROOT))
-                && (!(sender instanceof Player player)
-                        || allowed(player) && player.hasPermission("3dtabletop.admin"))) {
-            var suggestions =
-                    new ArrayList<>(
-                            sender instanceof Player player
-                                    ? CommandSuggestions.complete(
-                                            args, rooms.values(), room(player), false, true)
-                                    : CommandSuggestions.complete(
-                                            args, rooms.values(), null, true, true));
-            suggestions.add("reload-language");
-            return suggestions;
-        }
-        if (sender instanceof Player player) {
-            Room own = room(player);
-            if (args.length == 2
-                    && args[0].equalsIgnoreCase("move")
-                    && own != null
-                    && own.board instanceof HandGame
-                    && own.seat(player.getUniqueId()) != own.turn()) return List.of();
-            return CommandSuggestions.complete(args, rooms.values(), own, false, allowed(player));
-        }
-        return CommandSuggestions.complete(args, rooms.values(), null, true, true);
-    }
-
-    @EventHandler
-    public void commandSuggestions(PlayerCommandSendEvent event) {
-        CommandSuggestions.hideDuplicateRoot(event.getCommands());
-    }
-
     private void requireLiveRoom(Room room) {
         if (rooms.get(room.id) != room) throw new RuleViolation("error.room-closed", "Room closed");
-    }
-
-    Room requireRoom(Player p) {
-        Room r = room(p);
-        if (r == null) throw new RuleViolation("error.you-have-not-joined-a-room", "You have not joined a room");
-        return r;
-    }
-
-    Room find(String text) {
-        return rooms.values().stream()
-                .filter(r -> r.id.toString().startsWith(text))
-                .findFirst()
-                .orElseThrow(() -> new RuleViolation("error.room-closed", "Room closed"));
     }
 
     public static int defaultCapacity(String kind) {

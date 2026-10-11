@@ -1,8 +1,7 @@
-package dev.tabletop3d;
+package dev.tabletop3d.room;
 
 import com.google.gson.JsonParser;
 
-import dev.tabletop3d.room.Room;
 import dev.tabletop3d.rules.GameOptions;
 
 import org.junit.jupiter.api.Test;

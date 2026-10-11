@@ -1,10 +1,9 @@
-package dev.tabletop3d;
+package dev.tabletop3d.room;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import dev.tabletop3d.room.Room;
 import dev.tabletop3d.rules.GameFactory;
 
 import java.nio.charset.StandardCharsets;
@@ -51,7 +50,7 @@ public final class RoomReplayVerifier {
     public static void main(String[] args) throws Exception {
         if (args.length != 1)
             throw new IllegalArgumentException(
-                    "Usage: java -cp 3dtabletop.jar dev.tabletop3d.RoomReplayVerifier rooms.json");
+                    "Usage: java -cp 3dtabletop.jar dev.tabletop3d.room.RoomReplayVerifier rooms.json");
         JsonObject root =
                 JsonParser.parseString(Files.readString(Path.of(args[0]), StandardCharsets.UTF_8))
                         .getAsJsonObject();

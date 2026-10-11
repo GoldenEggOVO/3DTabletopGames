@@ -1,4 +1,4 @@
-package dev.tabletop3d.menu;
+package dev.tabletop3d.command;
 
 import dev.tabletop3d.Tabletop3D;
 import dev.tabletop3d.room.Room;

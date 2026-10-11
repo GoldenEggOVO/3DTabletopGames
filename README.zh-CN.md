@@ -98,7 +98,7 @@ rendering:
 停服并完整备份插件数据后替换 JAR，保留现有配置、自定义翻译、房间和其他插件。当前 schema 1 房间文件继续支持，已退役玩法的旧格式不自动转换。升级前可用候选 JAR 验证备份：
 
 ```sh
-java -cp target/3dtabletop-1.10.30-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifier /backup/3dtabletop/rooms.json
+java -cp target/3dtabletop-1.10.30-SNAPSHOT.jar dev.tabletop3d.room.RoomReplayVerifier /backup/3dtabletop/rooms.json
 ```
 
 启用资源包时同时更新匹配的 ZIP 和 URL。启动后检查房间恢复、菜单与桌面操作，再决定是否清理备份。
@@ -158,7 +158,8 @@ python tools/packaging/package_source.py
 
 | 想修改什么 | 从哪里开始 |
 |---|---|
-| 启动、命令与配置 | `Tabletop3D.java` |
+| 启动与配置 | `Tabletop3D.java` |
+| 命令与 Tab 提示 | `command/` |
 | 游戏规则和合法操作 | `rules/<game>/`，由 `rules/GameFactory.java` 选择 |
 | 房间成员、回合与存档 | `room/Room.java`、`RoundActions.java`、`RoomStore.java` |
 | 点击、准星与桌面交互 | `interaction/GameWorld.java` |

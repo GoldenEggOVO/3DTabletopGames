@@ -98,7 +98,7 @@ rendering:
 Stop the server and back up the complete plugin data directory before replacing the JAR. Preserve current configuration, custom translations, rooms and other plugins. Current schema 1 room files remain supported; retired game formats are not automatically converted. Validate a backup against the candidate JAR before updating:
 
 ```sh
-java -cp target/3dtabletop-1.10.30-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifier /backup/3dtabletop/rooms.json
+java -cp target/3dtabletop-1.10.30-SNAPSHOT.jar dev.tabletop3d.room.RoomReplayVerifier /backup/3dtabletop/rooms.json
 ```
 
 When resource rendering is enabled, update the matching ZIP and its URL as well. After startup, check restored rooms, menus and table actions before removing the backup.
@@ -158,7 +158,8 @@ All plugin packages are under `src/main/java/dev/tabletop3d/`; `src/test/java/` 
 
 | Change | Start here |
 |---|---|
-| Startup, commands and configuration | `Tabletop3D.java` |
+| Startup and configuration | `Tabletop3D.java` |
+| Commands and Tab suggestions | `command/` |
 | Game rules and legal actions | `rules/<game>/`, selected by `rules/GameFactory.java` |
 | Room membership, turns and persistence | `room/Room.java`, `RoundActions.java`, `RoomStore.java` |
 | Clicks, hovering and table access | `interaction/GameWorld.java` |
