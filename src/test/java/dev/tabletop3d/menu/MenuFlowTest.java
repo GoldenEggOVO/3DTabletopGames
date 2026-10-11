@@ -1,8 +1,7 @@
 package dev.tabletop3d.menu;
 
-import dev.tabletop3d.rules.GameCatalog;
-
 import dev.tabletop3d.Tabletop3D;
+import dev.tabletop3d.rules.GameCatalog;
 import dev.tabletop3d.TabletopTest;
 import dev.tabletop3d.interaction.TableComfort;
 import dev.tabletop3d.room.Room;

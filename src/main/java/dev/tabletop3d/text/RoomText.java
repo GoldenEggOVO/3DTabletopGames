@@ -1,8 +1,7 @@
 package dev.tabletop3d.text;
 
-import dev.tabletop3d.rules.GameCatalog;
-
 import dev.tabletop3d.room.Room;
+import dev.tabletop3d.rules.GameCatalog;
 import dev.tabletop3d.rules.GameOptions;
 import dev.tabletop3d.rules.coloreight.ColorEightGame;
 import dev.tabletop3d.rules.ludo.LudoGame;

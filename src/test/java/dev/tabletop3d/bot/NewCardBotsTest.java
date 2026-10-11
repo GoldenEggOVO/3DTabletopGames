@@ -1,8 +1,7 @@
 package dev.tabletop3d.bot;
 
-import dev.tabletop3d.rules.GameCatalog;
-
 import dev.tabletop3d.rules.*;
+import dev.tabletop3d.rules.GameCatalog;
 
 import org.junit.jupiter.api.Test;
 

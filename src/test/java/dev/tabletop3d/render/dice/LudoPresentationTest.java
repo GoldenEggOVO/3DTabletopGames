@@ -1,10 +1,9 @@
 package dev.tabletop3d.render.dice;
 
-import dev.tabletop3d.rules.GameCatalog;
-
 import com.google.gson.JsonPrimitive;
 
 import dev.tabletop3d.TabletopTest;
+import dev.tabletop3d.rules.GameCatalog;
 import dev.tabletop3d.interaction.GameWorld;
 import dev.tabletop3d.menu.GameMenus;
 import dev.tabletop3d.render.TableArt;

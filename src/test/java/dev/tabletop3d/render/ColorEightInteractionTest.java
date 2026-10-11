@@ -1,8 +1,7 @@
 package dev.tabletop3d.render;
 
-import dev.tabletop3d.rules.GameCatalog;
-
 import dev.tabletop3d.Tabletop3D;
+import dev.tabletop3d.rules.GameCatalog;
 import dev.tabletop3d.TabletopTest;
 import dev.tabletop3d.render.cards.PlayingCardHeads;
 import dev.tabletop3d.render.cards.RoundCardTable;
