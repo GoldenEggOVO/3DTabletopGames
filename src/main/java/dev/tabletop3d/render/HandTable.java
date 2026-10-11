@@ -312,7 +312,9 @@ public final class HandTable implements AutoCloseable {
         }
 
         boolean valid() {
-            return parts.stream().allMatch(Entity::isValid);
+            for (int index = 0; index < parts.size(); index++)
+                if (!parts.get(index).isValid()) return false;
+            return true;
         }
 
         void remove() {
