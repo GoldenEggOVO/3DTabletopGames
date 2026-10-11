@@ -4,7 +4,7 @@
 
 带实体棋子、多人房间、私有手牌和原生 Dialog 菜单的 Minecraft 3D 桌游插件。
 
-支持 **Paper／Purpur 26.2、Java 25**。可独立运行，无需客户端模组或其他自定义插件；CraftEngine 与桌游资源包为可选项。当前源码为 **1.10.30-SNAPSHOT 开发版**，未发布 Release。
+支持 **Paper／Purpur 26.2、Java 25**。可独立运行，无需客户端模组或其他自定义插件；CraftEngine 与桌游资源包为可选项。当前源码为 **1.10.31-SNAPSHOT 开发版**，未发布 Release。
 
 ## 安装
 
@@ -98,7 +98,7 @@ rendering:
 停服并完整备份插件数据后替换 JAR，保留现有配置、自定义翻译、房间和其他插件。当前 schema 1 房间文件继续支持，已退役玩法的旧格式不自动转换。升级前可用候选 JAR 验证备份：
 
 ```sh
-java -cp target/3dtabletop-1.10.30-SNAPSHOT.jar dev.tabletop3d.room.RoomReplayVerifier /backup/3dtabletop/rooms.json
+java -cp target/3dtabletop-1.10.31-SNAPSHOT.jar dev.tabletop3d.room.RoomReplayVerifier /backup/3dtabletop/rooms.json
 ```
 
 启用资源包时同时更新匹配的 ZIP 和 URL。启动后检查房间恢复、菜单与桌面操作，再决定是否清理备份。

@@ -4,7 +4,7 @@
 
 Playable 3D tabletop games for Minecraft, with physical pieces, multiplayer rooms, private hands and native Dialog menus.
 
-Requires **Paper / Purpur 26.2 and Java 25**. Runs independently without client mods or other custom plugins. CraftEngine and the tabletop resource pack are optional. Current source: **1.10.30-SNAPSHOT**, an unpublished development build.
+Requires **Paper / Purpur 26.2 and Java 25**. Runs independently without client mods or other custom plugins. CraftEngine and the tabletop resource pack are optional. Current source: **1.10.31-SNAPSHOT**, an unpublished development build.
 
 ## Install
 
@@ -98,7 +98,7 @@ rendering:
 Stop the server and back up the complete plugin data directory before replacing the JAR. Preserve current configuration, custom translations, rooms and other plugins. Current schema 1 room files remain supported; retired game formats are not automatically converted. Validate a backup against the candidate JAR before updating:
 
 ```sh
-java -cp target/3dtabletop-1.10.30-SNAPSHOT.jar dev.tabletop3d.room.RoomReplayVerifier /backup/3dtabletop/rooms.json
+java -cp target/3dtabletop-1.10.31-SNAPSHOT.jar dev.tabletop3d.room.RoomReplayVerifier /backup/3dtabletop/rooms.json
 ```
 
 When resource rendering is enabled, update the matching ZIP and its URL as well. After startup, check restored rooms, menus and table actions before removing the backup.
