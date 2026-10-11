@@ -156,6 +156,15 @@ python tools/packaging/package_source.py
 
 图片名称按游戏和部位命名，例如 `poker_spades_9_face.png`（黑桃 9 牌面）、`color_eight_yellow_6_face.png`（彩八黄色 6 牌面）、`xiangqi_red_pawn_face.png`（红方兵）、`mahjong_table_cloth.png`（麻将桌布）。`top`／`bottom` 表示上面／底面，`front`／`rear` 区分正反面的贴图，`shared_` 表示多个模型共用的图片。
 
+`textures/item/` 下按游戏分目录：`mahjong/`（麻将）、`xiangqi/`（象棋）、`chess/`（国际象棋）、`connect_four/`（四子棋）、`gomoku/`（五子棋）、`go/`（围棋）、`reversi/`（黑白棋）、`checkers/`（中国跳棋）、`draughts/`（西洋跳棋）、`ludo/`、`color_eight/`（彩八）、`doudizhu/`（斗地主）、`liars_bar/`（骗子酒馆）、`texas_holdem/`（德州扑克）和 `yacht/`（快艇骰子）。每个目录保留该游戏专用的图片；共用图片集中存放一份：
+
+| 共用目录 | 内容 |
+| --- | --- |
+| `shared/materials/` | 木材、牌体和混凝土等基础材质 |
+| `shared/playing_cards/` | 各扑克牌游戏共用的牌面和牌背 |
+| `shared/table_parts/` | 多种桌子共用的桌底与桌柱材质 |
+| `shared/pieces/` | 围棋／五子棋共用棋子，以及多个棋类共用的金色装饰 |
+
 ### 从哪里看代码
 
 插件代码位于 `src/main/java/dev/tabletop3d/`，`src/test/java/` 按对应职责存放测试。

@@ -258,7 +258,7 @@ class ResourcePackTest(unittest.TestCase):
     def test_ring_arrows_have_smooth_alpha_edges_and_no_detached_fragments(self):
         for name in ("color_eight_direction_forward", "color_eight_direction_reverse"):
             im = Image.open(io.BytesIO(self.archive.read(
-                f"assets/tabletop3d/textures/item/surface/{name}.png"))).convert("RGBA")
+                f"assets/tabletop3d/textures/item/color_eight/{name}.png"))).convert("RGBA")
             self.assertTrue(any(im.getchannel("A").histogram()[1:255]),
                             "Curved arrows need filtered edges instead of jagged polygon seams")
             opaque = {point for point in ((x,y) for y in range(im.height) for x in range(im.width))
@@ -278,7 +278,7 @@ class ResourcePackTest(unittest.TestCase):
         # These samples lie on arrowhead wings, outside the circular arc itself.
         for direction, name in ((1, "color_eight_direction_forward"), (-1, "color_eight_direction_reverse")):
             image = Image.open(io.BytesIO(self.archive.read(
-                f"assets/tabletop3d/textures/item/surface/{name}.png"))).convert("RGBA")
+                f"assets/tabletop3d/textures/item/color_eight/{name}.png"))).convert("RGBA")
             point = (484, 159) if direction == 1 else (484, 353)
             self.assertGreater(image.getpixel(point)[3], 0, name + " arrowhead is reversed")
 
@@ -290,7 +290,7 @@ class ResourcePackTest(unittest.TestCase):
 
     def test_table_edges_are_solid_and_mahjong_rim_leaves_the_cloth_open(self):
         wood = Image.open(io.BytesIO(self.archive.read(
-            "assets/tabletop3d/textures/item/surface/wood.png"))).convert("RGB")
+            "assets/tabletop3d/textures/item/shared/materials/wood.png"))).convert("RGB")
         self.assertEqual(1, len(wood.getcolors(wood.width * wood.height)))
         model = json.loads(self.archive.read("assets/tabletop3d/models/item/mahjong_table.json"))
         raised = [e for e in model["elements"] if e["to"][1] > 8.8]

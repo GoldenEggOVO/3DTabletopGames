@@ -156,6 +156,15 @@ Edit model JSONs under `resource-pack/assets/tabletop3d/models/item/`, item defi
 
 Image names identify the game and part, for example `poker_spades_9_face.png`, `color_eight_yellow_6_face.png`, `xiangqi_red_pawn_face.png` and `mahjong_table_cloth.png`. `top`/`bottom` identify upper and lower surfaces, `front`/`rear` distinguish face orientations, and `shared_` marks textures reused by multiple models.
 
+Under `textures/item/`, game-specific images live in `mahjong/`, `xiangqi/`, `chess/`, `connect_four/`, `gomoku/`, `go/`, `reversi/`, `checkers/` (Chinese Checkers), `draughts/`, `ludo/`, `color_eight/`, `doudizhu/`, `liars_bar/`, `texas_holdem/` and `yacht/`. Shared images are stored once:
+
+| Shared directory | Contents |
+| --- | --- |
+| `shared/materials/` | Basic wood, card body and concrete textures |
+| `shared/playing_cards/` | Card faces and backs used by the playing-card games |
+| `shared/table_parts/` | Table bottoms and pedestal textures used by multiple tables |
+| `shared/pieces/` | Go/Gomoku stones and gold decorations used by multiple board games |
+
 ### Finding the code
 
 All plugin packages are under `src/main/java/dev/tabletop3d/`; `src/test/java/` follows the same structure.
