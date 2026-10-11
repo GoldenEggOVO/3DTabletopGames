@@ -4,6 +4,7 @@ import com.google.gson.JsonPrimitive;
 
 import dev.tabletop3d.Tabletop3D;
 import dev.tabletop3d.room.Room;
+import dev.tabletop3d.rules.RuleViolation;
 import dev.tabletop3d.rules.texasholdem.TexasHoldemGame;
 import dev.tabletop3d.text.Language;
 
@@ -47,19 +48,7 @@ final class PokerRaiseWindow {
                                                         || !actor.isOnline()
                                                         || !plugin.allowed(actor)) return;
                                                 try {
-                                                    if (plugin.rooms.get(room.id) != room)
-                                                        throw new IllegalArgumentException(
-                                                                "Room closed");
-                                                    room.requireAction(
-                                                            actor.getUniqueId(), revision);
-                                                    int value = Integer.parseInt(total);
-                                                    ((TexasHoldemGame) room.board)
-                                                            .validateRaise(seat, value);
-                                                    plugin.apply(
-                                                            room,
-                                                            seat,
-                                                            new JsonPrimitive("raise:" + value),
-                                                            null);
+                                                    submit(plugin, actor, room, revision, seat, total);
                                                 } catch (IllegalArgumentException error) {
                                                     actor.sendActionBar(Language.error(error));
                                                 }
@@ -118,4 +107,19 @@ final class PokerRaiseWindow {
                                                                 null),
                                                         1))));
     }
+
+    static void submit(Tabletop3D plugin, Player actor, Room room, long revision, int seat, String total) {
+        if (plugin.rooms.get(room.id) != room)
+            throw new RuleViolation("error.room-closed", "Room closed");
+        if (!plugin.arena.atTableWorld(actor, room))
+            throw new RuleViolation(
+                    "error.use-3dtabletop-resume-to-return-to-the",
+                    "Use /3dtabletop resume to return to the table world first");
+        if (plugin.pack != null) plugin.pack.require(actor, room.kind);
+        room.requireAction(actor.getUniqueId(), revision);
+        int value = Integer.parseInt(total);
+        ((TexasHoldemGame) room.board).validateRaise(seat, value);
+        plugin.apply(room, seat, new JsonPrimitive("raise:" + value), null);
+    }
+
 }
