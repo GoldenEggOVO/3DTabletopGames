@@ -126,6 +126,10 @@ When resource rendering is enabled, update the matching ZIP and its URL as well.
 
 Updates are built, tested and packaged locally before source is pushed. GitHub Actions is disabled; pushing does not run remote builds or publish a Release.
 
+On Windows, double-click `build.cmd` at the repository root. It locates Python 3.12+, JDK 25 and Maven 3.9+, packages the resource pack, compiles and runs the Java tests, then verifies that the ZIP and JAR checksums match. Success prints both output paths; failure stops the build and leaves the error visible in the window.
+
+The launcher prefers Maven 3.9.11 under the workspace's adjacent `.tools/` directory. When that directory also contains an `m2/` cache, the build reuses it offline. Elsewhere, provide Maven through `PATH` and JDK 25 through `JAVA_HOME` or `PATH`. Outputs remain under `target/`; running the launcher does not deploy them to a server.
+
 Use **JDK 25 and Maven 3.9+**:
 
 ```sh
@@ -154,7 +158,7 @@ Asset and head-export tests need Pillow. Optional native head upload needs its o
 
 Edit model JSONs under `resource-pack/assets/tabletop3d/models/item/`, item definitions under `items/`, images under `textures/item/` and OGG samples under `sounds/`. Sound events are in `assets/tabletop3d/sounds.json`. To add an item, match its definition path to CraftEngine's `item_model` and its `model.model` to the model path. Keep the logical item ID in the CraftEngine registration and `CraftEngineModels.IDS` consistent. Run the packager and tests after editing, then compile and ship the matching JAR and ZIP together. Packing does not redraw, resize or transcode any source file.
 
-After editing images, run these commands from the repository root, proceeding only when each step succeeds. They require Python 3.12+, JDK 25 and Maven 3.9+:
+After editing images, Windows users can double-click `build.cmd` to rebuild. Alternatively, run these commands from the repository root, proceeding only when each step succeeds. They require Python 3.12+, JDK 25 and Maven 3.9+:
 
 ```sh
 python tools/packaging/package_resource_pack.py

@@ -126,6 +126,10 @@ java -cp target/3dtabletop-1.10.31-SNAPSHOT.jar dev.tabletop3d.room.RoomReplayVe
 
 更新时先在本地编译、测试和打包，再推送源码。GitHub Actions 已停用，推送不会触发远端构建，也不会发布 Release。
 
+Windows 用户可以直接双击仓库根目录的 `build.cmd`。脚本自动查找 Python 3.12+、JDK 25 和 Maven 3.9+，先打包资源包，再编译并运行 Java 测试，最后核对 ZIP 与 JAR 的校验值。成功后显示两个生成文件的完整路径；失败时停止并保留窗口中的错误信息。
+
+脚本优先使用工作区相邻 `.tools/` 中的 Maven 3.9.11；该目录同时提供 `m2/` 缓存时，会复用缓存进行离线构建。其他目录下可通过 `PATH` 提供 Maven，通过 `JAVA_HOME` 或 `PATH` 提供 JDK 25。生成文件保存在 `target/`，运行脚本不会自动部署到服务器。
+
 使用 **JDK 25、Maven 3.9+**：
 
 ```sh
@@ -154,7 +158,7 @@ python tools/packaging/package_source.py
 
 模型 JSON 在 `resource-pack/assets/tabletop3d/models/item/`，物品定义在 `items/`，图片在 `textures/item/`，OGG 音频在 `sounds/`。音效事件由 `assets/tabletop3d/sounds.json` 管理。新增物品时，物品定义路径须与 CraftEngine 的 `item_model` 一致，其中的 `model.model` 须引用实际模型路径；CraftEngine 注册中的逻辑物品标识须与 `CraftEngineModels.IDS` 一致。修改后运行打包和检查，再编译插件；匹配的 JAR 和 ZIP 一起交付。打包不会重新绘图、缩放或转换素材。
 
-修改图片后，在仓库根目录依次执行以下命令；每一步成功后再执行下一步。需要 Python 3.12+、JDK 25 和 Maven 3.9+：
+修改图片后，Windows 用户双击 `build.cmd` 即可重新打包。也可以在仓库根目录依次执行以下命令；每一步成功后再执行下一步。需要 Python 3.12+、JDK 25 和 Maven 3.9+：
 
 ```sh
 python tools/packaging/package_resource_pack.py
