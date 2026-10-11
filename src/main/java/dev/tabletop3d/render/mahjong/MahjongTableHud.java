@@ -55,6 +55,9 @@ public final class MahjongTableHud implements AutoCloseable {
     private boolean closed;
     private final BlockDisplay turnEdge;
     private int highlightedTurn = -2;
+    private long labelRevision = -1, labelLanguage = -1, labelSecond = Long.MIN_VALUE;
+    private Room.Phase labelPhase;
+    private boolean labelBusy;
 
     MahjongTableHud(Tabletop3D plugin, Room room, Location surfaceOrigin, NamespacedKey tag) {
         this(plugin, room, surfaceOrigin, tag, new TableAudience(plugin, surfaceOrigin));
@@ -133,15 +136,27 @@ public final class MahjongTableHud implements AutoCloseable {
         syncPanel();
         syncOrientation();
 
-        if (!room.busy
+        boolean stateChanged = !room.busy
                 && room.board instanceof HandGame game
-                && (rendered != game || revision != room.revision)) {
+                && (rendered != game || revision != room.revision);
+        if (stateChanged && room.board instanceof HandGame game) {
             rendered = game;
             revision = room.revision;
             info = Map.copyOf(game.publicInfo());
             remaining = game.deckSize();
             turn = game.currentPlayer();
         }
+        long seconds = room.phase == Room.Phase.PLAYING && !room.busy
+                ? (Math.max(0, plugin.turnWaitMillis(room) - Math.max(0, now - room.changed)) + 999) / 1000
+                : -1;
+        long language = Language.generation();
+        if (!stateChanged && labelRevision == room.revision && labelLanguage == language
+                && labelPhase == room.phase && labelBusy == room.busy && labelSecond == seconds) return;
+        labelRevision = room.revision;
+        labelLanguage = language;
+        labelPhase = room.phase;
+        labelBusy = room.busy;
+        labelSecond = seconds;
         for (TextDisplay count : counts)
             label(
                     count,
@@ -220,10 +235,7 @@ public final class MahjongTableHud implements AutoCloseable {
         if (room.phase == Room.Phase.FINISHED) clock = Language.component("table.mahjong.finished");
         else if (room.phase != Room.Phase.PLAYING || room.busy)
             clock = Language.component("table.mahjong.paused");
-        else {
-            long left = Math.max(0, plugin.turnWaitMillis(room) - Math.max(0, now - room.changed));
-            clock = Language.component("table.mahjong.timer", "seconds", (left + 999) / 1000);
-        }
+        else clock = Language.component("table.mahjong.timer", "seconds", seconds);
         Component current = Language.component("room.current-turn", "player", seatName(turn));
         Component summary =
                 heading.append(Component.text(" · "))

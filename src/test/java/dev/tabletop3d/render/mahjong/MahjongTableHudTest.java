@@ -101,6 +101,37 @@ class MahjongTableHudTest {
         f.hud.tick(9_000);assertTrue(f.status().contains("0s"));
         assertEquals(28,f.spawned.size());
     }
+
+    @Test void unchangedCountdownDoesNotRebuildLocalizedText() {
+        Fixture f = new Fixture();
+        f.room.changed = 1_000;
+        f.hud.tick(1_000);
+        try (var language = mockStatic(Language.class, CALLS_REAL_METHODS)) {
+            f.hud.tick(1_100);
+            f.hud.tick(1_900);
+            language.verify(() -> Language.component(eq("table.mahjong.round"), any(Object[].class)), never());
+            language.verify(() -> Language.component(eq("table.mahjong.timer"), any(Object[].class)), never());
+            f.hud.tick(2_000);
+            assertTrue(f.status().contains("4s"));
+        }
+    }
+
+    @Test void languageReloadRefreshesTextWithoutAChangedGameRevision() {
+        Fixture f = new Fixture();
+        Language.load(languageFolder, "en_US", message -> fail(message));
+        assertTrue(Language.reload(languageFolder, "en_US", message -> fail(message)));
+        f.hud.tick(1_000);
+        long revision = f.room.revision;
+        try {
+            assertTrue(Language.reload(languageFolder, "zh_CN", message -> fail(message)));
+            f.hud.tick(1_001);
+            assertTrue(f.status().contains(MessageText.plain(Language.component("table.mahjong.wind.0"))), f.status());
+            assertFalse(f.status().contains("East 1"));
+            assertEquals(revision, f.room.revision);
+        } finally {
+            Language.reload(languageFolder, "en_US", message -> fail(message));
+        }
+    }
     @Test void floatingRoundClockAndDiscardInformationAreRaisedTogether() {
         Fixture f=new Fixture();
         assertEquals(81+.85+.4,f.locations.get(f.statusEntity()).getY(),1e-6);
