@@ -91,11 +91,12 @@ public final class BoardBots {
         if (legalActions.contains("challenge") && random.nextInt(4) == 0) {
             return "challenge";
         }
+        String declaration = liar.publicInfo().get("declaration");
         List<String> honest =
                 liar.hand(seat).stream()
                         .filter(
                                 card ->
-                                        card.face().equals(liar.publicInfo().get("declaration"))
+                                        card.face().equals(declaration)
                                                 || card.face().startsWith("joker_"))
                         .limit(3)
                         .map(HandGame.Piece::id)
@@ -123,8 +124,8 @@ public final class BoardBots {
         if (yacht.rolls() == 0) {
             return "roll";
         }
+        int[] dice = yacht.dice();
         if (yacht.rolls() < 3) {
-            int[] dice = yacht.dice();
             int[] counts = new int[7];
             for (int value : dice) {
                 counts[value]++;
@@ -151,7 +152,7 @@ public final class BoardBots {
                                 action ->
                                         YachtGame.score(
                                                 YachtGame.CATEGORIES.indexOf(action.substring(6)),
-                                                yacht.dice())))
+                                                dice)))
                 .orElseThrow();
     }
 
