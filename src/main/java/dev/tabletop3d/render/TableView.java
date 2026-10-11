@@ -43,7 +43,7 @@ public final class TableView implements AutoCloseable {
     private final List<Entity> furniture = new ArrayList<>();
     private final Map<String, TokenView> tokens = new LinkedHashMap<>();
     private final Map<String, Cell> cells = new LinkedHashMap<>();
-    private dev.tabletop3d.rules.BoardGame renderedBoard;
+    private BoardGame renderedBoard;
     private final Set<TokenView> animating = new LinkedHashSet<>();
     private final Map<UUID, Overlay> overlays = new HashMap<>();
     private final List<Entity> lastMove = new ArrayList<>();
@@ -68,7 +68,7 @@ public final class TableView implements AutoCloseable {
     private String lastDiceKey;
 
     private record TitleState(
-            dev.tabletop3d.rules.BoardGame board,
+            BoardGame board,
             long revision,
             Room.Phase phase,
             List<Room.Seat> seats,
@@ -422,7 +422,7 @@ public final class TableView implements AutoCloseable {
             sync();
             return;
         }
-        if (room.board instanceof dev.tabletop3d.rules.SelectedHandGame) {
+        if (room.board instanceof SelectedHandGame) {
             playingTable = new PlayingCardTable(plugin, room, origin, tag);
             title = text(origin.clone().add(0, 1.8, 0), "", .4, false, NamedTextColor.GOLD);
             title.setBillboard(Display.Billboard.CENTER);
@@ -431,7 +431,7 @@ public final class TableView implements AutoCloseable {
             sync();
             return;
         }
-        if (room.board instanceof dev.tabletop3d.rules.HandGame) {
+        if (room.board instanceof HandGame) {
             handTable = new HandTable(plugin, room, origin, tag);
             syncHandFurniture();
             title = text(origin.clone().add(0, 1.8, 0), "", .4, false, NamedTextColor.GOLD);
@@ -1346,7 +1346,7 @@ public final class TableView implements AutoCloseable {
                         && !room.busy
                         && room.seat(player.getUniqueId()) >= 0
                         && (room.seat(player.getUniqueId()) == room.board.currentPlayer()
-                                || room.board instanceof dev.tabletop3d.rules.go.GoGame go
+                                || room.board instanceof GoGame go
                                         && go.scoring());
         String signature =
                 room.revision

@@ -61,8 +61,8 @@ public final class RoomText {
 
     public static Component ranking(Room room) {
         if (room.board == null) return Component.empty();
-        java.util.List<Integer> seats =
-                room.board instanceof dev.tabletop3d.rules.ludo.LudoGame ludo
+        List<Integer> seats =
+                room.board instanceof LudoGame ludo
                         ? ludo.placements()
                         : room.board instanceof ColorEightGame cards
                                 ? cards.placements()

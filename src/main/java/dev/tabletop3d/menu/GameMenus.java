@@ -495,7 +495,7 @@ public final class GameMenus implements AutoCloseable {
                                                     : Component.empty()))
                             .append(Component.newline());
         }
-        if (r.board instanceof dev.tabletop3d.rules.HandGame hand)
+        if (r.board instanceof HandGame hand)
             text =
                     text.append(HandText.status(r.kind, hand))
                             .append(RoomText.scores(r))
@@ -680,7 +680,7 @@ public final class GameMenus implements AutoCloseable {
         for (String action : choices.subList(from, Math.min(from + 12, choices.size())))
             b.add(
                     new Button(
-                            r.board instanceof dev.tabletop3d.rules.HandGame
+                            r.board instanceof HandGame
                                     ? HandText.action(r, r.seat(p.getUniqueId()), action)
                                     : actionLabel(r, action),
                             () -> plugin.action(p, r, revision, new JsonPrimitive(action))));

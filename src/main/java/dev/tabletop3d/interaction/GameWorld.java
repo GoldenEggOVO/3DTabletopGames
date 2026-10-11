@@ -257,7 +257,7 @@ public final class GameWorld implements Listener, AutoCloseable {
         if (view.deckHit(eye, direction)) {
             return "@draw";
         }
-        if (view.room.board instanceof dev.tabletop3d.rules.HandGame) {
+        if (view.room.board instanceof HandGame) {
             double distance =
                     TableGeometry.intersection(
                             eye.getY(), direction.getY(), view.origin.getY() + .03);
@@ -553,7 +553,7 @@ public final class GameWorld implements Listener, AutoCloseable {
         }
         int seat = room.seat(player.getUniqueId());
         if (seat != room.board.currentPlayer()
-                && !(room.board instanceof dev.tabletop3d.rules.go.GoGame go && go.scoring())) {
+                && !(room.board instanceof GoGame go && go.scoring())) {
             player.sendActionBar(
                     Language.component("hint.not-turn").colorIfAbsent(NamedTextColor.GRAY));
             return true;
@@ -605,7 +605,7 @@ public final class GameWorld implements Listener, AutoCloseable {
             }
             return;
         }
-        if (cell.startsWith("@hand:") && room.board instanceof dev.tabletop3d.rules.HandGame hand) {
+        if (cell.startsWith("@hand:") && room.board instanceof HandGame hand) {
             pickHandCard(player, room, seat, cell, hand);
             return;
         }
@@ -717,7 +717,7 @@ public final class GameWorld implements Listener, AutoCloseable {
     }
 
     private void pickHandCard(
-            Player player, Room room, int seat, String cell, dev.tabletop3d.rules.HandGame hand) {
+            Player player, Room room, int seat, String cell, HandGame hand) {
         String id = cell.substring(6);
         if (hand.hand(seat).stream().noneMatch(piece -> piece.id().equals(id))) {
             return;
@@ -735,7 +735,7 @@ public final class GameWorld implements Listener, AutoCloseable {
         }
         TableView view = views.get(room.id);
         String action = view == null ? null : view.cardHandAction(player, id);
-        if (room.board instanceof dev.tabletop3d.rules.SelectedHandGame) {
+        if (room.board instanceof SelectedHandGame) {
             return;
         }
         if (action != null) {
