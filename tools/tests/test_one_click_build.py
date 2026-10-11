@@ -55,7 +55,9 @@ class OneClickBuildTest(unittest.TestCase):
             'checksum = Path("src/main/resources/resource-pack.sha1").read_text()\n'
             'if mode == "stale": checksum = "0" * 40\n'
             'with zipfile.ZipFile("target/3dtabletop-1.2.3.jar", "w") as jar:\n'
-            '    jar.writestr("resource-pack.sha1", checksum)\n', encoding="utf-8")
+            '    jar.writestr("resource-pack.sha1", checksum)\n'
+            '    pack = Path("target/tabletop-resource-pack.zip").read_bytes()\n'
+            '    jar.writestr("tabletop-resource-pack.zip", b"broken" if mode == "broken-bundle" else pack)\n', encoding="utf-8")
 
     def write(self, name, value):
         path = self.project / name
@@ -100,6 +102,13 @@ class OneClickBuildTest(unittest.TestCase):
         result = self.build()
         self.assertNotEqual(0, result.returncode)
         self.assertIn("checksum", result.stderr)
+        self.assertNotIn("Build complete", result.stdout)
+
+    def test_mismatched_bundled_resource_pack_is_rejected(self):
+        self.env["TABLETOP_TEST_MAVEN"] = "broken-bundle"
+        result = self.build()
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("bundled", result.stderr.lower())
         self.assertNotIn("Build complete", result.stdout)
 
     def test_double_click_launcher_preserves_failure_exit_code(self):

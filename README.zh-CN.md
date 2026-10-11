@@ -70,7 +70,10 @@
 | `sounds.enabled` | `true` | 游戏与界面音效开关 |
 | `sounds.volume` | `1.0` | 0～1 的音量倍率 |
 | `rendering.mode` | `vanilla` | 原版、资源包或混合显示 |
-| `rendering.resource-pack.url` | 空 | 与 JAR 匹配的资源包直链 |
+| `rendering.resource-pack.source` | `local` | 本地可编辑资源，或 `external` 外部 ZIP |
+| `rendering.resource-pack.url` | 空 | 外部模式中与 JAR 匹配的资源包直链 |
+| `rendering.resource-pack.local.port` | `8137` | 本地资源下载服务端口 |
+| `rendering.resource-pack.local.public-url` | 空 | 可选公开基础地址；为空时使用玩家进服地址和下载端口 |
 
 中文设置为 `language: zh_CN`。可编辑首次启动生成的 `languages/en_US.yml`、`languages/zh_CN.yml`，或复制一份作为其他语言。保留消息键名与 `{player}` 等参数名；支持 MiniMessage 样式及旧颜色码，语言文件不能定义回调或指令。
 
@@ -81,17 +84,32 @@
 ## 可选资源包
 
 1. 使用资源模型时安装 CraftEngine，将匹配的 `craftengine-registration.zip` 解压到服务器根目录。注册文件最终位于 `plugins/CraftEngine/resources/tabletop3d/`。
-2. 将同一交付中的 `tabletop-resource-pack.zip` 上传到可直接下载的 HTTP／HTTPS 地址，保持 ZIP 内容不变。
-3. 修改 `plugins/3dtabletop/config.yml`，然后重启：
+2. 修改 `plugins/3dtabletop/config.yml`，然后重启：
 
 ```yaml
 rendering:
   mode: mixed
   resource-pack:
-    url: 'https://YOUR-HOST/tabletop-resource-pack.zip'
+    source: local
+    local:
+      bind-address: '0.0.0.0'
+      port: 8137
+      public-url: ''
 ```
 
-`vanilla` 无需 CraftEngine 或资源包。`mixed` 允许玩家单独开关，资源包不可用时显示原版。`resource-pack` 要求资源包加载成功、模型注册就绪后才能进行游戏。校验值和请求标识由插件管理，只需配置 URL，并使用与 JAR 匹配的 ZIP。不会移除或替换其他插件的资源包。
+3. 允许玩家访问资源下载端口，默认 TCP 8137。使用代理、端口映射或 HTTPS 时，将 `public-url` 设置为公开 HTTP／HTTPS 基础地址，例如 `https://games.example.org`；代理须将 `/tabletop3d/` 转发到本地下载服务。监听地址、端口及公开地址修改后重启。
+
+首次启用本地资源服务时，插件将内置素材释放到 `plugins/3dtabletop/resource-pack/`，自动生成 `plugins/3dtabletop/resource-pack.zip`。更新插件时只补充缺少的默认文件，已有自定义图片不会被覆盖。下载服务只提供已生成的 ZIP，不能浏览插件数据或原始文件。
+
+**日常换图不需要编译，也不需要 Python、Maven 或替换 JAR：**
+
+1. 在服务端资源文件夹中覆盖同名、同路径的图片，例如 `assets/tabletop3d/textures/item/color_eight/color_eight_blue_2_face.png`。
+2. 执行 `/3dtabletop reload-pack`，需要管理员权限；控制台也可执行。
+3. 插件在后台校验和打包，自动更新下载校验值及地址，为已启用资源包的在线玩家加载新版。图片或 JSON 损坏时保留原包；内容没有变化时不重复下发。房间和玩家选择保持不变。
+
+旧配置只包含 `url` 时继续使用外部模式。若需切换到上述流程，显式添加 `source: local` 并重启。外部模式可配置 `source: external` 和同一交付 ZIP 的 `url`，继续由已有 HTTP／HTTPS 服务分发，与 JAR 内置校验值匹配。
+
+`vanilla` 无需 CraftEngine 或资源包。`mixed` 允许玩家单独开关，资源包不可用时显示原版。`resource-pack` 要求资源包加载成功、模型注册就绪后才能进行游戏。不会移除或替换其他插件的资源包。修改游戏逻辑、增加资源标识或更改原版头颅纹理仍需更新插件；此重载命令处理客户端资源包的图片、模型与音效。
 
 ## 升级
 
@@ -130,9 +148,10 @@ Windows 用户可以直接双击仓库根目录的 `build.cmd`。脚本自动查
 
 脚本优先使用工作区相邻 `.tools/` 中的 Maven 3.9.11；该目录同时提供 `m2/` 缓存时，会复用缓存进行离线构建。其他目录下可通过 `PATH` 提供 Maven，通过 `JAVA_HOME` 或 `PATH` 提供 JDK 25。生成文件保存在 `target/`，运行脚本不会自动部署到服务器。
 
-使用 **JDK 25、Maven 3.9+**：
+手动构建时先准备资源包，再使用 **JDK 25、Maven 3.9+**：
 
 ```sh
+python tools/packaging/package_resource_pack.py
 mvn -B -ntp package
 ```
 
@@ -165,7 +184,7 @@ python tools/packaging/package_resource_pack.py
 mvn -B -ntp package
 ```
 
-第一步生成 `target/tabletop-resource-pack.zip` 并更新校验值，第二步运行 Java 测试并生成包含该校验值的 `target/3dtabletop-<版本>.jar`。将 ZIP 上传到资源包下载地址，停服后替换 `plugins/` 中的旧 JAR，再启动服务器。如果下载地址改变，同时更新插件 `config.yml` 的 `resource-pack.url`。只修改现有 PNG 不需要调整 CraftEngine 注册。
+第一步生成 `target/tabletop-resource-pack.zip` 并更新校验值，第二步运行 Java 测试，将默认 ZIP 和校验值一起内置到 `target/3dtabletop-<版本>.jar`。这是源码交付的构建流程；已经启用本地资源服务的服务器换图时，直接修改服务端资源文件夹并执行 `/3dtabletop reload-pack` 即可。外部模式仍须上传与 JAR 匹配的 ZIP。只修改现有 PNG 不需要调整 CraftEngine 注册。
 
 | 目录或文件 | 自定义方式 |
 | --- | --- |

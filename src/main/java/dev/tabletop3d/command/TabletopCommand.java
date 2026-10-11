@@ -32,6 +32,15 @@ public final class TabletopCommand implements Listener, CommandExecutor, TabComp
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length > 0 && args[0].equalsIgnoreCase("reload-pack")) {
+            if (sender instanceof Player player
+                    && (!plugin.allowed(player) || !player.hasPermission("3dtabletop.admin"))) {
+                plugin.tell(player, Language.component("chat.permission"));
+                return true;
+            }
+            plugin.pack.reload(sender);
+            return true;
+        }
         if (args.length > 0 && args[0].equalsIgnoreCase("reload-language")) {
             if (sender instanceof Player player
                     && (!plugin.allowed(player) || !player.hasPermission("3dtabletop.admin"))) {
@@ -137,7 +146,8 @@ public final class TabletopCommand implements Listener, CommandExecutor, TabComp
     public List<String> onTabComplete(
             CommandSender sender, Command cmd, String alias, String[] args) {
         if (args.length == 1
-                && "reload-language".startsWith(args[0].toLowerCase(Locale.ROOT))
+                && List.of("reload-language", "reload-pack").stream().anyMatch(
+                        value -> value.startsWith(args[0].toLowerCase(Locale.ROOT)))
                 && (!(sender instanceof Player player)
                         || plugin.allowed(player) && player.hasPermission("3dtabletop.admin"))) {
             var suggestions =
@@ -147,7 +157,9 @@ public final class TabletopCommand implements Listener, CommandExecutor, TabComp
                                             args, plugin.rooms.values(), plugin.room(player), false, true)
                                     : CommandSuggestions.complete(
                                             args, plugin.rooms.values(), null, true, true));
-            suggestions.add("reload-language");
+            List.of("reload-language", "reload-pack").stream()
+                    .filter(value -> value.startsWith(args[0].toLowerCase(Locale.ROOT)))
+                    .forEach(suggestions::add);
             return suggestions;
         }
         if (sender instanceof Player player) {

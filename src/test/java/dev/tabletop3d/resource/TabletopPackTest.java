@@ -11,6 +11,8 @@ import org.bukkit.event.player.PlayerResourcePackStatusEvent.Status;
 import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.*;
 import org.mockbukkit.mockbukkit.MockBukkit;
+import org.junit.jupiter.api.io.TempDir;
+import dev.tabletop3d.support.WorkspaceTempFactory;
 
 import java.util.*;
 
@@ -19,6 +21,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class TabletopPackTest {
+    @TempDir(factory = WorkspaceTempFactory.class) java.nio.file.Path folder;
     Tabletop3D plugin;
     Player player;
     YamlConfiguration config;
@@ -43,6 +46,7 @@ class TabletopPackTest {
 
     @AfterEach
     void cleanup() {
+        if (pack != null) pack.close();
         MockBukkit.unmock();
     }
 
@@ -119,6 +123,16 @@ class TabletopPackTest {
                         argThat(hash -> hash != null && hash.length == 20),
                         anyString(),
                         eq(false));
+    }
+
+    @Test
+    void inheritedLocalDefaultDoesNotOverrideAnExistingExternalUrl() {
+        var defaults = new YamlConfiguration();
+        defaults.set("rendering.resource-pack.source", "local");
+        config.setDefaults(defaults);
+        pack = new TabletopPack(plugin, () -> available, id -> new ItemStack(Material.PAPER));
+        pack.toggle(player);
+        verify(player).addResourcePack(any(), eq("https://example.org/tabletop.zip"), any(), anyString(), eq(false));
     }
 
     @Test
@@ -241,5 +255,117 @@ class TabletopPackTest {
         config.set("rendering.resource-pack.url", "file:///tabletop.zip");
         pack.request(player);
         assertNull(pack.requestId(player));
+    }
+
+    private void localPack() {
+        config.set("rendering.resource-pack.source", "local");
+        config.set("rendering.resource-pack.local.bind-address", "127.0.0.1");
+        config.set("rendering.resource-pack.local.port", 0);
+        config.set("rendering.resource-pack.local.public-url", "https://example.org");
+        when(plugin.getDataFolder()).thenReturn(folder.toFile());
+        when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("LocalPackTest"));
+        when(plugin.getName()).thenReturn("3dtabletop");
+        when(plugin.isEnabled()).thenReturn(true);
+        var online = spy(new org.mockbukkit.mockbukkit.entity.PlayerMock(MockBukkit.getMock(), "PackPlayer"));
+        MockBukkit.getMock().addPlayer(online);
+        doNothing().when(online).addResourcePack(any(), anyString(), any(), anyString(), anyBoolean());
+        doNothing().when(online).removeResourcePack(any());
+        player = online;
+        pack = new TabletopPack(plugin, () -> available, id -> new ItemStack(Material.PAPER));
+        plugin.pack = pack;
+    }
+
+    private void finishReload(org.bukkit.command.CommandSender sender, String key) throws Exception {
+        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(30);
+        while (System.nanoTime() < deadline) {
+            MockBukkit.getMock().getScheduler().performOneTick();
+            if (mockingDetails(sender).getInvocations().stream().anyMatch(invocation ->
+                    invocation.getMethod().getName().equals("sendMessage")
+                            && invocation.getArgument(0).equals(Language.component(key)))) return;
+            Thread.sleep(10);
+        }
+        fail("Resource reload did not complete: " + key);
+    }
+
+    @Test
+    void requestUsesOneArchiveSnapshotWhileResolvingVirtualHost() throws Exception {
+        localPack();
+        pack.close();
+        config.set("rendering.resource-pack.local.public-url", "");
+        pack = new TabletopPack(plugin, () -> available, id -> new ItemStack(Material.PAPER));
+        var field = TabletopPack.class.getDeclaredField("local");
+        field.setAccessible(true);
+        var resources = (LocalResourcePack) field.get(pack);
+        String oldHash = resources.current().sha1();
+        doAnswer(invocation -> {
+            var path = folder.resolve("resource-pack/assets/tabletop3d/textures/item/color_eight/color_eight_blue_2_face.png");
+            var image = javax.imageio.ImageIO.read(path.toFile());
+            image.setRGB(0, 0, 0xff00ff00);
+            javax.imageio.ImageIO.write(image, "png", path.toFile());
+            resources.reload();
+            return java.net.InetSocketAddress.createUnresolved("cards.example.org", 25565);
+        }).when(player).getVirtualHost();
+        pack.toggle(player);
+        assertNotEquals(oldHash, resources.current().sha1());
+        verify(player).addResourcePack(any(),
+                eq("http://cards.example.org:" + resources.port() + "/tabletop3d/" + oldHash + ".zip"),
+                argThat(hash -> HexFormat.of().formatHex(hash).equals(oldHash)), anyString(), eq(false));
+    }
+
+    @Test
+    void localReloadResendsOnlyToOptedInPlayersAndRejectsOldCallbacks() throws Exception {
+        localPack();
+        pack.toggle(player);
+        UUID oldRequest = pack.requestId(player);
+        assertNotNull(oldRequest);
+        pack.status(player, oldRequest, Status.SUCCESSFULLY_LOADED);
+        var uninterested = spy(new org.mockbukkit.mockbukkit.entity.PlayerMock(MockBukkit.getMock(), "NativePlayer"));
+        MockBukkit.getMock().addPlayer(uninterested);
+        var imagePath = folder.resolve("resource-pack/assets/tabletop3d/textures/item/color_eight/color_eight_blue_2_face.png");
+        var image = javax.imageio.ImageIO.read(imagePath.toFile());
+        image.setRGB(0, 0, 0xff00ff00);
+        javax.imageio.ImageIO.write(image, "png", imagePath.toFile());
+        var console = mock(org.bukkit.command.CommandSender.class);
+        pack.reload(console);
+        pack.reload(console);
+        verify(console).sendMessage(Language.component("pack.reload-busy"));
+        finishReload(console, "pack.reloaded");
+        UUID newRequest = pack.requestId(player);
+        assertNotEquals(oldRequest, newRequest);
+        assertFalse(pack.packed(player));
+        pack.status(player, oldRequest, Status.SUCCESSFULLY_LOADED);
+        assertFalse(pack.packed(player));
+        pack.status(player, newRequest, Status.SUCCESSFULLY_LOADED);
+        assertTrue(pack.packed(player));
+        verify(player).removeResourcePack(oldRequest);
+        verify(player, never()).removeResourcePacks();
+        verify(uninterested, never()).addResourcePack(any(), anyString(), any(), anyString(), anyBoolean());
+        var hashes = org.mockito.ArgumentCaptor.forClass(byte[].class);
+        verify(player, times(2)).addResourcePack(any(), startsWith("https://example.org/tabletop3d/"), hashes.capture(), anyString(), eq(false));
+        assertFalse(Arrays.equals(hashes.getAllValues().getFirst(), hashes.getAllValues().getLast()));
+        verify(console).sendMessage(Language.component("pack.reloaded"));
+    }
+
+    @Test
+    void invalidOrUnchangedLocalReloadKeepsLoadedPlayersAndCustomFiles() throws Exception {
+        localPack();
+        pack.toggle(player);
+        UUID request = pack.requestId(player);
+        pack.status(player, request, Status.SUCCESSFULLY_LOADED);
+        var path = folder.resolve("resource-pack/assets/tabletop3d/textures/item/color_eight/color_eight_blue_2_face.png");
+        byte[] original = java.nio.file.Files.readAllBytes(path);
+        java.nio.file.Files.writeString(path, "Not a PNG");
+        var console = mock(org.bukkit.command.CommandSender.class);
+        pack.reload(console);
+        finishReload(console, "pack.reload-failed");
+        verify(console).sendMessage(Language.component("pack.reload-failed"));
+        assertEquals(request, pack.requestId(player));
+        assertTrue(pack.packed(player));
+        java.nio.file.Files.write(path, original);
+        pack.reload(console);
+        finishReload(console, "pack.reload-unchanged");
+        verify(console).sendMessage(Language.component("pack.reload-unchanged"));
+        assertEquals(request, pack.requestId(player));
+        verify(player, times(1)).addResourcePack(any(), anyString(), any(), anyString(), anyBoolean());
     }
 }

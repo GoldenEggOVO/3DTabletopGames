@@ -51,6 +51,8 @@ def build():
     with zipfile.ZipFile(plugin) as archive:
         if archive.read("resource-pack.sha1").decode("ascii").strip() != checksum:
             raise RuntimeError("Plugin/resource-pack checksum mismatch")
+        if hashlib.sha1(archive.read("tabletop-resource-pack.zip")).hexdigest() != checksum:
+            raise RuntimeError("Bundled resource pack differs from the packaged ZIP")
     print(f"\nBuild complete. Checksums match.\nPlugin: {plugin}\nResource pack: {pack}", flush=True)
 
 

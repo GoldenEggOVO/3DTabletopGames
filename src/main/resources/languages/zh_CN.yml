@@ -477,6 +477,12 @@
 "pack.loading": "桌游包加载中（点击取消）"
 "pack.prompt": "桌游牌面、麻将桌布与音效"
 "pack.ready": "桌游资源包已加载。"
+"pack.reload-busy": "桌游资源包正在重载，请稍候。"
+"pack.reload-failed": "资源重载失败，已保留原资源包，请查看服务端日志。"
+"pack.reload-unavailable": "未启用本地资源服务。请配置本地资源来源与混合或资源包显示模式，然后重启。"
+"pack.reload-unchanged": "资源包没有变化，玩家无需重新加载。"
+"pack.reloaded": "资源包已更新，正在为启用资源包的玩家加载新版。"
+"pack.reloading": "正在准备更新后的资源包……"
 "pack.required": "请先成功加载桌游资源包后再入座或操作；可重新打开菜单重试。"
 "pack.unavailable": "CraftEngine 桌游模型尚未就绪，请联系服务器管理员。"
 

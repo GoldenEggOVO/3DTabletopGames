@@ -3,9 +3,15 @@ rendering:
   # vanilla, resource-pack, mixed. Restart to apply a mode change.
   mode: vanilla
   resource-pack:
-    # URL of the independent tabletop ZIP shipped with this plugin version.
-    # Pack checksum and request identity are managed by the plugin.
+    # local: editable server folder; external: matching ZIP at the URL below.
+    source: local
     url: ''
+    local:
+      bind-address: '0.0.0.0'
+      port: 8137
+      # Optional public HTTP(S) base URL, e.g. https://games.example.org.
+      # Empty uses the hostname players connect to and the port above.
+      public-url: ''
 max-rooms: 12
 reconnect-seconds: 120
 idle-room-minutes: 30

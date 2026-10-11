@@ -14,6 +14,29 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ResourcePackCatalogTest {
     @Test
+    void bundledDefaultsMatchThePublishedChecksumAndEditableFiles() throws Exception {
+        byte[] bytes;
+        try (var input = getClass().getResourceAsStream("/tabletop-resource-pack.zip")) {
+            assertNotNull(input, "Editable defaults must be bundled with the plugin");
+            bytes = input.readAllBytes();
+        }
+        try (var hash = getClass().getResourceAsStream("/resource-pack.sha1")) {
+            assertEquals(new String(hash.readAllBytes(), java.nio.charset.StandardCharsets.US_ASCII).trim(),
+                    java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-1").digest(bytes)));
+        }
+        int files = 0;
+        try (var zip = new java.util.zip.ZipInputStream(new java.io.ByteArrayInputStream(bytes))) {
+            for (java.util.zip.ZipEntry entry; (entry = zip.getNextEntry()) != null;) {
+                String name = entry.getName();
+                assertTrue(name.equals("pack.mcmeta") || name.startsWith("assets/") || name.startsWith("licenses/"), name);
+                assertArrayEquals(Files.readAllBytes(Path.of("resource-pack").resolve(name)), zip.readAllBytes(), name);
+                files++;
+            }
+        }
+        assertTrue(files > 500, "The plugin needs the complete client pack");
+    }
+
+    @Test
     void staticItemsAndRegistrationsMatchEveryRuntimeModel() throws Exception {
         Path pack = Path.of("resource-pack");
         Path items = pack.resolve("assets/tabletop3d/items");

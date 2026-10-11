@@ -477,6 +477,12 @@
 "pack.loading": "Loading tabletop pack (click to cancel)"
 "pack.prompt": "Tabletop cards, Mahjong artwork and sounds"
 "pack.ready": "Tabletop resource pack loaded."
+"pack.reload-busy": "A tabletop resource-pack reload is already running."
+"pack.reload-failed": "Resource reload failed. The previous pack is retained; check the server log."
+"pack.reload-unavailable": "Local resource hosting is not enabled. Set the pack source to local and rendering mode to mixed or resource-pack, then restart."
+"pack.reload-unchanged": "The resource pack is unchanged; players do not need to reload it."
+"pack.reloaded": "Resource pack updated. Players using it are loading the new version."
+"pack.reloading": "Preparing the updated resource pack..."
 "pack.required": "Load the tabletop resource pack before joining or playing; reopen the menu to retry."
 "pack.unavailable": "CraftEngine tabletop models are not ready. Contact the server administrator."
 

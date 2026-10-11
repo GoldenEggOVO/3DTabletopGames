@@ -43,6 +43,7 @@ for mode in ("vanilla", "resource-pack", "mixed"):
     (out / f"rendering-{mode}.yml").write_text(
         "# Merge this rendering section into plugins/3dtabletop/config.yml; restart.\n"
         f"rendering:\n  mode: {mode}\n  resource-pack:\n"
+        "    source: external\n"
         "    url: 'https://YOUR-HOST/tabletop-resource-pack.zip'\n"
         "    # Upload the ZIP shipped with this plugin; checksum and identity are automatic.\n", encoding="utf-8")
 shutil.copy2(ROOT / "resource-pack/sources.json", out / "asset-sources.json")

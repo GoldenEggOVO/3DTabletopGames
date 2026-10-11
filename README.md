@@ -70,7 +70,10 @@ Settings live in `plugins/3dtabletop/config.yml`:
 | `sounds.enabled` | `true` | Enable game and interface sounds |
 | `sounds.volume` | `1.0` | Volume multiplier from 0 to 1 |
 | `rendering.mode` | `vanilla` | `vanilla`, `resource-pack` or `mixed` |
-| `rendering.resource-pack.url` | Empty | Direct download URL for the matching resource ZIP |
+| `rendering.resource-pack.source` | `local` | Editable local assets, or `external` ZIP delivery |
+| `rendering.resource-pack.url` | Empty | External-mode URL for the ZIP matching the JAR |
+| `rendering.resource-pack.local.port` | `8137` | Local resource-pack download port |
+| `rendering.resource-pack.local.public-url` | Empty | Optional public base URL; empty uses the player's connection hostname and download port |
 
 Set `language: zh_CN` for Simplified Chinese. Edit the generated `languages/en_US.yml` or `languages/zh_CN.yml`, or copy a catalogue to another language name. Preserve message keys and placeholders such as `{player}`. MiniMessage colors and legacy color codes are supported; language files cannot define callbacks or commands.
 
@@ -81,17 +84,32 @@ Run `/3dtabletop reload-language` after editing translations or the selected lan
 ## Optional resource pack
 
 1. Install CraftEngine when using resource models. Extract the matching `craftengine-registration.zip` into the server root. Registration files belong under `plugins/CraftEngine/resources/tabletop3d/`.
-2. Host the matching `tabletop-resource-pack.zip` at a direct HTTP/HTTPS download URL. Keep the delivered ZIP unchanged.
-3. Set the following section in `plugins/3dtabletop/config.yml`, then restart:
+2. Set the following section in `plugins/3dtabletop/config.yml`, then restart:
 
 ```yaml
 rendering:
   mode: mixed
   resource-pack:
-    url: 'https://YOUR-HOST/tabletop-resource-pack.zip'
+    source: local
+    local:
+      bind-address: '0.0.0.0'
+      port: 8137
+      public-url: ''
 ```
 
-`vanilla` needs neither CraftEngine nor the pack. `mixed` offers a per-player pack switch and uses vanilla rendering while the pack is unavailable. `resource-pack` requires successful pack loading and ready model registrations before play. The plugin manages its pack checksum and request identity; only configure the URL. Use the ZIP delivered with the exact JAR. Other plugins' resource packs are not removed or replaced.
+3. Allow players to reach the download port, TCP 8137 by default. For a proxy, port mapping or HTTPS, set `public-url` to the public HTTP(S) base URL, such as `https://games.example.org`. Reverse proxies must forward `/tabletop3d/` to the local download service. Restart after changing the bind address, port or public URL.
+
+When local hosting is first enabled, the plugin extracts its bundled defaults into `plugins/3dtabletop/resource-pack/` and generates `plugins/3dtabletop/resource-pack.zip`. Plugin updates fill missing default files and preserve existing custom images. The download endpoint only serves generated archives; it cannot browse plugin data or raw files.
+
+**Routine asset changes need no compilation, Python, Maven or replacement JAR:**
+
+1. Replace the image under the same name and path, such as `assets/tabletop3d/textures/item/color_eight/color_eight_blue_2_face.png`, in the server's resource folder.
+2. Run `/3dtabletop reload-pack` as an administrator or from the console.
+3. The plugin validates and packages assets in the background, updates the download hash and URL, then requests the new pack from online players who enabled it. Invalid images or JSON retain the previous pack. Unchanged content is not resent. Rooms and player preferences are preserved.
+
+Existing configurations that only contain `url` keep external delivery. Add `source: local` explicitly and restart to switch to this workflow. External delivery accepts `source: external` and the matching delivered ZIP's `url`, using the JAR's bundled checksum and an existing HTTP(S) host.
+
+`vanilla` needs neither CraftEngine nor the pack. `mixed` offers a per-player pack switch and uses vanilla rendering while the pack is unavailable. `resource-pack` requires successful pack loading and ready model registrations before play. Other plugins' packs are not removed or replaced. Game logic, new resource identifiers and native head textures still require a plugin update; this reload command handles client-pack textures, models and sounds.
 
 ## Updating
 
@@ -133,6 +151,7 @@ The launcher prefers Maven 3.9.11 under the workspace's adjacent `.tools/` direc
 Use **JDK 25 and Maven 3.9+**:
 
 ```sh
+python tools/packaging/package_resource_pack.py
 mvn -B -ntp package
 ```
 
@@ -165,7 +184,7 @@ python tools/packaging/package_resource_pack.py
 mvn -B -ntp package
 ```
 
-The first step creates `target/tabletop-resource-pack.zip` and updates its checksum. The second runs Java tests and creates `target/3dtabletop-<version>.jar` with that checksum. Upload the ZIP to your resource-pack download address, stop the server, replace the old JAR in `plugins/`, then restart. If the download address changes, also update `resource-pack.url` in the plugin's `config.yml`. Editing an existing PNG does not require changing CraftEngine registrations.
+The first step creates `target/tabletop-resource-pack.zip` and updates its checksum. The second runs Java tests and embeds both the default ZIP and its checksum into `target/3dtabletop-<version>.jar`. This builds source deliveries. Servers with local hosting enabled edit their server resource folder and run `/3dtabletop reload-pack` for routine asset changes. External hosting still uses the ZIP matching the JAR. Editing an existing PNG does not require changing CraftEngine registrations.
 
 | Directory or file | How to customize it |
 | --- | --- |

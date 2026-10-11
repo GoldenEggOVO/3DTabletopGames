@@ -17,7 +17,10 @@ import org.bukkit.persistence.PersistentDataType;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.net.InetSocketAddress;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.*;
 
@@ -58,6 +61,12 @@ public final class TabletopPack implements Listener, AutoCloseable {
     private final Function<String, ItemStack> models;
     private final Map<UUID, Request> requests = new HashMap<>();
     private final NamespacedKey preference = new NamespacedKey("tabletop3d", "resource_pack");
+    private final Path localFolder;
+    private final InetSocketAddress localAddress;
+    private final String publicUrl;
+    private volatile LocalResourcePack local;
+    private volatile boolean closed;
+    private boolean reloading;
     public final Mode mode;
 
     public TabletopPack(Tabletop3D plugin) {
@@ -81,6 +90,96 @@ public final class TabletopPack implements Listener, AutoCloseable {
                             throw new IllegalArgumentException(
                                     "rendering.mode must be vanilla, resource-pack or mixed");
                 };
+        var config = plugin.getConfig();
+        String source = config.contains("rendering.resource-pack.source", true)
+                ? config.getString("rendering.resource-pack.source")
+                : config.getString("rendering.resource-pack.url", "").isBlank() ? "local" : "external";
+        if (!Set.of("local", "external").contains(source))
+            throw new IllegalArgumentException("rendering.resource-pack.source must be local or external");
+        publicUrl = config.getString("rendering.resource-pack.local.public-url", "");
+        if (mode != Mode.VANILLA && source.equals("local")) {
+            localFolder = plugin.getDataFolder().toPath().resolve("resource-pack");
+            localAddress = new InetSocketAddress(
+                    config.getString("rendering.resource-pack.local.bind-address", "0.0.0.0"),
+                    config.getInt("rendering.resource-pack.local.port", 8137));
+            try {
+                local = createLocal();
+            } catch (IOException | RuntimeException exception) {
+                plugin.getLogger().warning("Cannot initialize local resource pack: " + exception.getMessage());
+            }
+        } else {
+            localFolder = null;
+            localAddress = null;
+        }
+    }
+
+    private LocalResourcePack createLocal() throws IOException {
+        LocalResourcePack.extractDefaults(localFolder,
+                TabletopPack.class.getResourceAsStream("/tabletop-resource-pack.zip"));
+        return new LocalResourcePack(localFolder, localAddress);
+    }
+
+    public void reload(org.bukkit.command.CommandSender sender) {
+        if (closed || localFolder == null) {
+            sender.sendMessage(Language.component("pack.reload-unavailable"));
+            return;
+        }
+        if (reloading) {
+            sender.sendMessage(Language.component("pack.reload-busy"));
+            return;
+        }
+        reloading = true;
+        String previous = local == null ? "" : local.current().sha1();
+        sender.sendMessage(Language.component("pack.reloading"));
+        org.bukkit.Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                LocalResourcePack next = local;
+                if (next == null) {
+                    next = createLocal();
+                    local = next;
+                } else next.reload();
+                if (closed) {
+                    next.close();
+                    return;
+                }
+                String hash = next.current().sha1();
+                org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> {
+                    reloading = false;
+                    if (closed) return;
+                    boolean changed = !previous.equals(hash);
+                    if (changed) {
+                        for (Player player : org.bukkit.Bukkit.getOnlinePlayers()) {
+                            if (!preferred(player)) continue;
+                            remove(player);
+                            request(player);
+                            if (plugin.menus != null) plugin.menus.refresh(player);
+                        }
+                    }
+                    sender.sendMessage(Language.component(changed ? "pack.reloaded" : "pack.reload-unchanged"));
+                });
+            } catch (IOException | RuntimeException exception) {
+                if (closed) return;
+                plugin.getLogger().warning("Cannot reload local resource pack: " + exception.getMessage());
+                org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> {
+                    reloading = false;
+                    if (!closed) sender.sendMessage(Language.component("pack.reload-failed"));
+                });
+            }
+        });
+    }
+
+    private String localUrl(Player player, LocalResourcePack resources, LocalResourcePack.Archive archive) {
+        String base = publicUrl;
+        if (base.isBlank()) {
+            var host = player.getVirtualHost();
+            if (host == null) throw new IllegalArgumentException("Set local resource-pack public-url");
+            try {
+                base = new URI("http", null, host.getHostString(), resources.port(), "", null, null).toString();
+            } catch (URISyntaxException exception) {
+                throw new IllegalArgumentException("Invalid local resource-pack host", exception);
+            }
+        }
+        return resources.url(base, archive);
     }
 
     public boolean hasToggle() {
@@ -161,8 +260,19 @@ public final class TabletopPack implements Listener, AutoCloseable {
             plugin.tell(player, Language.component("pack.unavailable"));
             return;
         }
-        String url = plugin.getConfig().getString("rendering.resource-pack.url", "");
+        String url;
+        byte[] hash;
         try {
+            if (localFolder == null) {
+                url = plugin.getConfig().getString("rendering.resource-pack.url", "");
+                hash = RESOURCE_PACK_HASH.clone();
+            } else {
+                LocalResourcePack resources = local;
+                if (resources == null) throw new IllegalArgumentException("Local resource pack is unavailable");
+                LocalResourcePack.Archive archive = resources.current();
+                url = localUrl(player, resources, archive);
+                hash = HexFormat.of().parseHex(archive.sha1());
+            }
             URI uri = URI.create(url);
             if ((!"http".equals(uri.getScheme()) && !"https".equals(uri.getScheme()))
                     || uri.getHost() == null) throw new IllegalArgumentException();
@@ -178,7 +288,7 @@ public final class TabletopPack implements Listener, AutoCloseable {
             player.addResourcePack(
                     id,
                     url,
-                    RESOURCE_PACK_HASH.clone(),
+                    hash,
                     dev.tabletop3d.ui.MessageText.plain(Language.component("pack.prompt")),
                     false);
         } catch (IllegalArgumentException ex) {
@@ -235,7 +345,9 @@ public final class TabletopPack implements Listener, AutoCloseable {
 
     @Override
     public void close() {
+        closed = true;
         for (Player player : org.bukkit.Bukkit.getOnlinePlayers()) remove(player);
         requests.clear();
+        if (local != null) local.close();
     }
 }
