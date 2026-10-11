@@ -7,4 +7,4 @@
 *.png binary
 *.jar binary
 *.zip binary
-resource-pack/licenses/** -text
+resource-pack/licenses/** -text whitespace=cr-at-eol
