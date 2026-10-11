@@ -27,6 +27,7 @@ class PackageDeliveryTest(unittest.TestCase):
             self.write(name, "Fixture")
         self.write("target/surefire-reports/TEST-fixture.xml",
                    '<testsuite name="dev.tabletop3d.Fixture" tests="130" failures="0" errors="0" skipped="0"/>')
+        self.write("src/test/java/dev/tabletop3d/Fixture.java", "class Fixture {}")
         with zipfile.ZipFile(self.project / "target/3dtabletop-test.jar", "w") as jar:
             jar.writestr("plugin.yml", "name: 3dtabletop\nversion: test\n")
             for name in (
@@ -84,6 +85,21 @@ class PackageDeliveryTest(unittest.TestCase):
         verification = json.loads((output / "verification.json").read_text(encoding="utf-8"))
         self.assertEqual(60, verification["soak"]["elapsed_seconds"])
         self.assertEqual("Fixture evidence", (output / "evidence/checks.log").read_text())
+
+    def test_retired_suite_does_not_change_current_results(self):
+        self.write("target/surefire-reports/TEST-retired.xml",
+                   '<testsuite name="dev.tabletop3d.Retired" tests="11" failures="1" errors="0" skipped="0"/>')
+        result = self.package()
+        self.assertEqual(0, result.returncode, result.stderr)
+        output = self.project / "deliverables/test"
+        verification = json.loads((output / "verification.json").read_text(encoding="utf-8"))
+        self.assertEqual({"tests": 130, "failures": 0, "errors": 0, "skipped": 0}, verification["junit"])
+
+    def test_retired_reports_cannot_satisfy_test_gate(self):
+        (self.project / "src/test/java/dev/tabletop3d/Fixture.java").unlink()
+        result = self.package()
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("JUnit results not ready", result.stderr)
 
 
 if __name__ == "__main__":

@@ -44,7 +44,9 @@ if args.snapshot:
 totals = {key: 0 for key in ("tests", "failures", "errors", "skipped")}
 for report in (project / "target/surefire-reports").glob("TEST-*.xml"):
     suite = ET.parse(report).getroot()
-    if suite.get("name", "").startswith("dev.tabletop3d."):
+    name = suite.get("name", "")
+    source = project / "src/test/java" / (name.split("$")[0].replace(".", "/") + ".java")
+    if name.startswith("dev.tabletop3d.") and source.is_file():
         for key in totals:
             totals[key] += int(suite.get(key, 0))
 if totals["tests"] < 130 or any(totals[key] for key in ("failures", "errors", "skipped")):
