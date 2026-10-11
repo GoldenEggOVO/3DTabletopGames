@@ -10,6 +10,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RoomReplayVerifierTest {
     @Test
+    void rejectsTheSameFutureSchemaAsRoomStorage() {
+        var source = JsonParser.parseString("{\"schema\":999,\"rooms\":[],\"returns\":{}}")
+                .getAsJsonObject();
+        assertThrows(IllegalArgumentException.class, () -> RoomReplayVerifier.verify(source));
+    }
+
+    @Test
     void colorEightHistoryRequiresTheNewRulesVersion() {
         var room =
                 JsonParser.parseString(

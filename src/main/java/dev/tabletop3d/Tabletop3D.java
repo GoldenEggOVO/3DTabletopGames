@@ -409,13 +409,15 @@ public final class Tabletop3D extends JavaPlugin implements Listener {
             if (source != null) tell(source, Language.component("hint.roll.wait"));
             return;
         }
-        if (!r.history.allows(action)) {
-            finish(r, "result.limit");
-            save();
-            return;
-        }
-
         try {
+            if (action == null || !action.isJsonPrimitive()
+                    || !action.getAsJsonPrimitive().isString())
+                throw new RuleViolation("error.invalid", "Action must be a string");
+            if (!r.history.allows(action)) {
+                finish(r, "result.limit");
+                save();
+                return;
+            }
             List<Cell> before = r.board.cells();
             var mahjongBefore =
                     r.kind.equals("mahjong") ? TableSounds.mahjongState((HandGame) r.board) : null;

@@ -59,8 +59,7 @@ public final class RoomStore {
         JsonObject root =
                 JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8))
                         .getAsJsonObject();
-        if (root.has("schema") && root.get("schema").getAsInt() != SCHEMA)
-            throw new IllegalArgumentException("Unsupported room file schema");
+        requireSchema(root);
         List<Room> rooms = new ArrayList<>();
         for (JsonElement element : root.getAsJsonArray("rooms"))
             rooms.add(room(element.getAsJsonObject()));
@@ -70,6 +69,11 @@ public final class RoomStore {
                     UUID.fromString(entry.getKey()),
                     JSON.fromJson(entry.getValue(), ReturnPoint.class));
         return new Snapshot(List.copyOf(rooms), Map.copyOf(returns));
+    }
+
+    static void requireSchema(JsonObject root) {
+        if (root.has("schema") && root.get("schema").getAsInt() != SCHEMA)
+            throw new IllegalArgumentException("Unsupported room file schema");
     }
 
     private static JsonObject record(Room room) {

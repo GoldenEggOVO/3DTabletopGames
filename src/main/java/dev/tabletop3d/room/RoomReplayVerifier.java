@@ -14,6 +14,7 @@ public final class RoomReplayVerifier {
     private RoomReplayVerifier() {}
 
     static void verify(JsonObject root) {
+        RoomStore.requireSchema(root);
         if (!root.has("rooms") || !root.get("rooms").isJsonArray())
             throw new IllegalArgumentException("Missing rooms array");
         for (JsonElement element : root.getAsJsonArray("rooms")) {
