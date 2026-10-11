@@ -1,7 +1,8 @@
 language: en_US
 rendering:
-  # vanilla, resource-pack, mixed. Restart to apply a mode change.
-  mode: vanilla
+  # auto selects mixed with enabled CraftEngine, otherwise vanilla. Restart to apply.
+  # Optional overrides: vanilla, mixed, resource-pack.
+  mode: auto
   resource-pack:
     # local: editable server folder; external: matching ZIP at the URL below.
     source: local

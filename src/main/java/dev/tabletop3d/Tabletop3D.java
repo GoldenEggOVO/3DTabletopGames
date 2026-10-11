@@ -10,6 +10,7 @@ import dev.tabletop3d.menu.BoardWindow;
 import dev.tabletop3d.command.TabletopCommand;
 import dev.tabletop3d.menu.GameMenus;
 import dev.tabletop3d.resource.TabletopPack;
+import dev.tabletop3d.resource.CraftEngineRegistration;
 import dev.tabletop3d.room.BoardOccupancy;
 import dev.tabletop3d.room.Room;
 import dev.tabletop3d.room.RoomStore;
@@ -45,6 +46,18 @@ public final class Tabletop3D extends JavaPlugin implements Listener {
     boolean stopping = false;
     private boolean loaded = false;
     private int pulse = 0;
+
+    @Override
+    public void onLoad() {
+        var engine = getServer().getPluginManager().getPlugin("CraftEngine");
+        if (engine == null) return;
+        try {
+            int added = CraftEngineRegistration.install(engine.getDataFolder().toPath());
+            if (added > 0) getLogger().info("Installed " + added + " missing CraftEngine tabletop registration files.");
+        } catch (IOException | RuntimeException exception) {
+            getLogger().warning("Cannot install CraftEngine tabletop registrations: " + exception.getMessage());
+        }
+    }
 
     @Override
     public void onEnable() {

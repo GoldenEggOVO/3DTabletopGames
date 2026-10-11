@@ -110,6 +110,41 @@ class TabletopPackTest {
     }
 
     @Test
+    void defaultAutoUsesMixedWithEnabledCraftEngine() {
+        config.set("rendering.mode", null);
+        MockBukkit.createMockPlugin("CraftEngine");
+        pack = new TabletopPack(plugin, () -> available, id -> new ItemStack(Material.PAPER));
+        assertTrue(pack.hasToggle());
+        assertEquals(TabletopPack.Mode.MIXED, pack.mode);
+        pack.toggle(player);
+        assertNotNull(pack.requestId(player));
+        assertTrue(pack.canPlay(player, "mahjong"));
+    }
+
+    @Test
+    void autoFallsBackToVanillaWhenCraftEngineIsMissingOrDisabled() {
+        config.set("rendering.mode", "auto");
+        pack = new TabletopPack(plugin, () -> available, id -> new ItemStack(Material.PAPER));
+        assertFalse(pack.hasToggle());
+        assertEquals(TabletopPack.Mode.VANILLA, pack.mode);
+        var engine = MockBukkit.createMockPlugin("CraftEngine");
+        Bukkit.getPluginManager().disablePlugin(engine);
+        pack = new TabletopPack(plugin, () -> available, id -> new ItemStack(Material.PAPER));
+        pack.toggle(player);
+        assertNull(pack.requestId(player));
+        assertTrue(pack.canPlay(player, "mahjong"));
+    }
+
+    @Test
+    void explicitVanillaOverrideSurvivesEnabledCraftEngine() {
+        MockBukkit.createMockPlugin("CraftEngine");
+        config.set("rendering.mode", "vanilla");
+        pack = new TabletopPack(plugin, () -> available, id -> new ItemStack(Material.PAPER));
+        assertFalse(pack.hasToggle());
+        assertEquals(TabletopPack.Mode.VANILLA, pack.mode);
+    }
+
+    @Test
     void requestsUseBundledHashAndGeneratedIdentityWithoutConfigFields() {
         config.set("rendering.resource-pack.sha1", null);
         config.set("rendering.resource-pack.uuid", null);

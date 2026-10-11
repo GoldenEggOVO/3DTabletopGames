@@ -82,13 +82,15 @@ public final class TabletopPack implements Listener, AutoCloseable {
         this.available = available;
         this.models = models;
         mode =
-                switch (plugin.getConfig().getString("rendering.mode", "vanilla")) {
+                switch (plugin.getConfig().getString("rendering.mode", "auto")) {
+                    case "auto" -> org.bukkit.Bukkit.getPluginManager().isPluginEnabled("CraftEngine")
+                            ? Mode.MIXED : Mode.VANILLA;
                     case "resource-pack" -> Mode.RESOURCE_PACK;
                     case "mixed" -> Mode.MIXED;
                     case "vanilla" -> Mode.VANILLA;
                     default ->
                             throw new IllegalArgumentException(
-                                    "rendering.mode must be vanilla, resource-pack or mixed");
+                                    "rendering.mode must be auto, vanilla, resource-pack or mixed");
                 };
         var config = plugin.getConfig();
         String source = config.contains("rendering.resource-pack.source", true)

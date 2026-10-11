@@ -4,7 +4,7 @@
 
 Playable 3D tabletop games for Minecraft, with physical pieces, multiplayer rooms, private hands and native Dialog menus.
 
-Requires **Paper / Purpur 26.2 and Java 25**. Runs independently without client mods or other custom plugins. CraftEngine and the tabletop resource pack are optional. Current source: **1.10.31-SNAPSHOT**, an unpublished development build.
+Requires **Paper / Purpur 26.2 and Java 25**. Runs independently without client mods or other custom plugins. CraftEngine and the tabletop resource pack are optional. Current source: **1.10.38-SNAPSHOT**, an unpublished development build.
 
 ## Install
 
@@ -69,7 +69,7 @@ Settings live in `plugins/3dtabletop/config.yml`:
 | `turn-seconds` | `60` | Default turn timeout; games may apply their own limits |
 | `sounds.enabled` | `true` | Enable game and interface sounds |
 | `sounds.volume` | `1.0` | Volume multiplier from 0 to 1 |
-| `rendering.mode` | `vanilla` | `vanilla`, `resource-pack` or `mixed` |
+| `rendering.mode` | `auto` | Mixed rendering with enabled CraftEngine, otherwise vanilla; optional overrides: `vanilla`, `mixed`, `resource-pack` |
 | `rendering.resource-pack.source` | `local` | Editable local assets, or `external` ZIP delivery |
 | `rendering.resource-pack.url` | Empty | External-mode URL for the ZIP matching the JAR |
 | `rendering.resource-pack.local.port` | `8137` | Local resource-pack download port |
@@ -83,12 +83,12 @@ Run `/3dtabletop reload-language` after editing translations or the selected lan
 
 ## Optional resource pack
 
-1. Install CraftEngine when using resource models. Extract the matching `craftengine-registration.zip` into the server root. Registration files belong under `plugins/CraftEngine/resources/tabletop3d/`.
+1. Install CraftEngine when using resource models. During plugin loading, bundled registrations fill missing files under the engine's data directory at `resources/tabletop3d/`, normally `plugins/CraftEngine/resources/tabletop3d/`. Existing files are preserved; no manual registration archive extraction is needed.
 2. Set the following section in `plugins/3dtabletop/config.yml`, then restart:
 
 ```yaml
 rendering:
-  mode: mixed
+  mode: auto
   resource-pack:
     source: local
     local:
@@ -109,14 +109,16 @@ When local hosting is first enabled, the plugin extracts its bundled defaults in
 
 Existing configurations that only contain `url` keep external delivery. Add `source: local` explicitly and restart to switch to this workflow. External delivery accepts `source: external` and the matching delivered ZIP's `url`, using the JAR's bundled checksum and an existing HTTP(S) host.
 
-`vanilla` needs neither CraftEngine nor the pack. `mixed` offers a per-player pack switch and uses vanilla rendering while the pack is unavailable. `resource-pack` requires successful pack loading and ready model registrations before play. Other plugins' packs are not removed or replaced. Game logic, new resource identifiers and native head textures still require a plugin update; this reload command handles client-pack textures, models and sounds.
+The default `auto` detects CraftEngine at startup: enabled selects `mixed`, while absent or disabled selects `vanilla`. Existing explicit mode settings remain unchanged; set an older configuration to `auto` to opt in. Restart after installing or removing CraftEngine to detect it again.
+
+`vanilla` needs neither CraftEngine nor the pack. `mixed` offers a per-player pack switch and uses vanilla rendering while the pack is unavailable. `resource-pack` requires successful pack loading and ready model registrations before play. These explicit modes remain available to override automatic selection. Other plugins' packs are not removed or replaced. Game logic, new resource identifiers and native head textures still require a plugin update; this reload command handles client-pack textures, models and sounds.
 
 ## Updating
 
 Stop the server and back up the complete plugin data directory before replacing the JAR. Preserve current configuration, custom translations, rooms and other plugins. Current schema 1 room files remain supported; retired game formats are not automatically converted. Validate a backup against the candidate JAR before updating:
 
 ```sh
-java -cp target/3dtabletop-1.10.31-SNAPSHOT.jar dev.tabletop3d.room.RoomReplayVerifier /backup/3dtabletop/rooms.json
+java -cp target/3dtabletop-1.10.38-SNAPSHOT.jar dev.tabletop3d.room.RoomReplayVerifier /backup/3dtabletop/rooms.json
 ```
 
 When resource rendering is enabled, update the matching ZIP and its URL as well. After startup, check restored rooms, menus and table actions before removing the backup.
@@ -128,7 +130,7 @@ When resource rendering is enabled, update the matching ZIP and its URL as well.
 - `src/test/`: automated Java checks.
 - `resource-pack/pack.mcmeta` and `resource-pack/assets/`: complete, editable Minecraft pack files.
 - `resource-pack/licenses/`: notices shipped inside the client pack.
-- `resource-pack/craftengine/`: separate CraftEngine item registrations.
+- `resource-pack/craftengine/`: default CraftEngine item registrations bundled in the JAR and installed automatically.
 - `resource-pack/native-cards/`: approved vanilla head source images, independent of the client pack.
 - `resource-pack/originals/`: original artwork, SVGs and recordings retained for attribution and editing.
 - `resource-pack/sources.json`: asset provenance, hashes and license notices.
@@ -167,7 +169,7 @@ python -m compileall -q tools
 python tools/packaging/package_source.py
 ```
 
-Outputs include `target/tabletop-resource-pack.zip`, `target/resource-pack-manifest.json`, the plugin JAR and `target/3dtabletop-source.zip`. Identical pack files produce an identical ZIP in the same Python environment. The pack ZIP includes only `pack.mcmeta`, `assets/` and `licenses/`; authoring originals and CraftEngine registrations remain separate. The source ZIP contains Git-tracked files only.
+Outputs include `target/tabletop-resource-pack.zip`, `target/resource-pack-manifest.json`, the plugin JAR and `target/3dtabletop-source.zip`. Identical pack files produce an identical ZIP in the same Python environment. The client pack ZIP includes only `pack.mcmeta`, `assets/` and `licenses/`. Maven bundles CraftEngine registrations directly from their source directory into the JAR; they are excluded from the client ZIP. The source ZIP contains Git-tracked files only.
 
 After a passing three-boot check, use `python tools/packaging/package_standalone.py <native-receipt.json>` for a native delivery, or `package_craftengine.py <native-receipt.json> <craftengine-receipt.json>` for a resource-pack delivery. Both receipts must match the current JAR. Optional `--soak <receipt.json>` and `--snapshot <receipt.json>` retain continuous-game and recovery checks; `--evidence <log-file>` adds current logs to a resource-pack delivery. Outputs go to `deliverables/`; legacy logs and previews are not required.
 

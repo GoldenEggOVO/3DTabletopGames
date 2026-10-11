@@ -4,7 +4,7 @@
 
 带实体棋子、多人房间、私有手牌和原生 Dialog 菜单的 Minecraft 3D 桌游插件。
 
-支持 **Paper／Purpur 26.2、Java 25**。可独立运行，无需客户端模组或其他自定义插件；CraftEngine 与桌游资源包为可选项。当前源码为 **1.10.31-SNAPSHOT 开发版**，未发布 Release。
+支持 **Paper／Purpur 26.2、Java 25**。可独立运行，无需客户端模组或其他自定义插件；CraftEngine 与桌游资源包为可选项。当前源码为 **1.10.38-SNAPSHOT 开发版**，未发布 Release。
 
 ## 安装
 
@@ -69,7 +69,7 @@
 | `turn-seconds` | `60` | 默认回合时限，部分游戏有独立时限 |
 | `sounds.enabled` | `true` | 游戏与界面音效开关 |
 | `sounds.volume` | `1.0` | 0～1 的音量倍率 |
-| `rendering.mode` | `vanilla` | 原版、资源包或混合显示 |
+| `rendering.mode` | `auto` | 有已启用的 CraftEngine 时使用混合显示，否则使用原版；可手动指定 `vanilla`、`mixed` 或 `resource-pack` |
 | `rendering.resource-pack.source` | `local` | 本地可编辑资源，或 `external` 外部 ZIP |
 | `rendering.resource-pack.url` | 空 | 外部模式中与 JAR 匹配的资源包直链 |
 | `rendering.resource-pack.local.port` | `8137` | 本地资源下载服务端口 |
@@ -83,12 +83,12 @@
 
 ## 可选资源包
 
-1. 使用资源模型时安装 CraftEngine，将匹配的 `craftengine-registration.zip` 解压到服务器根目录。注册文件最终位于 `plugins/CraftEngine/resources/tabletop3d/`。
+1. 使用资源模型时安装 CraftEngine。插件在加载阶段将内置注册文件补充到 CraftEngine 数据目录的 `resources/tabletop3d/`，默认位置为 `plugins/CraftEngine/resources/tabletop3d/`；不覆盖已有文件，无需手动解压注册包。
 2. 修改 `plugins/3dtabletop/config.yml`，然后重启：
 
 ```yaml
 rendering:
-  mode: mixed
+  mode: auto
   resource-pack:
     source: local
     local:
@@ -109,14 +109,16 @@ rendering:
 
 旧配置只包含 `url` 时继续使用外部模式。若需切换到上述流程，显式添加 `source: local` 并重启。外部模式可配置 `source: external` 和同一交付 ZIP 的 `url`，继续由已有 HTTP／HTTPS 服务分发，与 JAR 内置校验值匹配。
 
-`vanilla` 无需 CraftEngine 或资源包。`mixed` 允许玩家单独开关，资源包不可用时显示原版。`resource-pack` 要求资源包加载成功、模型注册就绪后才能进行游戏。不会移除或替换其他插件的资源包。修改游戏逻辑、增加资源标识或更改原版头颅纹理仍需更新插件；此重载命令处理客户端资源包的图片、模型与音效。
+默认 `auto` 在启动时检测 CraftEngine：已启用则选择 `mixed`，未安装或未启用则选择 `vanilla`。已有明确的模式设置保持不变，升级旧配置时可手动改成 `auto`。安装或移除 CraftEngine 后重启以重新检测。
+
+`vanilla` 无需 CraftEngine 或资源包。`mixed` 允许玩家单独开关，资源包不可用时显示原版。`resource-pack` 要求资源包加载成功、模型注册就绪后才能进行游戏。三种显式模式仍可用于手动覆盖自动选择。不会移除或替换其他插件的资源包。修改游戏逻辑、增加资源标识或更改原版头颅纹理仍需更新插件；此重载命令处理客户端资源包的图片、模型与音效。
 
 ## 升级
 
 停服并完整备份插件数据后替换 JAR，保留现有配置、自定义翻译、房间和其他插件。当前 schema 1 房间文件继续支持，已退役玩法的旧格式不自动转换。升级前可用候选 JAR 验证备份：
 
 ```sh
-java -cp target/3dtabletop-1.10.31-SNAPSHOT.jar dev.tabletop3d.room.RoomReplayVerifier /backup/3dtabletop/rooms.json
+java -cp target/3dtabletop-1.10.38-SNAPSHOT.jar dev.tabletop3d.room.RoomReplayVerifier /backup/3dtabletop/rooms.json
 ```
 
 启用资源包时同时更新匹配的 ZIP 和 URL。启动后检查房间恢复、菜单与桌面操作，再决定是否清理备份。
@@ -128,7 +130,7 @@ java -cp target/3dtabletop-1.10.31-SNAPSHOT.jar dev.tabletop3d.room.RoomReplayVe
 - `src/test/`：Java 自动检查。
 - `resource-pack/pack.mcmeta` 和 `resource-pack/assets/`：完整、可直接编辑的 Minecraft 资源包。
 - `resource-pack/licenses/`：随资源包提供的素材声明。
-- `resource-pack/craftengine/`：独立的 CraftEngine 物品注册。
+- `resource-pack/craftengine/`：随 JAR 内置并自动安装的 CraftEngine 默认物品注册。
 - `resource-pack/native-cards/`：原版头颅卡牌图片，与客户端资源包独立。
 - `resource-pack/originals/`：用于署名核对和修改的原始图片、SVG 与录音。
 - `resource-pack/sources.json`：素材来源、摘要与许可说明。
@@ -167,7 +169,7 @@ python -m compileall -q tools
 python tools/packaging/package_source.py
 ```
 
-输出包括 `target/tabletop-resource-pack.zip`、`target/resource-pack-manifest.json`、插件 JAR 和 `target/3dtabletop-source.zip`。同一 Python 环境下，相同文件会得到相同的 ZIP。资源包 ZIP 只包含 `pack.mcmeta`、`assets/` 和 `licenses/`，原始素材和 CraftEngine 注册单独保留。源码包只包含 Git 跟踪的文件。
+输出包括 `target/tabletop-resource-pack.zip`、`target/resource-pack-manifest.json`、插件 JAR 和 `target/3dtabletop-source.zip`。同一 Python 环境下，相同文件会得到相同的 ZIP。客户端资源包 ZIP 只包含 `pack.mcmeta`、`assets/` 和 `licenses/`；CraftEngine 注册从源码目录直接内置到 JAR，不加入客户端 ZIP。源码包只包含 Git 跟踪的文件。
 
 通过三次隔离启动检查后，可用 `python tools/packaging/package_standalone.py <原版回执.json>` 制作原版交付包；资源包交付使用 `package_craftengine.py <原版回执.json> <CraftEngine回执.json>`。两份回执必须对应当前 JAR。可选 `--soak <回执.json>`、`--snapshot <回执.json>` 保留连续对局和恢复验证，`--evidence <日志文件>` 仅在资源包交付中添加本次实际日志。交付输出在 `deliverables/`；不需要旧版本的日志或预览。
 

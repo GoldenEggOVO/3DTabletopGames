@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dev.tabletop3d</groupId>
     <artifactId>3dtabletop</artifactId>
-    <version>1.10.37-SNAPSHOT</version>
+    <version>1.10.38-SNAPSHOT</version>
     <licenses>
         <license>
             <name>GPL-3.0-or-later</name>
@@ -60,6 +60,13 @@
     </dependencies>
     <build>
         <resources>
+            <resource>
+                <directory>resource-pack/craftengine</directory>
+                <targetPath>craftengine</targetPath>
+                <includes>
+                    <include>resources/tabletop3d/**</include>
+                </includes>
+            </resource>
             <resource>
                 <directory>target</directory>
                 <includes>
