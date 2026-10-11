@@ -464,7 +464,11 @@ public final class Tabletop3D extends JavaPlugin implements Listener {
         r.ready.clear();
         r.changed = System.currentTimeMillis();
         if (first && !r.restoring && !(r.kind.equals("mahjong") && r.board.finished()))
-            arena.sound(r, result.startsWith("winner:") ? TableSounds.WIN : TableSounds.DRAW);
+            arena.sound(
+                    r,
+                    result.startsWith("winner:") || result.startsWith("winners:")
+                            ? TableSounds.WIN
+                            : TableSounds.DRAW);
         announce(r, Language.component("chat.finished", "result", RoomText.outcome(r, result)));
         onMain(() -> showRoomToHumans(r));
     }

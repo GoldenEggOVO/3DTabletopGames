@@ -420,6 +420,28 @@ class TableSoundsTest {
     }
 
     @Test
+    void farmerTeamVictoryUsesTheWinCueExactlyOnce() throws Exception {
+        var f = application("doudizhu");
+        f.plugin.finish(f.room, "winners:0,2");
+        f.plugin.finish(f.room, "winners:0,2");
+        verify(f.world, times(1))
+                .playSound(
+                        any(Location.class),
+                        eq(TableSounds.WIN.sound()),
+                        eq(SoundCategory.BLOCKS),
+                        anyFloat(),
+                        anyFloat());
+        verify(f.world, never())
+                .playSound(
+                        any(Location.class),
+                        eq(TableSounds.DRAW.sound()),
+                        eq(SoundCategory.BLOCKS),
+                        anyFloat(),
+                        anyFloat());
+        f.view.close();
+    }
+
+    @Test
     void winningMoveAndDrawFinishSoundOnceWithoutRepeatingOnRender() throws Exception {
         var f = application("connectfour");
         for (String action :
@@ -701,7 +723,7 @@ class TableSoundsTest {
     }
 
     private TableViewTest.Fixture application(String kind) throws Exception {
-        var f = new TableViewTest.Fixture(kind);
+        var f = new TableViewTest.Fixture(kind, GameCatalog.defaultCapacity(kind));
         when(f.plugin.getConfig()).thenReturn(new YamlConfiguration());
         TabletopTest.set(f.plugin, "rooms", new LinkedHashMap<>(Map.of(f.room.id, f.room)));
         f.plugin.arena = mock(GameWorld.class, CALLS_REAL_METHODS);
