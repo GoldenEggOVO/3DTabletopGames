@@ -29,8 +29,12 @@ public final class CraftEngineModels {
         checked = now;
         try {
             ClassLoader loader = engine.getClass().getClassLoader();
-            Class<?> api = Class.forName("net.momirealms.craftengine.bukkit.api.CraftEngineItems", true, loader);
-            Class<?> context = Class.forName("net.momirealms.craftengine.core.item.ItemBuildContext", true, loader);
+            Class<?> api =
+                    Class.forName(
+                            "net.momirealms.craftengine.bukkit.api.CraftEngineItems", true, loader);
+            Class<?> context =
+                    Class.forName(
+                            "net.momirealms.craftengine.core.item.ItemBuildContext", true, loader);
             Object empty = context.getMethod("empty").invoke(null);
             Method find = api.getMethod("byId", String.class);
             Map<String, Model> next = new HashMap<>();
@@ -84,11 +88,16 @@ public final class CraftEngineModels {
         for (int number = 1; number <= 7; number++) result.add("mahjong_z" + number);
         for (int number = 1; number <= 8; number++) result.add("mahjong_f" + number);
         for (char color : new char[] {'r', 'b', 'y', 'p'})
-            for (String rank : List.of("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "draw", "skip", "reverse"))
+            for (String rank :
+                    List.of(
+                            "1", "2", "3", "4", "5", "6", "7", "8",
+                            "9", "10", "draw", "skip", "reverse"))
                 result.add("card_" + color + rank);
-        result.addAll(List.of("mahjong_back", "card_back", "card_wild", "card_swap", "card_table",
-                "mahjong_table", "mahjong_panel", "ring_forward", "ring_reverse", "button_r",
-                "button_b", "button_y", "button_p", "button_pass"));
+        result.addAll(
+                List.of(
+                        "mahjong_back", "card_back", "card_wild", "card_swap", "card_table",
+                        "mahjong_table", "mahjong_panel", "ring_forward", "ring_reverse", "button_r",
+                        "button_b", "button_y", "button_p", "button_pass"));
         result.addAll(PackedBoardModels.ids());
         result.addAll(List.of("yacht_table", "yacht_die", "ludo_dice_tray"));
         return List.copyOf(result);
