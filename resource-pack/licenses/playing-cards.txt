@@ -1,0 +1,4 @@
+Pixel Playing Cards Pack by George Blackwell.
+Source: https://georgeblackwell.itch.io/playing-cards-sprite-pack
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/
+Changes: original 60x84 pixel faces are enlarged by nearest-neighbor 2x without added padding, and displayed at their original aspect ratio. The large joker uses red corner lettering; the original joker portrait is retained.

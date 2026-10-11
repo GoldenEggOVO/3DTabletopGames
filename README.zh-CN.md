@@ -108,14 +108,15 @@ java -cp target/3dtabletop-1.10.30-SNAPSHOT.jar dev.tabletop3d.RoomReplayVerifie
 - `src/main/java/dev/tabletop3d/`：规则按游戏分类，共用房间、菜单、渲染和存档代码按职责分类。
 - `src/main/resources/`：插件信息、默认配置、翻译、内置声明与纹理。
 - `src/test/`：Java 自动检查。
-- `resource-pack/textures/`：按游戏分类的图片，`native-playing-cards/` 为原版头颅卡牌素材。
-- `resource-pack/sounds/`：按用途分类的声音与 `events.json` 映射。
-- `resource-pack/craftengine/`：自定义物品注册。
+- `resource-pack/pack.mcmeta` 和 `resource-pack/assets/`：完整、可直接编辑的 Minecraft 资源包。
+- `resource-pack/licenses/`：随资源包提供的素材声明。
+- `resource-pack/craftengine/`：独立的 CraftEngine 物品注册。
+- `resource-pack/native-cards/`：原版头颅卡牌图片，与客户端资源包独立。
+- `resource-pack/originals/`：用于署名核对和修改的原始图片、SVG 与录音。
 - `resource-pack/sources.json`：素材来源、摘要与许可说明。
-- `tools/resource_pack/`：资源包生成、模型与图片辅助、预览及象棋 SVG 转换。
 - `tools/native_heads/`：原版卡牌皮肤切片与可选 MineSkin 纹理生成。
 - `tools/packaging/`：源码、已验证原版包及 CraftEngine 交付打包。
-- `tools/preview/`：原版麻将模型离线预览。
+- `tools/preview/`：原版麻将与资源模型的离线预览。
 - `tools/verification/`：资源包几何统计、隔离服务器与客户端解析检查。
 - `tools/tests/`：离线 Python 回归检查。
 - `target/`：生成的 JAR、资源包、预览和测试结果，不属于源码。
@@ -133,17 +134,41 @@ mvn -B -ntp package
 
 Maven 自动运行 Java 测试，结果保存在 `target/surefire-reports/`。安装生成的 `target/3dtabletop-*.jar`。
 
-重新生成资源包还需要 **Python 3.12+**、Pillow 和 SoundFile／libsndfile。先编译 Java 导出模型，再生成资源包，最后重新编译插件以写入匹配的校验值：
+资源包现在直接维护完整文件，构建时不生成模型、不转换音频。打包只需要 **Python 3.12+** 及其标准库。先打包资源，再编译插件，让 JAR 写入匹配的校验值：
 
 ```sh
-python tools/resource_pack/build-resource-pack.py
-python -m unittest discover -s tools/tests -t . -p "test_*.py"
+python tools/packaging/package_resource_pack.py
 mvn -B -ntp package
+python -m unittest discover -s tools/tests -t . -p "test_*.py"
 python -m compileall -q tools
 python tools/packaging/package_source.py
 ```
 
-输出包括 `target/tabletop-resource-pack.zip`、`target/resource-pack-manifest.json`、预览及 `target/3dtabletop-source.zip`。源码包仅包含 Git 跟踪的文件，运行世界、凭据、缓存和服务端程序不应放进仓库。
+输出包括 `target/tabletop-resource-pack.zip`、`target/resource-pack-manifest.json`、插件 JAR 和 `target/3dtabletop-source.zip`。同一 Python 环境下，相同文件会得到相同的 ZIP。资源包 ZIP 只包含 `pack.mcmeta`、`assets/` 和 `licenses/`，原始素材和 CraftEngine 注册单独保留。源码包只包含 Git 跟踪的文件。
+
+素材检查及头颅切片工具需要 Pillow。可选的头颅上传工具使用单独的 MineSkin 凭据，普通打包和服务端运行都不需要。资源模型预览：`python tools/preview/resource_pack.py`，需要 Pillow。
+
+### 修改资源包
+
+模型 JSON 在 `resource-pack/assets/tabletop3d/models/item/`，物品定义在 `items/`，图片在 `textures/item/`，OGG 音频在 `sounds/`。音效事件由 `assets/tabletop3d/sounds.json` 管理。新增物品时，物品定义、模型、CraftEngine 注册和 `CraftEngineModels.IDS` 中的标识须保持一致。修改后运行打包和检查，再编译插件；匹配的 JAR 和 ZIP 一起交付。打包不会重新绘图、缩放或转换素材。
+
+### 从哪里看代码
+
+插件代码位于 `src/main/java/dev/tabletop3d/`，`src/test/java/` 按对应职责存放测试。
+
+| 想修改什么 | 从哪里开始 |
+|---|---|
+| 启动、命令与配置 | `Tabletop3D.java` |
+| 游戏规则和合法操作 | `rules/<game>/`，由 `rules/GameFactory.java` 选择 |
+| 房间成员、回合与存档 | `room/Room.java`、`RoundActions.java`、`RoomStore.java` |
+| 点击、准星与桌面交互 | `interaction/GameWorld.java` |
+| 菜单与按钮 | `menu/GameMenus.java`、`BoardWindow.java`、`PokerRaiseWindow.java` |
+| 棋盘显示与玩家可见范围 | `render/TableView.java`、`TableAudience.java` |
+| 卡牌、麻将与骰子布局 | `render/cards/`、`render/mahjong/`、`render/dice/` |
+| 资源包加载和 CraftEngine 模型 | `resource/` |
+| 机器人、音效与翻译 | `bot/`、`audio/`、`text/`；玩家文字在 `src/main/resources/languages/` |
+
+通常一次操作会经过：输入 → 房间校验 → 游戏规则 → 保存房间并更新画面。游戏规则不依赖 Bukkit；显示代码不负责判断出牌是否合法。
 
 `tools/verification/standalone-probe/run_standalone.py` 检查隔离启动、玩法与重启恢复。通过 `--server-dir` 指定已准备好 Purpur 26.2 缓存及已接受 EULA 的目录，`--maven-repo` 指定自定义依赖缓存，默认使用 `~/.m2/repository`；可选 CraftEngine 参数用于资源模型检查。`run_soak.py` 检查连续对局与实体清理。回执与日志保存在本地生成目录。
 

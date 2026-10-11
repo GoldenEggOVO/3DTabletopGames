@@ -15,24 +15,14 @@ def module(name, filename):
 
 
 def build(output):
-    art = module("pack_art", "resource_pack/build-resource-pack.py")
     exporter = module("head_export", "native_heads/build-native-card-heads.py")
-    cards = output / "source-cards"
-    cards.mkdir(parents=True, exist_ok=True)
-    names = []
-    for color in art.COLORS:
-        for rank in art.RANKS:
-            face = color + {"draw": "Draw1", "skip": "Skip", "reverse": "Reverse"}.get(rank, rank)
-            art.card_image(rank, color).resize((32, 48), Image.Resampling.NEAREST).save(cards / (face + ".png"))
-            names.append(face)
-    for face in ("wild", "swap"):
-        art.card_image(face).resize((32, 48), Image.Resampling.NEAREST).save(cards / (face + ".png"))
-        names.append(face)
-    _, manifest = exporter.export(cards, output, 32, 48)
+    source = ROOT / "resource-pack/native-cards/color-eight"
+    _, manifest = exporter.export(source, output, 32, 48)
+    cards = output / "cards"
     sheet = Image.new("RGB", (1100, 1300), "#193d34")
     draw = ImageDraw.Draw(sheet)
     draw.text((20, 14), "COLOR EIGHT / EXISTING B ART / 32x48 / 24 HEADS", fill="white")
-    for index, face in enumerate(names):
+    for index, face in enumerate(manifest["faces"]):
         x, y = 20 + index % 10 * 108, 42 + index // 10 * 206
         sheet.paste(Image.open(cards / (face + ".png")).resize((96, 144), Image.Resampling.NEAREST), (x, y))
         draw.text((x, y + 152), face, fill="white")

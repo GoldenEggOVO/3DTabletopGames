@@ -34,18 +34,18 @@ class ColorEightHeadsTest(unittest.TestCase):
             for tile in tiles:
                 skin = Image.open(self.output / tile["skin"]).convert("RGBA")
                 actual.paste(skin.crop((8, 8, 16, 16)), (tile["column"] * 8, tile["row"] * 8))
-            expected = Image.open(self.output / "source-cards" / (face + ".png")).convert("RGBA")
+            expected = Image.open(ROOT / "resource-pack/native-cards/color-eight" / (face + ".png")).convert("RGBA")
             self.assertEqual(expected.tobytes(), actual.tobytes(), face)
 
-    def test_palette_and_pixels_come_from_the_existing_b_pack_art(self):
-        art = self.builder.module("pack_reference", "resource_pack/build-resource-pack.py")
+    def test_native_art_uses_the_approved_b_style_palette_and_dimensions(self):
+        reference = {"r": (186, 21, 29), "b": (8, 101, 180),
+                     "y": (229, 175, 0), "p": (108, 40, 169)}
         for face in self.manifest["faces"]:
-            rank = face if face in ("wild", "swap") else face[1:]
-            rank = {"Draw1": "draw", "Skip": "skip", "Reverse": "reverse"}.get(rank, rank)
-            color = None if face in ("wild", "swap") else face[0]
-            expected = art.card_image(rank, color).resize((32, 48), Image.Resampling.NEAREST).convert("RGBA")
-            actual = Image.open(self.output / "cards" / (face + ".png")).convert("RGBA")
-            self.assertEqual(expected.tobytes(), actual.tobytes(), face)
+            actual = Image.open(self.output / "cards" / (face + ".png")).convert("RGB")
+            self.assertEqual((32, 48), actual.size)
+            self.assertLessEqual(len(actual.getcolors(32 * 48)), 20, face)
+            if face[0] in reference:
+                self.assertIn(reference[face[0]], [color for count, color in actual.getcolors(32 * 48)], face)
 
     def test_heads_are_opaque_with_an_empty_hat_layer(self):
         for path in (self.output / "skins").glob("*.png"):

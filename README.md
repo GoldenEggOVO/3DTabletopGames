@@ -108,14 +108,15 @@ When resource rendering is enabled, update the matching ZIP and its URL as well.
 - `src/main/java/dev/tabletop3d/`: rules grouped by game; shared room, menu, rendering and persistence code grouped by responsibility.
 - `src/main/resources/`: plugin metadata, configuration defaults, translations and bundled notices/textures.
 - `src/test/`: automated Java checks.
-- `resource-pack/textures/`: artwork grouped by game; `native-playing-cards/` contains vanilla head source art.
-- `resource-pack/sounds/`: audio grouped by purpose and `events.json` mappings.
-- `resource-pack/craftengine/`: custom item registrations.
+- `resource-pack/pack.mcmeta` and `resource-pack/assets/`: complete, editable Minecraft pack files.
+- `resource-pack/licenses/`: notices shipped inside the client pack.
+- `resource-pack/craftengine/`: separate CraftEngine item registrations.
+- `resource-pack/native-cards/`: approved vanilla head source images, independent of the client pack.
+- `resource-pack/originals/`: original artwork, SVGs and recordings retained for attribution and editing.
 - `resource-pack/sources.json`: asset provenance, hashes and license notices.
-- `tools/resource_pack/`: resource-pack builder, mesh/art helpers, previews and Xiangqi SVG rasterizer.
 - `tools/native_heads/`: native card skin slicing and optional MineSkin texture generation.
 - `tools/packaging/`: source, verified standalone and CraftEngine delivery packaging.
-- `tools/preview/`: offline native Mahjong model preview.
+- `tools/preview/`: offline native Mahjong and resource model previews.
 - `tools/verification/`: pack geometry statistics and isolated server/client-parser probes.
 - `tools/tests/`: offline Python regression checks.
 - `target/`: generated JARs, packs, previews and test outputs; not source.
@@ -133,17 +134,41 @@ mvn -B -ntp package
 
 Maven runs Java tests and writes results to `target/surefire-reports/`. Install the shaded `target/3dtabletop-*.jar`.
 
-To regenerate the optional pack, use **Python 3.12+**, Pillow and SoundFile/libsndfile. Build Java first to export model geometry, then generate the pack and rebuild the plugin to embed its checksum:
+The pack files are maintained directly; models and audio are not generated during builds. Packaging needs **Python 3.12+** and its standard library. Package the assets before compiling the plugin so the JAR contains the matching checksum:
 
 ```sh
-python tools/resource_pack/build-resource-pack.py
-python -m unittest discover -s tools/tests -t . -p "test_*.py"
+python tools/packaging/package_resource_pack.py
 mvn -B -ntp package
+python -m unittest discover -s tools/tests -t . -p "test_*.py"
 python -m compileall -q tools
 python tools/packaging/package_source.py
 ```
 
-Outputs include `target/tabletop-resource-pack.zip`, `target/resource-pack-manifest.json`, previews and `target/3dtabletop-source.zip`. The source archive contains tracked files; runtime worlds, credentials, caches and server binaries do not belong in the repository.
+Outputs include `target/tabletop-resource-pack.zip`, `target/resource-pack-manifest.json`, the plugin JAR and `target/3dtabletop-source.zip`. Identical pack files produce an identical ZIP in the same Python environment. The pack ZIP includes only `pack.mcmeta`, `assets/` and `licenses/`; authoring originals and CraftEngine registrations remain separate. The source ZIP contains Git-tracked files only.
+
+Asset and head-export tests need Pillow. Optional native head upload needs its own MineSkin credentials; neither ordinary packaging nor the server needs them. Resource model previews: `python tools/preview/resource_pack.py` (Pillow required).
+
+### Editing the resource pack
+
+Edit model JSONs under `resource-pack/assets/tabletop3d/models/item/`, item definitions under `items/`, images under `textures/item/` and OGG samples under `sounds/`. Sound events are in `assets/tabletop3d/sounds.json`. To add an item, keep its ID in the item definition, model, CraftEngine registration and `CraftEngineModels.IDS` consistent. Run the packager and tests after editing, then compile and ship the matching JAR and ZIP together. Packing does not redraw, resize or transcode any source file.
+
+### Finding the code
+
+All plugin packages are under `src/main/java/dev/tabletop3d/`; `src/test/java/` follows the same structure.
+
+| Change | Start here |
+|---|---|
+| Startup, commands and configuration | `Tabletop3D.java` |
+| Game rules and legal actions | `rules/<game>/`, selected by `rules/GameFactory.java` |
+| Room membership, turns and persistence | `room/Room.java`, `RoundActions.java`, `RoomStore.java` |
+| Clicks, hovering and table access | `interaction/GameWorld.java` |
+| Dialogs and menu buttons | `menu/GameMenus.java`, `BoardWindow.java`, `PokerRaiseWindow.java` |
+| Board display and viewer privacy | `render/TableView.java`, `TableAudience.java` |
+| Card, Mahjong and dice layouts | `render/cards/`, `render/mahjong/`, `render/dice/` |
+| Resource-pack loading and CraftEngine models | `resource/` |
+| Bots, sounds and translations | `bot/`, `audio/`, `text/`; player text in `src/main/resources/languages/` |
+
+The normal action flow is input → room validation → game rules → room save and view update. Game rules do not depend on Bukkit; rendering does not determine whether a move is legal.
 
 `tools/verification/standalone-probe/run_standalone.py` checks isolated startup, gameplay and restart recovery. Supply `--server-dir` with a prepared Purpur 26.2 cache and already accepted EULA; use `--maven-repo` for a custom dependency cache (the default is `~/.m2/repository`). Optional CraftEngine arguments enable resource-model checks. `run_soak.py` checks repeated gameplay and entity cleanup. Keep receipts and logs in local build outputs.
 

@@ -1,4 +1,4 @@
-"""Asset contract tests; run after build-resource-pack.py."""
+"""Asset contract tests; run after package_resource_pack.py."""
 import json
 import math
 import io
@@ -18,11 +18,12 @@ class ResourcePackTest(unittest.TestCase):
         self.assertIn('Changes:', notice)
 
     def test_hole_mask_does_not_remove_pixels_from_the_solid_frame(self):
-        from tools.resource_pack.solid_mesh import circle
         model = json.loads(self.archive.read("assets/tabletop3d/models/item/board_connectfour.json"))
         cap = next(e for e in model["elements"] if e["faces"].get("south", {}).get("texture", "").startswith("#cap_"))
         image = self.face_image(model, cap["faces"]["south"])
-        hole = circle(.119 / 2, 24, center=(-3 * .14, (.17 - .88) / 2))
+        hole = [(-3 * .14 + .119 / 2 * math.cos(index * math.tau / 24),
+                 (.17 - .88) / 2 + .119 / 2 * math.sin(index * math.tau / 24))
+                for index in range(24)]
         for px in range(int(.01 * image.width), int(.15 * image.width)):
             for py in range(int(.01 * image.height), int(.15 * image.height)):
                 x, z = (px + .5) / image.width - .5, (py + .5) / image.height * .86 - .43
@@ -258,7 +259,7 @@ class ResourcePackTest(unittest.TestCase):
         for name in ("ring_1", "ring_-1"):
             im = Image.open(io.BytesIO(self.archive.read(
                 f"assets/tabletop3d/textures/item/surface/{name}.png"))).convert("RGBA")
-            self.assertTrue(any(0 < alpha < 255 for alpha in im.getchannel("A").getdata()),
+            self.assertTrue(any(im.getchannel("A").histogram()[1:255]),
                             "Curved arrows need filtered edges instead of jagged polygon seams")
             opaque = {point for point in ((x,y) for y in range(im.height) for x in range(im.width))
                       if im.getpixel(point)[3] >= 128}
