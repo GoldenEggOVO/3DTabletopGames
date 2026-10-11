@@ -9,12 +9,43 @@ import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class TabletopCommandTest {
+    @Test
+    void anUppercaseUniqueRoomPrefixFindsTheSameRoom() throws Exception {
+        Tabletop3D plugin = mock(Tabletop3D.class);
+        Player player = mock(Player.class);
+        when(plugin.allowed(player)).thenReturn(true);
+        Room room = new Room(UUID.fromString("abcdef00-0000-0000-0000-000000000001"), "chess", 2, 1, 0);
+        var rooms = Tabletop3D.class.getField("rooms");
+        rooms.setAccessible(true);
+        rooms.set(plugin, new LinkedHashMap<>(Map.of(room.id, room)));
+        new TabletopCommand(plugin).onCommand(player, null, "3dtabletop",
+                new String[] {"join", "ABCDEF"});
+        verify(plugin).join(player, room);
+    }
+
+    @Test
+    void ambiguousRoomPrefixNeverJoinsAnArbitraryRoom() throws Exception {
+        Tabletop3D plugin = mock(Tabletop3D.class);
+        Player player = mock(Player.class);
+        when(plugin.allowed(player)).thenReturn(true);
+        Room first = new Room(UUID.fromString("abcdef00-0000-0000-0000-000000000001"), "chess", 2, 1, 0);
+        Room second = new Room(UUID.fromString("abcdef00-0000-0000-0000-000000000002"), "chess", 2, 1, 1);
+        var rooms = Tabletop3D.class.getField("rooms");
+        rooms.setAccessible(true);
+        rooms.set(plugin, new LinkedHashMap<>(Map.of(first.id, first, second.id, second)));
+        new TabletopCommand(plugin).onCommand(player, null, "3dtabletop",
+                new String[] {"join", "abcdef"});
+        verify(plugin, never()).join(any(), any());
+        verify(plugin).tell(eq(player), any());
+    }
+
     @Test
     void mixedCaseGameUsesItsCanonicalNameAndDefaultCapacity() {
         var plugin = mock(Tabletop3D.class);

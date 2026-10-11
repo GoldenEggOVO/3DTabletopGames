@@ -126,6 +126,7 @@
 "error.repeated-position-or-no-liberties": "此步重复局面或没有气"
 "error.restored-seat-conflicts-with-another-game": "恢复座位与其他游戏冲突"
 "error.room-closed": "房间已关闭"
+"error.room-prefix-ambiguous": "房间编号匹配多个房间，请输入更长的编号"
 "error.room-has-no-usable-world-coordinates": "房间缺少可用的世界坐标"
 "error.room-limit-reached-join-an-existing-room": "房间已满，请先加入现有房间"
 "error.rule.invalid-option": "无效规则选项 {option}：{value}"

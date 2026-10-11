@@ -126,6 +126,7 @@
 "error.repeated-position-or-no-liberties": "Repeated position or no liberties"
 "error.restored-seat-conflicts-with-another-game": "Restored seat conflicts with another game"
 "error.room-closed": "Room closed"
+"error.room-prefix-ambiguous": "Room code matches several rooms; use a longer code"
 "error.room-has-no-usable-world-coordinates": "Room has no usable world coordinates"
 "error.room-limit-reached-join-an-existing-room": "Room limit reached; join an existing room"
 "error.rule.invalid-option": "Invalid option {option}: {value}"

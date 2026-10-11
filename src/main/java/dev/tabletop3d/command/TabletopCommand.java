@@ -1,10 +1,9 @@
 package dev.tabletop3d.command;
 
-import dev.tabletop3d.rules.GameCatalog;
-
 import com.google.gson.JsonPrimitive;
 
 import dev.tabletop3d.Tabletop3D;
+import dev.tabletop3d.rules.GameCatalog;
 import dev.tabletop3d.room.Room;
 import dev.tabletop3d.rules.HandGame;
 import dev.tabletop3d.rules.RuleViolation;
@@ -174,10 +173,14 @@ public final class TabletopCommand implements Listener, CommandExecutor, TabComp
     }
 
     private Room find(String text) {
-        return plugin.rooms.values().stream()
-                .filter(r -> r.id.toString().startsWith(text))
-                .findFirst()
-                .orElseThrow(() -> new RuleViolation("error.room-closed", "Room closed"));
+        String prefix = text.toLowerCase(Locale.ROOT);
+        List<Room> matches = plugin.rooms.values().stream()
+                .filter(room -> room.id.toString().startsWith(prefix)).limit(2).toList();
+        if (matches.isEmpty()) throw new RuleViolation("error.room-closed", "Room closed");
+        if (matches.size() > 1)
+            throw new RuleViolation("error.room-prefix-ambiguous",
+                    "Room code matches several rooms; use a longer code");
+        return matches.getFirst();
     }
 
 }
