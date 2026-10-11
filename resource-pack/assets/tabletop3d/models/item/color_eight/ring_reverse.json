@@ -1,1 +1,41 @@
-{"gui_light":"front","ambientocclusion":false,"textures":{"ring":"tabletop3d:item/color_eight/color_eight_direction_reverse"},"elements":[{"from":[0.96,8,0.96],"to":[15.04,8.03,15.04],"faces":{"up":{"uv":[0,0,16,16],"texture":"#ring"}}}],"display":{"fixed":{"rotation":[0,180,0]}}}
+{
+  "gui_light": "front",
+  "ambientocclusion": false,
+  "textures": {
+    "ring": "tabletop3d:item/color_eight/color_eight_direction_reverse"
+  },
+  "elements": [
+    {
+      "from": [
+        0.96,
+        8,
+        0.96
+      ],
+      "to": [
+        15.04,
+        8.03,
+        15.04
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#ring"
+        }
+      }
+    }
+  ],
+  "display": {
+    "fixed": {
+      "rotation": [
+        0,
+        180,
+        0
+      ]
+    }
+  }
+}

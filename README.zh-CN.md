@@ -154,6 +154,25 @@ python tools/packaging/package_source.py
 
 模型 JSON 在 `resource-pack/assets/tabletop3d/models/item/`，物品定义在 `items/`，图片在 `textures/item/`，OGG 音频在 `sounds/`。音效事件由 `assets/tabletop3d/sounds.json` 管理。新增物品时，物品定义路径须与 CraftEngine 的 `item_model` 一致，其中的 `model.model` 须引用实际模型路径；CraftEngine 注册中的逻辑物品标识须与 `CraftEngineModels.IDS` 一致。修改后运行打包和检查，再编译插件；匹配的 JAR 和 ZIP 一起交付。打包不会重新绘图、缩放或转换素材。
 
+修改图片后，在仓库根目录依次执行以下命令；每一步成功后再执行下一步。需要 Python 3.12+、JDK 25 和 Maven 3.9+：
+
+```sh
+python tools/packaging/package_resource_pack.py
+mvn -B -ntp package
+```
+
+第一步生成 `target/tabletop-resource-pack.zip` 并更新校验值，第二步运行 Java 测试并生成包含该校验值的 `target/3dtabletop-<版本>.jar`。将 ZIP 上传到资源包下载地址，停服后替换 `plugins/` 中的旧 JAR，再启动服务器。如果下载地址改变，同时更新插件 `config.yml` 的 `resource-pack.url`。只修改现有 PNG 不需要调整 CraftEngine 注册。
+
+| 目录或文件 | 自定义方式 |
+| --- | --- |
+| `assets/`、`pack.mcmeta` | 编辑贴图、模型、物品定义、音效及资源包说明；重命名或移动文件时同步更新引用 |
+| `craftengine/` | 修改物品注册时保持逻辑标识及客户端资源路径对应；修改后同步更新服务端 CraftEngine 配置 |
+| `native-cards/` | 原版头颅卡牌素材；修改 PNG 后还需重新生成签名头颅纹理并编译插件，普通资源包打包不会更新头颅图案 |
+| `originals/` | 原始素材备份；修改这里不会自动更新 `assets/` 中的成品 |
+| `licenses/`、`sources.json` | 素材署名、来源与摘要记录，替换素材时保持记录准确 |
+
+JSON 使用两空格缩进，方便直接编辑。
+
 图片名称按游戏和部位命名，例如 `poker_spades_9_face.png`（黑桃 9 牌面）、`color_eight_yellow_6_face.png`（彩八黄色 6 牌面）、`xiangqi_red_pawn_face.png`（红方兵）、`mahjong_table_cloth.png`（麻将桌布）。`top`／`bottom` 表示上面／底面，`front`／`rear` 区分正反面的贴图，`shared_` 表示多个模型共用的图片。
 
 `textures/item/` 下按游戏分目录：`mahjong/`（麻将）、`xiangqi/`（象棋）、`chess/`（国际象棋）、`connect_four/`（四子棋）、`gomoku/`（五子棋）、`go/`（围棋）、`reversi/`（黑白棋）、`checkers/`（中国跳棋）、`draughts/`（西洋跳棋）、`ludo/`、`color_eight/`（彩八）、`doudizhu/`（斗地主）、`liars_bar/`（骗子酒馆）、`texas_holdem/`（德州扑克）和 `yacht/`（快艇骰子）。每个目录保留该游戏专用的图片；共用图片集中存放一份：

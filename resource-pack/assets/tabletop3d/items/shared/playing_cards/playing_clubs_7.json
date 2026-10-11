@@ -1,1 +1,6 @@
-{"model":{"type":"minecraft:model","model":"tabletop3d:item/shared/playing_cards/playing_clubs_7"}}
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "tabletop3d:item/shared/playing_cards/playing_clubs_7"
+  }
+}

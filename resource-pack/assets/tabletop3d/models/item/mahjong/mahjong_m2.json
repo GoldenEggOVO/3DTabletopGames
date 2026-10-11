@@ -1,1 +1,88 @@
-{"gui_light":"front","ambientocclusion":false,"textures":{"body":"tabletop3d:item/shared/materials/ivory","face":"tabletop3d:item/mahjong/mahjong_m2","back":"tabletop3d:item/mahjong/mahjong-back"},"elements":[{"from":[0,0,0],"to":[16,16,16],"faces":{"north":{"uv":[0,0,16,16],"texture":"#back"},"south":{"uv":[0,0,16,16],"texture":"#face"},"east":{"uv":[0,0,16,16],"texture":"#body"},"west":{"uv":[0,0,16,16],"texture":"#body"},"up":{"uv":[0,0,16,16],"texture":"#body"},"down":{"uv":[0,0,16,16],"texture":"#body"}}}],"display":{"fixed":{"rotation":[0,180,0]}}}
+{
+  "gui_light": "front",
+  "ambientocclusion": false,
+  "textures": {
+    "body": "tabletop3d:item/shared/materials/ivory",
+    "face": "tabletop3d:item/mahjong/mahjong_m2",
+    "back": "tabletop3d:item/mahjong/mahjong-back"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#back"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#face"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#body"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#body"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#body"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#body"
+        }
+      }
+    }
+  ],
+  "display": {
+    "fixed": {
+      "rotation": [
+        0,
+        180,
+        0
+      ]
+    }
+  }
+}

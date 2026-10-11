@@ -1,1 +1,6 @@
-{"model":{"type":"minecraft:model","model":"tabletop3d:item/checkers/board_checkers"}}
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "tabletop3d:item/checkers/board_checkers"
+  }
+}

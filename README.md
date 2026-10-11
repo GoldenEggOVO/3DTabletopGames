@@ -154,6 +154,25 @@ Asset and head-export tests need Pillow. Optional native head upload needs its o
 
 Edit model JSONs under `resource-pack/assets/tabletop3d/models/item/`, item definitions under `items/`, images under `textures/item/` and OGG samples under `sounds/`. Sound events are in `assets/tabletop3d/sounds.json`. To add an item, match its definition path to CraftEngine's `item_model` and its `model.model` to the model path. Keep the logical item ID in the CraftEngine registration and `CraftEngineModels.IDS` consistent. Run the packager and tests after editing, then compile and ship the matching JAR and ZIP together. Packing does not redraw, resize or transcode any source file.
 
+After editing images, run these commands from the repository root, proceeding only when each step succeeds. They require Python 3.12+, JDK 25 and Maven 3.9+:
+
+```sh
+python tools/packaging/package_resource_pack.py
+mvn -B -ntp package
+```
+
+The first step creates `target/tabletop-resource-pack.zip` and updates its checksum. The second runs Java tests and creates `target/3dtabletop-<version>.jar` with that checksum. Upload the ZIP to your resource-pack download address, stop the server, replace the old JAR in `plugins/`, then restart. If the download address changes, also update `resource-pack.url` in the plugin's `config.yml`. Editing an existing PNG does not require changing CraftEngine registrations.
+
+| Directory or file | How to customize it |
+| --- | --- |
+| `assets/`, `pack.mcmeta` | Edit textures, models, item definitions, sounds and pack metadata; update references when renaming or moving files |
+| `craftengine/` | Keep logical item IDs and client resource paths aligned; copy registration changes to the server's CraftEngine configuration |
+| `native-cards/` | Native head-card artwork; PNG edits also require regenerating signed head textures and compiling the plugin, as ordinary resource-pack packaging does not update heads |
+| `originals/` | Source material backups; edits here do not automatically update the finished files under `assets/` |
+| `licenses/`, `sources.json` | Attribution, origins and checksum records; keep them accurate when replacing materials |
+
+JSON files use two-space indentation for direct editing.
+
 Image names identify the game and part, for example `poker_spades_9_face.png`, `color_eight_yellow_6_face.png`, `xiangqi_red_pawn_face.png` and `mahjong_table_cloth.png`. `top`/`bottom` identify upper and lower surfaces, `front`/`rear` distinguish face orientations, and `shared_` marks textures reused by multiple models.
 
 Under `textures/item/`, game-specific images live in `mahjong/`, `xiangqi/`, `chess/`, `connect_four/`, `gomoku/`, `go/`, `reversi/`, `checkers/` (Chinese Checkers), `draughts/`, `ludo/`, `color_eight/`, `doudizhu/`, `liars_bar/`, `texas_holdem/` and `yacht/`. Shared images are stored once:

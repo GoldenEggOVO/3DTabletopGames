@@ -1,1 +1,6 @@
-{"model":{"type":"minecraft:model","model":"tabletop3d:item/color_eight/button_p"}}
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "tabletop3d:item/color_eight/button_p"
+  }
+}

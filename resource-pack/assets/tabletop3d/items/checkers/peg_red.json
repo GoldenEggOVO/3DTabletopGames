@@ -1,1 +1,6 @@
-{"model":{"type":"minecraft:model","model":"tabletop3d:item/checkers/peg_red"}}
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "tabletop3d:item/checkers/peg_red"
+  }
+}

@@ -1,1 +1,6 @@
-{"model":{"type":"minecraft:model","model":"tabletop3d:item/go/board_go9"}}
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "tabletop3d:item/go/board_go9"
+  }
+}

@@ -1,1 +1,274 @@
-{"mahjong.select":{"sounds":[{"name":"tabletop3d:mahjong/select","stream":false}]},"mahjong.countdown":{"sounds":[{"name":"tabletop3d:mahjong/countdown","stream":false}]},"mahjong.discard":{"sounds":[{"name":"tabletop3d:mahjong/discard","stream":false}]},"mahjong.meld":{"sounds":[{"name":"tabletop3d:mahjong/meld","stream":false}]},"mahjong.kan":{"sounds":[{"name":"tabletop3d:mahjong/kan","stream":false}]},"mahjong.win":{"sounds":[{"name":"tabletop3d:mahjong/win","stream":false}]},"mahjong.dora":{"sounds":[{"name":"tabletop3d:mahjong/dora","stream":false}]},"mahjong.riichi":{"sounds":[{"name":"tabletop3d:mahjong/riichi","stream":false}]},"mahjong.draw":{"sounds":[{"name":"tabletop3d:mahjong/draw","stream":false}]},"cards.play":{"sounds":[{"name":"tabletop3d:cards/play","stream":false}]},"board.wood":{"sounds":[{"name":"tabletop3d:board/wood/impactWood_light_000","stream":false},{"name":"tabletop3d:board/wood/impactWood_light_001","stream":false},{"name":"tabletop3d:board/wood/impactWood_light_002","stream":false}]},"board.stone":{"sounds":[{"name":"tabletop3d:board/stone/chip-lay-1","stream":false},{"name":"tabletop3d:board/stone/chip-lay-2","stream":false}]},"board.drop":{"sounds":[{"name":"tabletop3d:board/drop/chip-lay-3","stream":false}]},"board.flip":{"sounds":[{"name":"tabletop3d:board/flip/chips-handle-1","stream":false},{"name":"tabletop3d:board/flip/chips-handle-2","stream":false}]},"board.capture":{"sounds":[{"name":"tabletop3d:board/capture/impactWood_medium_000","stream":false}]},"dice.roll":{"sounds":[{"name":"tabletop3d:dice/roll/dice-throw-1","stream":false},{"name":"tabletop3d:dice/roll/dice-throw-2","stream":false},{"name":"tabletop3d:dice/roll/dice-throw-3","stream":false}]},"dice.single":{"sounds":[{"name":"tabletop3d:dice/single/die-throw-1","stream":false},{"name":"tabletop3d:dice/single/die-throw-2","stream":false},{"name":"tabletop3d:dice/single/die-throw-3","stream":false},{"name":"tabletop3d:dice/single/die-throw-4","stream":false}]},"dice.hold":{"sounds":[{"name":"tabletop3d:dice/hold/dice-grab-1","stream":false},{"name":"tabletop3d:dice/hold/dice-grab-2","stream":false}]},"cards.draw":{"sounds":[{"name":"tabletop3d:cards/draw/card-slide-1","stream":false},{"name":"tabletop3d:cards/draw/card-slide-2","stream":false},{"name":"tabletop3d:cards/draw/card-slide-3","stream":false}]},"chips.bet":{"sounds":[{"name":"tabletop3d:chips/bet/chips-stack-1","stream":false},{"name":"tabletop3d:chips/bet/chips-stack-2","stream":false},{"name":"tabletop3d:chips/bet/chips-stack-3","stream":false}]},"table.select":{"sounds":[{"name":"tabletop3d:table/select/select_001","stream":false}]},"table.pass":{"sounds":[{"name":"tabletop3d:table/pass/back_001","stream":false}]},"table.confirm":{"sounds":[{"name":"tabletop3d:table/confirm/confirmation_001","stream":false}]},"table.start":{"sounds":[{"name":"tabletop3d:table/start/open_001","stream":false}]},"table.win":{"sounds":[{"name":"tabletop3d:table/win/confirmation_004","stream":false}]},"table.draw":{"sounds":[{"name":"tabletop3d:table/draw/close_001","stream":false}]},"table.home":{"sounds":[{"name":"tabletop3d:table/home/confirmation_003","stream":false}]}}
+{
+  "mahjong.select": {
+    "sounds": [
+      {
+        "name": "tabletop3d:mahjong/select",
+        "stream": false
+      }
+    ]
+  },
+  "mahjong.countdown": {
+    "sounds": [
+      {
+        "name": "tabletop3d:mahjong/countdown",
+        "stream": false
+      }
+    ]
+  },
+  "mahjong.discard": {
+    "sounds": [
+      {
+        "name": "tabletop3d:mahjong/discard",
+        "stream": false
+      }
+    ]
+  },
+  "mahjong.meld": {
+    "sounds": [
+      {
+        "name": "tabletop3d:mahjong/meld",
+        "stream": false
+      }
+    ]
+  },
+  "mahjong.kan": {
+    "sounds": [
+      {
+        "name": "tabletop3d:mahjong/kan",
+        "stream": false
+      }
+    ]
+  },
+  "mahjong.win": {
+    "sounds": [
+      {
+        "name": "tabletop3d:mahjong/win",
+        "stream": false
+      }
+    ]
+  },
+  "mahjong.dora": {
+    "sounds": [
+      {
+        "name": "tabletop3d:mahjong/dora",
+        "stream": false
+      }
+    ]
+  },
+  "mahjong.riichi": {
+    "sounds": [
+      {
+        "name": "tabletop3d:mahjong/riichi",
+        "stream": false
+      }
+    ]
+  },
+  "mahjong.draw": {
+    "sounds": [
+      {
+        "name": "tabletop3d:mahjong/draw",
+        "stream": false
+      }
+    ]
+  },
+  "cards.play": {
+    "sounds": [
+      {
+        "name": "tabletop3d:cards/play",
+        "stream": false
+      }
+    ]
+  },
+  "board.wood": {
+    "sounds": [
+      {
+        "name": "tabletop3d:board/wood/impactWood_light_000",
+        "stream": false
+      },
+      {
+        "name": "tabletop3d:board/wood/impactWood_light_001",
+        "stream": false
+      },
+      {
+        "name": "tabletop3d:board/wood/impactWood_light_002",
+        "stream": false
+      }
+    ]
+  },
+  "board.stone": {
+    "sounds": [
+      {
+        "name": "tabletop3d:board/stone/chip-lay-1",
+        "stream": false
+      },
+      {
+        "name": "tabletop3d:board/stone/chip-lay-2",
+        "stream": false
+      }
+    ]
+  },
+  "board.drop": {
+    "sounds": [
+      {
+        "name": "tabletop3d:board/drop/chip-lay-3",
+        "stream": false
+      }
+    ]
+  },
+  "board.flip": {
+    "sounds": [
+      {
+        "name": "tabletop3d:board/flip/chips-handle-1",
+        "stream": false
+      },
+      {
+        "name": "tabletop3d:board/flip/chips-handle-2",
+        "stream": false
+      }
+    ]
+  },
+  "board.capture": {
+    "sounds": [
+      {
+        "name": "tabletop3d:board/capture/impactWood_medium_000",
+        "stream": false
+      }
+    ]
+  },
+  "dice.roll": {
+    "sounds": [
+      {
+        "name": "tabletop3d:dice/roll/dice-throw-1",
+        "stream": false
+      },
+      {
+        "name": "tabletop3d:dice/roll/dice-throw-2",
+        "stream": false
+      },
+      {
+        "name": "tabletop3d:dice/roll/dice-throw-3",
+        "stream": false
+      }
+    ]
+  },
+  "dice.single": {
+    "sounds": [
+      {
+        "name": "tabletop3d:dice/single/die-throw-1",
+        "stream": false
+      },
+      {
+        "name": "tabletop3d:dice/single/die-throw-2",
+        "stream": false
+      },
+      {
+        "name": "tabletop3d:dice/single/die-throw-3",
+        "stream": false
+      },
+      {
+        "name": "tabletop3d:dice/single/die-throw-4",
+        "stream": false
+      }
+    ]
+  },
+  "dice.hold": {
+    "sounds": [
+      {
+        "name": "tabletop3d:dice/hold/dice-grab-1",
+        "stream": false
+      },
+      {
+        "name": "tabletop3d:dice/hold/dice-grab-2",
+        "stream": false
+      }
+    ]
+  },
+  "cards.draw": {
+    "sounds": [
+      {
+        "name": "tabletop3d:cards/draw/card-slide-1",
+        "stream": false
+      },
+      {
+        "name": "tabletop3d:cards/draw/card-slide-2",
+        "stream": false
+      },
+      {
+        "name": "tabletop3d:cards/draw/card-slide-3",
+        "stream": false
+      }
+    ]
+  },
+  "chips.bet": {
+    "sounds": [
+      {
+        "name": "tabletop3d:chips/bet/chips-stack-1",
+        "stream": false
+      },
+      {
+        "name": "tabletop3d:chips/bet/chips-stack-2",
+        "stream": false
+      },
+      {
+        "name": "tabletop3d:chips/bet/chips-stack-3",
+        "stream": false
+      }
+    ]
+  },
+  "table.select": {
+    "sounds": [
+      {
+        "name": "tabletop3d:table/select/select_001",
+        "stream": false
+      }
+    ]
+  },
+  "table.pass": {
+    "sounds": [
+      {
+        "name": "tabletop3d:table/pass/back_001",
+        "stream": false
+      }
+    ]
+  },
+  "table.confirm": {
+    "sounds": [
+      {
+        "name": "tabletop3d:table/confirm/confirmation_001",
+        "stream": false
+      }
+    ]
+  },
+  "table.start": {
+    "sounds": [
+      {
+        "name": "tabletop3d:table/start/open_001",
+        "stream": false
+      }
+    ]
+  },
+  "table.win": {
+    "sounds": [
+      {
+        "name": "tabletop3d:table/win/confirmation_004",
+        "stream": false
+      }
+    ]
+  },
+  "table.draw": {
+    "sounds": [
+      {
+        "name": "tabletop3d:table/draw/close_001",
+        "stream": false
+      }
+    ]
+  },
+  "table.home": {
+    "sounds": [
+      {
+        "name": "tabletop3d:table/home/confirmation_003",
+        "stream": false
+      }
+    ]
+  }
+}
