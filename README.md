@@ -146,6 +146,8 @@ python tools/packaging/package_source.py
 
 Outputs include `target/tabletop-resource-pack.zip`, `target/resource-pack-manifest.json`, the plugin JAR and `target/3dtabletop-source.zip`. Identical pack files produce an identical ZIP in the same Python environment. The pack ZIP includes only `pack.mcmeta`, `assets/` and `licenses/`; authoring originals and CraftEngine registrations remain separate. The source ZIP contains Git-tracked files only.
 
+After a passing three-boot check, use `python tools/packaging/package_standalone.py <native-receipt.json>` for a native delivery, or `package_craftengine.py <native-receipt.json> <craftengine-receipt.json>` for a resource-pack delivery. Both receipts must match the current JAR. Optional `--soak <receipt.json>` and `--snapshot <receipt.json>` retain continuous-game and recovery checks; `--evidence <log-file>` adds current logs to a resource-pack delivery. Outputs go to `deliverables/`; legacy logs and previews are not required.
+
 Asset and head-export tests need Pillow. Optional native head upload needs its own MineSkin credentials; neither ordinary packaging nor the server needs them. Resource model previews: `python tools/preview/resource_pack.py` (Pillow required).
 
 ### Editing the resource pack
@@ -160,7 +162,7 @@ All plugin packages are under `src/main/java/dev/tabletop3d/`; `src/test/java/` 
 |---|---|
 | Startup and configuration | `Tabletop3D.java` |
 | Commands and Tab suggestions | `command/` |
-| Game rules and legal actions | `rules/<game>/`, selected by `rules/GameFactory.java` |
+| Game rules and legal actions | `rules/<game>/`, created by `rules/GameFactory.java`; IDs, order and player counts in `rules/GameCatalog.java` |
 | Room membership, turns and persistence | `room/Room.java`, `RoundActions.java`, `RoomStore.java` |
 | Clicks, hovering and table access | `interaction/GameWorld.java` |
 | Dialogs and menu buttons | `menu/GameMenus.java`, `BoardWindow.java`, `PokerRaiseWindow.java` |

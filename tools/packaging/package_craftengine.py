@@ -12,12 +12,19 @@ ROOT = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("native_receipt", type=Path)
 parser.add_argument("craftengine_receipt", type=Path)
+parser.add_argument("--soak", type=Path, help="Passing continuous-game receipt for the same JAR")
+parser.add_argument("--snapshot", type=Path, help="Passing multi-game recovery receipt for the same JAR")
+parser.add_argument("--evidence", type=Path, action="append", default=[], help="Additional verification file to include")
 args = parser.parse_args()
 native = json.loads(args.native_receipt.read_text(encoding="utf-8"))
 ce = json.loads(args.craftengine_receipt.read_text(encoding="utf-8"))
 if not ce.get("pass") or not ce.get("craftengine") or ce.get("jar_sha256") != native.get("jar_sha256"):
     raise SystemExit("Passing CraftEngine receipt for the same JAR required")
-subprocess.run([sys.executable, str(ROOT / "tools/packaging/package_standalone.py"), str(args.native_receipt)], check=True)
+command = [sys.executable, str(ROOT / "tools/packaging/package_standalone.py"), str(args.native_receipt)]
+for option in ("soak", "snapshot"):
+    if path := getattr(args, option):
+        command.extend(["--" + option, str(path)])
+subprocess.run(command, check=True)
 out = ROOT / "deliverables" / native["version"]
 pack = ROOT / "target/tabletop-resource-pack.zip"
 manifest = json.loads((ROOT / "target/resource-pack-manifest.json").read_text(encoding="utf-8"))
@@ -39,19 +46,16 @@ for mode in ("vanilla", "resource-pack", "mixed"):
         "    url: 'https://YOUR-HOST/tabletop-resource-pack.zip'\n"
         "    # Upload the ZIP shipped with this plugin; checksum and identity are automatic.\n", encoding="utf-8")
 shutil.copy2(ROOT / "resource-pack/sources.json", out / "asset-sources.json")
-for folder, source in (("pack", "pack-preview"), ("native-before", "native-before"), ("native-after", "native-after")):
-    target = out / "previews" / folder
+for p in sorted((ROOT / "target/pack-preview").glob("*.png")):
+    target = out / "previews/pack"
     target.mkdir(parents=True, exist_ok=True)
-    for p in sorted((ROOT / "target" / source).glob("*")):
-        if p.suffix in (".png", ".csv"):
-            shutil.copy2(p, target / p.name)
+    shutil.copy2(p, target / p.name)
 evidence = out / "evidence"
 evidence.mkdir(exist_ok=True)
 shutil.copy2(args.native_receipt, evidence / "native-runtime.json")
 shutil.copy2(args.craftengine_receipt, evidence / "craftengine-runtime.json")
-for name in ("craftengine-package.log", "resource-green.log"):
-    shutil.copy2(ROOT / "target" / name, evidence / name)
-shutil.copy2(ROOT / "target/full-table-counts.csv", evidence / "full-table-counts.csv")
+for path in args.evidence:
+    shutil.copy2(path, evidence / path.name)
 verification_path = out / "verification.json"
 verification = json.loads(verification_path.read_text(encoding="utf-8"))
 verification.update(craftengine=ce, resource_pack=manifest, client_audio_test=False, client_fps_test=False)

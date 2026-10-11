@@ -146,6 +146,8 @@ python tools/packaging/package_source.py
 
 输出包括 `target/tabletop-resource-pack.zip`、`target/resource-pack-manifest.json`、插件 JAR 和 `target/3dtabletop-source.zip`。同一 Python 环境下，相同文件会得到相同的 ZIP。资源包 ZIP 只包含 `pack.mcmeta`、`assets/` 和 `licenses/`，原始素材和 CraftEngine 注册单独保留。源码包只包含 Git 跟踪的文件。
 
+通过三次隔离启动检查后，可用 `python tools/packaging/package_standalone.py <原版回执.json>` 制作原版交付包；资源包交付使用 `package_craftengine.py <原版回执.json> <CraftEngine回执.json>`。两份回执必须对应当前 JAR。可选 `--soak <回执.json>`、`--snapshot <回执.json>` 保留连续对局和恢复验证，`--evidence <日志文件>` 仅在资源包交付中添加本次实际日志。交付输出在 `deliverables/`；不需要旧版本的日志或预览。
+
 素材检查及头颅切片工具需要 Pillow。可选的头颅上传工具使用单独的 MineSkin 凭据，普通打包和服务端运行都不需要。资源模型预览：`python tools/preview/resource_pack.py`，需要 Pillow。
 
 ### 修改资源包
@@ -160,7 +162,7 @@ python tools/packaging/package_source.py
 |---|---|
 | 启动与配置 | `Tabletop3D.java` |
 | 命令与 Tab 提示 | `command/` |
-| 游戏规则和合法操作 | `rules/<game>/`，由 `rules/GameFactory.java` 选择 |
+| 游戏规则和合法操作 | `rules/<game>/`，由 `rules/GameFactory.java` 创建；名称、顺序和人数在 `rules/GameCatalog.java` |
 | 房间成员、回合与存档 | `room/Room.java`、`RoundActions.java`、`RoomStore.java` |
 | 点击、准星与桌面交互 | `interaction/GameWorld.java` |
 | 菜单与按钮 | `menu/GameMenus.java`、`BoardWindow.java`、`PokerRaiseWindow.java` |
