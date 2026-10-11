@@ -1,6 +1,7 @@
 package dev.tabletop3d.room;
 
 import com.google.gson.*;
+import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -17,16 +18,32 @@ public final class RoomStore {
 
     public static void write(Path file, Collection<Room> rooms, Map<UUID, ReturnPoint> returns)
             throws IOException {
-        JsonObject root = new JsonObject();
-        root.addProperty("schema", SCHEMA);
-        JsonArray records = new JsonArray();
-        for (Room room : rooms) if (room.phase != Room.Phase.ABORTED) records.add(record(room));
-        root.add("rooms", records);
-        JsonObject points = new JsonObject();
-        returns.forEach((id, point) -> points.add(id.toString(), JSON.toJsonTree(point)));
-        root.add("returns", points);
         Path temporary = file.resolveSibling(file.getFileName() + ".tmp");
-        Files.writeString(temporary, JSON.toJson(root), StandardCharsets.UTF_8);
+        try (JsonWriter output = JSON.newJsonWriter(Files.newBufferedWriter(temporary, StandardCharsets.UTF_8))) {
+            output.beginObject();
+            output.name("schema").value(SCHEMA);
+            output.name("rooms").beginArray();
+            for (Room room : rooms) {
+                if (room.phase == Room.Phase.ABORTED) continue;
+                output.beginObject();
+                for (var entry : record(room).entrySet()) {
+                    output.name(entry.getKey());
+                    JSON.toJson(entry.getValue(), output);
+                }
+                output.name("history");
+                room.history.writeTo(JSON, output);
+                output.endObject();
+            }
+            output.endArray();
+            output.name("returns");
+            JsonObject points = new JsonObject();
+            returns.forEach((id, point) -> points.add(id.toString(), JSON.toJsonTree(point)));
+            JSON.toJson(points, output);
+            output.endObject();
+        } catch (JsonIOException exception) {
+            if (exception.getCause() instanceof IOException failure) throw failure;
+            throw exception;
+        }
         try {
             Files.move(
                     temporary,
@@ -77,7 +94,6 @@ public final class RoomStore {
         record.addProperty("result", room.result);
         record.addProperty("revision", room.revision);
         record.add("seats", JSON.toJsonTree(room.seats));
-        record.add("history", room.history.snapshot());
         return record;
     }
 

@@ -1,8 +1,10 @@
 package dev.tabletop3d.room;
 
 import com.google.gson.JsonArray;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
@@ -49,6 +51,10 @@ public final class RoomHistory implements Iterable<JsonElement> {
 
     JsonArray snapshot() {
         return events.deepCopy();
+    }
+
+    void writeTo(Gson json, JsonWriter output) {
+        json.toJson(events, output);
     }
 
     @Override

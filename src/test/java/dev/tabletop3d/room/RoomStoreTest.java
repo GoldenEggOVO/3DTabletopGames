@@ -8,9 +8,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.*;
+import java.nio.charset.StandardCharsets;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class RoomStoreTest {
     @TempDir Path directory;
@@ -72,6 +77,45 @@ class RoomStoreTest {
                     before.board.legalActions(before.turn()),
                     replay.legalActions(after.turn() < 0 ? before.turn() : after.turn()));
         }
+    }
+
+    @Test
+    void aStreamingFailureKeepsTheLastGoodFileAndUsesTheIoFailureContract() throws Exception {
+        Path file = directory.resolve("rooms.json");
+        Room room = new Room(UUID.randomUUID(), "chess", 2, 42, 0);
+        RoomStore.write(file, List.of(room), Map.of());
+        byte[] saved = Files.readAllBytes(file);
+        room.event(0, new com.google.gson.JsonPrimitive("x".repeat(20_000)));
+        Writer failing = new Writer() {
+            @Override public void write(char[] text, int offset, int length) throws IOException {
+                throw new IOException("Simulated full disk");
+            }
+            @Override public void flush() {}
+            @Override public void close() {}
+        };
+        Path temporary = file.resolveSibling("rooms.json.tmp");
+        try (var files = mockStatic(Files.class, CALLS_REAL_METHODS)) {
+            files.when(() -> Files.newBufferedWriter(temporary, StandardCharsets.UTF_8))
+                    .thenReturn(new BufferedWriter(failing));
+            assertThrows(IOException.class, () -> RoomStore.write(file, List.of(room), Map.of()));
+        }
+        assertArrayEquals(saved, Files.readAllBytes(file));
+    }
+
+    @Test
+    void aFailedTemporaryWriteLeavesTheLastGoodFileAndHistoryIntact() throws Exception {
+        Path file = directory.resolve("rooms.json");
+        Room room = new Room(UUID.randomUUID(), "chess", 2, 42, 0);
+        room.event(0, new com.google.gson.JsonPrimitive("move:a2:a4"));
+        RoomStore.write(file, List.of(room), Map.of());
+        byte[] saved = Files.readAllBytes(file);
+        var history = room.history.snapshot();
+        Files.createDirectory(directory.resolve("rooms.json.tmp"));
+        assertThrows(java.io.IOException.class,
+                () -> RoomStore.write(file, List.of(room), Map.of()));
+        assertArrayEquals(saved, Files.readAllBytes(file));
+        assertEquals(history, room.history.snapshot());
+        assertEquals(history, RoomStore.read(file).rooms().getFirst().history.snapshot());
     }
 
     @Test
