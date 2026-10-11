@@ -175,7 +175,7 @@ python tools/packaging/package_source.py
 
 `tools/verification/standalone-probe/run_standalone.py` 检查隔离启动、玩法与重启恢复。通过 `--server-dir` 指定已准备好 Purpur 26.2 缓存及已接受 EULA 的目录，`--maven-repo` 指定自定义依赖缓存，默认使用 `~/.m2/repository`；可选 CraftEngine 参数用于资源模型检查。`run_soak.py` 检查连续对局与实体清理。回执与日志保存在本地生成目录。
 
-原版扑克切片：`python tools/native_heads/build-native-card-heads.py --output target/native-heads`；彩八切片：`python tools/native_heads/build-color-eight-heads.py --output target/color-eight-heads`。只有手动运行 `generate-native-card-heads.py` 并指定本地 `--api-key-file` 时才会访问 MineSkin，普通构建和运行不需要密钥。旧 Casino 方块卡牌导入器已移除，现有图片与回归参考数据继续保留。
+原版扑克切片：`python tools/native_heads/build-native-card-heads.py --output target/native-heads`；彩八切片：`python tools/native_heads/build-color-eight-heads.py --output target/color-eight-heads`。只有手动运行 `generate-native-card-heads.py` 并指定本地 `--api-key-file` 时才会访问 MineSkin，普通构建和运行不需要密钥。
 
 自动检查和预览不能替代客户端验收。应在 Minecraft 中检查多人暗手隐私、资源包切换与下载失败、准星和点击范围、骰子移动、音量、重启恢复及帧时间表现。
 
