@@ -23,6 +23,18 @@ class LanguageTest {
     Path temp;
 
     @Test
+    void anOlderChineseFileUsesBundledChineseForMissingKeysWithoutBeingRewritten() throws Exception {
+        Language.load(temp, "en_US", warning -> fail(warning));
+        Path file = temp.resolve("zh_CN.yml");
+        String custom = "menu.title: 'Custom title'\n";
+        Files.writeString(file, custom);
+        var loaded = Language.load(temp, "zh_CN", warning -> fail(warning));
+        assertEquals("Custom title", loaded.get("menu.title"));
+        assertEquals(chineseCatalog().getString("pack.ready"), loaded.get("pack.ready"));
+        assertEquals(custom, Files.readString(file));
+    }
+
+    @Test
     void chineseMenuAndChatUseTheCurrentBrandAfterLoadingAndReloading() {
         String brand = "3D\u684c\u6e38";
         try {

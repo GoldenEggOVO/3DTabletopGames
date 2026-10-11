@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 
 public final class Language {
     private static final Map<String, String> ENGLISH = bundled("en_US");
+    private static final Map<String, String> CHINESE = bundled("zh_CN");
     private record Catalogue(Map<String, String> templates, Map<String, Component> labels) {
         Catalogue(Map<String, String> templates) {
             this(templates, new ConcurrentHashMap<>());
@@ -121,6 +122,7 @@ public final class Language {
             locale = "en_US";
         }
         read(folder.resolve("en_US.yml"), entries, warning);
+        if (locale.equals("zh_CN")) entries.putAll(CHINESE);
         if (!locale.equals("en_US")) read(folder.resolve(locale + ".yml"), entries, warning);
         return Map.copyOf(entries);
     }
@@ -175,7 +177,7 @@ public final class Language {
             flatten(yaml, "").forEach((key, value) -> values.put(key, (String) value));
             return Map.copyOf(values);
         } catch (Exception exception) {
-            throw new IllegalStateException("Cannot read bundled English", exception);
+            throw new IllegalStateException("Cannot read bundled language: " + locale, exception);
         }
     }
 
