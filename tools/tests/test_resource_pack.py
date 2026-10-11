@@ -256,7 +256,7 @@ class ResourcePackTest(unittest.TestCase):
             self.assertGreater(flat_y, .999, name + " must face upward after laying flat")
 
     def test_ring_arrows_have_smooth_alpha_edges_and_no_detached_fragments(self):
-        for name in ("ring_1", "ring_-1"):
+        for name in ("color_eight_direction_forward", "color_eight_direction_reverse"):
             im = Image.open(io.BytesIO(self.archive.read(
                 f"assets/tabletop3d/textures/item/surface/{name}.png"))).convert("RGBA")
             self.assertTrue(any(im.getchannel("A").histogram()[1:255]),
@@ -276,7 +276,7 @@ class ResourcePackTest(unittest.TestCase):
     def test_forward_ring_arrowheads_follow_increasing_seat_order(self):
         # Seats advance from +Z toward +X: counterclockwise in a +X/+Z UV plane.
         # These samples lie on arrowhead wings, outside the circular arc itself.
-        for direction, name in ((1, "ring_1"), (-1, "ring_-1")):
+        for direction, name in ((1, "color_eight_direction_forward"), (-1, "color_eight_direction_reverse")):
             image = Image.open(io.BytesIO(self.archive.read(
                 f"assets/tabletop3d/textures/item/surface/{name}.png"))).convert("RGBA")
             point = (484, 159) if direction == 1 else (484, 353)

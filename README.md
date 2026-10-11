@@ -154,6 +154,8 @@ Asset and head-export tests need Pillow. Optional native head upload needs its o
 
 Edit model JSONs under `resource-pack/assets/tabletop3d/models/item/`, item definitions under `items/`, images under `textures/item/` and OGG samples under `sounds/`. Sound events are in `assets/tabletop3d/sounds.json`. To add an item, keep its ID in the item definition, model, CraftEngine registration and `CraftEngineModels.IDS` consistent. Run the packager and tests after editing, then compile and ship the matching JAR and ZIP together. Packing does not redraw, resize or transcode any source file.
 
+Image names identify the game and part, for example `poker_spades_9_face.png`, `color_eight_yellow_6_face.png`, `xiangqi_red_pawn_face.png` and `mahjong_table_cloth.png`. `top`/`bottom` identify upper and lower surfaces, `front`/`rear` distinguish face orientations, and `shared_` marks textures reused by multiple models.
+
 ### Finding the code
 
 All plugin packages are under `src/main/java/dev/tabletop3d/`; `src/test/java/` follows the same structure.

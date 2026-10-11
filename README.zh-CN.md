@@ -154,6 +154,8 @@ python tools/packaging/package_source.py
 
 模型 JSON 在 `resource-pack/assets/tabletop3d/models/item/`，物品定义在 `items/`，图片在 `textures/item/`，OGG 音频在 `sounds/`。音效事件由 `assets/tabletop3d/sounds.json` 管理。新增物品时，物品定义、模型、CraftEngine 注册和 `CraftEngineModels.IDS` 中的标识须保持一致。修改后运行打包和检查，再编译插件；匹配的 JAR 和 ZIP 一起交付。打包不会重新绘图、缩放或转换素材。
 
+图片名称按游戏和部位命名，例如 `poker_spades_9_face.png`（黑桃 9 牌面）、`color_eight_yellow_6_face.png`（彩八黄色 6 牌面）、`xiangqi_red_pawn_face.png`（红方兵）、`mahjong_table_cloth.png`（麻将桌布）。`top`／`bottom` 表示上面／底面，`front`／`rear` 区分正反面的贴图，`shared_` 表示多个模型共用的图片。
+
 ### 从哪里看代码
 
 插件代码位于 `src/main/java/dev/tabletop3d/`，`src/test/java/` 按对应职责存放测试。
