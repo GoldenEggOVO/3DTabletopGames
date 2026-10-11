@@ -155,6 +155,8 @@ public final class TabletopPack implements Listener, AutoCloseable {
 
     void request(Player player) {
         if (mode == Mode.VANILLA || !preferred(player)) return;
+        Request existing = requests.get(player.getUniqueId());
+        if (existing != null && existing.stage() != Stage.FAILED) return;
         if (!available.getAsBoolean()) {
             plugin.tell(player, Language.component("pack.unavailable"));
             return;

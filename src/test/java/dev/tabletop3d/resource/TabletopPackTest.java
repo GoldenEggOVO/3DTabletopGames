@@ -122,6 +122,21 @@ class TabletopPackTest {
     }
 
     @Test
+    void delayedJoinRequestDoesNotReplaceAPackStartedFromTheMenu() {
+        pack.toggle(player);
+        UUID request = pack.requestId(player);
+        pack.request(player);
+        assertEquals(request, pack.requestId(player));
+        pack.status(player, request, Status.SUCCESSFULLY_LOADED);
+        pack.request(player);
+        assertTrue(pack.packed(player));
+        assertEquals(request, pack.requestId(player));
+        verify(player, times(1))
+                .addResourcePack(any(), anyString(), any(), anyString(), eq(false));
+        verify(player, never()).removeResourcePack(any());
+    }
+
+    @Test
     void toggleColoursDistinguishEnableLoadingAndDisable() {
         assertEquals(
                 net.kyori.adventure.text.format.NamedTextColor.GREEN, pack.button(player).color());
