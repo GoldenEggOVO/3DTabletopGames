@@ -11,6 +11,20 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CommandSuggestionsTest {
+    @Test
+    void newerGamesSuggestAllSupportedPlayerCounts() {
+        assertEquals(List.of("3"), players("doudizhu"));
+        assertEquals(List.of("2", "3", "4"), players("liars-bar"));
+        assertEquals(List.of("2", "3", "4"), players("yacht"));
+        assertEquals(List.of("2", "3", "4", "5", "6"), players("texas-holdem"));
+        assertTrue(players("unknown").isEmpty());
+    }
+
+    private static List<String> players(String game) {
+        return CommandSuggestions.complete(
+                new String[] {"create", game, ""}, List.of(), null, false, true);
+    }
+
     @Test void rootSuggestionsHideOnlyDuplicateNamespacedCommand() {
         var commands = new java.util.LinkedHashSet<>(List.of("3dtabletop", "3dtabletop:3dtabletop", "other:command"));
         CommandSuggestions.hideDuplicateRoot(commands);

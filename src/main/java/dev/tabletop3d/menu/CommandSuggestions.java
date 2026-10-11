@@ -50,24 +50,10 @@ public final class CommandSuggestions {
                 default -> List.of();
             };
         if (args.length == 3 && args[0].equalsIgnoreCase("create")) {
-            Stream<String> sizes =
-                    switch (args[1].toLowerCase(Locale.ROOT)) {
-                        case "checkers" -> Stream.of("2", "3", "4", "6");
-                        case "ludo" -> Stream.of("2", "3", "4");
-                        case "color-eight" -> Stream.of("2", "3", "4", "5");
-                        case "mahjong" -> Stream.of("4");
-                        case "gomoku",
-                                "xiangqi",
-                                "chess",
-                                "draughts",
-                                "reversi",
-                                "go",
-                                "go9",
-                                "go13",
-                                "connectfour" ->
-                                Stream.of("2");
-                        default -> Stream.empty();
-                    };
+            String game = args[1].toLowerCase(Locale.ROOT);
+            Stream<String> sizes = java.util.stream.IntStream.rangeClosed(2, 6)
+                    .filter(players -> Tabletop3D.capacityValid(game, players))
+                    .mapToObj(Integer::toString);
             return filter(sizes, args[2]);
         }
         return List.of();

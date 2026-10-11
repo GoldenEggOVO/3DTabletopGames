@@ -23,10 +23,7 @@ import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.*;
-import java.nio.file.*;
 import java.util.*;
-
-import javax.imageio.ImageIO;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -157,8 +154,7 @@ public class TabletopTest {
     }
 
     @Test
-    void staticArtExportsFromExactlyTheGeometryUsedByTheServer() throws Exception {
-        String export = System.getProperty("tabletop.export");
+    void nativeBoardArtDrawsEverySupportedBoard() {
         for (String kind : KINDS) {
             BoardGame game =
                     GameFactory.create(
@@ -170,30 +166,7 @@ public class TabletopTest {
             assertEquals(256, image.getWidth());
             assertEquals(256, image.getHeight());
             assertNotEquals(image.getRGB(0, 0), image.getRGB(128, 128));
-            if (export != null) {
-                Path dir = Path.of(export);
-                Files.createDirectories(dir);
-                ImageIO.write(image, "png", dir.resolve(kind + "-board.png").toFile());
-                var json = new com.google.gson.JsonObject();
-                json.addProperty("kind", kind);
-                var pieces = new com.google.gson.JsonArray();
-                for (Cell c : game.cells())
-                    if (c.owner() >= 0) {
-                        var piece = new com.google.gson.JsonObject();
-                        piece.addProperty("x", t.x(c));
-                        piece.addProperty("z", t.z(c));
-                        piece.addProperty("scale", t.spacing);
-                        piece.addProperty("label", kind.equals("xiangqi") ? c.piece() : "");
-                        piece.addProperty("owner", c.owner());
-                        piece.add(
-                                "parts",
-                                new com.google.gson.Gson()
-                                        .toJsonTree(TableModels.piece(kind, c, game.publicInfo())));
-                        pieces.add(piece);
-                    }
-                json.add("pieces", pieces);
-                Files.writeString(dir.resolve(kind + "-models.json"), json.toString());
-            }
+
         }
     }
 
