@@ -43,7 +43,7 @@ class TableComfortTest {
             when(f.plugin.arena.atTableWorld(f.player,f.room)).thenReturn(false);
             f.comfort.world(new org.bukkit.event.player.PlayerChangedWorldEvent(f.player,f.world));verify(f.player).setCollidable(true);
             when(f.plugin.arena.atTableWorld(f.player,f.room)).thenReturn(true);f.comfort.sync();
-            f.comfort.quit(new org.bukkit.event.player.PlayerQuitEvent(f.player,net.kyori.adventure.text.Component.empty()));verify(f.player,times(2)).setCollidable(true);
+            f.comfort.quit(new org.bukkit.event.player.PlayerQuitEvent(f.player,net.kyori.adventure.text.Component.empty(),org.bukkit.event.player.PlayerQuitEvent.QuitReason.DISCONNECTED));verify(f.player,times(2)).setCollidable(true);
         }
     }
     @Test void theRegularRoomTickUpdatesComfortWithoutAnotherMenuAction() throws Exception {

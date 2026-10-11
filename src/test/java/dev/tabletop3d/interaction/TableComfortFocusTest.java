@@ -142,7 +142,7 @@ class TableComfortFocusTest {
     }
     @Test void quitReturnsToTheOriginalPoseAndRestoresFlags(){
         Fixture f=new Fixture(0);Location original=f.location.get().clone();f.input(true);
-        f.comfort.quit(new PlayerQuitEvent(f.player,net.kyori.adventure.text.Component.empty()));
+        f.comfort.quit(new PlayerQuitEvent(f.player,net.kyori.adventure.text.Component.empty(),PlayerQuitEvent.QuitReason.DISCONNECTED));
         assertFalse(f.comfort.focused(f.player));assertEquals(original,f.location.get());verify(f.player).setGravity(true);verify(f.player).setCollidable(true);
     }
     @Test void closeRestoresPreexistingGravityAndCollisionFlags(){
@@ -177,7 +177,7 @@ class TableComfortFocusTest {
     }
     @Test void externalGameModeChangeCleansCameraWithoutRestoringThePreviousMode(){
         Fixture f=new Fixture(0);f.input(true);clearInvocations(f.player);
-        MockBukkit.getMock().getPluginManager().callEvent(new PlayerGameModeChangeEvent(f.player,GameMode.CREATIVE));
+        MockBukkit.getMock().getPluginManager().callEvent(new PlayerGameModeChangeEvent(f.player,GameMode.CREATIVE,PlayerGameModeChangeEvent.Cause.COMMAND,null));
         assertFalse(f.comfort.focused(f.player));verify(f.camera).remove();verify(f.player,never()).setGameMode(any());assertTrue(f.saved.isEmpty());
     }
     @Test void savedFocusRecoversModeFlagsAndSeatAfterAnInterruptedSession(){
@@ -214,7 +214,7 @@ class TableComfortFocusTest {
         for(int reason=0;reason<3;reason++){
             Fixture f=new Fixture(0);f.input(true);
             doNothing().when(f.player).setGameMode(any());
-            if(reason==0)f.comfort.quit(new PlayerQuitEvent(f.player,net.kyori.adventure.text.Component.empty()));
+            if(reason==0)f.comfort.quit(new PlayerQuitEvent(f.player,net.kyori.adventure.text.Component.empty(),PlayerQuitEvent.QuitReason.DISCONNECTED));
             else if(reason==1){try(var bukkit=mockStatic(Bukkit.class,CALLS_REAL_METHODS)){bukkit.when(Bukkit::getOnlinePlayers).thenReturn(List.of(f.player));f.comfort.close();}}
             else{Location external=new Location(f.world,20,85,20);f.player.teleport(external);assertEquals(external,f.location.get());}
             assertFalse(f.comfort.focused(f.player));verify(f.camera).remove();assertNull(f.target.get());
