@@ -348,6 +348,8 @@ public final class Tabletop3D extends JavaPlugin implements Listener {
             if (r.restoring) throw ex;
             pause(r, "chat.pause.rules");
             getLogger().log(java.util.logging.Level.WARNING, "Board start failed", ex);
+        } finally {
+            r.restoring = false;
         }
     }
 

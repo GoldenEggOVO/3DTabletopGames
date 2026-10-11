@@ -368,6 +368,24 @@ class TableSoundsTest {
     }
 
     @Test
+    void restoredHistoryStaysSilentButFollowingMovesPlayTheirSound() throws Exception {
+        var f = application("gomoku");
+        f.room.event(0, new JsonPrimitive("place:0,0"));
+        f.room.restoring = true;
+        f.plugin.start(f.room);
+        verify(f.world, never()).playSound(any(Location.class), any(Sound.class),
+                any(SoundCategory.class), anyFloat(), anyFloat());
+
+        f.plugin.apply(f.room, 1, new JsonPrimitive("place:1,0"), null);
+
+        verify(f.world).playSound(eq(f.view.origin), eq(TableSounds.STONE.sound()),
+                eq(SoundCategory.BLOCKS), anyFloat(), anyFloat());
+        assertEquals(2, f.room.history.size());
+        assertFalse(f.room.restoring);
+        f.view.close();
+    }
+
+    @Test
     void restoreIsSilentButNewRoundsAndResultsHaveDedicatedCues() throws Exception {
         var f = application("gomoku");
         f.room.restoring = true;

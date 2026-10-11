@@ -17,6 +17,32 @@ import static org.mockito.Mockito.*;
 
 class RoomLifecycleTest {
     @Test
+    void invalidPlayingHistoryStillRejectsRestoreAndPreservesItsFile(
+            @org.junit.jupiter.api.io.TempDir java.nio.file.Path directory) throws Exception {
+        Tabletop3D plugin = mock(Tabletop3D.class);
+        plugin.arena = mock(GameWorld.class);
+        TabletopTest.set(plugin, "rooms", new LinkedHashMap<UUID, Room>());
+        TabletopTest.set(plugin, "returns", new HashMap<>());
+        when(plugin.getDataFolder()).thenReturn(directory.toFile());
+        doCallRealMethod().when(plugin).restore();
+        doCallRealMethod().when(plugin).start(any());
+        when(plugin.prepareSeats(any())).thenReturn(true);
+        Room room = new Room(UUID.randomUUID(), "gomoku", 2, 1, 0);
+        room.fillBots();
+        room.phase = Room.Phase.PLAYING;
+        room.event(0, new JsonPrimitive("invalid-action"));
+        var file = directory.resolve("rooms.json");
+        RoomStore.write(file, List.of(room), Map.of());
+        byte[] original = java.nio.file.Files.readAllBytes(file);
+
+        assertThrows(IllegalStateException.class, plugin::restore);
+
+        assertArrayEquals(original, java.nio.file.Files.readAllBytes(file));
+        verify(plugin.arena, never()).render(any());
+        verify(plugin, never()).save();
+    }
+
+    @Test
     void unsupportedRecordsFailBeforeInstallingAnyRooms(
             @org.junit.jupiter.api.io.TempDir java.nio.file.Path directory) throws Exception {
         Tabletop3D plugin = mock(Tabletop3D.class, CALLS_REAL_METHODS);
